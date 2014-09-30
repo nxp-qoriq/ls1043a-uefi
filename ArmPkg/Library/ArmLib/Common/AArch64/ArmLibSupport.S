@@ -98,7 +98,7 @@ ASM_PFX(ArmSetTTBR0):
   ret
 
 ASM_PFX(ArmGetTTBR0BaseAddress):
-  EL1_OR_EL2(x1)
+  EL1_OR_EL2_OR_EL3(x1)
 1:mrs     x0, ttbr0_el1
   b       3f
 2:mrs     x0, ttbr0_el2
