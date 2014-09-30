@@ -146,6 +146,7 @@ BDS_LOAD_OPTION_SUPPORT BdsLoadOptionSupportList[] = {
     BdsLoadOptionPxeUpdateDevicePath,
     FALSE
   },
+#ifdef NETLIB
   {
     BDS_DEVICE_TFTP,
     BdsLoadOptionTftpList,
@@ -154,6 +155,7 @@ BDS_LOAD_OPTION_SUPPORT BdsLoadOptionSupportList[] = {
     BdsLoadOptionTftpUpdateDevicePath,
     TRUE
   }
+#endif
 };
 
 EFI_STATUS
@@ -765,6 +767,7 @@ BdsLoadOptionPxeIsSupported (
   @retval  EFI_SUCCESS            Update completed
   @retval  EFI_OUT_OF_RESOURCES   Fail to perform the update due to lack of resource
 **/
+#ifdef NETLIB
 EFI_STATUS
 BdsLoadOptionTftpList (
   IN OUT LIST_ENTRY* BdsLoadOptionList
@@ -1193,3 +1196,4 @@ BdsLoadOptionTftpIsSupported (
     return TRUE;
   }
 }
+#endif

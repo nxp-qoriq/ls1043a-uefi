@@ -53,7 +53,7 @@
   PrintLib
   BaseLib
   FdtLib
-  NetLib
+  #NetLib
 
 [Guids]
   gEfiEndOfDxeEventGroupGuid
