@@ -19,6 +19,26 @@
 //
 #include "BaseIoLibIntrinsicInternal.h"
 
+
+#define Uswap16(X) \
+       ((((X) & 0xff00) >> 8) | \
+        (((X) & 0x00ff) << 8))
+#define Uswap32(X) \
+       ((((X) & 0xff000000) >> 24) | \
+        (((X) & 0x00ff0000) >>  8) | \
+        (((X) & 0x0000ff00) <<  8) | \
+        (((X) & 0x000000ff) << 24))
+#define Uswap64(X) \
+       ((((X) & 0xff00000000000000) >> 56) | \
+        (((X) & 0x00ff000000000000) >> 40) | \
+        (((X) & 0x0000ff0000000000) >> 24) | \
+        (((X) & 0x000000ff00000000) >>  8) | \
+        (((X) & 0x00000000ff000000) <<  8) | \
+        (((X) & 0x0000000000ff0000) << 24) | \
+        (((X) & 0x000000000000ff00) << 40) | \
+        (((X) & 0x00000000000000ff) << 56))
+
+
 /**
   Reads an 8-bit I/O port.
 
@@ -425,6 +445,163 @@ MmioWrite64 (
 {
   ASSERT ((Address & 7) == 0);
   *(volatile UINT64*)Address = Value;
+  return Value;
+}
+
+
+/**
+  Reads a 16-bit MMIO register in Big Endian format.
+
+  Reads the 16-bit MMIO register specified by Address. The 16-bit read value is
+  returned. This function must guarantee that all MMIO read and write
+  operations are serialized.
+
+  If 16-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to read.
+
+  @return The value read.
+
+**/
+UINT16
+EFIAPI
+MmioReadBe16 (
+  IN      UINTN                     Address
+  )
+{
+  UINT16                            Value;
+
+  ASSERT ((Address & 1) == 0);
+  Value = *(volatile UINT16*)Address;
+  return Uswap16(Value);
+}
+
+/**
+  Writes a 16-bit MMIO register in Big Endian format.
+
+  Writes the 16-bit MMIO register specified by Address with the value specified
+  by Value and returns Value. This function must guarantee that all MMIO read
+  and write operations are serialized.
+
+  If 16-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to write.
+  @param  Value   The value to write to the MMIO register.
+
+**/
+UINT16
+EFIAPI
+MmioWriteBe16 (
+  IN      UINTN                     Address,
+  IN      UINT16                    Value
+  )
+{
+  ASSERT ((Address & 1) == 0);
+  *(volatile UINT16*)Address = Uswap16(Value);
+  return Value;
+}
+
+/**
+  Reads a 32-bit MMIO register in Big Endian format.
+
+  Reads the 32-bit MMIO register specified by Address. The 32-bit read value is
+  returned. This function must guarantee that all MMIO read and write
+  operations are serialized.
+
+  If 32-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to read.
+
+  @return The value read.
+
+**/
+UINT32
+EFIAPI
+MmioReadBe32 (
+  IN      UINTN                     Address
+  )
+{
+  UINT32                            Value;
+
+  ASSERT ((Address & 3) == 0);
+  Value = *(volatile UINT32*)Address;
+  return Uswap32(Value);
+}
+
+/**
+  Writes a 32-bit MMIO register in Big Endian format.
+
+  Writes the 32-bit MMIO register specified by Address with the value specified
+  by Value and returns Value. This function must guarantee that all MMIO read
+  and write operations are serialized.
+
+  If 32-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to write.
+  @param  Value   The value to write to the MMIO register.
+
+**/
+UINT32
+EFIAPI
+MmioWriteBe32 (
+  IN      UINTN                     Address,
+  IN      UINT32                    Value
+  )
+{
+  ASSERT ((Address & 3) == 0);
+  *(volatile UINT32*)Address = Uswap32(Value);
+  return Value;
+}
+
+/**
+  Reads a 64-bit MMIO register in Big Endian format.
+
+  Reads the 64-bit MMIO register specified by Address. The 64-bit read value is
+  returned. This function must guarantee that all MMIO read and write
+  operations are serialized.
+
+  If 64-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to read.
+
+  @return The value read.
+
+**/
+UINT64
+EFIAPI
+MmioReadBe64 (
+  IN      UINTN                     Address
+  )
+{
+  UINT64                            Value;
+
+  ASSERT ((Address & 7) == 0);
+  Value = *(volatile UINT64*)Address;
+  return Uswap64(Value);
+}
+
+/**
+  Writes a 64-bit MMIO register in Big Endian format.
+
+  Writes the 64-bit MMIO register specified by Address with the value specified
+  by Value and returns Value. This function must guarantee that all MMIO read
+  and write operations are serialized.
+
+  If 64-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to write.
+  @param  Value   The value to write to the MMIO register.
+
+**/
+UINT64
+EFIAPI
+MmioWriteBe64 (
+  IN      UINTN                     Address,
+  IN      UINT64                    Value
+  )
+{
+  ASSERT ((Address & 7) == 0);
+  *(volatile UINT64*)Address = Uswap64(Value);
   return Value;
 }
 

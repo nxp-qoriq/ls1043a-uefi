@@ -2658,6 +2658,129 @@ MmioWriteBuffer64 (
   IN  CONST UINT64 *Buffer
   );
 
+/**
+  Reads a 16-bit MMIO register in Big Endian format.
+
+  Reads the 16-bit MMIO register specified by Address. The 16-bit read value is
+  returned. This function must guarantee that all MMIO read and write
+  operations are serialized.
+
+  If 16-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to read.
+
+  @return The value read.
+
+**/
+UINT16
+EFIAPI
+MmioReadBe16 (
+  IN      UINTN                     Address
+  );
+
+/**
+  Writes a 16-bit MMIO register in Big Endian format.
+
+  Writes the 16-bit MMIO register specified by Address with the value specified
+  by Value and returns Value. This function must guarantee that all MMIO read
+  and write operations are serialized.
+
+  If 16-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to write.
+  @param  Value   The value to write to the MMIO register.
+
+**/
+UINT16
+EFIAPI
+MmioWriteBe16 (
+  IN      UINTN                     Address,
+  IN      UINT16                    Value
+  );
+
+/**
+  Reads a 32-bit MMIO register in Big Endian format.
+
+  Reads the 32-bit MMIO register specified by Address. The 32-bit read value is
+  returned. This function must guarantee that all MMIO read and write
+  operations are serialized.
+
+  If 32-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to read.
+
+  @return The value read.
+
+**/
+UINT32
+EFIAPI
+MmioReadBe32 (
+  IN      UINTN                     Address
+  );
+
+/**
+  Writes a 32-bit MMIO register in Big Endian format.
+
+  Writes the 32-bit MMIO register specified by Address with the value specified
+  by Value and returns Value. This function must guarantee that all MMIO read
+  and write operations are serialized.
+
+  If 32-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to write.
+  @param  Value   The value to write to the MMIO register.
+
+**/
+UINT32
+EFIAPI
+MmioWriteBe32 (
+  IN      UINTN                     Address,
+  IN      UINT32                    Value
+  );
+
+
+/**
+  Reads a 64-bit MMIO register in Big Endian format.
+
+  Reads the 64-bit MMIO register specified by Address. The 64-bit read value is
+  returned. This function must guarantee that all MMIO read and write
+  operations are serialized.
+
+  If 64-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to read.
+
+  @return The value read.
+
+**/
+UINT64
+EFIAPI
+MmioReadBe64 (
+  IN      UINTN                     Address
+  );
+
+
+/**
+  Writes a 64-bit MMIO register in Big Endian format.
+
+  Writes the 64-bit MMIO register specified by Address with the value specified
+  by Value and returns Value. This function must guarantee that all MMIO read
+  and write operations are serialized.
+
+  If 64-bit MMIO register operations are not supported, then ASSERT().
+
+  @param  Address The MMIO register to write.
+  @param  Value   The value to write to the MMIO register.
+
+**/
+UINT64
+EFIAPI
+MmioWriteBe64 (
+  IN      UINTN                     Address,
+  IN      UINT64                    Value
+  );
+
+
 
 #endif
 
