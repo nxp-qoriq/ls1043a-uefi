@@ -15,7 +15,6 @@
 
 **/
 
-
 #include <Ddr.h>
 
 UINT32
@@ -47,7 +46,7 @@ PicosToMclk (
   /* Clamp to the maximum representable value */
   if (Clks > ULL_8FS)
     Clks = ULL_8FS;
-  
+
   return (UINT32) Clks;
 }
 
@@ -59,11 +58,11 @@ FslDdrGetVersion (
 {
   struct CcsrDdr  *Ddr;
   UINT32 VerMajorMinorErrata;
-  
+
   Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
   VerMajorMinorErrata = (MmioReadBe32((UINTN)&Ddr->IpRev1) & 0xFFFF) << 8;
   VerMajorMinorErrata |= (MmioReadBe32((UINTN)&Ddr->IpRev2) & 0xFF00) >> 8;
-  
+
   return VerMajorMinorErrata;
 }
 
@@ -125,7 +124,7 @@ ComputeCasWriteLatency (
 {
   UINT32 Cwl;
   CONST UINT32 MclkPs = GetMemoryClkPeriodPs();
-  
+
   if (MclkPs >= 2500)
   	Cwl = 5;
   else if (MclkPs >= 1875)
@@ -176,7 +175,7 @@ SetTimingCfg0 (
   /** 7.5 ns on -3E; 0 means WL - CL + BL/2 + 1 */
   UINT8 TrrtMclk = 0;   /** Read-to-read turnaround */
   UINT8 TwwtMclk = 0;   /** Write-to-write turnaround */
-  
+
   /** Active powerdown exit timing (tXARD and tXARDS). */
   UINT8 ActPdExitMclk;
   /** Precharge powerdown exit timing (Txp). */
@@ -534,7 +533,7 @@ SetCsnConfig (
 
   	/** XXX: Some implementation only have 1 bit starting at left */
   	| ((OdtWrCfg & 0x7) << 16)
-  
+
   	| ((BaBitsCsN & 0x3) << 14)
   	| ((RowBitsCsN & 0x7) << 8)
   	| ((ColBitsCsN & 0x7) << 0)
@@ -1455,6 +1454,11 @@ ComputeFslMemctlConfigRegs (
 
   SetDdrSdramRcw(Ddr, Popts, CommonDimm);
 
+#ifdef   CONFIG_SYS_FSL_DDR_EMU
+  /* disble Ddr training for emulator */
+  Ddr->Debug[2] = 0x00000400;
+  Ddr->Debug[4] = 0xff800000;
+#endif
   return CheckFslMemctlConfigRegs(Ddr);
 }
 
