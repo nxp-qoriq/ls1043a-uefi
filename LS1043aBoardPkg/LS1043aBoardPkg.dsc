@@ -52,7 +52,7 @@
   PL301AxiLib|ArmPlatformPkg/Drivers/PL301Axi/PL301Axi.inf
   # ARM GIC400 General Interrupt Driver
   ArmGicLib|ArmPkg/Drivers/ArmGic/ArmGicLib.inf
-  
+
 
 !if $(TARGET) == RELEASE
   DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
@@ -60,39 +60,43 @@
 !else
   DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
   UncachedMemoryAllocationLib|ArmPkg/Library/UncachedMemoryAllocationLib/UncachedMemoryAllocationLib.inf
+
+  # I2c Library
+  I2cLib|LS1043aBoardPkg/Library/I2cLib/I2cLib.inf
+
 !endif
   DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
 
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
-  
+
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
   BaseMemoryLib|ArmPkg/Library/BaseMemoryLibStm/BaseMemoryLibStm.inf
 
   EfiResetSystemLib|LS1043aBoardPkg/Library/ResetSystemLib/ResetSystemLib.inf
-  
+
   PerformanceLib|MdePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull.inf
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
-  
+
   EfiFileLib|EmbeddedPkg/Library/EfiFileLib/EfiFileLib.inf
-  
+
   PeCoffGetEntryPointLib|MdePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
-  
+
   PeCoffExtraActionLib|ArmPkg/Library/DebugPeCoffExtraActionLib/DebugPeCoffExtraActionLib.inf
-  
+
   CacheMaintenanceLib|ArmPkg/Library/ArmCacheMaintenanceLib/ArmCacheMaintenanceLib.inf
   DefaultExceptionHandlerLib|ArmPkg/Library/DefaultExceptionHandlerLib/DefaultExceptionHandlerLib.inf
   CpuExceptionHandlerLib|MdeModulePkg/Library/CpuExceptionHandlerLibNull/CpuExceptionHandlerLibNull.inf
   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf
   RealTimeClockLib|LS1043aBoardPkg/Library/RealTimeClockLib/RealTimeClockLib.inf
   SemihostLib|ArmPkg/Library/SemihostLib/SemihostLib.inf
-  
+
   # UART Driver
   DUartPortLib|LS1043aBoardPkg/Drivers/DUart/DUart.inf
   SerialPortLib|LS1043aBoardPkg/Library/DUartPortLib/DUartPortLib.inf
   SerialPortExtLib|LS1043aBoardPkg/Library/DUartPortLib/DUartPortExtLib.inf
 
   IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
-  
+
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
   UefiLib|MdePkg/Library/UefiLib/UefiLib.inf
   HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
@@ -110,13 +114,13 @@
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
 
   UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
-  
+
   UefiUsbLib|MdePkg/Library/UefiUsbLib/UefiUsbLib.inf
 
   CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
 
-  TimerLib|LS1043aBoardPkg/Library/TimerLib/TimerLib.inf 
-  
+  TimerLib|LS1043aBoardPkg/Library/TimerLib/TimerLib.inf
+
   ArmDisassemblerLib|ArmPkg/Library/ArmDisassemblerLib/ArmDisassemblerLib.inf
   DebugAgentLib|MdeModulePkg/Library/DebugAgentLibNull/DebugAgentLibNull.inf
   DmaLib|ArmPkg/Library/ArmDmaLib/ArmDmaLib.inf
@@ -137,7 +141,7 @@
 [LibraryClasses.common.SEC]
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64Lib.inf
   ArmPlatformGlobalVariableLib|ArmPlatformPkg/Library/ArmPlatformGlobalVariableLib/PrePi/PrePiArmPlatformGlobalVariableLib.inf
-  
+
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   ReportStatusCodeLib|IntelFrameworkModulePkg/Library/PeiDxeDebugLibReportStatusCode/PeiDxeDebugLibReportStatusCode.inf
   UefiDecompressLib|MdePkg/Library/BaseUefiDecompressLib/BaseUefiDecompressLib.inf
@@ -147,14 +151,14 @@
   # Temp work around for Movt relocation issue. 
   #PeCoffLib|ArmPkg/Library/BasePeCoffLib/BasePeCoffLib.inf
   PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
-  
+
   HobLib|EmbeddedPkg/Library/PrePiHobLib/PrePiHobLib.inf
   PrePiHobListPointerLib|ArmPlatformPkg/Library/PrePiHobListPointerLib/PrePiHobListPointerLib.inf
   MemoryAllocationLib|EmbeddedPkg/Library/PrePiMemoryAllocationLib/PrePiMemoryAllocationLib.inf
   PerformanceLib|MdeModulePkg/Library/PeiPerformanceLib/PeiPerformanceLib.inf
   PlatformPeiLib|ArmPlatformPkg/PlatformPei/PlatformPeiLib.inf
   MemoryInitPeiLib|ArmPlatformPkg/MemoryInitPei/MemoryInitPeiLib.inf
-  
+
   # 1/123 faster than Stm or Vstm version
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
 
@@ -176,7 +180,7 @@
   PeCoffLib|EmbeddedPkg/Library/DxeHobPeCoffLib/DxeHobPeCoffLib.inf
 
   PerformanceLib|MdeModulePkg/Library/DxeCorePerformanceLib/DxeCorePerformanceLib.inf
-  
+
 [LibraryClasses.common.DXE_DRIVER]
   ReportStatusCodeLib|IntelFrameworkModulePkg/Library/DxeReportStatusCodeLibFramework/DxeReportStatusCodeLib.inf
   DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
@@ -229,7 +233,7 @@
   gEfiMdePkgTokenSpaceGuid.PcdDriverDiagnosticsDisable|TRUE
   gEfiMdePkgTokenSpaceGuid.PcdComponentName2Disable|TRUE
   gEfiMdePkgTokenSpaceGuid.PcdDriverDiagnostics2Disable|TRUE
-  
+
   #
   # Control what commands are supported from the UI
   # Turn these on and off to add features or save size
@@ -243,10 +247,10 @@
   gEmbeddedTokenSpaceGuid.PcdEmbeddedScriptCmd|FALSE
 
   gEmbeddedTokenSpaceGuid.PcdCacheEnable|TRUE
-  
+
   # Use the Vector Table location in CpuDxe. We will not copy the Vector Table at PcdCpuVectorBaseAddress
   gArmTokenSpaceGuid.PcdRelocateVectorTable|FALSE
-  
+
   gEmbeddedTokenSpaceGuid.PcdPrePiProduceMemoryTypeInformationHob|TRUE
   gArmTokenSpaceGuid.PcdCpuDxeProduceDebugSupport|FALSE
 
@@ -310,12 +314,12 @@
   gEmbeddedTokenSpaceGuid.PcdEmbeddedAutomaticBootCommand|""
   gEmbeddedTokenSpaceGuid.PcdEmbeddedDefaultTextColor|0x07
   gEmbeddedTokenSpaceGuid.PcdEmbeddedMemVariableStoreSize|0x10000
-  
+
 #
 # Optional feature to help prevent EFI memory map fragments
 # Turned on and off via: PcdPrePiProduceMemoryTypeInformationHob
-# Values are in EFI Pages (4K). DXE Core will make sure that 
-# at least this much of each type of memory can be allocated 
+# Values are in EFI Pages (4K). DXE Core will make sure that
+# at least this much of each type of memory can be allocated
 # from a single memory range. This way you only end up with
 # maximum of two fragements for each type in the memory map
 # (the memory used, and the free memory that was prereserved
@@ -343,7 +347,7 @@
   # ARM General Interrupt Controller
   gArmTokenSpaceGuid.PcdGicDistributorBase|0x1401000
   gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase|0x1402000
-  
+
   #
   # ARM L2x0 PCDs
   gArmTokenSpaceGuid.PcdL2x0ControllerBase|0x10900000
@@ -354,9 +358,13 @@
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x40000000
 
+!if $(TARGET) == DEBUG
+  gArmTokenSpaceGuid.PcdI2cInitialize|TRUE
+!endif
+
   # Size of the region used by UEFI in permanent memory (Reserved 16MB)
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
-  
+
   # Size of the region reserved for fixed address allocations (Reserved 32MB)
   gArmTokenSpaceGuid.PcdArmLinuxKernelMaxOffset|0x08000000
   gArmTokenSpaceGuid.PcdArmLinuxFdtMaxOffset|0x08000000
@@ -369,7 +377,7 @@
   gArmPlatformTokenSpaceGuid.PcdTimerPeriodicInterruptNum|54 # Timer interrupt mapped to GIC IRQ
   gEmbeddedTokenSpaceGuid.PcdEmbeddedPerformanceCounterPeriodInNanoseconds|77
   gEmbeddedTokenSpaceGuid.PcdEmbeddedPerformanceCounterFrequencyInHz|13000000
-  
+
   #
   # ARM Pcds
   #
@@ -391,8 +399,8 @@
   #
   # ARM OS Loader
   #
-  # LS1043aBoard machine type (OMAP3_LS1043a = 1546) required for ARM Linux: 
-  gArmTokenSpaceGuid.PcdArmMachineType|1546 
+  # LS1043aBoard machine type (OMAP3_LS1043a = 1546) required for ARM Linux:
+  gArmTokenSpaceGuid.PcdArmMachineType|1546
 
   #gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0xFF
   #gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
@@ -413,7 +421,7 @@
   # SEC
   #
   ArmPlatformPkg/PrePi/PeiMPCore.inf
-  
+
   #
   # DXE
   #
@@ -433,18 +441,18 @@
   MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
   MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
   EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
-  
+
   MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
 #  MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
-#  MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf  
-  MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf 
+#  MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
+  MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
   EmbeddedPkg/SerialDxe/SerialDxe.inf
-  
+
   EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
   EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
   EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
-  ArmPkg/Drivers/TimerDxe/TimerDxe.inf 
-  LS1043aBoardPkg/Drivers/LS1043aWatchDog/LS1043aWatchDogDxe.inf 
+  ArmPkg/Drivers/TimerDxe/TimerDxe.inf
+  LS1043aBoardPkg/Drivers/LS1043aWatchDog/LS1043aWatchDogDxe.inf
   ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
 
   EmbeddedPkg/SimpleTextInOutSerial/SimpleTextInOutSerial.inf
@@ -453,7 +461,7 @@
   # Semi-hosting filesystem
   #
   ArmPkg/Filesystem/SemihostFs/SemihostFs.inf
-  
+
   #
   # FAT filesystem + GPT/MBR partitioning
   #
@@ -470,17 +478,17 @@
   # MMC/SD
   #
   # To be added later
- 
+
   #
   # I2C
   #
   # To be added later
-  
+
   #
   # SoC Drivers
   #
-  
-  
+
+
   # More To be added later
 
   #
@@ -488,11 +496,11 @@
   #
   MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
   MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
-  ArmPlatformPkg/Bds/Bds.inf 
+  ArmPlatformPkg/Bds/Bds.inf
 
   #
   # Example Application
-  #  
+  #
   MdeModulePkg/Application/HelloWorld/HelloWorld.inf
 
 #  ShellPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf

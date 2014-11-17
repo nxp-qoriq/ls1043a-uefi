@@ -3,7 +3,7 @@
 *
 *  Copyright (c) 2013, Freescale Ltd. All rights reserved.
 *  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
-*  
+*
 *  This program and the accompanying materials                          
 *  are licensed and made available under the terms and conditions of the BSD License         
 *  which accompanies this distribution.  The full text of the license may be found at        
@@ -68,5 +68,12 @@
 
 #define WDOG_SERVICE_SEQ1		0x5555
 #define WDOG_SERVICE_SEQ2		0xAAAA
+
+#define I2C0_BASE_ADDRESS		0x02180000
+#define I2C1_BASE_ADDRESS		0x02190000
+#define I2C2_BASE_ADDRESS		0x021A0000
+#define I2C3_BASE_ADDRESS		0x02183000
+
+#define I2C_SIZE			0x10000
 
 #endif

@@ -50,3 +50,6 @@
   gArmPlatformTokenSpaceGuid.PcdLS1043aWatchDogBase|0x0|UINT32|0x00000023
   gArmPlatformTokenSpaceGuid.DUartClkInHz|0x0|UINT32|0x00000024
   gArmPlatformTokenSpaceGuid.DUartInteger|0x0|UINT32|0x00000025
+
+  ## I2c
+  gArmTokenSpaceGuid.PcdI2cInitialize|FALSE|BOOLEAN|0x00000027
