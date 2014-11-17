@@ -4,13 +4,13 @@
 *  Copyright (c) 2013, Freescale Ltd. All rights reserved.
 *  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
 *
-*  This program and the accompanying materials                          
-*  are licensed and made available under the terms and conditions of the BSD License         
-*  which accompanies this distribution.  The full text of the license may be found at        
-*  http://opensource.org/licenses/bsd-license.php                                            
+*  This program and the accompanying materials
+*  are licensed and made available under the terms and conditions of the BSD License
+*  which accompanies this distribution.  The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
 *
-*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
-*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 *
 **/
 
@@ -75,5 +75,10 @@
 #define I2C3_BASE_ADDRESS		0x02183000
 
 #define I2C_SIZE			0x10000
+
+#define CONFIG_SYS_IMMR		0x01000000
+#define CONFIG_SYS_FSL_DDR_ADDR	(CONFIG_SYS_IMMR + 0x00080000)
+
+#define DDRC_MEMORY_SIZE		0x10000
 
 #endif

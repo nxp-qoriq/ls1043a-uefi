@@ -64,6 +64,8 @@
   # I2c Library
   I2cLib|LS1043aBoardPkg/Library/I2cLib/I2cLib.inf
 
+  # Ddr Library
+  DdrLib|LS1043aBoardPkg/Library/DdrLib/DdrLib.inf
 !endif
   DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
 
@@ -148,7 +150,7 @@
   ExtractGuidedSectionLib|EmbeddedPkg/Library/PrePiExtractGuidedSectionLib/PrePiExtractGuidedSectionLib.inf
   LzmaDecompressLib|IntelFrameworkModulePkg/Library/LzmaCustomDecompressLib/LzmaCustomDecompressLib.inf
 
-  # Temp work around for Movt relocation issue. 
+  # Temp work around for Movt relocation issue.
   #PeCoffLib|ArmPkg/Library/BasePeCoffLib/BasePeCoffLib.inf
   PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
 
@@ -237,7 +239,7 @@
   #
   # Control what commands are supported from the UI
   # Turn these on and off to add features or save size
-  #  
+  #
   gEmbeddedTokenSpaceGuid.PcdEmbeddedMacBoot|TRUE
   gEmbeddedTokenSpaceGuid.PcdEmbeddedDirCmd|TRUE
   gEmbeddedTokenSpaceGuid.PcdEmbeddedHobCmd|TRUE
@@ -359,6 +361,7 @@
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x40000000
 
 !if $(TARGET) == DEBUG
+  gArmTokenSpaceGuid.PcdDdrInitialize|TRUE
   gArmTokenSpaceGuid.PcdI2cInitialize|TRUE
 !endif
 

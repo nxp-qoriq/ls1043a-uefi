@@ -3,14 +3,13 @@
 *  Copyright (c) 2013, Freescale Ltd. All rights reserved.
 *  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
 
-*  
-*  This program and the accompanying materials                          
-*  are licensed and made available under the terms and conditions of the BSD License         
-*  which accompanies this distribution.  The full text of the license may be found at        
-*  http://opensource.org/licenses/bsd-license.php                                            
+*  This program and the accompanying materials
+*  are licensed and made available under the terms and conditions of the BSD License
+*  which accompanies this distribution. The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
 *
-*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
-*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 *
 **/
 
@@ -107,7 +106,7 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].VirtualBase  = WDOG1_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = WDOG_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-  
+
   VirtualMemoryTable[++Index].PhysicalBase = WDOG2_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = WDOG2_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = WDOG_SIZE;
@@ -126,6 +125,11 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[++Index].PhysicalBase = WDOG5_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = WDOG5_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = WDOG_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_SYS_FSL_DDR_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_SYS_FSL_DDR_ADDR;
+  VirtualMemoryTable[Index].Length       = DDRC_MEMORY_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
   // End of Table
