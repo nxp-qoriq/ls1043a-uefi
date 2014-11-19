@@ -84,43 +84,43 @@ READ_STATUS        = TRUE
 READ_LOCK_CAP      = TRUE
 READ_LOCK_STATUS   = TRUE
 
-  INF MdeModulePkg/Core/Dxe/DxeMain.inf 
+  INF MdeModulePkg/Core/Dxe/DxeMain.inf
 
   #
-  # PI DXE Drivers producing Architectural Protocols (EFI Services) 
+  # PI DXE Drivers producing Architectural Protocols (EFI Services)
   #
   INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
-  
+
   INF MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
   INF ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
-  INF ArmPkg/Drivers/TimerDxe/TimerDxe.inf 
-  INF LS1043aBoardPkg/Drivers/LS1043aWatchDog/LS1043aWatchDogDxe.inf 
+  INF ArmPkg/Drivers/TimerDxe/TimerDxe.inf
+  INF LS1043aBoardPkg/Drivers/LS1043aWatchDog/LS1043aWatchDogDxe.inf
   INF MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
   INF MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
   INF MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
   INF EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
-  INF MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf   
+  INF MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
   #
   # Multiple Console IO support
   #
   INF MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
 #  INF MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
-#  INF MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf  
+#  INF MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
   INF EmbeddedPkg/SerialDxe/SerialDxe.inf
-  INF MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf  
+  INF MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
 
   INF EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
   INF EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
   INF EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
   INF EmbeddedPkg/SimpleTextInOutSerial/SimpleTextInOutSerial.inf
-  
+
 !if $(TARGET) == RELEASE
   #
   # Semi-hosting filesystem
   #
   INF ArmPkg/Filesystem/SemihostFs/SemihostFs.inf
 !endif
-  
+
   #
   # Nand Flash
   #
@@ -130,12 +130,11 @@ READ_LOCK_STATUS   = TRUE
   # MMC/SD
   #
   # To be added later
-  
+
   #
   # I2C
   #
-  # To be added later
-  
+  INF LS1043aBoardPkg/Drivers/I2c/I2cDxe.inf
   #
   # SoC Drivers
   #
@@ -151,10 +150,10 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
   #
-  # UEFI application (Shell Embedded Boot Loader) 
+  # UEFI application (Shell Embedded Boot Loader)
   #
   #INF ShellPkg/Application/Shell/Shell.inf
-  INF ShellBinPkg/UefiShell/UefiShell.inf 
+  INF ShellBinPkg/UefiShell/UefiShell.inf
 
   #
   # Bds

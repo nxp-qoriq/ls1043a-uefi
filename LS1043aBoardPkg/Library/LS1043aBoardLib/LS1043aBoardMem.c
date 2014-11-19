@@ -132,6 +132,11 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].Length       = DDRC_MEMORY_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
+  VirtualMemoryTable[++Index].PhysicalBase = I2C0_BASE_ADDRESS;
+  VirtualMemoryTable[Index].VirtualBase  = I2C0_BASE_ADDRESS;
+  VirtualMemoryTable[Index].Length       = I2C_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+
   // End of Table
   VirtualMemoryTable[++Index].PhysicalBase = 0;
   VirtualMemoryTable[Index].VirtualBase  = 0;
