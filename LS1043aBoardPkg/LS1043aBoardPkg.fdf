@@ -124,6 +124,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # Nand Flash
   INF LS1043aBoardPkg/Drivers/NandFlashDxe/NandFlashDxe.inf
+  INF LS1043aBoardPkg/Drivers/LS1043aFileSystemDxe/LS1043aFileSystemDxe.inf
 
   #
   # MMC/SD
@@ -143,9 +144,6 @@ READ_LOCK_STATUS   = TRUE
   #
   # FAT filesystem + GPT/MBR partitioning
   #
-  INF MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
-  INF MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
-  INF FatBinPkg/EnhancedFatDxe/Fat.inf
   INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
   #

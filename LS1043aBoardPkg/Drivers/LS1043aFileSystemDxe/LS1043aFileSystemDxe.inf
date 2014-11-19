@@ -1,0 +1,35 @@
+#/** @file
+#
+#
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = LS1043aFileSystem
+  FILE_GUID                      = 4d00ef14-c4e0-426b-81b7-30a00a14bbd6
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+
+  ENTRY_POINT                    = LS1043aFileSystemInitialize
+
+[Sources.common]
+  LS1043aFileSystem.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  LS1043aBoardPkg/LS1043aBoardPkg.dec
+
+[LibraryClasses]
+  FileSystemLib
+
+[Guids]
+
+[Protocols]
+  gEfiBlockIoProtocolGuid
+  gEfiDiskIoProtocolGuid
+  gEfiSimpleFileSystemProtocolGuid
+
+[Pcd]
+
+[depex]
+  TRUE

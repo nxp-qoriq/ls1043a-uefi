@@ -111,6 +111,7 @@
   UefiApplicationEntryPoint|MdePkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
 
   NandFlashLib|LS1043aBoardPkg/Library/FslIfcNandLib/FslIfcNandLib.inf
+  FileSystemLib|LS1043aBoardPkg/Library/LS1043aFileSystemLib/LS1043aFileSystemLib.inf
 
 #
 # Assume everything is fixed at build
@@ -470,13 +471,12 @@
   #
   # FAT filesystem + GPT/MBR partitioning
   #
-  MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
-  MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
   MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
   #
   # Nand Flash
   LS1043aBoardPkg/Drivers/NandFlashDxe/NandFlashDxe.inf
+  LS1043aBoardPkg/Drivers/LS1043aFileSystemDxe/LS1043aFileSystemDxe.inf
 
   #
   # MMC/SD
