@@ -123,8 +123,7 @@ READ_LOCK_STATUS   = TRUE
 
   #
   # Nand Flash
-  #
-  # To be added later
+  INF LS1043aBoardPkg/Drivers/NandFlashDxe/NandFlashDxe.inf
 
   #
   # MMC/SD

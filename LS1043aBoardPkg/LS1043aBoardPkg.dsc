@@ -110,6 +110,8 @@
   UefiDriverEntryPoint|MdePkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
   UefiApplicationEntryPoint|MdePkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
 
+  NandFlashLib|LS1043aBoardPkg/Library/FslIfcNandLib/FslIfcNandLib.inf
+
 #
 # Assume everything is fixed at build
 #
@@ -474,8 +476,7 @@
 
   #
   # Nand Flash
-  #
-  # To be added later
+  LS1043aBoardPkg/Drivers/NandFlashDxe/NandFlashDxe.inf
 
   #
   # MMC/SD
