@@ -80,5 +80,10 @@
 #define CONFIG_SYS_FSL_DDR_ADDR	(CONFIG_SYS_IMMR + 0x00080000)
 
 #define DDRC_MEMORY_SIZE		0x10000
+#define IFC_MEM1_BASE_ADDR              0x60000000
+#define IFC_MEM1_SIZE                   0x20000000
+
+#define IFC_REG_BASE_ADDR               0x1530000
+#define IFC_REG_SIZE                    0x3000
 
 #endif
