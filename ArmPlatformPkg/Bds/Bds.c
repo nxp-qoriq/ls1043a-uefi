@@ -18,10 +18,155 @@
 #include <Library/PerformanceLib.h>
 
 #include <Protocol/Bds.h>
+#include <Protocol/BlockIo.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <Protocol/I2cMaster.h>
 
 #include <Guid/EventGroup.h>
+#include "../LS1043aBoardPkg/Include/Ddr.h"
 
 #define EFI_SET_TIMER_TO_SECOND   10000000
+
+
+EFI_STATUS
+LS1043aTestI2c (
+  VOID
+)
+{
+  EFI_STATUS 			Status;
+  EFI_I2C_MASTER_PROTOCOL 	*I2c;
+  EFI_I2C_REQUEST_PACKET    RequestPacket;
+  UINT8 Buf[6];
+  UINTN BusFreq = 0x186a0;
+
+  Status = gBS->LocateProtocol (&gEfiI2cMasterProtocolGuid, NULL, (VOID **)&I2c);
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR,"Failed to locate i2c protocol (Error '%r')\n", Status));
+    return Status;
+  }
+
+  Status = I2c->SetBusFrequency(I2c, &BusFreq);
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR,"Failed to set i2c bus frequency (Error '%r')\n", Status));
+    return Status;
+  }
+#if 0
+  Status = I2c->Reset(I2c);
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR,"Failed to reset i2c bus(Error '%r')\n", Status));
+    return Status;
+  }
+#endif
+
+  RequestPacket.OperationCount = 1;
+  RequestPacket.Operation[0].Flags = 0x1;
+  RequestPacket.Operation[0].LengthInBytes = 5;
+  RequestPacket.Operation[0].Buffer = Buf;
+
+  Status = I2c->StartRequest (I2c, 0x51, &RequestPacket, NULL, NULL);
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR,"Failed to read eeprom on i2c bus (Error '%r')\n", Status));
+    return Status;
+  }
+
+  if (Buf[0] != 0x92 || Buf[1] != 0x10 || Buf[2] != 0xb ||
+      Buf[3] != 0x2 || Buf[4] != 0x2) {
+    DEBUG((EFI_D_ERROR,"Read data is invalid\n"));
+    return EFI_COMPROMISED_DATA;
+  }
+
+  return EFI_SUCCESS;
+}
+
+
+EFI_STATUS
+LS1043aTestNandFlash (
+  VOID
+)
+{
+  EFI_STATUS Status;
+  UINTN Size, Index;
+  EFI_HANDLE Handle;
+  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FsProtocol;
+  EFI_FILE_PROTOCOL *Fs, *File;
+  CHAR16 SourceBuffer[2048];
+  CHAR16 DestinationBuffer[2048];
+
+  Status = gBS->LocateHandle (ByProtocol, &gEfiBlockIoProtocolGuid, NULL, &Size, &Handle);
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+  Status = gBS->ConnectController (Handle, NULL, NULL, FALSE);
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+  Status = gBS->HandleProtocol (Handle, &gEfiSimpleFileSystemProtocolGuid, (VOID **)&FsProtocol);
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+
+  // Try to Open the volume and get root directory
+  Status = FsProtocol->OpenVolume (FsProtocol, &Fs);
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+
+  File = NULL;
+  Status = Fs->Open (Fs, &File, L"0x0|0x1000", EFI_FILE_MODE_READ, 0);
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+
+  for(Index = 0; Index < 2048; Index++)
+	SourceBuffer[Index] = 0x61;
+
+  Size = 4096;
+
+  Status = File->Write (File, &Size, (VOID*)SourceBuffer);
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+  Status = File->Read (File, &Size, (VOID*)DestinationBuffer);
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+  for(Index = 0; Index < 2048; Index++) {
+	if(SourceBuffer[Index] != DestinationBuffer[Index])
+		return EFI_DEVICE_ERROR;
+  }
+
+/* TODO: Fails, Needs to be debugged
+  Status = gBS->DisconnectController (Handle, Handle, NULL);
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+*/
+  return EFI_SUCCESS;
+}
+
+VOID LS1043aTestCode
+(
+  VOID
+)
+{
+  EFI_STATUS Status;
+
+  Status =  LS1043aTestNandFlash();
+  if(Status == EFI_SUCCESS)
+	Print(L"Nand Flash Test Result: PASS\n");
+  else
+	DEBUG((EFI_D_ERROR, "Nand Flash Test Result: FAIL, Error:'%r'\n",
+				Status));
+
+  Status =  LS1043aTestI2c();
+  if(Status == EFI_SUCCESS)
+	Print(L"I2c Test Result: PASS\n");
+  else
+	DEBUG((EFI_D_ERROR, "I2c Test Result: FAIL, Error:'%r'\n", Status));
+
+  /*FIXME A tempory solution, will be provided by UEFI shell command*/
+  DdrRegDump();
+}
 
 STATIC
 EFI_STATUS
@@ -527,6 +672,10 @@ BdsEntry (
   gST->Hdr.CRC32 = 0;
   Status = gBS->CalculateCrc32 ((VOID*)gST, gST->Hdr.HeaderSize, &gST->Hdr.CRC32);
   ASSERT_EFI_ERROR (Status);
+
+DEBUG_CODE_BEGIN();
+  LS1043aTestCode();
+DEBUG_CODE_END();
 
   // Timer before initiating the default boot selection
   StartDefaultBootOnTimeout ();

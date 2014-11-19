@@ -53,6 +53,7 @@
   PrintLib
   BaseLib
   FdtLib
+  DdrLib
   #NetLib
 
 [Guids]
@@ -72,6 +73,7 @@
   gEfiFirmwareVolumeBlock2ProtocolGuid
   gEfiDhcp4ServiceBindingProtocolGuid
   gEfiMtftp4ServiceBindingProtocolGuid
+  gEfiI2cMasterProtocolGuid
 
 [FeaturePcd]
   gArmPlatformTokenSpaceGuid.PcdBdsLinuxSupport
