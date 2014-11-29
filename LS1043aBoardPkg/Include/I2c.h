@@ -2,7 +2,6 @@
   Header defining the constant, base address amd function for I2C controller
 
   Copyright (c) 2014, Freescale Ltd. All rights reserved.
-  Author: Meenakshi Aggarwal <meenakshi.aggarwal@freescale.com>
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -16,7 +15,6 @@
 
 #ifndef __I2C_H___
 #define __I2C_H__
-
 
 #include <Uefi.h>
 #include "LS1043aBoard.h"
@@ -75,7 +73,6 @@ struct I2cRegs {
   UINT8     I2Dr;
 };
 
-
 /**
   Function to initialize i2c bus
 
@@ -92,7 +89,6 @@ I2cInit (
   IN   INT16		I2c,
   IN   UINT32        Speed
   );
-
 
 /**
   Function to read data usin i2c
@@ -134,7 +130,6 @@ BusI2cSetBusSpeed (
   IN   UINT32		Speed
   );
 
-
 /**
   Function to stop transaction on i2c bus
 
@@ -149,7 +144,6 @@ EFI_STATUS
 I2cStop (
   IN   struct I2cRegs       *I2cRegs
   );
-
 
 /**
   Function to initiate data transfer on i2c bus

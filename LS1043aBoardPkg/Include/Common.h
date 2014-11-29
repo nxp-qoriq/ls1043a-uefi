@@ -2,7 +2,6 @@
   Header defining the General Purpose Utilities
 
   Copyright (c) 2014, Freescale Ltd. All rights reserved.
-  Author: Meenakshi Aggarwal <meenakshi.aggarwal@freescale.com>
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -14,11 +13,8 @@
 
 **/
 
-
 #ifndef __COMMON_H__
 #define __COMMON_H__
-
-
 
 /**
   Utility to return minimum among X and Y
@@ -27,7 +23,6 @@
 	({ typeof(X) __x = (X);			\
 		typeof(Y) __y = (Y);		\
 		(__x < __y) ? __x : __y; })
-
 
 /**
   Utility to return maximum among X and Y

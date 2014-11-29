@@ -2,7 +2,6 @@
   Ddr Library containing functions to initialize ddr controller
 
   Copyright (c) 2014, Freescale Ltd. All rights reserved.
-  Author: Meenakshi Aggarwal <meenakshi.aggarwal@freescale.com>
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License

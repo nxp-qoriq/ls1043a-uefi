@@ -3,7 +3,6 @@
   function prototype, structures etc
 
   Copyright (c) 2014, Freescale Ltd. All rights reserved.
-  Author: Meenakshi Aggarwal <meenakshi.aggarwal@freescale.com>
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -26,7 +25,6 @@
 #include <Library/IoLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/TimerLib.h>
-
 
 typedef UINT64 PhysSizeT;
 
@@ -72,7 +70,6 @@ typedef UINT64 PhysSizeT;
 
 #define FSL_DDR_MIN_TCKE_PULSE_WIDTH_DDR  (3)    /** FIXME */
 
-
 /**
   define memory controller interleaving mode
 **/
@@ -91,7 +88,6 @@ typedef UINT64 PhysSizeT;
 #define FSL_DDR_4WAY_4KB_INTERLEAVING     0x1C
 #define FSL_DDR_4WAY_8KB_INTERLEAVING     0x1D
 
-
 /**
   define bank(chip select) interleaving mode
 **/
@@ -99,7 +95,6 @@ typedef UINT64 PhysSizeT;
 #define FSL_DDR_CS2_CS3			0x20
 #define FSL_DDR_CS0_CS1_AND_CS2_CS3	(FSL_DDR_CS0_CS1 | FSL_DDR_CS2_CS3)
 #define FSL_DDR_CS0_CS1_CS2_CS3		(FSL_DDR_CS0_CS1_AND_CS2_CS3 | 0x04)
-
 
 #define CONFIG_FSL_DDR_INTERACTIVE /** Interactive Debugging */
 #define CONFIG_SYS_DDR_RAW_TIMING
@@ -121,7 +116,6 @@ typedef UINT64 PhysSizeT;
 #define WR_DATA_DELAY_MASK		0x7
 #define WR_DATA_DELAY_SHIFT		10
 
-
 /**
   DDR_SDRAM_CFG - DDR SDRAM Control Configuration
 **/
@@ -137,7 +131,6 @@ typedef UINT64 PhysSizeT;
 #define SDRAM_TYPE_DDR2    3
 #define SDRAM_TYPE_DDR3    7
 
-
 /**
   Compute steps
 **/
@@ -149,7 +142,6 @@ typedef UINT64 PhysSizeT;
 #define STEP_COMPUTE_REGS            (1 << 5)
 #define STEP_PROGRAM_REGS            (1 << 6)
 #define STEP_ALL                     0xFFF
-
 
 /**
   Byte 3 Key Byte / Module Type for DDR3 SPD
@@ -169,12 +161,10 @@ typedef UINT64 PhysSizeT;
 #define DDR3_SPD_MODULETYPE_16B_SO_DIMM	(0x0C)
 #define DDR3_SPD_MODULETYPE_32B_SO_DIMM	(0x0D)
 
-
 /**
   Byte 2 Fundamental Memory Types.
 **/
 #define SPD_MEMTYPE_DDR3	(0x0B)
-
 
 /**
   DDR_CDR1
@@ -187,7 +177,6 @@ typedef UINT64 PhysSizeT;
 #define DDR_CDR2_ODT(x) 	(x & DDR_CDR2_ODT_MASK)
 #define DDR_CDR_ODT_75ohm	0x0	/** TODO */
 
-
 /**
   To avoid 64-bit full-divides, we factor this here
 **/
@@ -195,7 +184,6 @@ typedef UINT64 PhysSizeT;
 #define UL_5POW12	244140625UL
 #define UL_2POW13	(1UL << 13)
 #define ULL_8FS	0xFFFFFFFFULL
-
 
 #if defined(CONFIG_DDR_SPD) || defined(CONFIG_SPD_EEPROM)
 /**
@@ -220,7 +208,6 @@ ComputeDimmParameters(
 };
 #endif
 
-
 /**
   ODT (On die termination) parameters
 **/
@@ -230,7 +217,6 @@ struct DynamicOdt {
   UINT32 OdtRttNorm;
   UINT32 OdtRttWr;
 };
-
 
 /**
   Structure containing board specific parameters
@@ -244,7 +230,6 @@ struct BoardSpecificParameters {
   UINT32 WrlvlCtl2;
   UINT32 WrlvlCtl3;
 };
-
 
 /**
   Record of register values computed
@@ -292,7 +277,6 @@ typedef struct FslDdrCfgRegsS {
   UINT32 Debug[32];
 } FslDdrCfgRegsT;
 
-
 /**
   Record of Timing parameters
 **/
@@ -331,7 +315,6 @@ typedef struct {
   /** DDR3 RDIMM */
   UINT8 Rcw[16];	/** Register Control Word 0-15 */
 } CommonTimingParamsT;
-
 
 /**
   Generalized parameters for memory controller Configuration,
@@ -419,7 +402,6 @@ typedef struct MemctlOptionsS {
   UINT32 TrwtOverride;
   UINT32 Trwt;			/** read-to-write turnaround */
 } MemctlOptionsT;
-
 
 /**
   Parameters for a DDR3 dimm computed from the SPD
@@ -601,7 +583,6 @@ typedef struct Ddr3SpdEepromS {
 
 typedef Ddr3SpdEepromT GenericSpdEepromT;
 
-
 /**
   Record of all information about DDR
 **/
@@ -724,7 +705,6 @@ DramInit(
   VOID
   );
 
-
 /**
   Function to compute data required to initialize DDR controller
 
@@ -773,7 +753,6 @@ UINTN
 GetDdrFreq(
   VOID
   );
-
 
 /**
   Funtion to divide N to base Base
