@@ -1,4 +1,4 @@
-/** @file
+/** @file FslIfc.h
 
   Copyright (c) 2014, Freescale Ltd. All rights reserved.
 
@@ -12,8 +12,8 @@
 
 **/
 
-#ifndef FLASH_H
-#define FLASH_H
+#ifndef __FLASH_H__
+#define __FLASH_H__
 
 #include <Uefi.h>
 
@@ -235,6 +235,33 @@
 #define CSPR_V_SHIFT		0
 
 /*
+ * Chip Select Option Register - NOR Flash Mode
+ */
+/* Enable Address shift Mode */
+#define CSOR_NOR_ADM_SHFT_MODE_EN	0x80000000
+/* Page Read Enable from NOR device */
+#define CSOR_NOR_PGRD_EN		0x10000000
+/* AVD Toggle Enable during Burst Program */
+#define CSOR_NOR_AVD_TGL_PGM_EN		0x01000000
+/* Address Data Multiplexing Shift */
+#define CSOR_NOR_ADM_MASK		0x0003E000
+#define CSOR_NOR_ADM_SHIFT_SHIFT	13
+#define CSOR_NOR_ADM_SHIFT(n)	((n) << CSOR_NOR_ADM_SHIFT_SHIFT)
+/* Type of the NOR device hooked */
+#define CSOR_NOR_NOR_MODE_AYSNC_NOR	0x00000000
+#define CSOR_NOR_NOR_MODE_AVD_NOR	0x00000020
+/* Time for Read Enable High to Output High Impedance */
+#define CSOR_NOR_TRHZ_MASK		0x0000001C
+#define CSOR_NOR_TRHZ_SHIFT		2
+#define CSOR_NOR_TRHZ_20		0x00000000
+#define CSOR_NOR_TRHZ_40		0x00000004
+#define CSOR_NOR_TRHZ_60		0x00000008
+#define CSOR_NOR_TRHZ_80		0x0000000C
+#define CSOR_NOR_TRHZ_100		0x00000010
+/* Buffer control disable */
+#define CSOR_NOR_BCTLD			0x00000001
+
+/*
  * Chip Select Option Register IFC_NAND Machine
  */
 /* Enable ECC Encoder */
@@ -302,12 +329,80 @@
                                 | CSOR_NAND_SPRZ_64     /* Spare size = 64 */ \
                                 | CSOR_NAND_PB(6))     /* 2^6 Pages Per Block */
 
+/*
+ * FTIM0 - NOR Flash Mode
+ */
+#define FTIM0_NOR			0xF03F3F3F
+#define FTIM0_NOR_TACSE_SHIFT	28
+#define FTIM0_NOR_TACSE(n)	((n) << FTIM0_NOR_TACSE_SHIFT)
+#define FTIM0_NOR_TEADC_SHIFT	16
+#define FTIM0_NOR_TEADC(n)	((n) << FTIM0_NOR_TEADC_SHIFT)
+#define FTIM0_NOR_TAVDS_SHIFT	8
+#define FTIM0_NOR_TAVDS(n)	((n) << FTIM0_NOR_TAVDS_SHIFT)
+#define FTIM0_NOR_TEAHC_SHIFT	0
+#define FTIM0_NOR_TEAHC(n)	((n) << FTIM0_NOR_TEAHC_SHIFT)
+/*
+ * FTIM1 - NOR Flash Mode
+ */
+#define FTIM1_NOR			0xFF003F3F
+#define FTIM1_NOR_TACO_SHIFT	24
+#define FTIM1_NOR_TACO(n)	((n) << FTIM1_NOR_TACO_SHIFT)
+#define FTIM1_NOR_TRAD_NOR_SHIFT	8
+#define FTIM1_NOR_TRAD_NOR(n)	((n) << FTIM1_NOR_TRAD_NOR_SHIFT)
+#define FTIM1_NOR_TSEQRAD_NOR_SHIFT	0
+#define FTIM1_NOR_TSEQRAD_NOR(n)	((n) << FTIM1_NOR_TSEQRAD_NOR_SHIFT)
+/*
+ * FTIM2 - NOR Flash Mode
+ */
+#define FTIM2_NOR			0x0F3CFCFF
+#define FTIM2_NOR_TCS_SHIFT		24
+#define FTIM2_NOR_TCS(n)	((n) << FTIM2_NOR_TCS_SHIFT)
+#define FTIM2_NOR_TCH_SHIFT		18
+#define FTIM2_NOR_TCH(n)	((n) << FTIM2_NOR_TCH_SHIFT)
+#define FTIM2_NOR_TWPH_SHIFT	10
+#define FTIM2_NOR_TWPH(n)	((n) << FTIM2_NOR_TWPH_SHIFT)
+#define FTIM2_NOR_TWP_SHIFT		0
+#define FTIM2_NOR_TWP(n)	((n) << FTIM2_NOR_TWP_SHIFT)
+
+
 #define IFC_NOR_CSPR    	((IFC_NOR_BUF_BASE & IFC_NOR_BUF_MASK)\
 				| CSPR_PORT_SIZE_8 \
                                 | CSPR_MSEL_NOR        \
                                 | CSPR_V)
 #define IFC_NOR_CSPR_EXT	0x0
+#define IFC_NOR_CSOR	        CSOR_NOR_ADM_SHIFT(10)
+#define IFC_NOR_FTIM0	        (FTIM0_NOR_TACSE(0x1) | \
+				 FTIM0_NOR_TEADC(0x1) | \
+				 FTIM0_NOR_TEAHC(0x1))
+#define IFC_NOR_FTIM1	        (FTIM1_NOR_TACO(0x1) | \
+			 	 FTIM1_NOR_TRAD_NOR(0x1))
+#define IFC_NOR_FTIM2	        (FTIM2_NOR_TCS(0x0) | \
+				 FTIM2_NOR_TCH(0x0) | \
+				 FTIM2_NOR_TWP(0x1))
+#define IFC_NOR_FTIM3     	0x04000000
 #define IFC_NOR_AMASK		0xFFFF0000
+
+#define IFC_NOR_CSPR0		0x60000111
+#define IFC_NOR_AMASK0		0xff000000
+#define IFC_NOR_CSOR0		0x0000e000
+
+typedef enum {
+	IFC_CS0 = 0,
+	IFC_CS1,
+	IFC_CS2,
+	IFC_CS3,
+	IFC_CS4,
+	IFC_CS5,
+	IFC_CS6,
+	IFC_CS7,
+} FSL_IFC_CHIP_SEL;
+
+typedef enum {
+	IFC_FTIM0 = 0,
+	IFC_FTIM1,
+	IFC_FTIM2,
+	IFC_FTIM3,
+} FSL_IFC_FTIMS;
 
 /*
  * Instruction opcodes to be programmed
@@ -429,6 +524,24 @@ typedef struct {
 } FSL_IFC_NAND;
 
 /*
+ * IFC controller NOR Machine registers
+ */
+typedef struct {
+	UINT32 nor_evter_stat;
+	UINT32 res1[0x2];
+	UINT32 nor_evter_en;
+	UINT32 res2[0x2];
+	UINT32 nor_evter_intr_en;
+	UINT32 res3[0x2];
+	UINT32 nor_erattr0;
+	UINT32 nor_erattr1;
+	UINT32 nor_erattr2;
+	UINT32 res4[0x4];
+	UINT32 norcr;
+	UINT32 res5[0xEF];
+} FSL_IFC_NOR;
+
+/*
  * IFC Controller Registers
  */
 typedef struct {
@@ -459,6 +572,12 @@ typedef struct {
 	UINT32 ifc_csr;
 	UINT32 res12[0x2EB];
 	FSL_IFC_NAND ifc_nand;
+	FSL_IFC_NOR ifc_nor;
 } FSL_IFC_REGS;
 
-#endif //FLASH_H
+VOID
+IfcNorInit (
+  VOID
+  );
+
+#endif //__FLASH_H__
