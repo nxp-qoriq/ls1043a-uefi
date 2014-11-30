@@ -110,6 +110,7 @@
   UefiDriverEntryPoint|MdePkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
   UefiApplicationEntryPoint|MdePkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
 
+  NorFlashLib|LS1043aBoardPkg/Library/IfcNorFlashLib/IfcNorFlashLib.inf
   NandFlashLib|LS1043aBoardPkg/Library/FslIfcNandLib/FslIfcNandLib.inf
   FileSystemLib|LS1043aBoardPkg/Library/LS1043aFileSystemLib/LS1043aFileSystemLib.inf
 
@@ -474,8 +475,15 @@
   MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
   #
+  # Nor Flash
+  LS1043aBoardPkg/Drivers/NorFlashDxe/NorFlashDxe.inf
+  
+  #
   # Nand Flash
   LS1043aBoardPkg/Drivers/NandFlashDxe/NandFlashDxe.inf
+  
+  #
+  # File System
   LS1043aBoardPkg/Drivers/LS1043aFileSystemDxe/LS1043aFileSystemDxe.inf
 
   #
