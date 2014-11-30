@@ -30,7 +30,6 @@
 [LibraryClasses]
   IoLib
   ArmLib
-  L2X0CacheLib
   MemoryAllocationLib
   I2cLib
   DdrLib
@@ -51,8 +50,6 @@
 
   gArmTokenSpaceGuid.PcdSystemMemoryBase
   gArmTokenSpaceGuid.PcdSystemMemorySize
-
-  gArmTokenSpaceGuid.PcdL2x0ControllerBase
 
   gArmTokenSpaceGuid.PcdDdrInitialize
   gArmTokenSpaceGuid.PcdI2cInitialize
