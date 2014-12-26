@@ -364,6 +364,55 @@
 #define FTIM2_NOR_TWP_SHIFT		0
 #define FTIM2_NOR_TWP(n)	((n) << FTIM2_NOR_TWP_SHIFT)
 
+/**
+ * fls - find last (most-significant) bit set
+ * @x: the word to search
+ *
+ * This is defined the same way as ffs.
+ * Note fls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
+ */
+static inline int generic_fls(int x)
+{
+	int r = 32;
+
+	if (!x)
+		return 0;
+	if (!(x & 0xffff0000u)) {
+		x <<= 16;
+		r -= 16;
+	}
+	if (!(x & 0xff000000u)) {
+		x <<= 8;
+		r -= 8;
+	}
+	if (!(x & 0xf0000000u)) {
+		x <<= 4;
+		r -= 4;
+	}
+	if (!(x & 0xc0000000u)) {
+		x <<= 2;
+		r -= 2;
+	}
+	if (!(x & 0x80000000u)) {
+		x <<= 1;
+		r -= 1;
+	}
+	return r;
+}
+
+static inline int __ilog2(unsigned int x)
+{
+	return generic_fls(x) - 1;
+}
+
+/*
+ * Address Mask Register
+ */
+#define IFC_AMASK_MASK			0xFFFF0000
+#define IFC_AMASK_SHIFT			16
+#define IFC_AMASK(n)			(IFC_AMASK_MASK << \
+					(__ilog2(n) - IFC_AMASK_SHIFT))
+#define IFC_NOR_AMASK		IFC_AMASK(128*1024*1024)
 
 #define IFC_NOR_CSPR    	((IFC_NOR_BUF_BASE & IFC_NOR_BUF_MASK)\
 				| CSPR_PORT_SIZE_8 \
@@ -380,11 +429,10 @@
 				 FTIM2_NOR_TCH(0x0) | \
 				 FTIM2_NOR_TWP(0x1))
 #define IFC_NOR_FTIM3     	0x04000000
-#define IFC_NOR_AMASK		0xFFFF0000
 
-#define IFC_NOR_CSPR0		0x60000111
-#define IFC_NOR_AMASK0		0xff000000
-#define IFC_NOR_CSOR0		0x0000e000
+#define IFC_NOR_CSPR0		IFC_NOR_CSPR
+#define IFC_NOR_AMASK0		IFC_NOR_AMASK
+#define IFC_NOR_CSOR0		IFC_NOR_CSOR
 
 typedef enum {
 	IFC_CS0 = 0,
