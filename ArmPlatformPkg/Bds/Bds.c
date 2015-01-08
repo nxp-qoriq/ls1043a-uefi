@@ -35,8 +35,9 @@ LS1043aTestI2c (
 {
   EFI_STATUS 			Status;
   EFI_I2C_MASTER_PROTOCOL 	*I2c;
-  EFI_I2C_REQUEST_PACKET    RequestPacket;
-  UINT8 Buf[6];
+  EFI_I2C_REQUEST_PACKET    *RequestPacket;
+  UINT8 Rbuf[6];
+  UINT8 Wbuf[6] = {1, 2, 3, 4, 5};
   UINTN BusFreq = 0x186a0;
 
   Status = gBS->LocateProtocol (&gEfiI2cMasterProtocolGuid, NULL, (VOID **)&I2c);
@@ -45,12 +46,14 @@ LS1043aTestI2c (
     return Status;
   }
 
+  /* Test I2c Set Bus Frequency Function */
   Status = I2c->SetBusFrequency(I2c, &BusFreq);
   if (EFI_ERROR (Status)) {
     DEBUG((EFI_D_ERROR,"Failed to set i2c bus frequency (Error '%r')\n", Status));
     return Status;
   }
 #if 0
+  /* Test I2c reset Function */
   Status = I2c->Reset(I2c);
   if (EFI_ERROR (Status)) {
     DEBUG((EFI_D_ERROR,"Failed to reset i2c bus(Error '%r')\n", Status));
@@ -58,22 +61,59 @@ LS1043aTestI2c (
   }
 #endif
 
-  RequestPacket.OperationCount = 1;
-  RequestPacket.Operation[0].Flags = 0x1;
-  RequestPacket.Operation[0].LengthInBytes = 5;
-  RequestPacket.Operation[0].Buffer = Buf;
+  /* Test I2c Read Function */
+  RequestPacket = (EFI_I2C_REQUEST_PACKET*)AllocatePool
+					(sizeof(EFI_I2C_REQUEST_PACKET));
+  RequestPacket->OperationCount = 1;
+  RequestPacket->Operation[0].Flags = 0x1;
+  RequestPacket->Operation[0].LengthInBytes = 5;
+  RequestPacket->Operation[0].Buffer = Rbuf;
 
-  Status = I2c->StartRequest (I2c, 0x51, &RequestPacket, NULL, NULL);
+  Status = I2c->StartRequest (I2c, 0x51, RequestPacket, NULL, NULL);
   if (EFI_ERROR (Status)) {
-    DEBUG((EFI_D_ERROR,"Failed to read eeprom on i2c bus (Error '%r')\n", Status));
+    DEBUG((EFI_D_ERROR,"Failed to read eeprom on i2c bus \
+    Error '%r')\n", Status));
+    FreePool(RequestPacket);
     return Status;
   }
 
-  if (Buf[0] != 0x92 || Buf[1] != 0x10 || Buf[2] != 0xb ||
-      Buf[3] != 0x2 || Buf[4] != 0x2) {
+  if (Rbuf[0] != 0x92 || Rbuf[1] != 0x10 || Rbuf[2] != 0xb ||
+      Rbuf[3] != 0x2 || Rbuf[4] != 0x2) {
     DEBUG((EFI_D_ERROR,"Read data is invalid\n"));
+    FreePool(RequestPacket);
     return EFI_COMPROMISED_DATA;
   }
+  FreePool(RequestPacket);
+
+  /* Test I2c Write Function */
+  RequestPacket = (EFI_I2C_REQUEST_PACKET*)AllocatePool
+				(sizeof(EFI_I2C_OPERATION) +
+				 sizeof(EFI_I2C_REQUEST_PACKET));
+  RequestPacket->OperationCount = 2;
+
+  RequestPacket->Operation[0].Flags = 0x2;
+  RequestPacket->Operation[0].LengthInBytes = 5;
+  RequestPacket->Operation[0].Buffer = Wbuf;
+
+  RequestPacket->Operation[1].Flags = 0x1;
+  RequestPacket->Operation[1].LengthInBytes = 5;
+  RequestPacket->Operation[1].Buffer = Rbuf;
+
+  Status = I2c->StartRequest (I2c, 0x51, RequestPacket, NULL, NULL);
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR,"Failed to W/R eeprom on i2c bus \
+    (Error '%r')\n", Status));
+    FreePool(RequestPacket);
+    return Status;
+  }
+
+  if (Rbuf[0] != Wbuf[0] || Rbuf[1] != Wbuf[1] || Rbuf[2] != Wbuf[2] ||
+      Rbuf[3] != Wbuf[3] || Rbuf[4] != Wbuf[4]) {
+    DEBUG((EFI_D_ERROR,"Read back data is not similar to written data\n"));
+    FreePool(RequestPacket);
+    return EFI_COMPROMISED_DATA;
+  }
+  FreePool(RequestPacket);
 
   return EFI_SUCCESS;
 }

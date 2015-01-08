@@ -86,14 +86,14 @@ EFIAPI StartRequest (
 
     if (Flag == I2C_READ_FLAG) {
       Ret = I2cRead ((VOID *)I2C0_BASE_ADDRESS, SlaveAddress,
-              0x00, 0x01, Buffer, Length);
+              0x00, sizeof(SlaveAddress)/8, Buffer, Length);
       if (Ret != EFI_SUCCESS) {
         DEBUG((EFI_D_ERROR," I2c read operation failed (error %d)\n", Ret));
         return Ret;
       }
     } else if (Flag == I2C_WRITE_FLAG) {
       Ret = I2cWrite ((VOID *)I2C0_BASE_ADDRESS, SlaveAddress,
-              Length, sizeof(SlaveAddress), Buffer, 0x00);
+              0x00, sizeof(SlaveAddress)/8, Buffer, Length);
       if (Ret != EFI_SUCCESS) {
         DEBUG((EFI_D_ERROR," I2c write operation failed (error %d)\n", Ret));
         return Ret;

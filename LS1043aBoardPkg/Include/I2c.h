@@ -32,7 +32,6 @@
 #define I2C_READ_FLAG               0x1
 #define I2C_WRITE_FLAG              0x2
 
-#define I2C_CLK	3
 #define BUS_CLK	300000000
 
 #define I2C_SPEED	0x186a0

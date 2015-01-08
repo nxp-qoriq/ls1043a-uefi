@@ -42,7 +42,7 @@ UINT16 I2cClkDiv[60][2] = {
 
 UINT32
 GetClock (
-  IN   UINT8		Clk
+  VOID
   )
 {
   return (BUS_CLK)  / 2;
@@ -67,7 +67,7 @@ I2cGetClk(
   UINT8 ClkDiv;
 
   /** Divider value calculation */
-  I2cClkRate = GetClock(I2C_CLK); /*150000000*/
+  I2cClkRate = GetClock();
   Div = (I2cClkRate + Rate - 1) / Rate;
   if (Div < I2cClkDiv[0][0])
     ClkDiv = 0;
@@ -375,7 +375,6 @@ I2cRead (
   UINT32 Temp;
   INT32 i;
   struct I2cRegs *I2cRegs = (VOID *)Base;
-
   Ret = I2cInitTransfer(I2cRegs, Chip, Offset, Alen);
   if (Ret < 0)
     return Ret;
@@ -465,6 +464,9 @@ I2cWrite (
   if (Ret < 0)
     return Ret;
 
+  /** write data */
+  /** Dummy write to initiate write operation */
+  MmioWrite8((UINTN)&I2cRegs->I2Dr, 0x00);
   for (I = 0; I < Len; I++) {
     Ret = TxByte(I2cRegs, Buffer[I]);
     if (Ret < 0)
