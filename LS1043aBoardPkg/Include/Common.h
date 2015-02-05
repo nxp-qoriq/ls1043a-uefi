@@ -16,6 +16,10 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+
+
+#define BUS_CLK      		300000000
+
 /**
   Utility to return minimum among X and Y
 **/
@@ -46,5 +50,9 @@
 		__Rem = __Div64_32(&(N), __Base);	\
 	__Rem;						\
  })
+
+
+#define GET_CLOCK  ((BUS_CLK)  / 2)
+
 
 #endif

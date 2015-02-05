@@ -40,15 +40,6 @@ UINT16 I2cClkDiv[60][2] = {
 };
 
 
-UINT32
-GetClock (
-  VOID
-  )
-{
-  return (BUS_CLK)  / 2;
-}
-
-
 /**
   Calculate and set proper clock divider
 
@@ -67,7 +58,7 @@ I2cGetClk(
   UINT8 ClkDiv;
 
   /** Divider value calculation */
-  I2cClkRate = GetClock();
+  I2cClkRate = (UINT32)GET_CLOCK;
   Div = (I2cClkRate + Rate - 1) / Rate;
   if (Div < I2cClkDiv[0][0])
     ClkDiv = 0;

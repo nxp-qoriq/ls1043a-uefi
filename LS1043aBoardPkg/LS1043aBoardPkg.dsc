@@ -366,7 +366,6 @@
 
 !if $(TARGET) == DEBUG
   gArmTokenSpaceGuid.PcdDdrInitialize|TRUE
-  gArmTokenSpaceGuid.PcdI2cInitialize|TRUE
 !endif
 
   # Size of the region used by UEFI in permanent memory (Reserved 16MB)

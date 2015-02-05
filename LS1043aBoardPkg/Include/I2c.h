@@ -19,6 +19,7 @@
 #include <Uefi.h>
 #include "LS1043aBoard.h"
 #include <Library/TimerLib.h>
+#include "Common.h"
 
 #define I2C0	0
 #define I2C1	1
@@ -31,8 +32,6 @@
 /// I2C read operation when set
 #define I2C_READ_FLAG               0x1
 #define I2C_WRITE_FLAG              0x2
-
-#define BUS_CLK	300000000
 
 #define I2C_SPEED	0x186a0
 
