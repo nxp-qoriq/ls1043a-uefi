@@ -1269,7 +1269,7 @@ ComputeFslMemctlConfigRegs (
   UINT32 UnqMrsEn = 0;
   INT32 CsEn = 1;
 
-  InternalMemCopyMem(Ddr, 0, sizeof(FslDdrCfgRegsT));
+  InternalMemZeroMem(Ddr, sizeof(FslDdrCfgRegsT));
 
   if (CommonDimm == NULL) {
   	return 1;

@@ -907,7 +907,7 @@ GetSpd (
                sizeof(GenericSpdEepromT));
 
   if (Ret != EFI_SUCCESS) {
-    InternalMemCopyMem(Spd,0,sizeof(GenericSpdEepromT));
+    InternalMemZeroMem(Spd, sizeof(GenericSpdEepromT));
   }
 }
 
@@ -1079,7 +1079,7 @@ DdrComputeDimmParameters (
       return 1;
     }
   } else {
-    InternalMemCopyMem(Pdimm, 0, sizeof(DimmParamsT));
+    InternalMemZeroMem(Pdimm, sizeof(DimmParamsT));
     return 1;
   }
 
@@ -1093,7 +1093,7 @@ DdrComputeDimmParameters (
     Guarantee null termination here by presetting all bytes to 0
     and copying the part name in ASCII from the SPD onto it
    **/
-  InternalMemCopyMem(Pdimm->Mpart, 0, sizeof(Pdimm->Mpart));
+  InternalMemZeroMem(Pdimm->Mpart, sizeof(Pdimm->Mpart));
   if ((Spd->InfoSizeCrc & 0xF) > 1)
     InternalMemCopyMem(Pdimm->Mpart, Spd->Mpart, sizeof(Pdimm->Mpart) - 1);
 
@@ -1362,7 +1362,7 @@ FslDdrGetDimmParams (
   if (((ControllerNumber == 0) && (DimmNumber == 0)) ||
       ((ControllerNumber == 1) && (DimmNumber == 0))) {
     InternalMemCopyMem(Pdimm, &DdrRawTiming, sizeof(DimmParamsT));
-    InternalMemCopyMem(Pdimm->Mpart, 0, sizeof(Pdimm->Mpart));
+    InternalMemZeroMem(Pdimm->Mpart, sizeof(sizeof(Pdimm->Mpart)));
     InternalMemCopyMem(Pdimm->Mpart, DimmModel, sizeof(DimmModel) - 1);
   }
 
@@ -2185,8 +2185,7 @@ FslDdrCompute (
       /** STEP 6:  compute controller register values */
       for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
         if (TimingParams[i].NdimmsPresent == 0) {
-	   InternalMemCopyMem(&DdrReg[i], 0,
-				sizeof(FslDdrCfgRegsT));
+	   InternalMemZeroMem(&DdrReg[i], sizeof(FslDdrCfgRegsT));
           continue;
 	 }
 
@@ -2260,7 +2259,7 @@ FslDdrSdram (
   INT32 DeassertReset;
 
   /** Reset info structure. */
-  InternalMemCopyMem(&Info, 0, sizeof(FslDdrInfoT));
+  InternalMemZeroMem(&Info, sizeof(FslDdrInfoT));
 
   /** Compute it once normally. */
   /** TODO Fill data in interactive mode of DDR*/
