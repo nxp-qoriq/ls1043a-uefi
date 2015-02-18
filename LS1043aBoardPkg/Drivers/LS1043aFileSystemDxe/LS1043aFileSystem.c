@@ -112,15 +112,14 @@ LS1043aFileSystemDriverBindingStart (
   )
 {
   EFI_STATUS  Status;
-  LS1043A_FILE_SYSTEM *Instance;
-
-  Instance = NULL;
+  LS1043A_FILE_SYSTEM *Instance = NULL;
 
   //
   // Initialize the FileSystem instance.
   //
   Instance = AllocateCopyPool (sizeof (LS1043A_FILE_SYSTEM),
 		  &gLS1043aFileSystemTemplate);
+
   if (Instance == NULL) {
     return EFI_OUT_OF_RESOURCES;
   }
@@ -134,18 +133,38 @@ LS1043aFileSystemDriverBindingStart (
                   (VOID **) &Instance->BlockIo,
                   This->DriverBindingHandle,
                   ControllerHandle,
-                  EFI_OPEN_PROTOCOL_BY_DRIVER
+                  EFI_OPEN_PROTOCOL_GET_PROTOCOL
                   );
+
   if (EFI_ERROR (Status)) {
-    return Status;
+    goto ErrorExit;
   }
 
   Status = gBS->InstallMultipleProtocolInterfaces (
-                  &ControllerHandle,
+                &ControllerHandle,
 		  &gEfiDiskIoProtocolGuid, &Instance->DiskIo,
 		  &gEfiSimpleFileSystemProtocolGuid, &Instance->Fs,
-                  NULL
-                  );
+                NULL
+           );
+
+  if (EFI_ERROR (Status)) {
+    goto ErrorExit;
+  }
+
+ return Status;
+
+ErrorExit:
+
+  if (Instance != NULL)
+    gBS->FreePool(Instance);
+
+  gBS->CloseProtocol (
+        ControllerHandle,
+        &gEfiBlockIoProtocolGuid,
+        This->DriverBindingHandle,
+        ControllerHandle
+        );
+
   return Status;
 }
 
@@ -173,34 +192,48 @@ LS1043aFileSystemDriverBindingStop (
   )
 {
   EFI_STATUS            Status;
-  LS1043A_FILE_SYSTEM 	*Instance;
-  EFI_DISK_IO_PROTOCOL  *DiskIo;
+  LS1043A_FILE_SYSTEM   *Instance;
+  EFI_DISK_IO_PROTOCOL  *BlockIo = NULL;
 
+  Instance = CR(BlockIo, LS1043A_FILE_SYSTEM, BlockIo,
+		  LS1043A_FILE_SYSTEM_SIGNATURE);
   //
   // Get our context back.
   //
   Status = gBS->OpenProtocol (
                   ControllerHandle,
-                  &gEfiDiskIoProtocolGuid,
-                  (VOID **) &DiskIo,
+                  &gEfiBlockIoProtocolGuid,
+                  (VOID **) &BlockIo,
                   This->DriverBindingHandle,
                   ControllerHandle,
                   EFI_OPEN_PROTOCOL_GET_PROTOCOL
                   );
+
   if (EFI_ERROR (Status)) {
     return Status;
   }
 
-  Instance = CR(DiskIo, LS1043A_FILE_SYSTEM, DiskIo,
-		  LS1043A_FILE_SYSTEM_SIGNATURE);
-
   Status = gBS->UninstallMultipleProtocolInterfaces (
-                  &ControllerHandle,
+                This->DriverBindingHandle,
 		  &gEfiDiskIoProtocolGuid, &Instance->DiskIo,
 		  &gEfiSimpleFileSystemProtocolGuid, &Instance->Fs,
-                  NULL
-                  );
-  FreePool(Instance);
+                NULL
+           );
+
+
+
+  if (!EFI_ERROR (Status)) {
+
+    gBS->FreePool(Instance);
+
+    gBS->CloseProtocol (
+         ControllerHandle,
+         &gEfiBlockIoProtocolGuid,
+         This->DriverBindingHandle,
+         ControllerHandle
+         );
+  }
+
   return Status;
 }
 
@@ -223,10 +256,11 @@ EFI_STATUS LS1043aFileSystemInitialize (
   gLS1043aFileSystemDriverBinding.ImageHandle = ImageHandle;
 
   Status = gBS->InstallMultipleProtocolInterfaces (
-	     &ImageHandle,
-	     &gEfiDriverBindingProtocolGuid, &gLS1043aFileSystemDriverBinding,
-	     NULL
-	);
+		&ImageHandle,
+		&gEfiDriverBindingProtocolGuid,
+		&gLS1043aFileSystemDriverBinding,
+		NULL
+		);
   return Status;
 }
 
