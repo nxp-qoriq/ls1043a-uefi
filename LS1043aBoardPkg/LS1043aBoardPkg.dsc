@@ -475,6 +475,10 @@
   MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
   
   #
+  # Dspi
+  LS1043aBoardPkg/Drivers/DspiDxe/DspiDxe.inf
+
+  #
   # Nor Flash
   LS1043aBoardPkg/Drivers/NorFlashDxe/NorFlashDxe.inf
   

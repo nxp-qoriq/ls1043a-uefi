@@ -130,6 +130,10 @@ READ_LOCK_STATUS   = TRUE
   INF LS1043aBoardPkg/Drivers/NandFlashDxe/NandFlashDxe.inf
   
   #
+  # Dspi Flash
+  INF LS1043aBoardPkg/Drivers/DspiDxe/DspiDxe.inf
+  
+  #
   # FileSystem
   INF LS1043aBoardPkg/Drivers/LS1043aFileSystemDxe/LS1043aFileSystemDxe.inf
 
