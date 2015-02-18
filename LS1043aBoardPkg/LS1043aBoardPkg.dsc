@@ -113,6 +113,7 @@
   NorFlashLib|LS1043aBoardPkg/Library/IfcNorFlashLib/IfcNorFlashLib.inf
   NandFlashLib|LS1043aBoardPkg/Library/FslIfcNandLib/FslIfcNandLib.inf
   FileSystemLib|LS1043aBoardPkg/Library/LS1043aFileSystemLib/LS1043aFileSystemLib.inf
+  DspiFlashLib|LS1043aBoardPkg/Library/DspiFlashLib/DspiFlashLib.inf
 
 #
 # Assume everything is fixed at build
@@ -472,7 +473,7 @@
   # FAT filesystem + GPT/MBR partitioning
   #
   MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
-
+  
   #
   # Nor Flash
   LS1043aBoardPkg/Drivers/NorFlashDxe/NorFlashDxe.inf

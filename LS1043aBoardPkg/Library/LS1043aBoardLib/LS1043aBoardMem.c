@@ -21,7 +21,7 @@
 
 #include <LS1043aBoard.h>
 
-#define MAX_VIRTUAL_MEMORY_MAP_DESCRIPTORS          18
+#define MAX_VIRTUAL_MEMORY_MAP_DESCRIPTORS          20
 
 /**
   Return the Virtual Memory Map of your platform
@@ -146,6 +146,12 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].VirtualBase  = IFC_REG_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = IFC_REG_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_SYS_FSL_DSPI_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_SYS_FSL_DSPI_ADDR;
+  VirtualMemoryTable[Index].Length       = DSPI_MEMORY_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+
 
   // End of Table
   VirtualMemoryTable[++Index].PhysicalBase = 0;
