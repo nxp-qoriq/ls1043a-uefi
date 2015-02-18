@@ -23,10 +23,121 @@
 #include <Protocol/I2cMaster.h>
 
 #include <Guid/EventGroup.h>
-#include "../LS1043aBoardPkg/Include/Ddr.h"
+#include <Include/Ddr.h>
+#include <Library/LS1043aFileSystem.h>
 
 #define EFI_SET_TIMER_TO_SECOND   10000000
 
+UINT32
+GetMediaId(
+  IN EFI_FILE_PROTOCOL        *This
+  )
+{
+  LS1043A_FILE_SYSTEM       *Instance;
+
+  Instance = CR(This, LS1043A_FILE_SYSTEM, FileIo,
+                LS1043A_FILE_SYSTEM_SIGNATURE);
+  return(Instance->BlockIo->Media->MediaId);
+}
+
+EFI_STATUS
+LS1043aTestBlockIoDevice (
+  VOID
+)
+{
+  EFI_STATUS Status;
+  UINTN Size, BufferSize = 4096, Index, Temp;
+  EFI_HANDLE *Handle;
+  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FsProtocol;
+  EFI_FILE_PROTOCOL *Fs, *File;
+  UINT8 SourceBuffer[BufferSize];
+  UINT8 DestinationBuffer[BufferSize];
+  UINT32 MediaId = 0;
+
+  Status = gBS->LocateHandleBuffer (ByProtocol,
+		&gEfiBlockIoProtocolGuid,
+		NULL, &Size, &Handle);
+
+  if (Status != EFI_SUCCESS) {
+	return Status;
+  }
+
+  for(Index = 0; Index < Size; Index++) {
+    Status = gBS->ConnectController (Handle[Index], NULL, NULL, FALSE);
+    if (Status != EFI_SUCCESS) {
+      return Status;
+    }
+
+    Status = gBS->HandleProtocol (Handle[Index],
+		&gEfiSimpleFileSystemProtocolGuid,
+		(VOID **)&FsProtocol);
+
+    if (Status != EFI_SUCCESS) {
+      gBS->FreePool(Handle);
+      return Status;
+    }
+
+    // Try to Open the volume and get root directory
+    Status = FsProtocol->OpenVolume (FsProtocol, &Fs);
+    if (Status != EFI_SUCCESS) {
+      gBS->FreePool(Handle);
+      return Status;
+    }
+
+    File = NULL;
+    Status = Fs->Open (Fs, &File, L"0x0|0x1000", EFI_FILE_MODE_READ, 0);
+    if (Status != EFI_SUCCESS) {
+      gBS->FreePool(Handle);
+      return Status;
+    }
+
+    for(Temp = 0; Temp < BufferSize; Temp++) {
+         SourceBuffer[Temp] = 0x61;
+         DestinationBuffer[Temp] = 0x00;
+    }
+
+    Status = File->Write (File, &BufferSize, (VOID*)SourceBuffer);
+    if (Status != EFI_SUCCESS) {
+        gBS->FreePool(Handle);
+         return Status;
+    }
+
+    Status = File->Read (File, &BufferSize, (VOID*)DestinationBuffer);
+    if (Status != EFI_SUCCESS) {
+        gBS->FreePool(Handle);
+         return Status;
+    }
+
+    MediaId = GetMediaId(File);
+
+    for (Temp = 0; Temp < BufferSize; Temp++) {
+      if (SourceBuffer[Temp] != DestinationBuffer[Temp]) {
+    	 gBS->DisconnectController (Handle[Index], NULL, NULL);
+	 Status = EFI_COMPROMISED_DATA;
+        if (MediaId == SIGNATURE_32('d','s','p','i')) {
+	   DEBUG((EFI_D_ERROR, "Dspi Flash Test Result: FAIL, Error:'%r'\n",
+				Status));
+	   continue;
+	 } else if (MediaId == SIGNATURE_32('n', 'a', 'n', 'd')) {
+	   DEBUG((EFI_D_ERROR, "Nand Flash Test Result: FAIL, Error:'%r'\n",
+				Status));
+	   continue;
+	 }
+      }
+    }
+
+    if (MediaId == SIGNATURE_32('d','s','p','i'))
+	Print(L"Dspi Test Result: PASS\n");
+    else if (MediaId == SIGNATURE_32('n', 'a', 'n', 'd'))
+	Print(L"Nand Test Result: PASS\n");
+
+    Status = gBS->DisconnectController (Handle[Index], NULL, NULL);
+  }
+
+  gBS->FreePool(Handle);
+
+  return Status;
+}
 
 EFI_STATUS
 LS1043aTestI2c (
@@ -40,7 +151,10 @@ LS1043aTestI2c (
   UINT8 Wbuf[6] = {1, 2, 3, 4, 5};
   UINTN BusFreq = 0x186a0;
 
-  Status = gBS->LocateProtocol (&gEfiI2cMasterProtocolGuid, NULL, (VOID **)&I2c);
+  Status = gBS->LocateProtocol (&gEfiI2cMasterProtocolGuid,
+		NULL,
+		(VOID **)&I2c);
+
   if (EFI_ERROR (Status)) {
     DEBUG((EFI_D_ERROR,"Failed to locate i2c protocol (Error '%r')\n", Status));
     return Status;
@@ -101,7 +215,7 @@ LS1043aTestI2c (
 
   Status = I2c->StartRequest (I2c, 0x51, RequestPacket, NULL, NULL);
   if (EFI_ERROR (Status)) {
-    DEBUG((EFI_D_ERROR,"Failed to W/R eeprom on i2c bus \
+    DEBUG((EFI_D_ERROR, "Failed to W/R eeprom on i2c bus \
     (Error '%r')\n", Status));
     FreePool(RequestPacket);
     return Status;
@@ -109,78 +223,12 @@ LS1043aTestI2c (
 
   if (Rbuf[0] != Wbuf[0] || Rbuf[1] != Wbuf[1] || Rbuf[2] != Wbuf[2] ||
       Rbuf[3] != Wbuf[3] || Rbuf[4] != Wbuf[4]) {
-    DEBUG((EFI_D_ERROR,"Read back data is not similar to written data\n"));
+    DEBUG((EFI_D_ERROR, "Read back data is not similar to written data\n"));
     FreePool(RequestPacket);
     return EFI_COMPROMISED_DATA;
   }
   FreePool(RequestPacket);
 
-  return EFI_SUCCESS;
-}
-
-
-EFI_STATUS
-LS1043aTestNandFlash (
-  VOID
-)
-{
-  EFI_STATUS Status;
-  UINTN Size, Index;
-  EFI_HANDLE Handle;
-  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FsProtocol;
-  EFI_FILE_PROTOCOL *Fs, *File;
-  CHAR16 SourceBuffer[2048];
-  CHAR16 DestinationBuffer[2048];
-
-  Status = gBS->LocateHandle (ByProtocol, &gEfiBlockIoProtocolGuid, NULL, &Size, &Handle);
-  if (Status != EFI_SUCCESS) {
-	return Status;
-  }
-  Status = gBS->ConnectController (Handle, NULL, NULL, FALSE);
-  if (Status != EFI_SUCCESS) {
-	return Status;
-  }
-  Status = gBS->HandleProtocol (Handle, &gEfiSimpleFileSystemProtocolGuid, (VOID **)&FsProtocol);
-  if (Status != EFI_SUCCESS) {
-	return Status;
-  }
-
-  // Try to Open the volume and get root directory
-  Status = FsProtocol->OpenVolume (FsProtocol, &Fs);
-  if (Status != EFI_SUCCESS) {
-	return Status;
-  }
-
-  File = NULL;
-  Status = Fs->Open (Fs, &File, L"0x0|0x1000", EFI_FILE_MODE_READ, 0);
-  if (Status != EFI_SUCCESS) {
-	return Status;
-  }
-
-  for(Index = 0; Index < 2048; Index++)
-	SourceBuffer[Index] = 0x61;
-
-  Size = 4096;
-
-  Status = File->Write (File, &Size, (VOID*)SourceBuffer);
-  if (Status != EFI_SUCCESS) {
-	return Status;
-  }
-  Status = File->Read (File, &Size, (VOID*)DestinationBuffer);
-  if (Status != EFI_SUCCESS) {
-	return Status;
-  }
-  for(Index = 0; Index < 2048; Index++) {
-	if(SourceBuffer[Index] != DestinationBuffer[Index])
-		return EFI_DEVICE_ERROR;
-  }
-
-/* TODO: Fails, Needs to be debugged
-  Status = gBS->DisconnectController (Handle, Handle, NULL);
-  if (Status != EFI_SUCCESS) {
-	return Status;
-  }
-*/
   return EFI_SUCCESS;
 }
 
@@ -191,14 +239,7 @@ VOID LS1043aTestCode
 {
   EFI_STATUS Status;
 
-  Status =  LS1043aTestNandFlash();
-  if(Status == EFI_SUCCESS)
-	Print(L"Nand Flash Test Result: PASS\n");
-  else
-	DEBUG((EFI_D_ERROR, "Nand Flash Test Result: FAIL, Error:'%r'\n",
-				Status));
-
-  Status =  LS1043aTestI2c();
+  Status = LS1043aTestI2c();
   if(Status == EFI_SUCCESS)
 	Print(L"I2c Test Result: PASS\n");
   else
@@ -206,6 +247,10 @@ VOID LS1043aTestCode
 
   /*FIXME A tempory solution, will be provided by UEFI shell command*/
   DdrRegDump();
+
+  Status = LS1043aTestBlockIoDevice();
+  if (EFI_ERROR(Status))
+    DEBUG((EFI_D_ERROR, "BlockIoDevice Test FAILED, Error:'%r'\n", Status));
 }
 
 STATIC

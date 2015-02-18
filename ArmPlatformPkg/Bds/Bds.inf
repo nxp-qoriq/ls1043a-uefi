@@ -39,6 +39,7 @@
   ArmPlatformPkg/ArmPlatformPkg.dec
   EmbeddedPkg/EmbeddedPkg.dec
   IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
+  LS1043aBoardPkg/LS1043aBoardPkg.dec
 
 [Guids]
   gFdtTableGuid
