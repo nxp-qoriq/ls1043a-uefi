@@ -117,21 +117,23 @@ LS1043aTestBlockIoDevice (
         if (MediaId == SIGNATURE_32('d','s','p','i')) {
 	   DEBUG((EFI_D_ERROR, "Dspi Flash Test Result: FAIL, Error:'%r'\n",
 				Status));
-	   continue;
+	   break;
 	 } else if (MediaId == SIGNATURE_32('n', 'a', 'n', 'd')) {
 	   DEBUG((EFI_D_ERROR, "Nand Flash Test Result: FAIL, Error:'%r'\n",
 				Status));
-	   continue;
+	   break;
 	 }
       }
     }
 
-    if (MediaId == SIGNATURE_32('d','s','p','i'))
-	Print(L"Dspi Test Result: PASS\n");
-    else if (MediaId == SIGNATURE_32('n', 'a', 'n', 'd'))
-	Print(L"Nand Test Result: PASS\n");
+    if (Temp == BufferSize) {
+      if (MediaId == SIGNATURE_32('d','s','p','i'))
+	 Print(L"Dspi Test Result: PASS\n");
+      else if (MediaId == SIGNATURE_32('n', 'a', 'n', 'd'))
+	 Print(L"Nand Test Result: PASS\n");
 
-    Status = gBS->DisconnectController (Handle[Index], NULL, NULL);
+      Status = gBS->DisconnectController (Handle[Index], NULL, NULL);
+    }
   }
 
   gBS->FreePool(Handle);
