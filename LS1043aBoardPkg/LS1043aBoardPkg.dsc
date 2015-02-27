@@ -390,14 +390,14 @@
   #
   gArmTokenSpaceGuid.PcdArmUncachedMemoryMask|0x0000000040000000
 
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Linux from DDR"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0xB0000000,0xB0615810)"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Linux FIT from DDR"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0xB0000000,0xB0F59000)"
   gArmPlatformTokenSpaceGuid.PcdDefaultBootInitrdPath|L"MemoryMapped(0x0,0xB1000000,0xB1D47EA0)"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|"root=/dev/ram rw console=ttymxc3,115200 ramdisk_size=600000 mem=768M rootfstype=ext2 earlyprintk"
-#  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|"root=/dev/ram rw console=ttymxc3,115200 rootfstype=ext2 mem=768 ramdisk_size=24020 earlyprintk"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootType|2 # Linux Kernel with FDT support
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|"console=ttyS1,115200 root=/dev/ram0 earlyprintk=uart8250-8bit,0x21c0600"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootType|3 # Linux Kernel with FDT support
   gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|10 #0 no timeout
   gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L"MemoryMapped(0x0, 0XA0EE0000, 0XA0EE4000)"
+  gArmPlatformTokenSpaceGuid.PcdDefaultFitConfiguration|"config@1"
 
   # Use the serial console for both ConIn & ConOut
   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)/VenPcAnsi();"
