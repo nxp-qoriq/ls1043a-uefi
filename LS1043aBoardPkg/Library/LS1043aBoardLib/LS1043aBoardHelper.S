@@ -12,6 +12,7 @@
 #
 
 #include <AsmMacroIoLib.h>
+#include <AsmMacroIoLibV8.h>
 #include <AutoGen.h>
 
 .text
@@ -31,11 +32,22 @@ GCC_ASM_IMPORT(_gPcd_FixedAtBuild_PcdCoreCount)
 //  IN UINTN MpId
 //  );
 ASM_PFX(ArmPlatformIsPrimaryCore):
-  mov	x0, #1
+	and x1, x0, #3
+	mov	x0, #0
+  cbnz x1, 1f
+	mov x0, #1
+1:
   ret
 
 ASM_PFX(ArmPlatformPeiBootAction):
-  ret  
+EL1_OR_EL2_OR_EL3(x0)	
+1:
+2:
+	ret
+3:
+	LoadConstantToReg(FixedPcdGet32(PcdCounterFrequency), x0)
+	msr cntfrq_el0, x0 
+	ret
 
 //UINTN
 //ArmPlatformGetPrimaryCoreMpId (

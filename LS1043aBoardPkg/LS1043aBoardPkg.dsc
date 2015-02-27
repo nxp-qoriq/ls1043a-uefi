@@ -194,6 +194,7 @@
   SecurityManagementLib|MdeModulePkg/Library/DxeSecurityManagementLib/DxeSecurityManagementLib.inf
   PerformanceLib|MdeModulePkg/Library/DxePerformanceLib/DxePerformanceLib.inf
   ArmPlatformGlobalVariableLib|ArmPlatformPkg/Library/ArmPlatformGlobalVariableLib/Dxe/DxeArmPlatformGlobalVariableLib.inf
+  MemoryInitPeiLib|ArmPlatformPkg/MemoryInitPei/MemoryInitPeiLib.inf
 
 [LibraryClasses.common.UEFI_APPLICATION]
   ReportStatusCodeLib|IntelFrameworkModulePkg/Library/DxeReportStatusCodeLibFramework/DxeReportStatusCodeLib.inf
@@ -272,6 +273,7 @@
   gEmbeddedTokenSpaceGuid.PcdEmbeddedPrompt|"LS1043a"
 
   gArmPlatformTokenSpaceGuid.PcdCoreCount|1 # Only one core
+  gArmPlatformTokenSpaceGuid.PcdCounterFrequency|12000000 #12Mhz
 
   gEmbeddedTokenSpaceGuid.PcdPrePiCpuMemorySize|32
   gEmbeddedTokenSpaceGuid.PcdPrePiCpuIoSize|0
@@ -366,7 +368,8 @@
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x40000000
 
 !if $(TARGET) == DEBUG
-  gArmTokenSpaceGuid.PcdDdrInitialize|TRUE
+  gArmTokenSpaceGuid.PcdDdrInitialize|FALSE
+  gArmTokenSpaceGuid.PcdI2cInitialize|FALSE
 !endif
 
   # Size of the region used by UEFI in permanent memory (Reserved 16MB)
@@ -427,7 +430,7 @@
   #
   # SEC
   #
-  ArmPlatformPkg/PrePi/PeiMPCore.inf
+  LS1043aBoardPkg/Library/LS1043aPrePi/PeiMPCore.inf
 
   #
   # DXE
@@ -463,6 +466,8 @@
   ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
 
   EmbeddedPkg/SimpleTextInOutSerial/SimpleTextInOutSerial.inf
+
+  LS1043aBoardPkg/Drivers/PpaInitDxe/PpaInitDxe.inf
 
   #
   # Semi-hosting filesystem

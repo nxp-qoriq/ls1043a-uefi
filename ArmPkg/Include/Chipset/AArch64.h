@@ -188,4 +188,9 @@ ArmWriteCptr (
   IN  UINT64 Cptr
   );
 
+VOID
+EFIAPI
+GicV2InitSecure(
+  VOID
+  );
 #endif // __AARCH64_H__

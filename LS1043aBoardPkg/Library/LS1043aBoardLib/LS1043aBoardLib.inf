@@ -52,3 +52,6 @@
   gArmTokenSpaceGuid.PcdSystemMemorySize
 
   gArmTokenSpaceGuid.PcdDdrInitialize
+  gArmTokenSpaceGuid.PcdI2cInitialize
+
+  gArmPlatformTokenSpaceGuid.PcdCounterFrequency

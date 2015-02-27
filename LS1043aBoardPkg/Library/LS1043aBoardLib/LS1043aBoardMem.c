@@ -152,6 +152,10 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].Length       = DSPI_MEMORY_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
+  VirtualMemoryTable[++Index].PhysicalBase = SCFG_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = SCFG_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = SCFG_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
   // End of Table
   VirtualMemoryTable[++Index].PhysicalBase = 0;

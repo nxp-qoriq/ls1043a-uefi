@@ -38,6 +38,7 @@
   # Size to reserve in the primary core stack for PEI Global Variables
   #  = sizeof(UINTN) /* PcdPeiServicePtr or HobListPtr */
   gArmPlatformTokenSpaceGuid.PcdPeiGlobalVariableSize|0x4|UINT32|0x00000016
+  gArmPlatformTokenSpaceGuid.PcdCounterFrequency|12000000|UINT32|0x00000017
 
   ## LS1043a UART
   gArmPlatformTokenSpaceGuid.LS1043aUartClkInHz|61440000|UINT32|0x0000001F
@@ -53,3 +54,6 @@
 
   ## Ddr
   gArmTokenSpaceGuid.PcdDdrInitialize|FALSE|BOOLEAN|0x00000026
+
+  ## I2c
+  gArmTokenSpaceGuid.PcdI2cInitialize|FALSE|BOOLEAN|0x00000027

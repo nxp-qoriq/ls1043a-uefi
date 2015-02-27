@@ -86,6 +86,8 @@
 #define IFC_MEM1_SIZE                   0x20000000
 
 #define IFC_REG_BASE_ADDR               0x1530000
-#define IFC_REG_SIZE                    0x3000
+#define IFC_REG_SIZE                    0x0003000
+#define SCFG_BASE_ADDR                  0x1570000
+#define SCFG_SIZE                       0x0010000
 
 #endif
