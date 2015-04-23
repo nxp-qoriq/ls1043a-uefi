@@ -57,8 +57,10 @@ ArmPlatformInitialize (
   // FIXME: Clear IRQs and add a DSB here
   // ArmDataSyncronizationBarrier ();
 
-  if (PcdGetBool(PcdDdrInitialize))
+  if (PcdGetBool(PcdDdrInitialize)) {
+    I2cInit(I2C0, I2C_SPEED);
     DramInit();
+  }
 
   return RETURN_SUCCESS;
 }

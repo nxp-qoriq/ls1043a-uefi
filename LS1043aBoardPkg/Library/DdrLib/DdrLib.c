@@ -2074,6 +2074,25 @@ PopulateMemctlOptions (
 
   return 0;
 }
+ 
+/**
+  Bind the main DDR setup driver's generic data
+  to this specific DDR technology.
+
+  @param  Spd			structure containing SPD settings.
+  @param  Pdimm		structure containing dimm parameters
+  @param  DimmNumber		dimm number
+
+**/
+INT32
+ComputeDimmParameters(
+  IN	CONST GenericSpdEepromT 	*Spd,
+  OUT	DimmParamsT 			*Pdimm,
+  IN	UINT32 			DimmNumber
+  )
+{
+  return DdrComputeDimmParameters(Spd, Pdimm, DimmNumber);
+};
 
 UINTN
 FslDdrCompute (

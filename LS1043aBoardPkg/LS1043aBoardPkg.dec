@@ -54,6 +54,3 @@
 
   ## Ddr
   gArmTokenSpaceGuid.PcdDdrInitialize|FALSE|BOOLEAN|0x00000026
-
-  ## I2c
-  gArmTokenSpaceGuid.PcdI2cInitialize|FALSE|BOOLEAN|0x00000027
