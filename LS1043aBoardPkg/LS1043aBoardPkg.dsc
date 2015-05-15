@@ -114,6 +114,7 @@
   NandFlashLib|LS1043aBoardPkg/Library/FslIfcNandLib/FslIfcNandLib.inf
   FileSystemLib|LS1043aBoardPkg/Library/LS1043aFileSystemLib/LS1043aFileSystemLib.inf
   DspiFlashLib|LS1043aBoardPkg/Library/DspiFlashLib/DspiFlashLib.inf
+  SdxcLib|LS1043aBoardPkg/Library/SdxcLib/SdxcLib.inf
 
 #
 # Assume everything is fixed at build
@@ -496,8 +497,7 @@
 
   #
   # MMC/SD
-  #
-  # To be added later
+  LS1043aBoardPkg/Drivers/MmcDxe/MmcDxe.inf
 
   #
   # I2C
