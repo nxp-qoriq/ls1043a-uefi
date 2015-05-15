@@ -46,7 +46,7 @@ LS1043aTestBlockIoDevice (
 )
 {
   EFI_STATUS Status;
-  UINTN Size, BufferSize = 4096, Index, Temp;
+  UINTN Size, BufferSize = 524288, Index, Temp;
   EFI_HANDLE *Handle;
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FsProtocol;
   EFI_FILE_PROTOCOL *Fs, *File;
@@ -91,6 +91,12 @@ LS1043aTestBlockIoDevice (
       return Status;
     }
 
+    MediaId = GetMediaId(File);
+    if (MediaId == SIGNATURE_32('m','m','c','o'))
+      BufferSize = 524288;
+    else
+      BufferSize = 1024;
+
     for(Temp = 0; Temp < BufferSize; Temp++) {
          SourceBuffer[Temp] = 0x61;
          DestinationBuffer[Temp] = 0x00;
@@ -108,8 +114,6 @@ LS1043aTestBlockIoDevice (
          return Status;
     }
 
-    MediaId = GetMediaId(File);
-
     for (Temp = 0; Temp < BufferSize; Temp++) {
       if (SourceBuffer[Temp] != DestinationBuffer[Temp]) {
     	 gBS->DisconnectController (Handle[Index], NULL, NULL);
@@ -122,6 +126,10 @@ LS1043aTestBlockIoDevice (
 	   DEBUG((EFI_D_ERROR, "Nand Flash Test Result: FAIL, Error:'%r'\n",
 				Status));
 	   break;
+	 } else if (MediaId == SIGNATURE_32('m', 'm', 'c', 'o')) {
+	   DEBUG((EFI_D_ERROR, "SDXC Test Result: FAIL, Error:'%r'\n",
+				Status));
+	   break;
 	 }
       }
     }
@@ -131,6 +139,8 @@ LS1043aTestBlockIoDevice (
 	 Print(L"Dspi Test Result: PASS\n");
       else if (MediaId == SIGNATURE_32('n', 'a', 'n', 'd'))
 	 Print(L"Nand Test Result: PASS\n");
+      else if (MediaId == SIGNATURE_32('m', 'm', 'c', 'o'))
+	 Print(L"SDXC Test Result: PASS\n");
 
       Status = gBS->DisconnectController (Handle[Index], NULL, NULL);
     }
