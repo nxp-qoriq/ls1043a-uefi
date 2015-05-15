@@ -38,6 +38,7 @@
   LS1043aBoardHelper.S    | GCC
   LS1043aBoard.c
   LS1043aBoardMem.c
+  Common.c
   LS1043aBoardHelper.S    | GCC
   LS1043aBoardHelper.asm  | RVCT
 

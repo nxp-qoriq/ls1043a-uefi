@@ -734,19 +734,6 @@ GetDdrFreq(
   );
 
 /**
-  Funtion to divide N to base Base
-
-  @param   N		Dividend
-  @param   Base	Base
-
-**/
-UINT32
-__Div64_32(
-  IN   UINT64 	*N,
-  IN   UINT32 	Base
-  );
-
-/**
   Function to dump DDRC registers
 
 **/
