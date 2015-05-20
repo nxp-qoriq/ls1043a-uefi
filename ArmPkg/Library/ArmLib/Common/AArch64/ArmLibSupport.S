@@ -100,9 +100,11 @@ ASM_PFX(ArmSetTTBR0):
 ASM_PFX(ArmGetTTBR0BaseAddress):
   EL1_OR_EL2_OR_EL3(x1)
 1:mrs     x0, ttbr0_el1
-  b       3f
+  b       4f
 2:mrs     x0, ttbr0_el2
-3:LoadConstantToReg(0xFFFFFFFFFFFF, x1) /* Look at bottom 48 bits */
+  b	  4f
+3:mrs     x0, ttbr0_el3
+4:LoadConstantToReg(0xFFFFFFFFFFFF, x1) /* Look at bottom 48 bits */
   and     x0, x0, x1
   isb
   ret
