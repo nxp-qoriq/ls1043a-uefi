@@ -63,4 +63,8 @@ static inline int __ILog2(UINT32 X)
 	return GenericFls(X) - 1;
 }
 
+#define LOG2(X) (((X & 0xaaaaaaaa) ? 1 : 0) + ((X & 0xcccccccc) ? 2 : 0) + \
+               ((X & 0xf0f0f0f0) ? 4 : 0) + ((X & 0xff00ff00) ? 8 : 0) + \
+               ((X & 0xffff0000) ? 16 : 0))
+
 #endif
