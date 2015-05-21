@@ -38,6 +38,7 @@
   LS1043aRdbHelper.S    | GCC
   LS1043aRdb.c
   LS1043aRdbMem.c
+  Common.c
   LS1043aRdbHelper.S    | GCC
   LS1043aRdbHelper.asm  | RVCT
 
@@ -52,6 +53,5 @@
   gArmTokenSpaceGuid.PcdSystemMemorySize
 
   gArmTokenSpaceGuid.PcdDdrInitialize
-  gArmTokenSpaceGuid.PcdI2cInitialize
 
   gArmPlatformTokenSpaceGuid.PcdCounterFrequency

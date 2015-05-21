@@ -79,45 +79,6 @@ const struct BoardSpecificParameters *RDimm[] = {
   RDimm0,
 };
 
-
-UINT32
-__Div64_32 (
-  IN   UINT64		*N,
-  IN   UINT32		Base
-  )
-{
-  UINT64 Rem = *N;
-  UINT64 b = Base;
-  UINT64 Res, d = 1;
-  UINT32 High = Rem >> 32;
-
-  /** Reduce the thing a bit first */
-  Res = 0;
-  if (High >= Base) {
-    High /= Base;
-    Res = (UINT64) High << 32;
-    Rem -= (UINT64) (High*Base) << 32;
-  }
-
-  while ((UINTN)b > 0 && b < Rem) {
-    b = b+b;
-    d = d+d;
-  }
-
-  do {
-    if (Rem >= b) {
-      Rem -= b;
-      Res += d;
-    }
-    b >>= 1;
-    d >>= 1;
-  } while (d);
-
-  *N = Res;
-  return Rem;
-}
-
-
 UINTN
 GetDdrFreq (
   VOID
@@ -2074,6 +2035,25 @@ PopulateMemctlOptions (
 
   return 0;
 }
+ 
+/**
+  Bind the main DDR setup driver's generic data
+  to this specific DDR technology.
+
+  @param  Spd			structure containing SPD settings.
+  @param  Pdimm		structure containing dimm parameters
+  @param  DimmNumber		dimm number
+
+**/
+INT32
+ComputeDimmParameters(
+  IN	CONST GenericSpdEepromT 	*Spd,
+  OUT	DimmParamsT 			*Pdimm,
+  IN	UINT32 			DimmNumber
+  )
+{
+  return DdrComputeDimmParameters(Spd, Pdimm, DimmNumber);
+};
 
 UINTN
 FslDdrCompute (

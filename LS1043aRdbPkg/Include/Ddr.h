@@ -100,6 +100,8 @@ typedef UINT64 PhysSizeT;
 #define CONFIG_SYS_DDR_RAW_TIMING
 #define CONFIG_SYS_FSL_DDR3        /** Use DDR3 memory */
 
+#define CONFIG_DDR_SPD        	/** Use SPD settings from I2c */
+
 #define CONFIG_DIMM_SLOTS_PER_CTLR		1
 #define CONFIG_CHIP_SELECTS_PER_CTRL	4
 
@@ -184,29 +186,6 @@ typedef UINT64 PhysSizeT;
 #define UL_5POW12	244140625UL
 #define UL_2POW13	(1UL << 13)
 #define ULL_8FS	0xFFFFFFFFULL
-
-#if defined(CONFIG_DDR_SPD) || defined(CONFIG_SPD_EEPROM)
-/**
-  Bind the main DDR setup driver's generic data
-  to this specific DDR technology.
-
-  @param  Spd			structure containing SPD settings.
-  @param  Pdimm		structure containing dimm parameters
-  @param  DimmNumber		dimm number
-
-**/
-STATIC
-__inline__
-INT32
-ComputeDimmParameters(
-  IN	CONST GenericSpdEepromT 	*Spd,
-  OUT	DimmParamsT 			*Pdimm,
-  IN	UINT32 			DimmNumber
-  )
-{
-  return DdrComputeDimmParameters(Spd, Pdimm, DimmNumber);
-};
-#endif
 
 /**
   ODT (On die termination) parameters
@@ -755,19 +734,6 @@ GetDdrFreq(
   );
 
 /**
-  Funtion to divide N to base Base
-
-  @param   N		Dividend
-  @param   Base	Base
-
-**/
-UINT32
-__Div64_32(
-  IN   UINT64 	*N,
-  IN   UINT32 	Base
-  );
-
-/**
   Function to dump DDRC registers
 
 **/
@@ -775,6 +741,12 @@ __Div64_32(
 VOID
 DdrRegDump (
   VOID
+  );
+
+VOID
+FslDdrGetSpd (
+  OUT  GenericSpdEepromT 	*CtrlDimmsSpd,
+  IN   UINT32 		CtrlNum
   );
 
 #endif
