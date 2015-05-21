@@ -142,7 +142,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # MMC/SD
   #
-  # To be added later
+  INF LS1043aRdbPkg/Drivers/MmcDxe/MmcDxe.inf
 
   #
   # I2C

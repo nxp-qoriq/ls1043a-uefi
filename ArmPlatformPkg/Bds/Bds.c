@@ -95,7 +95,7 @@ LS1043aTestBlockIoDevice (
     if (MediaId == SIGNATURE_32('m','m','c','o'))
       BufferSize = 524288;
     else
-      BufferSize = 1024;
+      BufferSize = 4096;
 
     for(Temp = 0; Temp < BufferSize; Temp++) {
          SourceBuffer[Temp] = 0x61;

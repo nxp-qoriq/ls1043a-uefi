@@ -498,8 +498,7 @@
 
   #
   # MMC/SD
-  #
-  # To be added later
+  LS1043aRdbPkg/Drivers/MmcDxe/MmcDxe.inf
 
   #
   # I2C
