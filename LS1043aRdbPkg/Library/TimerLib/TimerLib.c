@@ -52,13 +52,6 @@ MicroSecondDelay (
   IN      UINTN                     MicroSeconds
   )
 {
-/* Added for debugging : start */
-  CHAR8                         Buffer1[100];
-  UINTN                         CharCount;
-  CharCount = AsciiSPrint (Buffer1,sizeof (Buffer1),"Inside MicroSecondDelay\n\r");
-  SerialPortWrite ((UINT8 *) Buffer1, CharCount);
-/* Added for debugging : stop */
-
   // Dummy
   return 0;
 }
