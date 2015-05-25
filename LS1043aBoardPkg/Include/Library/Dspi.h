@@ -134,7 +134,7 @@
 
 /* Write Commands */
 #define CMD_WRITE_STATUS		0x01
-#define CMD_PAGE_PROGRAM		0x02
+#define CMD_BYTE_PROGRAM		0x02
 #define CMD_AAI_PROGRAM		0xad
 #define CMD_WRITE_DISABLE		0x04
 #define CMD_READ_STATUS		0x05
@@ -152,10 +152,10 @@
 #define CMD_READ_DUAL_IO_FAST	0xbb
 #define CMD_READ_QUAD_OUTPUT_FAST	0x6b
 #define CMD_READ_QUAD_IO_FAST	0xeb
-#define CMD_READ_ID			0x9f
+#define CMD_READ_JEDEC_ID		0x9f
 
 /* Erase Commands */
-#define CMD_ERASE_2K			0x50
+#define CMD_ERASE_STATUS		0x50
 #define CMD_ERASE_4K			0x20
 #define CMD_ERASE_32K		0x52
 #define CMD_ERASE_CHIP		0xc7

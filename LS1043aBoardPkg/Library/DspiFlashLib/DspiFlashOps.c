@@ -77,7 +77,7 @@ PrintSize (
   }
 
   if (!C) {
-    DEBUG((EFI_D_ERROR, "%Ld Bytes, %a", Size, S));
+    DEBUG((EFI_D_ERROR, "%Ld Bytes,\n %a", Size, S));
     return;
   }
 

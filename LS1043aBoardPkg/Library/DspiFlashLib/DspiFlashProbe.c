@@ -133,7 +133,7 @@ DspiFlashValidateParams (
     Flash->WriteCmd = CMD_QUAD_PAGE_PROGRAM;
   else
     /* Go for default Supported Write Cmd */
-    Flash->WriteCmd = CMD_PAGE_PROGRAM;
+    Flash->WriteCmd = CMD_BYTE_PROGRAM;
 
   /* Read DummyByte: Dummy Byte Is Determined Based On The
    * Dummy Cycles Of A Particular Command.
@@ -185,7 +185,7 @@ DspiFlashProbeSlave (
   }
 
   /* Read The ID Codes */
-  Cmd = CMD_READ_ID;
+  Cmd = CMD_READ_JEDEC_ID;
   Ret = DspiFlashReadWrite(Dspi, &Cmd, 1, NULL, Idcode,
 		sizeof(Idcode));
   if (Ret) {
@@ -208,18 +208,20 @@ DspiFlashProbeSlave (
     }
   }
 
-  DEBUG((EFI_D_ERROR, "SF: Detected %a With Page Size ", Flash->Name));
-  PrintSize(Flash->PageSize, (CONST INT8 *)", Erase Size ");
-  PrintSize(Flash->EraseSize, (CONST INT8 *)", Total ");
-  PrintSize(Flash->Size, (CONST INT8 *)"\n");
+  DEBUG((EFI_D_INFO, "SF: Detected %a With Page Size ", Flash->Name));
+  PrintSize(Flash->PageSize, (CONST INT8 *)"Erase Size ");
+  PrintSize(Flash->EraseSize, (CONST INT8 *)"Total ");
+  PrintSize(Flash->Size, (CONST INT8 *)"");
+  DEBUG((EFI_D_INFO, "\n"));
+
   if (Flash->MemoryMap)
-    DEBUG((EFI_D_ERROR, ", Mapped At %p\n", Flash->MemoryMap));
+    DEBUG((EFI_D_INFO, ", Mapped At %p\n", Flash->MemoryMap));
 
   if (((Flash->DualFlash == SF_SINGLE_FLASH) &&
        (Flash->Size > SPI_FLASH_16MB_BOUN)) ||
        ((Flash->DualFlash > SF_SINGLE_FLASH) &&
        (Flash->Size > SPI_FLASH_16MB_BOUN << 1))) {
-    DEBUG((EFI_D_INFO, "SF: Warning - Only Lower 16MiB Accessible, "\
+    DEBUG((EFI_D_WARN, "SF: Warning - Only Lower 16MiB Accessible, "\
   		"Full Access #define CONFIG_SPI_FLASH_BAR\n"));
   }
 
