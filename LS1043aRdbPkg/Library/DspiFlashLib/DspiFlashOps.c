@@ -77,7 +77,7 @@ PrintSize (
   }
 
   if (!C) {
-    DEBUG((EFI_D_ERROR, "%Ld Bytes, %a", Size, S));
+    DEBUG((EFI_D_ERROR, "%Ld Bytes,\n %a", Size, S));
     return;
   }
 
@@ -534,7 +534,7 @@ DspiFlashCmdWaitReady (
 
   Ret = DspiXfer(Dspi, 8, &Cmd, NULL, Flags);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Fail To Read %s Status Register\n",
+    DEBUG((EFI_D_ERROR, "SF: Fail To Read %a Status Register\n",
           Cmd == CMD_READ_STATUS ? "Read" : "Flag"));
     return Ret;
   }
