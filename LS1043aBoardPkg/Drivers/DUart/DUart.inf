@@ -30,6 +30,7 @@
 [LibraryClasses]
   DebugLib
   IoLib
+  LS1043aSocLib
 
 [Packages]
   MdePkg/MdePkg.dec
