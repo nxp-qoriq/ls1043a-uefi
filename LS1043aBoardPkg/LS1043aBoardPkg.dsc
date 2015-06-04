@@ -40,6 +40,8 @@
   ArmGenericTimerCounterLib|ArmPkg/Library/ArmGenericTimerPhyCounterLib/ArmGenericTimerPhyCounterLib.inf
   TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
 
+  LS1043aSocLib|LS1043aBoardPkg/Library/LS1043aSocLib/LS1043aSocLib.inf
+  ArmTrustZoneLib|LS1043aBoardPkg/Library/ArmTrustZone/ArmTrustZone.inf
   ArmPlatformLib|LS1043aBoardPkg/Library/LS1043aBoardLib/LS1043aBoardLib.inf
   ArmPlatformStackLib|ArmPlatformPkg/Library/ArmPlatformStackLib/ArmPlatformStackLib.inf
 
@@ -368,6 +370,18 @@
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x40000000
 
+  #
+  # LS1043a Soc Specific PCDs
+  #
+  gArmPlatformTokenSpaceGuid.PcdCounterFrequencyReal|TRUE
+  gArmPlatformTokenSpaceGuid.PcdCsuInitialize|TRUE
+  gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|TRUE
+  gArmPlatformTokenSpaceGuid.PcdCci400Initialize|TRUE
+  gArmPlatformTokenSpaceGuid.PcdClockInitialize|TRUE
+
+  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x40000000
+
 !if $(TARGET) == DEBUG
   gArmTokenSpaceGuid.PcdDdrInitialize|TRUE
 !endif
@@ -467,6 +481,10 @@
 
   EmbeddedPkg/SimpleTextInOutSerial/SimpleTextInOutSerial.inf
 
+  
+  #
+  # PPA
+  #
   LS1043aBoardPkg/Drivers/PpaInitDxe/PpaInitDxe.inf
 
   #
@@ -503,13 +521,6 @@
   # I2C
   #
   LS1043aBoardPkg/Drivers/I2c/I2cDxe.inf
-
-  #
-  # SoC Drivers
-  #
-
-
-  # More To be added later
 
   #
   # Bds
