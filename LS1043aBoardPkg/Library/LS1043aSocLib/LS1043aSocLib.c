@@ -486,7 +486,7 @@ PrintCpuInfo (
 		if (!(i % 3))
 			DEBUG((EFI_D_INFO, "\n       "));
 		type = TP_ITYP_VER(QoriqCoreToType(core));
-		CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"CPU%d(%s):%-4s MHz  ", core,
+		CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"CPU%d(%a):%-4a MHz  ", core,
 		       type == TY_ITYP_VER_A53 ? "A53" : "Unknown Core",
 		       strmhz(buf, sysinfo.FreqProcessor[core]));
   		SerialPortWrite ((UINT8 *) Buffer, CharCount);
@@ -495,7 +495,7 @@ PrintCpuInfo (
 	CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"\n       Bus:      %-4s MHz  ",
 	       		strmhz(buf, sysinfo.FreqSystemBus));
   	SerialPortWrite ((UINT8 *) Buffer, CharCount);
-	CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"DDR:      %-4s MHz", strmhz(buf, sysinfo.FreqDdrBus));
+	CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"DDR:      %-4a MHz", strmhz(buf, sysinfo.FreqDdrBus));
   	SerialPortWrite ((UINT8 *) Buffer, CharCount);
 	CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"\n");
   	SerialPortWrite ((UINT8 *) Buffer, CharCount);
