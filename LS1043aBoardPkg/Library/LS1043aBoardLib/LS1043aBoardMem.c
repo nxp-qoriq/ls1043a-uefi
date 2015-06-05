@@ -55,120 +55,98 @@ ArmPlatformGetVirtualMemoryMap (
     CacheAttributes = DDR_ATTRIBUTES_UNCACHED;
   }
 
-  // DRAM
-  VirtualMemoryTable[Index].PhysicalBase = PcdGet64(PcdSystemMemoryBase);
-  VirtualMemoryTable[Index].VirtualBase  = PcdGet64(PcdSystemMemoryBase);
-  VirtualMemoryTable[Index].Length       = PcdGet64(PcdSystemMemorySize);
+  // Secure BootROM
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_SECURE_BOOTROM_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_SECURE_BOOTROM_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_SECURE_BOOTROM_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+
+  // Extended BootROM
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_EXT_BOOTROM_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_EXT_BOOTROM_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_EXT_BOOTROM_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+
+  // CCSR Space
+  VirtualMemoryTable[Index].PhysicalBase = CONFIG_CCSR_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_CCSR_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_CCSR_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
+
+  // OCRAM1 Space
+  VirtualMemoryTable[Index].PhysicalBase = CONFIG_OCRAM1_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_OCRAM1_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_OCRAM1_SIZE;
+  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
+  
+  // OCRAM2 Space
+  VirtualMemoryTable[Index].PhysicalBase = CONFIG_OCRAM2_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_OCRAM2_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_OCRAM2_SIZE;
   VirtualMemoryTable[Index].Attributes   = CacheAttributes;
 
-  // ROM1
-  VirtualMemoryTable[++Index].PhysicalBase = ROMCP_BASE1_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = ROMCP_BASE1_ADDR;
-  VirtualMemoryTable[Index].Length       = ROMCP_SIZE1;
+  // FIXME: To Add QSPI
+
+  // IFC region 1
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_IFC_REGION1_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_IFC_REGION1_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_IFC_REGION1_BASE_SIZE;
+  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
+
+  // DRAM1
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_DRAM1_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_DRAM1_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_DRAM1_SIZE;
+  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
+
+  // QMAN SWP
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_QMAN_SWP_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_QMAN_SWP_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_QMAN_SWP_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
-  // ROM2
-  VirtualMemoryTable[++Index].PhysicalBase = ROMCP_BASE2_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = ROMCP_BASE2_ADDR;
-  VirtualMemoryTable[Index].Length       = ROMCP_SIZE2;
+  // BMAN SWP
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_BMAN_SWP_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_BMAN_SWP_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_BMAN_SWP_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
-   // GIC
-  VirtualMemoryTable[++Index].PhysicalBase = GIC_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = GIC_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = GIC_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
+  // IFC region 2
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_IFC_REGION2_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_IFC_REGION2_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_IFC_REGION2_BASE_SIZE;
+  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
 
-  // GIC interrupt distributor
-  VirtualMemoryTable[++Index].PhysicalBase = GICDIST_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = GICDIST_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = GICDIST_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
+  // DRAM2
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_DRAM2_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_DRAM2_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_DRAM2_SIZE;
+  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
 
-   // OCRAM1
-  VirtualMemoryTable[++Index].PhysicalBase = OCRAM1_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = OCRAM1_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = OCRAM1_SIZE;
+  // PCIe1
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_PCI_EXP1_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_PCI_EXP1_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_PCI_EXP1_BASE_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
-   // OCRAM2
-  VirtualMemoryTable[++Index].PhysicalBase = OCRAM2_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = OCRAM2_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = OCRAM2_SIZE;
+  // PCIe2
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_PCI_EXP2_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_PCI_EXP2_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_PCI_EXP2_BASE_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
-  // DUART1
-  VirtualMemoryTable[++Index].PhysicalBase = DUART1_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = DUART1_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = DUART1_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
-
-  // DUART2
-  VirtualMemoryTable[++Index].PhysicalBase = DUART2_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = DUART2_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = DUART2_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
-
-  VirtualMemoryTable[++Index].PhysicalBase = WDOG1_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = WDOG1_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = WDOG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
-
-  VirtualMemoryTable[++Index].PhysicalBase = WDOG2_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = WDOG2_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = WDOG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
-
-  VirtualMemoryTable[++Index].PhysicalBase = WDOG3_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = WDOG3_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = WDOG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
-
-  VirtualMemoryTable[++Index].PhysicalBase = WDOG4_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = WDOG4_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = WDOG_SIZE;
+  // PCIe3
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_PCI_EXP3_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_PCI_EXP3_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_PCI_EXP3_BASE_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
-  VirtualMemoryTable[++Index].PhysicalBase = WDOG5_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = WDOG5_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = WDOG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-
-  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_SYS_FSL_DDR_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = CONFIG_SYS_FSL_DDR_ADDR;
-  VirtualMemoryTable[Index].Length       = DDRC_MEMORY_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-
-  VirtualMemoryTable[++Index].PhysicalBase = I2C0_BASE_ADDRESS;
-  VirtualMemoryTable[Index].VirtualBase  = I2C0_BASE_ADDRESS;
-  VirtualMemoryTable[Index].Length       = I2C_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-
-  VirtualMemoryTable[++Index].PhysicalBase = IFC_MEM1_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = IFC_MEM1_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = IFC_MEM1_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-
-  VirtualMemoryTable[++Index].PhysicalBase = IFC_REG_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = IFC_REG_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = IFC_REG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-
-  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_SYS_FSL_DSPI_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = CONFIG_SYS_FSL_DSPI_ADDR;
-  VirtualMemoryTable[Index].Length       = DSPI_MEMORY_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-
-  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_SYS_FSL_SDXC_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = CONFIG_SYS_FSL_SDXC_ADDR;
-  VirtualMemoryTable[Index].Length       = SDXC_MEMORY_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-
-  VirtualMemoryTable[++Index].PhysicalBase = SCFG_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = SCFG_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = SCFG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
-
+  // DRAM3
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_DRAM3_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_DRAM3_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_DRAM3_SIZE;
+  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
+ 
   // End of Table
   VirtualMemoryTable[++Index].PhysicalBase = 0;
   VirtualMemoryTable[Index].VirtualBase  = 0;
