@@ -97,25 +97,32 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].Length       = OCRAM2_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
-  VirtualMemoryTable[++Index].PhysicalBase = DUART_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = DUART_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = DUART_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+  // DUART1
+  VirtualMemoryTable[++Index].PhysicalBase = DUART1_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = DUART1_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = DUART1_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
+
+  // DUART2
+  VirtualMemoryTable[++Index].PhysicalBase = DUART2_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = DUART2_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = DUART2_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
 
   VirtualMemoryTable[++Index].PhysicalBase = WDOG1_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = WDOG1_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = WDOG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
 
   VirtualMemoryTable[++Index].PhysicalBase = WDOG2_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = WDOG2_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = WDOG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
 
   VirtualMemoryTable[++Index].PhysicalBase = WDOG3_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = WDOG3_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = WDOG_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
 
   VirtualMemoryTable[++Index].PhysicalBase = WDOG4_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = WDOG4_BASE_ADDR;
