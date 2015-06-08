@@ -204,7 +204,7 @@ DspiFlashSetQeb (
   }
 }
 
-VOID
+EFI_STATUS
 DspiTx (
   IN  struct DspiSlave *Dspislave,
   IN  UINT32 Ctrl,
@@ -212,27 +212,40 @@ DspiTx (
   )
 {
   UINT32 Ret = 0;
+  INT32 Timeout = 10000;
 
   Ret = MmioRead32((UINTN)&Dspislave->Regs->Sr);
 
-  while ((Ret & 0x0000F000) >= 4) {
+  while (((Ret & 0x0000F000) >= 4) && Timeout--) {
     Ret = MmioRead32((UINTN)&Dspislave->Regs->Sr);
   }
 
+  if (Timeout <= 0) {
+    DEBUG((EFI_D_ERROR, "Failed to get status register\n"));
+    return EFI_TIMEOUT;
+  }
+
   MmioWriteBe32((UINTN)&Dspislave->Regs->Tfr, (Ctrl | Data));
+  return EFI_SUCCESS;
 }
 
-UINT32
+INT32
 DspiRx (
   IN  struct DspiSlave *Dspislave
   )
 {
   UINT32 Ret = 0;
+  INT32 Timeout = 10000;
+
   Ret = MmioRead32((UINTN)&Dspislave->Regs->Sr);
-  while ((Ret & 0x000000F0) == 0) {
+  while (((Ret & 0x000000F0) == 0) && Timeout--) {
     Ret = MmioRead32((UINTN)&Dspislave->Regs->Sr);
   }
 
+  if (Timeout <= 0) {
+    DEBUG((EFI_D_ERROR, "Failed to get status register\n"));
+    return -1;
+  }
   Ret = 0;
   Ret = MmioRead32((UINTN)&Dspislave->Regs->Rfr);
 
@@ -248,6 +261,7 @@ DspiXfer (
   IN  UINT64 Flags
   )
 {
+  EFI_STATUS Status = EFI_SUCCESS;
   UINT16 *SpiRd16 = NULL, *SpiWr16 = NULL;
   UINT8 *SpiRd = NULL, *SpiWr = NULL;
   static UINT32 Ctrl = 0;
@@ -275,19 +289,31 @@ DspiXfer (
     while (TmpLen--) {
       if (Dout != NULL) {
         if (DspiSlave->Charbit == 16)
-	  DspiTx(DspiSlave, Ctrl, *SpiWr16++);
-	else
-	  DspiTx(DspiSlave, Ctrl, *SpiWr++);
+	   Status = DspiTx(DspiSlave, Ctrl, *SpiWr16++);
+	 else
+	   Status = DspiTx(DspiSlave, Ctrl, *SpiWr++);
 
-	DspiRx(DspiSlave);
+        if (Status != EFI_SUCCESS)
+	   return Status;
+
+	 Status = DspiRx(DspiSlave);
+        if (Status < 0)
+	   return EFI_TIMEOUT;
       }
 
       if (Din != NULL) {
-	DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
-	if (DspiSlave->Charbit == 16)
-	  *SpiRd16++ = DspiRx(DspiSlave) >> ShiftCount;
-	else
-	  *SpiRd++ = DspiRx(DspiSlave) >> ShiftCount;
+	 Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
+        if (Status != EFI_SUCCESS)
+	   return Status;
+
+	 Status = DspiRx(DspiSlave);
+        if (Status < 0)
+	   return EFI_TIMEOUT;
+
+	 if (DspiSlave->Charbit == 16)
+	   *SpiRd16++ = Status >> ShiftCount;
+	 else
+	   *SpiRd++ = Status >> ShiftCount;
       }
     }
     Len = 1;	/* Remaining Byte */
@@ -299,24 +325,42 @@ DspiXfer (
   if (Len) {
     if (Dout != NULL) {
       if (DspiSlave->Charbit == 16)
-        DspiTx(DspiSlave, Ctrl, *SpiWr16);
+        Status = DspiTx(DspiSlave, Ctrl, *SpiWr16);
       else
-        DspiTx(DspiSlave, Ctrl, *SpiWr);
+        Status = DspiTx(DspiSlave, Ctrl, *SpiWr);
 	
-      DspiRx(DspiSlave);
+      if (Status != EFI_SUCCESS)
+	 return Status;
+
+      Status = DspiRx(DspiSlave);
+      if (Status < 0)
+        return EFI_TIMEOUT;
     }
 
     if (Din != NULL) {
-      DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
+      Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
+       
+      if (Status != EFI_SUCCESS)
+	 return Status;
+
+      Status = DspiRx(DspiSlave);
+      if (Status < 0)
+	 return EFI_TIMEOUT;
+
       if (DspiSlave->Charbit == 16)
-        *SpiRd16 = DspiRx(DspiSlave) >> ShiftCount;
+        *SpiRd16 = Status >> ShiftCount;
       else
-	*SpiRd = DspiRx(DspiSlave) >> ShiftCount;
+	*SpiRd = Status >> ShiftCount;
     }
   } else {
     /* Dummy Read */
-    DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
-    DspiRx(DspiSlave);
+    Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
+    if (Status != EFI_SUCCESS)
+      return Status;
+
+    Status = DspiRx(DspiSlave);
+    if (Status < 0)
+      return EFI_TIMEOUT;
   }
 
   return EFI_SUCCESS;
@@ -534,7 +578,7 @@ DspiFlashCmdWaitReady (
 
   Ret = DspiXfer(Dspi, 8, &Cmd, NULL, Flags);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Fail To Read %s Status Register\n",
+    DEBUG((EFI_D_ERROR, "SF: Fail To Read %a Status Register\n",
           Cmd == CMD_READ_STATUS ? "Read" : "Flag"));
     return Ret;
   }
