@@ -32,7 +32,7 @@
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec
   MdePkg/MdePkg.dec
-  LS1043aBoardPkg/LS1043aBoardPkg.dec
+  LS1043aRdbPkg/LS1043aRdbPkg.dec
 
 [LibraryClasses]
   BaseLib

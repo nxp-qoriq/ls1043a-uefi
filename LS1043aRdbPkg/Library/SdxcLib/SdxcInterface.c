@@ -78,7 +78,7 @@ InitMmcDevice (
  * (Like "\n")
  */
 VOID
-PrintSize (
+PrintSizeSdxc (
   IN  UINT64 Size
   )
 {
@@ -151,7 +151,7 @@ PrintMmcInfo (
 
   DEBUG((EFI_D_INFO, "High Capacity: %a\n", Mmc->HighCapacity ? "Yes" : "No"));
   DEBUG((EFI_D_INFO, "Capacity: "));
-  PrintSize(Mmc->Capacity);
+  PrintSizeSdxc(Mmc->Capacity);
 
   DEBUG((EFI_D_INFO, "\nBus Width: %d-Bit\n", Mmc->BusWidth));
 }

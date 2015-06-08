@@ -18,7 +18,7 @@
 #ifndef __SDXC_H__
 #define __SDXC_H__
 
-#include "LS1043aBoard.h"
+#include "LS1043aRdb.h"
 #include "Common.h"
 #include "Bitops.h"
 #include <Library/MemoryAllocationLib.h>
