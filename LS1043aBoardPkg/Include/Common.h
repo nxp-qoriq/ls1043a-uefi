@@ -83,4 +83,10 @@ __Div64_32 (
   IN   UINT32        Base
   );
 
+VOID
+PrintSize (
+  IN  UINT64 Size,
+  IN  CONST INT8 *S
+  );
+
 #endif

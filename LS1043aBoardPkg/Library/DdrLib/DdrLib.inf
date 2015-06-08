@@ -26,6 +26,8 @@
 [Sources.common]
   DdrLib.c
   DdrCntrlRegs.c
+  Ddr4DimmParams.c
+  DdrSpd.c
 
 [LibraryClasses]
   ArmLib

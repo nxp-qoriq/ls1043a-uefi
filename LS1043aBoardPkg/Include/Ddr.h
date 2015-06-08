@@ -88,6 +88,8 @@ typedef UINT64 PhysSizeT;
 #define FSL_DDR_4WAY_4KB_INTERLEAVING     0x1C
 #define FSL_DDR_4WAY_8KB_INTERLEAVING     0x1D
 
+#define CONFIG_EMU_DRAM_SIZE              (1 << 30)
+
 /**
   define bank(chip select) interleaving mode
 **/
@@ -96,11 +98,13 @@ typedef UINT64 PhysSizeT;
 #define FSL_DDR_CS0_CS1_AND_CS2_CS3	(FSL_DDR_CS0_CS1 | FSL_DDR_CS2_CS3)
 #define FSL_DDR_CS0_CS1_CS2_CS3		(FSL_DDR_CS0_CS1_AND_CS2_CS3 | 0x04)
 
-#define CONFIG_FSL_DDR_INTERACTIVE /** Interactive Debugging */
+///
+//#define CONFIG_FSL_DDR_INTERACTIVE /* Interactive debugging */
+///
 #define CONFIG_SYS_DDR_RAW_TIMING
-#define CONFIG_SYS_FSL_DDR3        /** Use DDR3 memory */
 
-#define CONFIG_DDR_SPD        	/** Use SPD settings from I2c */
+//#define CONFIG_SYS_FSL_DDR3        /** Use DDR3 memory */
+#define CONFIG_SYS_FSL_DDR4        /** Use DDR4 memory */
 
 #define CONFIG_DIMM_SLOTS_PER_CTLR		1
 #define CONFIG_CHIP_SELECTS_PER_CTRL	4
@@ -163,10 +167,25 @@ typedef UINT64 PhysSizeT;
 #define DDR3_SPD_MODULETYPE_16B_SO_DIMM	(0x0C)
 #define DDR3_SPD_MODULETYPE_32B_SO_DIMM	(0x0D)
 
+/* DIMM Type for DDR4 SPD */
+#define DDR4_SPD_MODULETYPE_MASK   	(0x0f)
+#define DDR4_SPD_MODULETYPE_EXT           (0x00)
+#define DDR4_SPD_MODULETYPE_RDIMM  	(0x01)
+#define DDR4_SPD_MODULETYPE_UDIMM  	(0x02)
+#define DDR4_SPD_MODULETYPE_SO_DIMM       (0x03)
+#define DDR4_SPD_MODULETYPE_LRDIMM 	(0x04)
+#define DDR4_SPD_MODULETYPE_MINI_RDIMM    (0x05)
+#define DDR4_SPD_MODULETYPE_MINI_UDIMM    (0x06)
+#define DDR4_SPD_MODULETYPE_72B_SO_UDIMM  (0x08)
+#define DDR4_SPD_MODULETYPE_72B_SO_RDIMM  (0x09)
+#define DDR4_SPD_MODULETYPE_16B_SO_DIMM   (0x0C)
+#define DDR4_SPD_MODULETYPE_32B_SO_DIMM   (0x0D)
+
 /**
   Byte 2 Fundamental Memory Types.
 **/
 #define SPD_MEMTYPE_DDR3	(0x0B)
+#define SPD_MEMTYPE_DDR4    (0x0C)
 
 /**
   DDR_CDR1
@@ -177,7 +196,85 @@ typedef UINT64 PhysSizeT;
 #define DDR_CDR2_ODT_MASK	0x1
 #define DDR_CDR1_ODT(x) 	((x & DDR_CDR1_ODT_MASK) << DDR_CDR1_ODT_SHIFT)
 #define DDR_CDR2_ODT(x) 	(x & DDR_CDR2_ODT_MASK)
-#define DDR_CDR_ODT_75ohm	0x0	/** TODO */
+#define DDR_CDR2_VREF_OVRD(x)      (0x00008080 | ((((x) - 37) & 0x3F) << 8))
+#define DDR_CDR2_VREF_TRAIN_EN     0x00000080
+#define DDR_CDR2_VREF_RANGE_2      0x00000040
+
+
+/*
+ * Only the versions with distinct features or registers are listed here.
+ */
+#define FSL_DDR_VER_4_4 		44
+#define FSL_DDR_VER_4_6 		46
+#define FSL_DDR_VER_4_7     	47
+#define FSL_DDR_VER_5_0     	50
+
+#define CONFIG_SYS_FSL_DDR_VER       FSL_DDR_VER_5_0
+
+#if (defined(CONFIG_SYS_FSL_DDR_VER) && \
+       (CONFIG_SYS_FSL_DDR_VER >= FSL_DDR_VER_4_7))
+#ifdef CONFIG_SYS_FSL_DDR3L
+#define DDR_CDR_ODT_OFF     0x0
+#define DDR_CDR_ODT_120ohm  0x1
+#define DDR_CDR_ODT_200ohm  0x2
+#define DDR_CDR_ODT_75ohm   0x3
+#define DDR_CDR_ODT_60ohm   0x5
+#define DDR_CDR_ODT_46ohm   0x7
+#elif defined(CONFIG_SYS_FSL_DDR4)
+#define DDR_CDR_ODT_OFF     0x0
+#define DDR_CDR_ODT_100ohm  0x1
+#define DDR_CDR_ODT_120OHM  0x2
+#define DDR_CDR_ODT_80ohm   0x3
+#define DDR_CDR_ODT_60ohm   0x4
+#define DDR_CDR_ODT_40ohm   0x5
+#define DDR_CDR_ODT_50ohm   0x6
+#define DDR_CDR_ODT_30ohm   0x7
+#else
+#define DDR_CDR_ODT_OFF     0x0
+#define DDR_CDR_ODT_120ohm  0x1
+#define DDR_CDR_ODT_180ohm  0x2
+#define DDR_CDR_ODT_75ohm   0x3
+#define DDR_CDR_ODT_110ohm  0x4
+#define DDR_CDR_ODT_60hm    0x5
+#define DDR_CDR_ODT_70ohm   0x6
+#define DDR_CDR_ODT_47ohm   0x7
+#endif /* DDR3L */
+#else
+#define DDR_CDR_ODT_75ohm   0x0
+#define DDR_CDR_ODT_55ohm   0x1
+#define DDR_CDR_ODT_60ohm   0x2
+#define DDR_CDR_ODT_50ohm   0x3
+#define DDR_CDR_ODT_150ohm  0x4
+#define DDR_CDR_ODT_43ohm   0x5
+#define DDR_CDR_ODT_120ohm  0x6
+#endif
+
+/* DDR4 fixed timing */
+#define CONFIG_CS0_BNDS		0x0000007f /* 0x000 */
+#define CONFIG_CS0_CONFIG		0x80010322 /* 0x080 */
+#define CONFIG_TIMING_CFG_3		0x020C1000 /* 0x100 */
+#define CONFIG_TIMING_CFG_0		0xD0550018 /* 0x104 */
+#define CONFIG_TIMING_CFG_1		0xC2C68C42 /* 0x108 */
+#define CONFIG_TIMING_CFG_2		0x0048C114 /* 0x10c */
+#define CONFIG_DDR_SDRAM_CFG	0x450C000C /* 0x110 */
+#define CONFIG_DDR_SDRAM_CFG_2	0x00401010 /* 0x114 */
+#define CONFIG_DDR_SDRAM_MODE	0x01010214 /* 0x118 */
+#define CONFIG_DDR_SDRAM_INTERVAL	0x18600618 /* 0x124 */
+#define CONFIG_DDR_SDRAM_CLK_CNTL	0x02000000 /* 0x130 */
+#define CONFIG_TIMING_CFG_4		0x00000002 /* 0x160 */
+#define CONFIG_TIMING_CFG_5		0x04401400 /* 0x164 */
+#define CONFIG_TIMING_CFG_7		0x13300000 /* 0x16c */
+#define CONFIG_DDR_ZQ_CNTL		0x8A090705 /* 0x170 */
+#define CONFIG_DDR_WRLVL_CNTL	0x8655F606 /* 0x174 */
+#define CONFIG_DDR_WRLVL_CNTL_2	0x05070600 /* 0x190 */
+#define CONFIG_DDR_SDRAM_MODE_9	0x00000400 /* 0x220 */
+#define CONFIG_DDR_SDRAM_MODE_10	0x04000000 /* 0x224 */
+#define CONFIG_TIMING_CFG_8		0x03115600 /* 0x250 */
+#define CONFIG_DDRCDR_1		0x80040000 /* 0xb28 */
+#define CONFIG_DDRCDR_2		0x0000A181 /* 0xb2c */
+
+#define CONFIG_DDR_SDRAM_CFG_MEM_EN	0x80000000
+
 
 /**
   To avoid 64-bit full-divides, we factor this here
@@ -225,6 +322,7 @@ typedef struct FslDdrCfgRegsS {
   UINT32 TimingCfg2;
   UINT32 DdrSdramCfg;
   UINT32 DdrSdramCfg2;
+  UINT32 DdrSdramCfg3;
   UINT32 DdrSdramMode;
   UINT32 DdrSdramMode2;
   UINT32 DdrSdramMode3;
@@ -233,6 +331,14 @@ typedef struct FslDdrCfgRegsS {
   UINT32 DdrSdramMode6;
   UINT32 DdrSdramMode7;
   UINT32 DdrSdramMode8;
+  UINT32 DdrSdramMode9;
+  UINT32 DdrSdramMode10;
+  UINT32 DdrSdramMode11;
+  UINT32 DdrSdramMode12;
+  UINT32 DdrSdramMode13;
+  UINT32 DdrSdramMode14;
+  UINT32 DdrSdramMode15;
+  UINT32 DdrSdramMode16;
   UINT32 DdrSdramMdCntl;
   UINT32 DdrSdramInterval;
   UINT32 DdrDataInit;
@@ -241,6 +347,10 @@ typedef struct FslDdrCfgRegsS {
   UINT32 DdrInitExtAddr;
   UINT32 TimingCfg4;
   UINT32 TimingCfg5;
+  UINT32 TimingCfg6;
+  UINT32 TimingCfg7;
+  UINT32 TimingCfg8;
+  UINT32 TimingCfg9;
   UINT32 DdrZqCntl;
   UINT32 DdrWrlvlCntl;
   UINT32 DdrWrlvlCntl2;
@@ -248,6 +358,14 @@ typedef struct FslDdrCfgRegsS {
   UINT32 DdrSrCntr;
   UINT32 DdrSdramRcw1;
   UINT32 DdrSdramRcw2;
+  UINT32 DdrSdramRcw3;
+  UINT32 DdrSdramRcw4;
+  UINT32 DdrSdramRcw5;
+  UINT32 DdrSdramRcw6;
+  UINT32 DqMap0;
+  UINT32 DqMap1;
+  UINT32 DqMap2;
+  UINT32 DqMap3;
   UINT32 DdrEor;
   UINT32 DdrCdr1;
   UINT32 DdrCdr2;
@@ -260,20 +378,34 @@ typedef struct FslDdrCfgRegsS {
   Record of Timing parameters
 **/
 typedef struct {
+  /* parameters to constrict */
   UINT32 TckminXPs;
   UINT32 TckmaxPs;
-  UINT32 TckmaxMaxPs;
   UINT32 TrcdPs;
   UINT32 TrpPs;
   UINT32 TrasPs;
-  UINT32 TwrPs;	/** maximum = 63750 ps */
+#if defined(CONFIG_SYS_FSL_DDR3) || defined(CONFIG_SYS_FSL_DDR4)
+  UINT32 TaaminPs;
+#endif
+#ifdef CONFIG_SYS_FSL_DDR4
+  UINT32 Trfc1Ps;
+  UINT32 Trfc2Ps;
+  UINT32 Trfc4Ps;
+  UINT32 TrrdsPs;
+  UINT32 TrrdlPs;
+  UINT32 TccdlPs;
+#endif
   UINT32 TwtrPs;	/** maximum = 63750 ps */
   UINT32 TrfcPs;	/** maximum = 255 ns + 256 ns + .75 ns
 					= 511750 ps */
   UINT32 TrrdPs;	/** maximum = 63750 ps */
+  UINT32 TrtpPs;	/** byte 38, spd->trtp */
+  UINT32 TwrPs;	/** maximum = 63750 ps */
   UINT32 TrcPs;	/** maximum = 254 ns + .75 ns = 254750 ps */
   UINT32 RefreshRatePs;
   UINT32 ExtendedOpSrt;
+
+#if defined(CONFIG_SYS_FSL_DDR1) || defined(CONFIG_SYS_FSL_DDR2)
   UINT32 TisPs;	/** byte 32, spd->ca_setup */
   UINT32 TihPs;	/** byte 33, spd->ca_hold */
   UINT32 TdsPs;	/** byte 34, spd->data_setup */
@@ -281,6 +413,7 @@ typedef struct {
   UINT32 TrtpPs;	/** byte 38, spd->trtp */
   UINT32 TdqsqMaxPs;	/** byte 44, spd->tdqsq */
   UINT32 TqhsPs;	/** byte 45, spd->tqhs */
+#endif
   UINT32 NdimmsPresent;
   UINT32 LowestCommonSPDCaslat;
   UINT32 HighestCommonDeratedCaslat;
@@ -349,6 +482,7 @@ typedef struct MemctlOptionsS {
   UINT32 ClkAdjust;
   UINT32 CpoOverride;
   UINT32 WriteDataDelay;		/** DQS adjust */
+  UINT32 CswlOverride;
   UINT32 WrlvlOverride;
   UINT32 WrlvlSample;		/** Write leveling */
   UINT32 WrlvlStart;
@@ -358,7 +492,6 @@ typedef struct MemctlOptionsS {
   UINT32 TwotEn;
   UINT32 ThreetEn;
   UINT32 Bstopre;
-  UINT32 TckeClockPulseWidthPs;	/** tCKE */
   UINT32 TfawWindowFourActivatesPs;	/** tFAW --  FOUR_ACT */
   /** Rtt impedance */
   UINT32 RttOverride;		/** RttOverride enable */
@@ -400,6 +533,10 @@ typedef struct DimmParamsS {
   UINT32 NRowAddr;
   UINT32 NColAddr;
   UINT32 EdcConfig;	/** 0 = none, 1 = parity, 2 = ECC */
+#ifdef CONFIG_SYS_FSL_DDR4
+  UINT32 BankAddrBits;
+  UINT32 BankGroupBits;
+#endif
   UINT32 NBanksPerSdramDevice;
   UINT32 BurstLengthsBitmask;	/** BL=4 bit 2, BL=8 = bit 3 */
   UINT32 RowDensity;
@@ -429,24 +566,37 @@ typedef struct DimmParamsS {
   UINT32 TrcdPs;
   UINT32 TrpPs;
   UINT32 TrasPs;
+#ifdef CONFIG_SYS_FSL_DDR4
+  INT32 Trfc1Ps;
+  INT32 Trfc2Ps;
+  INT32 Trfc4Ps;
+  INT32 TrrdsPs;
+  INT32 TrrdlPs;
+  INT32 TccdlPs;
+#endif
   UINT32 TwrPs;	/** maximum = 63750 ps */
-  UINT32 TwtrPs;	/** maximum = 63750 ps */
-  UINT32 TrfcPs; /** max = 255 ns + 256 ns + .75 ns
+  UINT32 TrfcPs; 	/** max = 255 ns + 256 ns + .75 ns
   			 = 511750 ps */
   UINT32 TrrdPs;	/** maximum = 63750 ps */
+  UINT32 TwtrPs;	/** maximum = 63750 ps */
+  UINT32 TrtpPs;	/** byte 38, spd->trtp */
   UINT32 TrcPs;	/** maximum = 254 ns + .75 ns = 254750 ps */
   UINT32 RefreshRatePs;
   UINT32 ExtendedOpSrt;
-  /** DDR3 doesn't need these as below */
+#if defined(CONFIG_SYS_FSL_DDR1) || defined(CONFIG_SYS_FSL_DDR2)
   UINT32 TisPs;	/** byte 32, spd->ca_setup */
   UINT32 TihPs;	/** byte 33, spd->ca_hold */
   UINT32 TdsPs;	/** byte 34, spd->data_setup */
   UINT32 TdhPs;	/** byte 35, spd->data_hold */
-  UINT32 TrtpPs;	/** byte 38, spd->trtp */
   UINT32 TdqsqMaxPs;	/** byte 44, spd->tdqsq */
   UINT32 TqhsPs;	/** byte 45, spd->tqhs */
+#endif
   /** DDR3 RDIMM */
   UINT8 Rcw[16];	/** Register Control Word 0-15 */
+#ifdef CONFIG_SYS_FSL_DDR4
+  UINT32 DqMapping[18];
+  UINT32 DqMappingOrs;
+#endif
 } DimmParamsT;
 
 /**
@@ -560,7 +710,219 @@ typedef struct Ddr3SpdEepromS {
   UINT8 Cust[80];       /** 176-255 Open for Customer Use */
 }Ddr3SpdEepromT;
 
+/* From JEEC Standard No. 21-C release 23A */
+typedef struct Ddr4SpdEepromS {
+  /* General Section: Bytes 0-127 */
+  UINT8 InfoSizeCrc;       /*  0 # Bytes */
+  UINT8 SpdRev;            /*  1 Total # Bytes Of SPD */
+  UINT8 MemType;           /*  2 Key Byte / Mem Type */
+  UINT8 ModuleType;        /*  3 Key Byte / Module Type */
+  UINT8 DensityBanks;      /*  4 Density And Banks     */
+  UINT8 Addressing;        /*  5 Addressing */
+  UINT8 PackageType;       /*  6 Package Type */
+  UINT8 OptFeature;        /*  7 Optional Features */
+  UINT8 ThermalRef;        /*  8 Thermal And Refresh */
+  UINT8 OthOptFeatures;    /*  9 Other Optional Features */
+  UINT8 Res10;             /* 10 Reserved */
+  UINT8 ModuleVdd;         /* 11 Module Nominal Voltage */
+  UINT8 Organization;      /* 12 Module Organization */
+  UINT8 BusWidth;          /* 13 Module Memory Bus Width */
+  UINT8 ThermSensor;       /* 14 Module Thermal Sensor */
+  UINT8 ExtType;           /* 15 Extended Module Type */
+  UINT8 Res16;
+  UINT8 Timebases;         /* 17 MTb And FTB */
+  UINT8 TckMin;            /* 18 TCKAVGmin */
+  UINT8 TckMax;            /* 19 TCKAVGmax */
+  UINT8 CaslatB1;          /* 20 CAS Latencies, 1st Byte */
+  UINT8 CaslatB2;          /* 21 CAS Latencies, 2nd Byte */
+  UINT8 CaslatB3;          /* 22 CAS Latencies, 3rd Byte */
+  UINT8 CaslatB4;          /* 23 CAS Latencies, 4th Byte */
+  UINT8 TaaMin;            /* 24 Min CAS Latency Time */
+  UINT8 TrcdMin;           /* 25 Min RAS# To CAS# Delay Time */
+  UINT8 TrpMin;            /* 26 Min Row Precharge Delay Time */
+  UINT8 TrasTrcExt;        /* 27 Upper Nibbles For TRAS And TRC */
+  UINT8 TrasMinLsb;        /* 28 TRASmin, Lsb */
+  UINT8 TrcMinLsb;         /* 29 TRCmin, Lsb */
+  UINT8 Trfc1MinLsb;       /* 30 Min Refresh Recovery Delay Time */
+  UINT8 Trfc1MinMsb;       /* 31 Min Refresh Recovery Delay Time */
+  UINT8 Trfc2MinLsb;       /* 32 Min Refresh Recovery Delay Time */
+  UINT8 Trfc2MinMsb;       /* 33 Min Refresh Recovery Delay Time */
+  UINT8 Trfc4MinLsb;       /* 34 Min Refresh Recovery Delay Time */
+  UINT8 Trfc4MinMsb;       /* 35 Min Refresh Recovery Delay Time */
+  UINT8 TfawMsb;           /* 36 Upper Nibble For TFAW */
+  UINT8 TfawMin;           /* 37 TFAW, Lsb */
+  UINT8 TrrdsMin;          /* 38 TRRD_Smin, MTB */
+  UINT8 TrrdlMin;          /* 39 TRRD_Lmin, MTB */
+  UINT8 TccdlMin;          /* 40 TCCS_Lmin, MTB */
+  UINT8 Res41[60-41];      /* 41 Rserved */
+  UINT8 Mapping[78-60];    /* 60~77 Connector To SDRAM Bit Map */
+  UINT8 Res78[117-78];     /* 78~116, Reserved */
+  CHAR8 FineTccdlMin;      /* 117 Fine Offset For TCCD_Lmin */
+  CHAR8 FineTrrdlMin;      /* 118 Fine Offset For TRRD_Lmin */
+  CHAR8 FineTrrdsMin;      /* 119 Fine Offset For TRRD_Smin */
+  CHAR8 FineTrcMin;        /* 120 Fine Offset For TRCmin */
+  CHAR8 FineTrpMin;        /* 121 Fine Offset For TRPmin */
+  CHAR8 FineTrcdMin;       /* 122 Fine Offset For TRCDmin */
+  CHAR8 FineTaaMin;        /* 123 Fine Offset For TAAmin */
+  CHAR8 FineTckMax;        /* 124 Fine Offset For TCKAVGmax */
+  CHAR8 FineTckMin;        /* 125 Fine Offset For TCKAVGmin */
+  /* CRC: Bytes 126-127 */
+  UINT8 Crc[2];            /* 126-127 SPD CRC */
+
+  /* Module-Specific Section: Bytes 128-255 */
+  union {
+    struct {
+      /* 128 (Unbuffered) Module Nominal Height */
+      UINT8 ModHeight;
+      /* 129 (Unbuffered) Module Maximum Thickness */
+      UINT8 ModThickness;
+      /* 130 (Unbuffered) Reference Raw Card Used */
+      UINT8 RefRawCard;
+      /* 131 (Unbuffered) Address Mapping From
+            Edge Connector To DRAM */
+      UINT8 AddrMapping;
+      /* 132~253 (Unbuffered) Reserved */
+      UINT8 Res132[254-132];
+      /* 254~255 CRC */
+      UINT8 Crc[2];
+    } Unbuffered;
+    struct {
+      /* 128 (Registered) Module Nominal Height */
+      UINT8 ModHeight;
+      /* 129 (Registered) Module Maximum Thickness */
+      UINT8 ModThickness;
+      /* 130 (Registered) Reference Raw Card Used */
+      UINT8 RefRawCard;
+      /* 131 DIMM Module Attributes */
+      UINT8 ModuAttr;
+      /* 132 RDIMM Thermal Heat Spreader Solution */
+      UINT8 Thermal;
+      /* 133 Register Manufacturer ID Code, LSB */
+      UINT8 RegIdLo;
+      /* 134 Register Manufacturer ID Code, MSB */
+      UINT8 RegIdHi;
+      /* 135 Register Revision Number */
+      UINT8 RegRev;
+      /* 136 Address Mapping From Register To DRAM */
+      UINT8 RegMap;
+      /* 137~253 Reserved */
+      UINT8 Res137[254-137];
+      /* 254~255 CRC */
+      UINT8 Crc[2];
+    } Registered;
+    struct {
+      /* 128 (Loadreduced) Module Nominal Height */
+      UINT8 ModHeight;
+      /* 129 (Loadreduced) Module Maximum Thickness */
+      UINT8 ModThickness;
+      /* 130 (Loadreduced) Reference Raw Card Used */
+      UINT8 RefRawCard;
+      /* 131 DIMM Module Attributes */
+      UINT8 ModuAttr;
+      /* 132 RDIMM Thermal Heat Spreader Solution */
+      UINT8 Thermal;
+      /* 133 Register Manufacturer ID Code, LSB */
+      UINT8 RegIdLo;
+      /* 134 Register Manufacturer ID Code, MSB */
+      UINT8 RegIdHi;
+      /* 135 Register Revision Number */
+      UINT8 RegRev;
+      /* 136 Address Mapping From Register To DRAM */
+      UINT8 RegMap;
+      /* 137 Register Output Drive Strength For CMD/Add*/
+      UINT8 RegDrv;
+      /* 138 Register Output Drive Strength For CK */
+      UINT8 RegDrvCk;
+      /* 139 Data Buffer Revision Number */
+      UINT8 DataBufRev;
+      /* 140 DRAM VrefDQ For Package Rank 0 */
+      UINT8 VrefqeR0;
+      /* 141 DRAM VrefDQ For Package Rank 1 */
+      UINT8 VrefqeR1;
+      /* 142 DRAM VrefDQ For Package Rank 2 */
+      UINT8 VrefqeR2;
+      /* 143 DRAM VrefDQ For Package Rank 3 */
+      UINT8 VrefqeR3;
+      /* 144 Data Buffer VrefDQ For DRAM Interface */
+      UINT8 DataIntf;
+      /*
+       * 145 Data Buffer MDQ Drive Strength And RTT
+       * For Data Rate <= 1866
+       */
+      UINT8 DataDrv1866;
+      /*
+       * 146 Data Buffer MDQ Drive Strength And RTT
+       * For 1866 < Data Rate <= 2400
+       */
+      UINT8 DataDrv2400;
+      /*
+       * 147 Data Buffer MDQ Drive Strength And RTT
+       * For 2400 < Data Rate <= 3200
+       */
+      UINT8 DataDrv3200;
+      /* 148 DRAM Drive Strength */
+      UINT8 DramDrv;
+      /*
+       * 149 DRAM ODT (RTT_WR, RTT_NOM)
+       * For Data Rate <= 1866
+       */
+      UINT8 DramOdt1866;
+      /*
+       * 150 DRAM ODT (RTT_WR, RTT_NOM)
+       * For 1866 < Data Rate <= 2400
+       */
+      UINT8 DramOdt2400;
+      /*
+       * 151 DRAM ODT (RTT_WR, RTT_NOM)
+       * For 2400 < Data Rate <= 3200
+       */
+      UINT8 DramOdt3200;
+      /*
+       * 152 DRAM ODT (RTT_PARK)
+       * For Data Rate <= 1866
+       */
+      UINT8 DramOdtPark1866;
+      /*
+       * 153 DRAM ODT (RTT_PARK)
+       * For 1866 < Data Rate <= 2400
+       */
+      UINT8 DramOdtPark2400;
+      /*
+       * 154 DRAM ODT (RTT_PARK)
+       * For 2400 < Data Rate <= 3200
+       */
+      UINT8 DramOdtPark3200;
+      UINT8 Res155[254-155];   /* Reserved */
+      /* 254~255 CRC */
+      UINT8 Crc[2];
+    } Loadreduced;
+    UINT8 Uc[128]; /* 128-255 Module-Specific Section */
+  } ModSection;
+
+  UINT8 Res256[320-256];   /* 256~319 Reserved */
+
+  /* Module Supplier'S Data: Byte 320~383 */
+  UINT8 MmidLsb;           /* 320 Module MfgID Code LSB */
+  UINT8 MmidMsb;           /* 321 Module MfgID Code MSB */
+  UINT8 Mloc;              /* 322 Mfg Location */
+  UINT8 Mdate[2];          /* 323~324 Mfg Date */
+  UINT8 Sernum[4];         /* 325~328 Module Serial Number */
+  UINT8 Mpart[20];         /* 329~348 Mfg'S Module Part Number */
+  UINT8 Mrev;              /* 349 Module Revision Code */
+  UINT8 DmidLsb;           /* 350 DRAM MfgID Code LSB */
+  UINT8 DmidMsb;           /* 351 DRAM MfgID Code MSB */
+  UINT8 Stepping;          /* 352 DRAM Stepping */
+  UINT8 Msd[29];           /* 353~381 Mfg'S Specific Data */
+  UINT8 Res382[2];         /* 382~383 Reserved */
+
+  UINT8 User[512-384];     /* 384~511 End User Programmable */
+}Ddr4SpdEepromT;
+
+#if defined(CONFIG_SYS_FSL_DDR3)
 typedef Ddr3SpdEepromT GenericSpdEepromT;
+#elif defined(CONFIG_SYS_FSL_DDR4)
+typedef Ddr4SpdEepromT GenericSpdEepromT;
+#endif
 
 /**
   Record of all information about DDR
@@ -573,6 +935,13 @@ typedef struct {
   MemctlOptionsT MemctlOpts[CONFIG_SYS_NUM_DDR_CTLRS];
   CommonTimingParamsT CommonTimingParams[CONFIG_SYS_NUM_DDR_CTLRS];
   FslDdrCfgRegsT FslDdrConfigReg[CONFIG_SYS_NUM_DDR_CTLRS];
+  UINT32 FirstCtrl;
+  UINT32 NumCtrls;
+  UINT64 MemBase;
+  UINT32 DimmSlotsPerCtrl;
+  INT32 (*BoardNeedMemReset)(VOID);
+  VOID (*BoardMemReset)(VOID);
+  VOID (*BoardMemDeReset)(VOID);
 } FslDdrInfoT;
 
 /**
@@ -616,7 +985,8 @@ struct CcsrDdr {
   CHAR8	Res150[16];
   UINT32	TimingCfg4;		/** SDRAM Timing Configuration 4 */
   UINT32	TimingCfg5;		/** SDRAM Timing Configuration 5 */
-  CHAR8	Reg168[8];
+  UINT32	TimingCfg6;		/** SDRAM Timing Configuration 6 */
+  UINT32	TimingCfg7;		/** SDRAM Timing Configuration 7 */
   UINT32	DdrZqCntl;		/** ZQ calibration control*/
   UINT32	DdrWrlvlCntl;		/** write leveling control*/
   CHAR8	Reg178[4];
@@ -626,14 +996,37 @@ struct CcsrDdr {
   CHAR8	Reg188[8];
   UINT32	DdrWrlvlCntl2;	/** write leveling control 2 */
   UINT32	DdrWrlvlCntl3;	/** write leveling control 3 */
-  CHAR8	Res198[104];
+  CHAR8	Res198[8];
+  UINT32      DdrSdramRcw3;
+  UINT32      DdrSdramRcw4;
+  UINT32      DdrSdramRcw5;
+  UINT32      DdrSdramRcw6;
+  CHAR8       Res1b0[80];
   UINT32	SdramMode3;		/** SDRAM Mode Configuration 3 */
   UINT32	SdramMode4;		/** SDRAM Mode Configuration 4 */
   UINT32	SdramMode5;		/** SDRAM Mode Configuration 5 */
   UINT32	SdramMode6;		/** SDRAM Mode Configuration 6 */
   UINT32	SdramMode7;		/** SDRAM Mode Configuration 7 */
   UINT32	SdramMode8;		/** SDRAM Mode Configuration 8 */
-  CHAR8	Res218[0x908];
+  CHAR8       Res218[8];
+  UINT32	SdramMode9;		/** SDRAM Mode Configuration 9 */
+  UINT32	SdramMode10;		/** SDRAM Mode Configuration 10 */
+  UINT32	SdramMode11;		/** SDRAM Mode Configuration 11 */
+  UINT32	SdramMode12;		/** SDRAM Mode Configuration 12 */
+  UINT32	SdramMode13;		/** SDRAM Mode Configuration 13 */
+  UINT32	SdramMode14;		/** SDRAM Mode Configuration 14 */
+  UINT32	SdramMode15;		/** SDRAM Mode Configuration 15 */
+  UINT32	SdramMode16;		/** SDRAM Mode Configuration 16 */
+  CHAR8       Res240[16];
+  UINT32      TimingCfg8;        /* SDRAM Timing Configuration 8 */
+  CHAR8       Res254[12];
+  UINT32      SdramCfg3;
+  CHAR8       Res264[412];
+  UINT32      DqMap0;
+  UINT32      DqMap1;
+  UINT32      DqMap2;
+  UINT32      DqMap3;
+  CHAR8       Res410[1808];
   UINT32	DdrDsr1;		/** Debug Status 1 */
   UINT32	DdrDsr2;		/** Debug Status 2 */
   UINT32	DdrCdr1;		/** Control Driver 1 */
@@ -732,6 +1125,23 @@ DdrRegDump (
   VOID
   );
 
+UINT32
+Ddr4ComputeDimmParameters (
+  IN  CONST GenericSpdEepromT 	*Spd,
+  OUT DimmParamsT 			*Pdimm,
+  IN  UINT32 				DimmNumber
+  );
+ 
+UINT32
+Ddr4SpdCheck (
+  IN  CONST struct Ddr4SpdEepromS *Spd
+  );
+
+INT32
+Crc16 (
+  IN   UINT8		*Ptr,
+  IN   INT32		Count
+  );
 VOID
 FslDdrGetSpd (
   OUT  GenericSpdEepromT 	*CtrlDimmsSpd,
