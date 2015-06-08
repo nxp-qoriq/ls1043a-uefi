@@ -723,11 +723,6 @@ GetMemoryClkPeriodPs(
   );
 
 /**
-  Function to return ddr frequency
-
-  @retval   Ddr frequency
-
-/**
   Function to dump DDRC registers
 
 **/
