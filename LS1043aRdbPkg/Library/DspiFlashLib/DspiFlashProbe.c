@@ -188,7 +188,7 @@ DspiFlashProbeSlave (
   Cmd = CMD_READ_JEDEC_ID;
   Ret = DspiFlashReadWrite(Dspi, &Cmd, 1, NULL, Idcode,
 		sizeof(Idcode));
-  if (Ret) {
+  if (Ret != EFI_SUCCESS) {
     DEBUG((EFI_D_ERROR, "SF: Failed To Get Idcodes\n"));
     goto ErrClaimBus;
   }
