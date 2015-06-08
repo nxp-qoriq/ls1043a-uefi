@@ -366,9 +366,9 @@
 
   #
   # LS1043a board Specific PCDs
-  #
+  # (DRAM - Region 1 2GB)
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x40000000
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0x80000000
 
   #
   # LS1043a Soc Specific PCDs
@@ -378,9 +378,6 @@
   gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|TRUE
   gArmPlatformTokenSpaceGuid.PcdCci400Initialize|TRUE
   gArmPlatformTokenSpaceGuid.PcdClockInitialize|TRUE
-
-  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0x40000000
 
 !if $(TARGET) == DEBUG
   gArmTokenSpaceGuid.PcdDdrInitialize|TRUE
