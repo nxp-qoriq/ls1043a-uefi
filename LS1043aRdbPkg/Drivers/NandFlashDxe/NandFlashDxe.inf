@@ -33,6 +33,8 @@
 
 [LibraryClasses]
   NandFlashLib
+  UefiLib
+  UefiDriverEntryPoint
 
 [Guids]
 

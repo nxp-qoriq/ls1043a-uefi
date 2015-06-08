@@ -12,12 +12,9 @@
 
 **/
 
-#include <Uefi.h>
-#include <Library/UefiBootServicesTableLib.h>
-#include <Library/IoLib.h>
 #include <Library/DebugLib.h>
 #include <Protocol/BlockIo.h>
-#include <Protocol/Cpu.h>
+#include <Library/FslIfc.h>
 
 /**
   Initialize IFC Nand Flash interface
