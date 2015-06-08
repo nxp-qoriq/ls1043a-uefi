@@ -14,6 +14,7 @@
 
 **/
 
+#include <LS1043aSocLib.h>
 #include <Ddr.h>
 
 UINT32
