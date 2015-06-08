@@ -186,7 +186,7 @@ Tzc380Init (
     
   // Note: Your OS Kernel must be aware of the secure regions before to
   // enable this region
-  TZASCSetRegion(CONFIG_SYS_TZASC380_ADDR, 1, TZASC_REGION_ENABLED, DRAM1_BASE_ADDR, 0,
+  TZASCSetRegion(CONFIG_SYS_TZASC380_ADDR, 1, TZASC_REGION_ENABLED, CONFIG_DRAM1_BASE_ADDR, 0,
 		TZASC_REGION_SIZE_2GB, TZASC_REGION_SECURITY_SRW, 0x7F);
 }
 
