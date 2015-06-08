@@ -55,3 +55,12 @@
 
   ## Ddr
   gArmTokenSpaceGuid.PcdDdrInitialize|FALSE|BOOLEAN|0x00000026
+  
+  #
+  # LS1043a Soc Specific PCDs
+  #
+  gArmPlatformTokenSpaceGuid.PcdCounterFrequencyReal|FALSE|BOOLEAN|0x00000027
+  gArmPlatformTokenSpaceGuid.PcdCsuInitialize|FALSE|BOOLEAN|0x00000028
+  gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|FALSE|BOOLEAN|0x00000029
+  gArmPlatformTokenSpaceGuid.PcdCci400Initialize|FALSE|BOOLEAN|0x00000030
+  gArmPlatformTokenSpaceGuid.PcdClockInitialize|FALSE|BOOLEAN|0x00000031

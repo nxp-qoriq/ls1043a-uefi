@@ -13,7 +13,7 @@
 
 **/
 
-
+#include <LS1043aSocLib.h>
 #include <Ddr.h>
 #include <I2c.h>
 #include <Library/BaseLib.h>
@@ -78,15 +78,6 @@ const struct BoardSpecificParameters *UDimm[] = {
 const struct BoardSpecificParameters *RDimm[] = {
   RDimm0,
 };
-
-UINTN
-GetDdrFreq (
-  VOID
-  )
-{
-  return 0x00 /*TODO*/;
-}
-
 
 UINTN
 StepAssignAddresses (
