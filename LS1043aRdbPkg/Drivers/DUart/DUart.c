@@ -14,19 +14,24 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
  **/
 
+#include <LS1043aSocLib.h>
+
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
 #include <Library/PcdLib.h>
 
 #include <Drivers/DUart.h>
 
-UINT32 CalculateBaudDivisor(UINT64 *BaudRate)
+UINT32
+CalculateBaudDivisor (
+  OUT UINT64 *BaudRate
+  )
 {
-	return  (PcdGet32(DUartClkInHz) + *BaudRate * 8)/(*BaudRate * 16);
+	UINTN DUartClk = GetPeripheralClock(UART_CLK);
+	return ((DUartClk + *BaudRate * 8)/(*BaudRate * 16));
 }
 
 /*
-
    Initialise the serial port to the specified settings.
    All unspecified settings will be set to the default values.
 
@@ -36,9 +41,9 @@ UINT32 CalculateBaudDivisor(UINT64 *BaudRate)
 RETURN_STATUS
 EFIAPI
 DuartInitializePort (
-		IN OUT UINTN               UartBase,
-		IN OUT UINT64              *BaudRate
-		)
+  IN OUT UINTN UartBase,
+  IN OUT UINT64 *BaudRate
+  )
 {
 	UINT32	BaudDivisor;
 
@@ -47,7 +52,7 @@ DuartInitializePort (
 	while (!(MmioRead8(UartBase + ULSR) & UART_LSR_TEMT))
 	;
 
-	MmioWrite8(UartBase + UIER, 0); //PcdGet8(PcdUartInterruptMap);
+	MmioWrite8(UartBase + UIER, 0);
 	MmioWrite8(UartBase + ULCR, UART_LCR_BKSE | UART_LCRVAL);
 	MmioWrite8(UartBase + UDLB, 0);
 	MmioWrite8(UartBase + UDMB, 0);
@@ -60,7 +65,6 @@ DuartInitializePort (
 	MmioWrite8(UartBase + ULCR, UART_LCRVAL);
 	return RETURN_SUCCESS;
 }
-
 
 /**
   Write data to serial device.
