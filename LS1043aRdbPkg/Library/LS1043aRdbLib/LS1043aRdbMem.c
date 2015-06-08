@@ -55,6 +55,12 @@ ArmPlatformGetVirtualMemoryMap (
     CacheAttributes = DDR_ATTRIBUTES_UNCACHED;
   }
 
+  // DRAM1 (Must be 1st entry)
+  VirtualMemoryTable[Index].PhysicalBase = CONFIG_DRAM1_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = CONFIG_DRAM1_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = CONFIG_DRAM1_SIZE;
+  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
+
   // Secure BootROM
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_SECURE_BOOTROM_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_SECURE_BOOTROM_BASE_ADDR;
@@ -68,19 +74,19 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
 
   // CCSR Space
-  VirtualMemoryTable[Index].PhysicalBase = CONFIG_CCSR_BASE_ADDR;
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_CCSR_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_CCSR_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_CCSR_SIZE;
   VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
 
   // OCRAM1 Space
-  VirtualMemoryTable[Index].PhysicalBase = CONFIG_OCRAM1_BASE_ADDR;
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_OCRAM1_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_OCRAM1_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_OCRAM1_SIZE;
   VirtualMemoryTable[Index].Attributes   = CacheAttributes;
   
   // OCRAM2 Space
-  VirtualMemoryTable[Index].PhysicalBase = CONFIG_OCRAM2_BASE_ADDR;
+  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_OCRAM2_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_OCRAM2_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_OCRAM2_SIZE;
   VirtualMemoryTable[Index].Attributes   = CacheAttributes;
@@ -91,12 +97,6 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_IFC_REGION1_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_IFC_REGION1_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_IFC_REGION1_BASE_SIZE;
-  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
-
-  // DRAM1
-  VirtualMemoryTable[++Index].PhysicalBase = CONFIG_DRAM1_BASE_ADDR;
-  VirtualMemoryTable[Index].VirtualBase  = CONFIG_DRAM1_BASE_ADDR;
-  VirtualMemoryTable[Index].Length       = CONFIG_DRAM1_SIZE;
   VirtualMemoryTable[Index].Attributes   = CacheAttributes;
 
   // QMAN SWP
