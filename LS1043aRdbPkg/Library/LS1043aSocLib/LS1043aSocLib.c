@@ -630,6 +630,7 @@ SocInit (
 
   PrintRCW();
 	
+  SerDesInit();
   return;
 }
 

@@ -40,6 +40,7 @@
 
 [Sources.common]
   LS1043aSocLib.c
+  LsSerDes.c
 
 [FixedPcd]
   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
