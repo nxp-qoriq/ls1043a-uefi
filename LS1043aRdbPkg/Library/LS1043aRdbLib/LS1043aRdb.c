@@ -22,9 +22,9 @@
 #include <Drivers/PL310L2Cache.h>
 
 #include <LS1043aRdb.h>
+#include <LS1043aSocLib.h>
 #include <I2c.h>
 #include <Ddr.h>
-
 
 /**
   Return the current Boot Mode
@@ -53,7 +53,8 @@ ArmPlatformInitialize (
   )
 {
 
-
+  SocInit();
+   
   // FIXME: Clear IRQs and add a DSB here
   // ArmDataSyncronizationBarrier ();
 

@@ -33,6 +33,7 @@
   MemoryAllocationLib
   I2cLib
   DdrLib
+  LS1043aSocLib
 
 [Sources.common]
   LS1043aRdbHelper.S    | GCC
