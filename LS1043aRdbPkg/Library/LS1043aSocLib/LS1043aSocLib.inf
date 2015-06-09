@@ -30,13 +30,13 @@
 [LibraryClasses]
   ArmTrustZoneLib
   BaseLib
+  CpldLib
   DebugLib
   DebugAgentLib
   IoLib
   ArmLib
   MemoryAllocationLib
   SerialPortLib
-  
 
 [Sources.common]
   LS1043aSocLib.c

@@ -83,4 +83,6 @@ __Div64_32 (
   IN   UINT32        Base
   );
 
+#define offsetof(TYPE, MEMBER) ((UINTN) &((TYPE *)0)->MEMBER)
+
 #endif

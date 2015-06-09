@@ -42,6 +42,7 @@
 
   LS1043aSocLib|LS1043aRdbPkg/Library/LS1043aSocLib/LS1043aSocLib.inf
   ArmTrustZoneLib|LS1043aRdbPkg/Library/ArmTrustZone/ArmTrustZone.inf
+  CpldLib|LS1043aRdbPkg/Library/CpldLib/CpldLib.inf
   ArmPlatformLib|LS1043aRdbPkg/Library/LS1043aRdbLib/LS1043aRdbLib.inf
   ArmPlatformStackLib|ArmPlatformPkg/Library/ArmPlatformStackLib/ArmPlatformStackLib.inf
 

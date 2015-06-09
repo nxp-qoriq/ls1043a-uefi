@@ -33,6 +33,7 @@
 
 #include <LS1043aRdb.h>
 #include <LS1043aSocLib.h>
+#include <CpldLib.h>
 
 /* Global Clock Information pointer */
 static SocClockInfo gClkInfo;
@@ -513,6 +514,38 @@ PrintBoardPersonality (
   VOID
   )
 {
+	static const char *freq[3] = {"100.00MHZ", "156.25MHZ"};
+#ifndef CONFIG_SD_BOOT
+	UINT8 cfg_rcw_src1, cfg_rcw_src2;
+	UINT32 cfg_rcw_src;
+#endif
+	UINT32 sd1refclk_sel;
+
+	DEBUG((EFI_D_INFO, "Board: LS1043ARDB, boot from "));
+
+#ifdef CONFIG_SD_BOOT
+	DEBUG((EFI_D_INFO, "SD\n"));
+#else
+	cfg_rcw_src1 = CPLD_READ(cfg_rcw_src1);
+	cfg_rcw_src2 = CPLD_READ(cfg_rcw_src2);
+	CpldRevBit(&cfg_rcw_src1);
+	cfg_rcw_src = cfg_rcw_src1;
+	cfg_rcw_src = (cfg_rcw_src << 1) | cfg_rcw_src2;
+
+	if (cfg_rcw_src == 0x25)
+		DEBUG((EFI_D_INFO, "vBank %d\n", CPLD_READ(vbank)));
+	else if (cfg_rcw_src == 0x106)
+		DEBUG((EFI_D_INFO, "NAND\n"));
+	else
+		DEBUG((EFI_D_INFO, "Invalid setting of SW4\n"));
+#endif
+
+	DEBUG((EFI_D_INFO, "CPLD:  V%x.%x\nPCBA:  V%x.0\n", CPLD_READ(cpld_ver),
+		CPLD_READ(cpld_ver_sub), CPLD_READ(pcba_ver)));
+	
+	DEBUG((EFI_D_INFO, "SERDES Reference Clocks:\n"));
+	sd1refclk_sel = CPLD_READ(sd1refclk_sel);
+	DEBUG((EFI_D_INFO, "SD1_CLK1 = %s, SD1_CLK2 = %s\n", freq[sd1refclk_sel], freq[0]));
 }
 
 VOID
