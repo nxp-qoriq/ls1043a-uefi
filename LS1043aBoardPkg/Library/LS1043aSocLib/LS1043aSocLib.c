@@ -596,7 +596,9 @@ SocInit (
   PrintBoardPersonality();
 
   PrintRCW();
-	
+
+  SerDesInit();	
+
   return;
 }
 

@@ -506,4 +506,6 @@ VOID SocInit(VOID);
 
 UINTN GetDdrFreq(VOID);
 
+VOID SerDesInit(VOID);
+
 #endif /* __LS1043A_SOC_H__ */
