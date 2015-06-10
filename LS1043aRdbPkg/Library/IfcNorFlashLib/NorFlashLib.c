@@ -55,15 +55,15 @@ NorFlashPlatformEraseSector (
   // setup command and two additional unlock cycles
   
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_SECTOR_ERASE_FIRST);
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_2_ADDR, 0, AM29LV065MU_CMD_SECTOR_ERASE_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_FIRST);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_SECOND);
 
   // Issue a setup command
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_SECTOR_ERASE_THIRD);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_THIRD);
 
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_SECTOR_ERASE_FOURTH);
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_2_ADDR, 0, AM29LV065MU_CMD_SECTOR_ERASE_FIFTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_FOURTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_FIFTH);
 
   // Now send the address of the sector to be erased
   SEND_NOR_COMMAND(SectorAddress, 0, AM29LV065MU_CMD_SECTOR_ERASE_SIXTH);
@@ -93,18 +93,18 @@ NorFlashPlatformEraseChip (
   // followed by chip erase commands
   
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_CHIP_ERASE_FIRST);
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_2_ADDR, 0, AM29LV065MU_CMD_CHIP_ERASE_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_CHIP_ERASE_FIRST);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_CHIP_ERASE_SECOND);
 
   // Issue the setup cmd
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_CHIP_ERASE_THIRD);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_CHIP_ERASE_THIRD);
 
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_CHIP_ERASE_FOURTH);
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_2_ADDR, 0, AM29LV065MU_CMD_CHIP_ERASE_FIFTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_CHIP_ERASE_FOURTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_CHIP_ERASE_FIFTH);
 
   // Issue the chip erase cmd
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_CHIP_ERASE_SIXTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_CHIP_ERASE_SIXTH);
 
   // Wait for erase to complete
   for(Count=0; Count < 2048; Count++)
@@ -125,10 +125,10 @@ NorFlashPlatformWriteSingleWord (
   // Request a write program command sequence
   
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_PROGRAM_FIRST);
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_2_ADDR, 0, AM29LV065MU_CMD_PROGRAM_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_PROGRAM_FIRST);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_PROGRAM_SECOND);
   
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_PROGRAM_THIRD);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_PROGRAM_THIRD);
 
   // Store the word into NOR Flash;
   MmioWrite32 (WordAddress, WriteData);
@@ -160,8 +160,8 @@ NorFlashPlatformWriteBuffer (
   )
 {
   UINTN                 Count;
-  UINTN                 BufferSizeInWords;
-  volatile UINT32       *ProgramAddress;
+  volatile UINT8				*ProgramAddress;
+	UINT8									*BufferByte;
 
   // Check there are some data to program
   if (BufferSizeInBytes == 0) {
@@ -179,31 +179,31 @@ NorFlashPlatformWriteBuffer (
   }
 
   // Prepare the destination program address
-  ProgramAddress = (UINT32 *)TargetAddress;
+  ProgramAddress = (UINT8 *)TargetAddress;
   
   // Pre-programming conditions checked, now start the algorithm.
 
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_1_ADDR, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_FIRST);
-  SEND_NOR_COMMAND(AM29LV065MU_CMD_UNLOCK_2_ADDR, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_WRITE_TO_BUFFER_FIRST);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_WRITE_TO_BUFFER_SECOND);
 
   // Write the buffer load
   SEND_NOR_COMMAND(TargetAddress, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_THIRD);
 
   // From now on we work in 32-bit words
-  BufferSizeInWords = BufferSizeInBytes / (UINTN)4;
   
   // Write the word count, which is (BufferSizeInWords - 1),
   // because word count 0 means one word.
-  SEND_NOR_COMMAND(TargetAddress, 0, (BufferSizeInWords - 1));
+  SEND_NOR_COMMAND(TargetAddress, 0, (BufferSizeInBytes - 1));
 
+	BufferByte = (UINT8*)Buffer;
   // Write the data to the NOR Flash, advancing each address by 1 byte
-  for(Count=0; Count < BufferSizeInBytes; Count++, ProgramAddress++, Buffer++) {
-    MmioWrite32 ((UINTN)ProgramAddress, *Buffer);
+  for(Count=0; Count < BufferSizeInBytes; Count++, ProgramAddress++, BufferByte++) {
+    MmioWrite8 ((UINTN)ProgramAddress, *BufferByte);
   }
 
   // Issue the Buffered Program Confirm command
-  SEND_NOR_COMMAND ((UINTN)ProgramAddress, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_CONFIRM);
+  SEND_NOR_COMMAND ((UINTN)TargetAddress, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_CONFIRM);
 
   // Wait for write to complete
   for(Count=0; Count < 2048; Count++)

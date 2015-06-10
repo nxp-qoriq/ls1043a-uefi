@@ -27,7 +27,7 @@
 #define NOR_FLASH_ERASE_RETRY                     10
 
 #define CREATE_NOR_ADDRESS(BaseAddr,OffsetAddr)   ((BaseAddr) + (OffsetAddr))
-#define SEND_NOR_COMMAND(BaseAddr,Offset,Cmd) MmioWrite32 (CREATE_NOR_ADDRESS(BaseAddr,Offset), Cmd)
+#define SEND_NOR_COMMAND(BaseAddr,Offset,Cmd) MmioWrite8 (CREATE_NOR_ADDRESS(BaseAddr,Offset), Cmd)
 #define GET_NOR_BLOCK_ADDRESS(BaseAddr,Lba,LbaSize)( BaseAddr + (UINTN)((Lba) * LbaSize) )
 
 // Device Commands for AMD/SPANSION Am29LV065mu NOR flash
@@ -47,7 +47,7 @@
 #define CFI_QRY_Q                                 0x51
 #define CFI_QRY_R                                 0x52
 #define CFI_QRY_Y                                 0x59
-#define CFI_QRY                                   0x595251
+#define CFI_QRY                                   0x515259
 
 #define AM29LV065MU_ENTER_CFI_QUERY_MODE_ADDR     0x55
 #define AM29LV065MU_ENTER_CFI_QUERY_MODE_CMD      0x98

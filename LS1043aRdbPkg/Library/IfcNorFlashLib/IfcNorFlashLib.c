@@ -41,8 +41,9 @@ IfcNorSetMemctlRegs (
 	(UINTN) IfcRegs->cspr_cs[IFC_CS0].cspr, IFC_NOR_CSPR0);
   MmioWriteBe32(
 	(UINTN) IfcRegs->amask_cs[IFC_CS0].amask, IFC_NOR_AMASK0);
-  MmioWriteBe32(
-	(UINTN) IfcRegs->csor_cs[IFC_CS0].csor, IFC_NOR_CSOR0);
+  /* FIXME: Not working for now, but needs to be debugged. */
+  /* MmioWriteBe32(
+	(UINTN) IfcRegs->csor_cs[IFC_CS0].csor, IFC_NOR_CSOR0); */
 }
 
 /*
