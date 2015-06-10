@@ -25,7 +25,7 @@
 #include <Library/FslIfc.h>
 
 #include "CfiNorFlashLib.h"
-#include "Am29LV065muCfiNorFlashLib.h"
+#include "Mt28ew01gabaCfiNorFlashLib.h"
 
 #define NOR_FLASH_DEVICE_COUNT	1
 
@@ -55,25 +55,25 @@ NorFlashPlatformEraseSector (
   // setup command and two additional unlock cycles
   
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_FIRST);
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FIRST);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_SECOND);
 
   // Issue a setup command
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_THIRD);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_THIRD);
 
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_FOURTH);
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_SECTOR_ERASE_FIFTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FOURTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FIFTH);
 
   // Now send the address of the sector to be erased
-  SEND_NOR_COMMAND(SectorAddress, 0, AM29LV065MU_CMD_SECTOR_ERASE_SIXTH);
+  SEND_NOR_COMMAND(SectorAddress, 0, MT28EW01GABA_CMD_SECTOR_ERASE_SIXTH);
   
   // Wait for erase to complete
   for(Count=0; Count < 2048; Count++)
     ;
 
   // Put device back into Read Array mode (via RESET)
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, AM29LV065MU_CMD_RESET);
+  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
   return EFI_SUCCESS;
 }
@@ -93,18 +93,18 @@ NorFlashPlatformEraseChip (
   // followed by chip erase commands
   
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_CHIP_ERASE_FIRST);
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_CHIP_ERASE_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FIRST);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_SECOND);
 
   // Issue the setup cmd
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_CHIP_ERASE_THIRD);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_THIRD);
 
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_CHIP_ERASE_FOURTH);
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_CHIP_ERASE_FIFTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FOURTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FIFTH);
 
   // Issue the chip erase cmd
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_CHIP_ERASE_SIXTH);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_SIXTH);
 
   // Wait for erase to complete
   for(Count=0; Count < 2048; Count++)
@@ -125,10 +125,10 @@ NorFlashPlatformWriteSingleWord (
   // Request a write program command sequence
   
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_PROGRAM_FIRST);
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_PROGRAM_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_PROGRAM_FIRST);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_PROGRAM_SECOND);
   
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_PROGRAM_THIRD);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_PROGRAM_THIRD);
 
   // Store the word into NOR Flash;
   MmioWrite32 (WordAddress, WriteData);
@@ -138,7 +138,7 @@ NorFlashPlatformWriteSingleWord (
     ;
 
   // Put device back into Read Array mode (via Reset)
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, AM29LV065MU_CMD_RESET);
+  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
   return EFI_SUCCESS;
 }
@@ -169,7 +169,7 @@ NorFlashPlatformWriteBuffer (
   }
 
   // Ensure that requested buffer size does not exceed the maximum supported buffer size
-  if (BufferSizeInBytes > AM29LV065MU_BUFFER_SIZE_IN_BYTES) {
+  if (BufferSizeInBytes > MT28EW01GABA_BUFFER_SIZE_IN_BYTES) {
     return EFI_BAD_BUFFER_SIZE;
   }
 
@@ -184,11 +184,11 @@ NorFlashPlatformWriteBuffer (
   // Pre-programming conditions checked, now start the algorithm.
 
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_1_ADDR, AM29LV065MU_CMD_WRITE_TO_BUFFER_FIRST);
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, AM29LV065MU_CMD_UNLOCK_2_ADDR, AM29LV065MU_CMD_WRITE_TO_BUFFER_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_WRITE_TO_BUFFER_FIRST);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_WRITE_TO_BUFFER_SECOND);
 
   // Write the buffer load
-  SEND_NOR_COMMAND(TargetAddress, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_THIRD);
+  SEND_NOR_COMMAND(TargetAddress, 0, MT28EW01GABA_CMD_WRITE_TO_BUFFER_THIRD);
 
   // From now on we work in 32-bit words
   
@@ -203,14 +203,14 @@ NorFlashPlatformWriteBuffer (
   }
 
   // Issue the Buffered Program Confirm command
-  SEND_NOR_COMMAND ((UINTN)TargetAddress, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_CONFIRM);
+  SEND_NOR_COMMAND ((UINTN)TargetAddress, 0, MT28EW01GABA_CMD_WRITE_TO_BUFFER_CONFIRM);
 
   // Wait for write to complete
   for(Count=0; Count < 2048; Count++)
     ;
 
   // Put device back into Read Array mode (via Reset)
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, AM29LV065MU_CMD_RESET);
+  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
   return EFI_SUCCESS;
 }
@@ -254,19 +254,19 @@ NorFlashPlatformWriteFullBlock (
   if ((WordAddress & BOUNDARY_OF_32_WORDS) == 0x00) {
 
     // First, break the entire block into buffer-sized chunks.
-    BuffersInBlock = (UINTN)(BlockSizeInWords * 4) / AM29LV065MU_BUFFER_SIZE_IN_BYTES;
+    BuffersInBlock = (UINTN)(BlockSizeInWords * 4) / MT28EW01GABA_BUFFER_SIZE_IN_BYTES;
 
     // Then feed each buffer chunk to the NOR Flash
     // If a buffer does not contain any data, don't write it.
     for(BufferIndex=0;
          BufferIndex < BuffersInBlock;
-         BufferIndex++, WordAddress += AM29LV065MU_BUFFER_SIZE_IN_BYTES, DataBuffer += AM29LV065MU_MAX_BUFFER_SIZE_IN_WORDS
+         BufferIndex++, WordAddress += MT28EW01GABA_BUFFER_SIZE_IN_BYTES, DataBuffer += MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS
       ) {
       // Check the buffer to see if it contains any data (not set all 1s).
-      for (Cnt = 0; Cnt < AM29LV065MU_MAX_BUFFER_SIZE_IN_WORDS; Cnt++) {
+      for (Cnt = 0; Cnt < MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS; Cnt++) {
         if (~DataBuffer[Cnt] != 0 ) {
           // Some data found, write the buffer.
-          Status = NorFlashPlatformWriteBuffer (Instance, WordAddress, AM29LV065MU_BUFFER_SIZE_IN_BYTES, DataBuffer);
+          Status = NorFlashPlatformWriteBuffer (Instance, WordAddress, MT28EW01GABA_BUFFER_SIZE_IN_BYTES, DataBuffer);
           if (EFI_ERROR(Status)) {
             goto EXIT;
           }
@@ -276,7 +276,7 @@ NorFlashPlatformWriteFullBlock (
     }
 
     // Finally, finish off any remaining words that are less than the maximum size of the buffer
-    RemainingWords = BlockSizeInWords % AM29LV065MU_MAX_BUFFER_SIZE_IN_WORDS;
+    RemainingWords = BlockSizeInWords % MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS;
 
     if(RemainingWords != 0) {
       Status = NorFlashPlatformWriteBuffer (Instance, WordAddress, (RemainingWords * 4), DataBuffer);
@@ -412,7 +412,7 @@ NorFlashPlatformReadBlocks (
                                        );
 
   // Put device back into Read Array mode (via Reset)
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, AM29LV065MU_CMD_RESET);
+  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
   // Readout the data
   CopyMem(Buffer, (UINTN *)StartAddress, BufferSizeInBytes);
@@ -462,7 +462,7 @@ NorFlashPlatformRead (
                                        );
 
   // Put the device into Read Array mode (via RESET)
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, AM29LV065MU_CMD_RESET);
+  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
   // Readout the data
   CopyMem (Buffer, (UINTN *)(StartAddress + Offset), BufferSizeInBytes);
@@ -475,7 +475,7 @@ NorFlashPlatformReset (
   IN  NOR_FLASH_INSTANCE *Instance
   )
 {
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, AM29LV065MU_CMD_RESET);
+  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
   return EFI_SUCCESS;
 }
 

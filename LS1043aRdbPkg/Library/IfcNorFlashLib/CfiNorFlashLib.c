@@ -18,7 +18,7 @@
 #include <Library/IoLib.h>
 #include <Library/NorFlashPlatformLib.h>
 
-#include "Am29LV065muCfiNorFlashLib.h"
+#include "Mt28ew01gabaCfiNorFlashLib.h"
 
 STATIC
 VOID
@@ -52,28 +52,28 @@ CfiNorFlashFlashGetAttributes (
   
   for (Count = 0; Count < Index; Count++) {
      // Enter the CFI Query Mode
-  SEND_NOR_COMMAND (IFC_NOR_BUF_BASE, AM29LV065MU_ENTER_CFI_QUERY_MODE_ADDR, AM29LV065MU_ENTER_CFI_QUERY_MODE_CMD);
+  SEND_NOR_COMMAND (IFC_NOR_BUF_BASE, MT28EW01GABA_ENTER_CFI_QUERY_MODE_ADDR, MT28EW01GABA_ENTER_CFI_QUERY_MODE_CMD);
 		
      // Query the unique QRY
 		Data = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, AM29LV065MU_CFI_QUERY_UNIQUE_QRY_THIRD, 3, &Data);
+     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_THIRD, 3, &Data);
      if (Data != CFI_QRY) {
 			DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Not a CFI flash (QRY not recvd): Expected = 0x%x, Got = 0x%x\n", CFI_QRY, Data));
        return EFI_DEVICE_ERROR;
      }
   
-     // Check we have the desired NOR flash slave (AM29LV065MU) connected
+     // Check we have the desired NOR flash slave (MT28EW01GABA) connected
  		 Data = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, AM29LV065MU_CFI_VENDOR_ID_MAJOR_ADDR, 1, &Data);
-      if ((UINT8)Data != AM29LV065MU_CFI_VENDOR_ID_MAJOR) {
-        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a AM29LV065MU flash (MAJOR ID), Expected=0x%x, Got=0x%x\n", AM29LV065MU_CFI_VENDOR_ID_MAJOR, (UINT8)Data));
+     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_VENDOR_ID_MAJOR_ADDR, 1, &Data);
+      if ((UINT8)Data != MT28EW01GABA_CFI_VENDOR_ID_MAJOR) {
+        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a MT28EW01GABA flash (MAJOR ID), Expected=0x%x, Got=0x%x\n", MT28EW01GABA_CFI_VENDOR_ID_MAJOR, (UINT8)Data));
        return EFI_DEVICE_ERROR;
      }
   
  		 Data = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, AM29LV065MU_CFI_VENDOR_ID_MINOR_ADDR, 1, &Data);
-      if ((UINT8)Data != AM29LV065MU_CFI_VENDOR_ID_MINOR) {
-        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a AM29LV065MU flash (MINOR ID), Expected=0x%x, Got=0x%x\n", AM29LV065MU_CFI_VENDOR_ID_MINOR, (UINT8)Data));
+     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_VENDOR_ID_MINOR_ADDR, 1, &Data);
+      if ((UINT8)Data != MT28EW01GABA_CFI_VENDOR_ID_MINOR) {
+        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a MT28EW01GABA flash (MINOR ID), Expected=0x%x, Got=0x%x\n", MT28EW01GABA_CFI_VENDOR_ID_MINOR, (UINT8)Data));
        return EFI_DEVICE_ERROR;
      }
 
@@ -82,16 +82,16 @@ CfiNorFlashFlashGetAttributes (
   
      // Block Size
 		 BlockSize = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, AM29LV065MU_CFI_QUERY_BLOCK_SIZE, 2, &BlockSize);
+     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_BLOCK_SIZE, 2, &BlockSize);
      NorFlashDevices[Count]->BlockSize = 64 * 1024; //BlockSize;
   
      // Device Size
 		 Size = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, AM29LV065MU_CFI_QUERY_DEVICE_SIZE, 1, &Size);
+     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_DEVICE_SIZE, 1, &Size);
      NorFlashDevices[Count]->Size = (2 << (UINT8)Size); // 2 ^ Size
 
      // Put device back into Read Array mode (via Reset)
-     SEND_NOR_COMMAND (NorFlashDevices[Count]->DeviceBaseAddress, 0, AM29LV065MU_CMD_RESET);
+     SEND_NOR_COMMAND (NorFlashDevices[Count]->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
   }
   
   return EFI_SUCCESS;
