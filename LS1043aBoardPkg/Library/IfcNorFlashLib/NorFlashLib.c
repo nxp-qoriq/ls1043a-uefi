@@ -160,8 +160,8 @@ NorFlashPlatformWriteBuffer (
   )
 {
   UINTN                 Count;
-  UINTN                 BufferSizeInWords;
-  volatile UINT32       *ProgramAddress;
+  volatile UINT8				*ProgramAddress;
+	UINT8									*BufferByte;
 
   // Check there are some data to program
   if (BufferSizeInBytes == 0) {
@@ -179,7 +179,7 @@ NorFlashPlatformWriteBuffer (
   }
 
   // Prepare the destination program address
-  ProgramAddress = (UINT32 *)TargetAddress;
+  ProgramAddress = (UINT8 *)TargetAddress;
   
   // Pre-programming conditions checked, now start the algorithm.
 
@@ -191,19 +191,19 @@ NorFlashPlatformWriteBuffer (
   SEND_NOR_COMMAND(TargetAddress, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_THIRD);
 
   // From now on we work in 32-bit words
-  BufferSizeInWords = BufferSizeInBytes / (UINTN)4;
   
   // Write the word count, which is (BufferSizeInWords - 1),
   // because word count 0 means one word.
-  SEND_NOR_COMMAND(TargetAddress, 0, (BufferSizeInWords - 1));
+  SEND_NOR_COMMAND(TargetAddress, 0, (BufferSizeInBytes - 1));
 
+	BufferByte = (UINT8*)Buffer;
   // Write the data to the NOR Flash, advancing each address by 1 byte
-  for(Count=0; Count < BufferSizeInBytes; Count++, ProgramAddress++, Buffer++) {
-    MmioWrite32 ((UINTN)ProgramAddress, *Buffer);
+  for(Count=0; Count < BufferSizeInBytes; Count++, ProgramAddress++, BufferByte++) {
+    MmioWrite8 ((UINTN)ProgramAddress, *BufferByte);
   }
 
   // Issue the Buffered Program Confirm command
-  SEND_NOR_COMMAND ((UINTN)ProgramAddress, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_CONFIRM);
+  SEND_NOR_COMMAND ((UINTN)TargetAddress, 0, AM29LV065MU_CMD_WRITE_TO_BUFFER_CONFIRM);
 
   // Wait for write to complete
   for(Count=0; Count < 2048; Count++)
