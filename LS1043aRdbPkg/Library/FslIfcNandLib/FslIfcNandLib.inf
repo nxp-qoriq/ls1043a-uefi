@@ -28,8 +28,12 @@
 [LibraryClasses]
   ArmLib
   PcdLib
+  UefiLib
+  UefiDriverEntryPoint
+  MemoryAllocationLib
   DebugLib
   IoLib
+  PcdLib
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec

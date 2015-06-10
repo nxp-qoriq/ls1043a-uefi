@@ -64,14 +64,13 @@
   DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
   UncachedMemoryAllocationLib|ArmPkg/Library/UncachedMemoryAllocationLib/UncachedMemoryAllocationLib.inf
 
-  !endif
-  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
-
-	# I2c Library
+  # I2c Library
   I2cLib|LS1043aRdbPkg/Library/I2cLib/I2cLib.inf
 
   # Ddr Library
   DdrLib|LS1043aRdbPkg/Library/DdrLib/DdrLib.inf
+!endif
+  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
 
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
 
@@ -432,8 +431,6 @@
   #gEfiShellPkgTokenSpaceGuid.PcdShellProfileMask|0x00
 #!endif #$(NO_SHELL_PROFILES)
 
-	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x10010000	
-	gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x0	
 
 ################################################################################
 #
@@ -445,7 +442,6 @@
   #
   # SEC
   #
-  LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043aPrePiOcram.inf
   LS1043aRdbPkg/Library/LS1043aPrePi/PeiMPCore.inf
 
   #

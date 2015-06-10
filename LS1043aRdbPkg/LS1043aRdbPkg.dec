@@ -64,11 +64,3 @@
   gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|FALSE|BOOLEAN|0x00000029
   gArmPlatformTokenSpaceGuid.PcdCci400Initialize|FALSE|BOOLEAN|0x00000030
   gArmPlatformTokenSpaceGuid.PcdClockInitialize|FALSE|BOOLEAN|0x00000031
-
-	gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress|0x0|UINT32|0x00000028
-	gLS1043aRdbTokenSpaceGuid.PcdPiFdSize|0x0|UINT32|0x00000029
-																																	
-	gLS1043aRdbTokenSpaceGuid.PcdPiFvBaseAddress|0x0|UINT32|0x0000003A
-	gLS1043aRdbTokenSpaceGuid.PcdPiFvSize|0x0|UINT32|0x0000003B
-	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x0|UINT32|0x0000003C
-	gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x0|UINT32|0x0000003D

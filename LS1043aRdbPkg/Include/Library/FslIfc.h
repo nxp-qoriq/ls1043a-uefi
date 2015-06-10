@@ -386,8 +386,6 @@
 #define IFC_NOR_AMASK0		0xff000000
 #define IFC_NOR_CSOR0		0x0000e000
 
-#define IFC_SRAM_BUF_SIZE	0x4000
-
 typedef enum {
 	IFC_CS0 = 0,
 	IFC_CS1,
