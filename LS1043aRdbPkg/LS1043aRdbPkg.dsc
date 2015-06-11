@@ -18,17 +18,6 @@
 # Defines Section - statements that will be processed to create a Makefile.
 #
 ################################################################################
-[Defines]
-  PLATFORM_NAME                  = LS1043aRdbPkg
-  PLATFORM_GUID                  = 60169ec4-d2b4-44f8-825e-f8684fd42e4f
-  PLATFORM_VERSION               = 0.1
-  DSC_SPECIFICATION              = 0x00010005
-  OUTPUT_DIRECTORY               = Build/LS1043aRdb
-  SUPPORTED_ARCHITECTURES        = AARCH64
-  BUILD_TARGETS                  = DEBUG|RELEASE
-  SKUID_IDENTIFIER               = DEFAULT
-  FLASH_DEFINITION               = LS1043aRdbPkg/LS1043aRdbPkg.fdf
-
 [LibraryClasses.common.SEC]
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64LibSec.inf
 
@@ -64,13 +53,14 @@
   DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
   UncachedMemoryAllocationLib|ArmPkg/Library/UncachedMemoryAllocationLib/UncachedMemoryAllocationLib.inf
 
-  # I2c Library
+  !endif
+  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
+
+	# I2c Library
   I2cLib|LS1043aRdbPkg/Library/I2cLib/I2cLib.inf
 
   # Ddr Library
   DdrLib|LS1043aRdbPkg/Library/DdrLib/DdrLib.inf
-!endif
-  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
 
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
 
@@ -431,6 +421,7 @@
   #gEfiShellPkgTokenSpaceGuid.PcdShellProfileMask|0x00
 #!endif #$(NO_SHELL_PROFILES)
 
+	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x10010000	
 
 ################################################################################
 #

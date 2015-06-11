@@ -56,3 +56,5 @@
   gArmTokenSpaceGuid.PcdDdrInitialize
 
   gArmPlatformTokenSpaceGuid.PcdCounterFrequency
+	
+	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase

@@ -33,6 +33,26 @@ if [[ $1 == "" ]]; then
 	print_usage_banner
 	exit
 fi
+# Check for input arguments
+if [[ $2 == "NONXIP" ]]; then
+	BootSuffix="NonXipBoot.dsc"
+	echo "Compiling for NON-XIP boot" 
+else
+	if [[ $2 == "XIP" ]]; then
+			BootSuffix="XipBoot.dsc"
+			echo "Compiling for XIP boot" 
+	else
+		if [[ $2 == "clean" ]]; then
+			echo "Cleaning up the build directory '../Build/LS1043aRdb/'.."
+			rm -rf ../Build/LS1043aRdb/*
+			exit
+		else
+			echo "Bad boot type argument. Use NONXIP or XIP"
+			exit
+		fi
+	fi
+fi
+
 
 if [[ $1 != "RELEASE" ]]; then
 	if [[ $1 != "DEBUG" ]]; then
@@ -42,12 +62,12 @@ if [[ $1 != "RELEASE" ]]; then
 	fi
 fi
 
-if [[ $2 == "clean" ]]; then
+if [[ $3 == "clean" ]]; then
 	echo "Cleaning up the build directory '../Build/LS1043aRdb/'.."
 	rm -rf ../Build/LS1043aRdb/*
 	exit
 else
-	if [[ $2 == "" ]]; then
+	if [[ $3 == "" ]]; then
 		# Do nothing as argument 2 is optional.
 		echo " "
 	else
@@ -76,4 +96,4 @@ ARCH=AARCH64
 TARGET_TOOLS=GCC48
 
 # Actual build command
-build -p $WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg.dsc -a $ARCH -t $TARGET_TOOLS -b $1
+build -p "$WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg$BootSuffix" -a $ARCH -t $TARGET_TOOLS -b $1

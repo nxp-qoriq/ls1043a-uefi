@@ -13,6 +13,7 @@
 
 #include <AsmMacroIoLib.h>
 #include <AsmMacroIoLibV8.h>
+#include <Ddr.h>
 #include <AutoGen.h>
 
 .text
@@ -23,10 +24,13 @@ GCC_ASM_EXPORT(ArmPlatformGetPrimaryCoreMpId)
 GCC_ASM_EXPORT(ArmPlatformPeiBootAction)
 
 GCC_ASM_IMPORT(ArmReadMpidr)
+GCC_ASM_IMPORT(DramInit)
 GCC_ASM_IMPORT(_gPcd_FixedAtBuild_PcdArmPrimaryCore)
 GCC_ASM_IMPORT(_gPcd_FixedAtBuild_PcdArmPrimaryCoreMask)
 GCC_ASM_IMPORT(_gPcd_FixedAtBuild_PcdCoreCount)
 
+
+DramInitAddr:	.8byte ASM_PFX(DramInit)
 //UINTN
 //ArmPlatformIsPrimaryCore (
 //  IN UINTN MpId
@@ -47,6 +51,21 @@ EL1_OR_EL2_OR_EL3(x0)
 3:
 	LoadConstantToReg(FixedPcdGet32(PcdCounterFrequency), x0)
 	msr cntfrq_el0, x0 
+
+	LoadConstantToReg (FixedPcdGet32(PcdOcramStackBase), x0)
+	mov sp, x0
+
+//Push return address to the stack
+	sub  sp, sp, #16
+	stur  x30, [sp, #0]
+
+	ldr x4, DramInitAddr
+	blr x4
+
+//Pop out return address from stack
+	ldur x30, [sp, #0] 
+	add sp, sp, #16
+	
 	ret
 
 //UINTN

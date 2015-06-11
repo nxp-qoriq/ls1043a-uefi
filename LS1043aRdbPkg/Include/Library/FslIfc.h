@@ -434,6 +434,8 @@ static inline int __ilog2(unsigned int x)
 #define IFC_NOR_AMASK0		IFC_NOR_AMASK
 #define IFC_NOR_CSOR0		IFC_NOR_CSOR
 
+#define IFC_SRAM_BUF_SIZE	0x4000
+
 typedef enum {
 	IFC_CS0 = 0,
 	IFC_CS1,

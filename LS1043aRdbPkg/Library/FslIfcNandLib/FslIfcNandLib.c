@@ -21,6 +21,7 @@ NAND_PART_INFO_TABLE gNandPartInfoTable[1] = {
   { 0x2C, 0xAC, 17, 11}
 };
 
+NAND_FLASH_INFO NandFlashInfo;
 NAND_FLASH_INFO *gNandFlashInfo = NULL;
 
 UINT8           *gEccCode;
@@ -31,7 +32,7 @@ UINTN           gNum512BytesChunks = 0;
  */
 INTN FslIfcRunCmd()
 {
-	UINT32 Status;
+	UINT32 Status = 0;
 	UINT32 Count;
 
 	/* set the chip select for NAND Transaction */
@@ -78,7 +79,7 @@ VOID FslIfcRead(
 			(IFC_FIR_OP_CA0 << IFC_NAND_FIR0_OP1_SHIFT) |
 			(IFC_FIR_OP_RA0 << IFC_NAND_FIR0_OP2_SHIFT) |
 			(IFC_FIR_OP_CMD1 << IFC_NAND_FIR0_OP3_SHIFT) |
-			(IFC_FIR_OP_RBCD << IFC_NAND_FIR0_OP4_SHIFT));
+			(IFC_FIR_OP_BTRD << IFC_NAND_FIR0_OP4_SHIFT));
 		MmioWriteBe32(
 			(UINTN)
 			&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir1, 0x0);
@@ -388,15 +389,16 @@ NandReadPage (
 )
 {
   UINTN      PageAddr;
+	VOID			*SrcAddr;
 
   //Generate device address in bytes to access specific block and page index
   PageAddr = GetActualPageAddress(BlockIndex, PageIndex);
 
   //Send READ command
   FslIfcNandCmdSend(NAND_CMD_READ0, 0, PageAddr);
-
-  CopyMem((VOID*) Buffer, (VOID*) gNandFlashInfo->BufBase,
-		gNandFlashInfo->PageSize);
+	SrcAddr = (VOID*)(gNandFlashInfo->BufBase +
+			(gNandFlashInfo->PageSize + 0x40) * (PageIndex % 4));
+  CopyMem((VOID*) Buffer, SrcAddr, gNandFlashInfo->PageSize);
   return EFI_SUCCESS;
 }
 
@@ -409,6 +411,7 @@ NandWritePage (
 )
 {
   UINTN      Address;
+	VOID			*DestAddr;
 
   //Generate device address in bytes to access specific block and page index
   Address = GetActualPageAddress(BlockIndex, PageIndex);
@@ -419,9 +422,10 @@ NandWritePage (
   //Enable ECC engine.
   //NandEnableEcc();
 
+	DestAddr = (VOID*)(gNandFlashInfo->BufBase +  
+			(gNandFlashInfo->PageSize + 0x40) * (PageIndex % 4));
   //Data input from Buffer
-  CopyMem((VOID*) gNandFlashInfo->BufBase, (VOID*) Buffer,
-		gNandFlashInfo->PageSize);
+  CopyMem(DestAddr, (VOID*) Buffer, gNandFlashInfo->PageSize);
   //Calculate ECC.
   //NandCalculateEcc();
 
@@ -561,11 +565,11 @@ FslIfcNandFlashReadBlocks (
   NumBlocks = DivU64x32(BufferSize, gNandFlashInfo->BlockSize);
   EndBlockIndex = ((UINTN)Lba + NumBlocks) - 1;
 
-  SpareBuffer = (UINT8 *)AllocatePool(gNandFlashInfo->SparePageSize);
-  if (SpareBuffer == NULL) {
-    Status = EFI_OUT_OF_RESOURCES;
-    goto exit;
-  }
+  //SpareBuffer = (UINT8 *)AllocatePool(gNandFlashInfo->SparePageSize);
+  //if (SpareBuffer == NULL) {
+  //  Status = EFI_OUT_OF_RESOURCES;
+  //  goto exit;
+ // }
 
   //Read block
   Status = NandReadBlock((UINTN)Lba, EndBlockIndex, Buffer, SpareBuffer);
@@ -616,11 +620,11 @@ FslIfcNandFlashWriteBlocks (
   NumBlocks = DivU64x32(BufferSize, gNandFlashInfo->BlockSize);
   EndBlockIndex = ((UINTN)Lba + NumBlocks) - 1;
 
-  SpareBuffer = (UINT8 *)AllocatePool(gNandFlashInfo->SparePageSize);
-  if (SpareBuffer == NULL) {
-    Status = EFI_OUT_OF_RESOURCES;
-    goto exit;
-  }
+//  SpareBuffer = (UINT8 *)AllocatePool(gNandFlashInfo->SparePageSize);
+//  if (SpareBuffer == NULL) {
+//    Status = EFI_OUT_OF_RESOURCES;
+//    goto exit;
+// }
 
   // Erase block
   for (BlockIndex = (UINTN)Lba; BlockIndex <= EndBlockIndex; BlockIndex++) {
@@ -705,8 +709,7 @@ FslIfcNandFlashInit (
 {
   EFI_STATUS  Status;
 
-  gNandFlashInfo = (NAND_FLASH_INFO *)
-	AllocateZeroPool (sizeof(NAND_FLASH_INFO));
+  gNandFlashInfo = &NandFlashInfo;
 
   FslIfcInit();
 
