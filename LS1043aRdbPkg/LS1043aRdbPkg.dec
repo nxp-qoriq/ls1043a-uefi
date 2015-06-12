@@ -44,11 +44,17 @@
   ## LS1043a UART
   gArmPlatformTokenSpaceGuid.LS1043aUartClkInHz|61440000|UINT32|0x00000018
   gArmPlatformTokenSpaceGuid.LS1043aUartInteger|0|UINT32|0x00000019
-  gArmPlatformTokenSpaceGuid.LS1043aUartFractional|0|UINT32|0x00000020
+  gArmPlatformTokenSpaceGuid.LS1043aUartFractional|0|UINT32|0x0000001A
 
   ## Timer
-  gArmPlatformTokenSpaceGuid.PcdTimerFrequencyInMHz|30720000|UINT32|0x00000021
-  gArmPlatformTokenSpaceGuid.PcdTimerPeriodicInterruptNum|0|UINT32|0x00000022
+  gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|0|UINT32|0x0000001B
+  gEmbeddedTokenSpaceGuid.PcdTimerPeriod|10000|UINT32|0x0000001D
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|0|UINT32|0x0000001E
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerHypIntrNum|0|UINT32|0x0000001F
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerSecIntrNum|0|UINT32|0x00000020
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerIntrNum|0|UINT32|0x00000021
+  gEmbeddedTokenSpaceGuid.PcdMetronomeTickPeriod|0|UINT32|0x00000022
+  
   gArmPlatformTokenSpaceGuid.PcdLS1043aWatchDogBase|0x0|UINT32|0x00000023
   gArmPlatformTokenSpaceGuid.DUartClkInHz|0x0|UINT32|0x00000024
   gArmPlatformTokenSpaceGuid.DUartInteger|0x0|UINT32|0x00000025

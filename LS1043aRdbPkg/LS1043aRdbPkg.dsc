@@ -120,8 +120,6 @@
 
   CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
 
-  TimerLib|LS1043aRdbPkg/Library/TimerLib/TimerLib.inf
-
   ArmDisassemblerLib|ArmPkg/Library/ArmDisassemblerLib/ArmDisassemblerLib.inf
   DebugAgentLib|MdeModulePkg/Library/DebugAgentLibNull/DebugAgentLibNull.inf
   DmaLib|ArmPkg/Library/ArmDmaLib/ArmDmaLib.inf
@@ -393,10 +391,15 @@
   gArmTokenSpaceGuid.PcdCpuResetAddress|0x94A00000
 
   # Timer
-  gEmbeddedTokenSpaceGuid.PcdTimerPeriod|100000 # expressed in 100ns units, 100,000 x 100 ns = 10,000,000 ns = 10 ms
-  gArmPlatformTokenSpaceGuid.PcdTimerPeriodicInterruptNum|54 # Timer interrupt mapped to GIC IRQ
-  gEmbeddedTokenSpaceGuid.PcdEmbeddedPerformanceCounterPeriodInNanoseconds|77
-  gEmbeddedTokenSpaceGuid.PcdEmbeddedPerformanceCounterFrequencyInHz|13000000
+  gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|0
+  gEmbeddedTokenSpaceGuid.PcdTimerPeriod|10000 # expressed in 100ns units, 100,000 x 100 ns = 10,000,000 ns = 10 ms
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|11 # Virtual PPI
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerHypIntrNum|10 # Hypervisor PPI
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerSecIntrNum|13 # Physical Secure PPI
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerIntrNum|14 # Physical Non-Secure PPI
+  gEmbeddedTokenSpaceGuid.PcdMetronomeTickPeriod|1000
+  #gEmbeddedTokenSpaceGuid.PcdEmbeddedPerformanceCounterPeriodInNanoseconds|77
+  #gEmbeddedTokenSpaceGuid.PcdEmbeddedPerformanceCounterFrequencyInHz|13000000
 
   #
   # ARM Pcds
