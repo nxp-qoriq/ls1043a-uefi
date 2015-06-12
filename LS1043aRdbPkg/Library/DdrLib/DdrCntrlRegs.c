@@ -99,6 +99,8 @@ CheckFslMemctlConfigRegs (
    **/
   if (Ddr->DdrSdramCfg & 0x10000000
       && Ddr->DdrSdramCfg & 0x00008000) {
+    DEBUG((EFI_D_INFO,"Error: DDR_SDRAM_CFG[RD_EN] And DDR_SDRAM_CFG[2T_EN] "
+	" Should Not Be Set At The Same Time.\n"));
     Res++;
   }
 
@@ -181,9 +183,33 @@ SetTimingCfg0 (
   /** Precharge powerdown exit timing (Txp). */
   UINT8 PrePdExitMclk;
   /** ODT powerdown exit timing (tAXPD). */
-  UINT8 TaxpdMclk;
+  UINT8 TaxpdMclk = 0;
   /** Mode register set cycle time (tMRD). */
   UINT8 TmrdMclk;
+#if defined(CONFIG_SYS_FSL_DDR4) || defined(CONFIG_SYS_FSL_DDR3)
+  CONST UINT32 MclkPs = GetMemoryClkPeriodPs();
+#endif
+
+#ifdef CONFIG_SYS_FSL_DDR4
+  /* TXP=Max(4nCK, 6ns) */
+  INT32 Txp = Max((INT32)MclkPs * 4, 6000); /* Unit=Ps */
+  UINT32 DataRate = GetDdrFreq();
+
+  /* for Faster Clock, Need More Time for Data Setup */
+  TrwtMclk = (DataRate/1000000 > 1900) ? 3 : 2;
+  TwrtMclk = 1;
+  ActPdExitMclk = PicosToMclk(Txp);
+  PrePdExitMclk = ActPdExitMclk;
+  /*
+   * MRS_CYC = Max(TMRD, TMOD)
+   * TMRD = 8nCK, TMOD = Max(24nCK, 15ns)
+   */
+  TmrdMclk = Max(24U, PicosToMclk(15000));
+#elif defined(CONFIG_SYS_FSL_DDR3)
+  UINT32 DataRate = GetDdrFreq();
+  INT32 Txp;
+  UINT32 IpRev;
+  INT32 OdtOverlap;
 
   /**
     (tXARD and tXARDS). Empirical?
@@ -193,20 +219,49 @@ SetTimingCfg0 (
     spec has not the tAXPD, we use
     tAXPD=1, need design to confirm.
    **/
-  INT32 Txp = Max((GetMemoryClkPeriodPs() * 3), 7500); /** unit=ps */
-  UINT32 DataRate = GetDdrFreq();
-  TmrdMclk = 4;
-  /** set the turnaround time */
+  Txp = Max(((INT32)MclkPs * 3), (MclkPs > 1540 ? 7500 : 6000));
+
+  IpRev = FslDdrGetVersion();
+  if (IpRev >= 0x40700) {
+  /*
+   * MRSCYC = max(tMRD, tMOD)
+   * tMRD = 4nCK (8nCK for RDIMM)
+   * tMOD = max(12nCK, 15ns)
+   */
+  TmrdMclk = Max((UINT32)12,
+		PicosToMclk(15000));
+  } else {
+  /*
+   * MRSCYC = tMRD
+   * tMRD = 4nCK (8nCK for RDIMM)
+   */
+  if (Popts->RegisteredDimmEn)
+    TmrdMclk = 8;
+  else
+    TmrdMclk = 4;
+  }
+
+  /** Set The Turnaround Time */
 
   /**
     for single quad-rank DIMM and two dual-rank DIMMs
     to aVOID ODT overlap
    **/
-  if (AvoidOdtOverlap(DimmParams)) {
-    TwwtMclk = 2;
-    TrrtMclk = 1;
+  OdtOverlap = AvoidOdtOverlap(DimmParams);
+  switch (OdtOverlap) {
+    case 2:
+      TwwtMclk = 2;
+      TrrtMclk = 1;
+      break;
+    case 1:
+      TwwtMclk = 1;
+      TrrtMclk = 0;
+      break;
+    default:
+      break;
   }
-  /** for faster clock, need more time for data setup */
+
+  /** for Faster Clock, Need More Time for Data Setup */
   TrwtMclk = (DataRate/1000000 > 1800) ? 2 : 1;
 
   if ((DataRate/1000000 > 1150) || (Popts->MemctlInterleaving))
@@ -223,6 +278,7 @@ SetTimingCfg0 (
     PrePdExitMclk = ActPdExitMclk;
     TaxpdMclk = 1;
   }
+#endif
 
   if (Popts->TrwtOverride)
     TrwtMclk = Popts->Trwt;
@@ -237,6 +293,7 @@ SetTimingCfg0 (
   	| ((TaxpdMclk & 0xf) << 8)	/** ODT_PD_EXIT */
   	| ((TmrdMclk & 0x1f) << 0)	/** MRS_CYC */
   );
+  DEBUG((EFI_D_INFO, "FSLDDR: timing_cfg_0 = 0x%08x\n", Ddr->TimingCfg0));
 }
 
 
@@ -271,8 +328,12 @@ SetTimingCfg3 (
   ExtActtorw = PicosToMclk(CommonDimm->TrcdPs) >> 4;
   ExtCaslat = (2 * CasLatency - 1) >> 4;
   ExtAddLat = AdditiveLatency >> 4;
+#ifdef CONFIG_SYS_FSL_DDR4
+  ExtRefrec = (PicosToMclk(CommonDimm->Trfc1Ps) - 8) >> 4;
+#else
   ExtRefrec = (PicosToMclk(CommonDimm->TrfcPs) - 8) >> 4;
-  /** Extwrrec only deals with 16 clock and above, or 14 with OTF */
+#endif
+  /** Extwrrec Only Deals With 16 Clock And Above, Or 14 With OTF */
   ExtWrrec = (PicosToMclk(CommonDimm->TwrPs) +
   	(Popts->OtfBurstChopEn ? 2 : 0)) >> 4;
 
@@ -286,6 +347,7 @@ SetTimingCfg3 (
   	| ((ExtWrrec & 0x1) << 8)
   	| ((CntlAdj & 0x7) << 0)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg3 = 0x%08x\n", Ddr->TimingCfg3));
 }
 
 
@@ -313,10 +375,19 @@ SetTimingCfg1(
   UINT8 ActtoactMclk;
   /** Last write data pair to read command issue interval (tWTR) */
   UINT8 WrtordMclk;
-  /** DDR_SDRAM_MODE doesn't support 9,11,13,15 */
+#ifdef CONFIG_SYS_FSL_DDR4
+	/* DDR4 Supports 10, 12, 14, 16, 18, 20, 24 */
+  CONST UINT8 WrrecTable[] = {
+		10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10,
+		12, 12, 14, 14, 16,
+		16, 18, 18, 20, 20,
+		24, 24, 24, 24};
+#else
+  /** DDR_SDRAM_MODE Doesn'T Support 9,11,13,15 */
   CONST UINT8 WrrecTable[] = {
   	1, 2, 3, 4, 5, 6, 7, 8, 10, 10, 12, 12, 14, 14, 0, 0};
-
+#endif
   PretoactMclk = PicosToMclk(CommonDimm->TrpPs);
   ActtopreMclk = PicosToMclk(CommonDimm->TrasPs);
   ActtorwMclk = PicosToMclk(CommonDimm->TrcdPs);
@@ -342,29 +413,46 @@ SetTimingCfg1(
     we need set extend bit for it at
     TIMING_CFG_3[EXT_CASLAT]
    **/
-  CaslatCtrl = 2 * CasLatency - 1;
+  if (FslDdrGetVersion() <= 0x40400)
+    CaslatCtrl = 2 * CasLatency - 1;
+  else
+    CaslatCtrl = (CasLatency - 1) << 1;
 
+#ifdef CONFIG_SYS_FSL_DDR4
+  RefrecCtrl = PicosToMclk(CommonDimm->Trfc1Ps) - 8;
+  WrrecMclk = PicosToMclk(CommonDimm->TwrPs);
+  ActtoactMclk = Max(PicosToMclk(CommonDimm->TrrdPs), 4U);
+  WrtordMclk = Max(2U, PicosToMclk(2500));
+  if (!((WrrecMclk < 1) || (WrrecMclk > 24)))
+    WrrecMclk = WrrecTable[WrrecMclk - 1];
+#else
   RefrecCtrl = PicosToMclk(CommonDimm->TrfcPs) - 8;
   WrrecMclk = PicosToMclk(CommonDimm->TwrPs);
-
+  ActtoactMclk = PicosToMclk(CommonDimm->TrrdPs);
+  WrtordMclk = PicosToMclk(CommonDimm->TwtrPs);
   if (!((WrrecMclk < 1) || (WrrecMclk > 16)))
     WrrecMclk = WrrecTable[WrrecMclk - 1];
+#endif
+
 
   if (Popts->OtfBurstChopEn)
     WrrecMclk += 2;
 
-  ActtoactMclk = PicosToMclk(CommonDimm->TrrdPs);
   /**
     JEDEC has min requirement for tRRD
    **/
+#if defined(CONFIG_SYS_FSL_DDR3)
   if (ActtoactMclk < 4)
     ActtoactMclk = 4;
-  WrtordMclk = PicosToMclk(CommonDimm->TwtrPs);
+#endif
   /**
     JEDEC has some min requirements for tWTR
    **/
+#if defined(CONFIG_SYS_FSL_DDR3)
   if (WrtordMclk < 4)
     WrtordMclk = 4;
+#endif
+
   if (Popts->OtfBurstChopEn)
     WrtordMclk += 2;
 
@@ -378,6 +466,7 @@ SetTimingCfg1(
   	| ((ActtoactMclk & 0x0F) << 4)
   	| ((WrtordMclk & 0x0F) << 0)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg1 = 0x%08x\n", Ddr->TimingCfg1));
 }
 
 
@@ -405,23 +494,47 @@ SetTimingCfg2 (
   /** Window for four activates (tFAW) */
   UINT16 FourAct;
 
-  /** FIXME add check that this must be less than ActtorwMclk */
+#ifdef CONFIG_SYS_FSL_DDR3
+  CONST UINT32 MclkPs = GetMemoryClkPeriodPs();
+#endif
+
+  /** FIXME Add Check That This Must Be Less Than ActtorwMclk */
   AddLatMclk = AdditiveLatency;
   Cpo = Popts->CpoOverride;
 
   WrLat = ComputeCasWriteLatency();
 
+#ifdef CONFIG_SYS_FSL_DDR4
+  RdToPre = PicosToMclk(7500);
+#else
   RdToPre = PicosToMclk(CommonDimm->TrtpPs);
+#endif
+
   /**
     JEDEC has some min requirements for tRTP
   **/
   if (RdToPre < 4)
     RdToPre = 4;
+
   if (Popts->OtfBurstChopEn)
     RdToPre += 2; /** according to UM */
 
   WrDataDelay = Popts->WriteDataDelay;
-  CkePls = PicosToMclk(Popts->TckeClockPulseWidthPs);
+
+#ifdef CONFIG_SYS_FSL_DDR4
+	Cpo = 0;
+	CkePls = Max(3U, PicosToMclk(5000));
+#elif defined(CONFIG_SYS_FSL_DDR3)
+	/*
+	 * Cke Pulse = Max(3nCK, 7.5ns) for DDR3-800
+	 *             Max(3nCK, 5.625ns) for DDR3-1066, 1333
+	 *             Max(3nCK, 5ns) for DDR3-1600, 1866, 2133
+	 */
+	CkePls = Max(3U, PicosToMclk(MclkPs > 1870 ? 7500 :
+				        (MclkPs > 1245 ? 5625 : 5000)));
+#else
+	CkePls = FSL_DDR_MIN_TCKE_PULSE_WIDTH_DDR;
+#endif
   FourAct = PicosToMclk(Popts->TfawWindowFourActivatesPs);
 
   Ddr->TimingCfg2 = (0
@@ -433,6 +546,7 @@ SetTimingCfg2 (
   	| ((CkePls & 0x7) << 6)
   	| ((FourAct & 0x3f) << 0)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg2 = 0x%08x\n", Ddr->TimingCfg2));
 }
 
 
@@ -451,7 +565,7 @@ SetDdrEor (
 VOID
 SetCsnConfig (
   IN   INT32 				DimmNumber,
-  IN   INT32 				i,
+  IN   INT32 				I,
   OUT  FslDdrCfgRegsT 		*Ddr,
   IN   CONST MemctlOptionsT 	*Popts,
   IN   CONST DimmParamsT 		*DimmParams
@@ -467,9 +581,14 @@ SetCsnConfig (
   UINT32 RowBitsCsN = 0; /** Num of row bits for SDRAM on CSn */
   UINT32 ColBitsCsN = 0; /** Num of ocl bits for SDRAM on CSn */
   INT32 GoConfig = 0;
+#ifdef CONFIG_SYS_FSL_DDR4
+  UINT32 BgBitsCsN = 0; /* Num Of Bank Group Bits */
+#else
+  UINT32 NBanksPerSdramDevice;
+#endif
 
   /** Compute CS_CONFIG only for existing ranks of each DIMM.  */
-  switch (i) {
+  switch (I) {
     case 0:
       if (DimmParams[DimmNumber].NRanks > 0) {
         GoConfig = 1;
@@ -511,18 +630,22 @@ SetCsnConfig (
   }
 
   if (GoConfig) {
-    UINT32 NBanksPerSdramDevice;
     CsNEn = 1;
-    ApNEn = Popts->CsLocalOpts[i].AutoPrecharge;
-    OdtRdCfg = Popts->CsLocalOpts[i].OdtRdCfg;
-    OdtWrCfg = Popts->CsLocalOpts[i].OdtWrCfg;
+    ApNEn = Popts->CsLocalOpts[I].AutoPrecharge;
+    OdtRdCfg = Popts->CsLocalOpts[I].OdtRdCfg;
+    OdtWrCfg = Popts->CsLocalOpts[I].OdtWrCfg;
+#ifdef CONFIG_SYS_FSL_DDR4
+    BaBitsCsN = DimmParams[DimmNumber].BankAddrBits;
+    BgBitsCsN = DimmParams[DimmNumber].BankGroupBits;
+#else
     NBanksPerSdramDevice
 	= DimmParams[DimmNumber].NBanksPerSdramDevice;
     BaBitsCsN = __ILog2(NBanksPerSdramDevice) - 2;
+#endif
     RowBitsCsN = DimmParams[DimmNumber].NRowAddr - 12;
     ColBitsCsN = DimmParams[DimmNumber].NColAddr - 8;
   }
-  Ddr->Cs[i].Config = (0
+  Ddr->Cs[I].Config = (0
   	| ((CsNEn & 0x1) << 31)
   	| ((IntlvEn & 0x3) << 29)
   	| ((IntlvCtl & 0xf) << 24)
@@ -536,23 +659,27 @@ SetCsnConfig (
 
   	| ((BaBitsCsN & 0x3) << 14)
   	| ((RowBitsCsN & 0x7) << 8)
+#ifdef CONFIG_SYS_FSL_DDR4
+	| ((BgBitsCsN & 0x3) << 4)
+#endif
   	| ((ColBitsCsN & 0x7) << 0)
   );
+  DEBUG((EFI_D_INFO, "FSLDDR: Cs[%d]Config = 0x%08x\n", I,Ddr->Cs[I].Config));
 }
 
 
 VOID
 SetCsnConfig_2 (
-  IN   INT32 				i,
+  IN   INT32 				I,
   OUT  FslDdrCfgRegsT 		*Ddr
   )
 {
   UINT32 PasrCfg = 0;	/** Partial array self refresh Config */
 
-  Ddr->Cs[i].Config2 = ((PasrCfg & 7) << 24);
+  Ddr->Cs[I].Config2 = ((PasrCfg & 7) << 24);
 }
 
-
+/* DDR SDRAM Register Control Word */
 VOID
 SetDdrSdramRcw (
   OUT  FslDdrCfgRegsT 			*Ddr,
@@ -585,10 +712,13 @@ SetDdrSdramRcw (
    		CommonDimm->Rcw[14] << 4 | \
 		CommonDimm->Rcw[15];
      }
+	DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramRcw1 = 0x%08x\n", Ddr->DdrSdramRcw1));
+	DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramRcw2 = 0x%08x\n", Ddr->DdrSdramRcw2));
   }
 }
 
 
+/* DDR SDRAM Control Configuration (DDR_SDRAM_CFG) */
 VOID
 SetDdrSdramCfg (
   OUT  FslDdrCfgRegsT 			*Ddr,
@@ -673,6 +803,7 @@ SetDdrSdramCfg (
   		| ((MemHalt & 0x1) << 1)
 		| ((Bi & 0x1) << 0)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramCfg = 0x%08x\n", Ddr->DdrSdramCfg));
 }
 
 
@@ -685,8 +816,6 @@ SetDdrSdramCfg2 (
 {
   UINT32 FrcSr = 0;	/** Force self refresh */
   UINT32 SrIe = 0;	/** Self-refresh interrupt enable */
-  UINT32 DllRstDis;	/** DLL reset disable */
-  UINT32 DqsCfg;	/** DQS Configuration */
   UINT32 OdtCfg = 0;	/** ODT Configuration */
   UINT32 NumPr;	/** Number of posted refreshes */
   UINT32 Slow = 0;	/** Ddr will be run less than 1250 */
@@ -697,13 +826,16 @@ SetDdrSdramCfg2 (
   UINT32 RcwEn = 0;	/** Register Control Word Enable */
   UINT32 MdEn = 0;	/** Mirrored DIMM Enable */
   UINT32 QdEn = 0;	/** quad-rank DIMM Enable */
-  INT32 i;
+  INT32 I;
 
-  DllRstDis = 1;	/** Make this Configurable */
-  DqsCfg = Popts->DqsConfig;
-  for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
-    if (Popts->CsLocalOpts[i].OdtRdCfg
-      	|| Popts->CsLocalOpts[i].OdtWrCfg) {
+#ifndef CONFIG_SYS_FSL_DDR4
+  UINT32 DllRstDis = 1;	/* DLL Reset Disable */
+  UINT32 DqsCfg = Popts->DqsConfig;
+#endif
+
+  for (I = 0; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
+    if (Popts->CsLocalOpts[I].OdtRdCfg
+      	|| Popts->CsLocalOpts[I].OdtWrCfg) {
       OdtCfg = SDRAM_CFG2_ODT_ONLY_READ;
       break;
     }
@@ -738,8 +870,10 @@ SetDdrSdramCfg2 (
   Ddr->DdrSdramCfg2 = (0
   	| ((FrcSr & 0x1) << 31)
   	| ((SrIe & 0x1) << 30)
+#ifndef CONFIG_SYS_FSL_DDR4
   	| ((DllRstDis & 0x1) << 29)
   	| ((DqsCfg & 0x3) << 26)
+#endif
   	| ((OdtCfg & 0x3) << 21)
   	| ((NumPr & 0xf) << 12)
   	| ((Slow & 1) << 11)
@@ -752,9 +886,12 @@ SetDdrSdramCfg2 (
   	| ((RcwEn & 0x1) << 2)
   	| ((MdEn & 0x1) << 0)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramCfg2 = 0x%08x\n", Ddr->DdrSdramCfg2));
 }
 
 
+#ifdef CONFIG_SYS_FSL_DDR4
+/* DDR SDRAM Mode Configuration 2 (DDR_SDRAM_MODE_2) */
 VOID
 SetDdrSdramMode2 (
   OUT  FslDdrCfgRegsT 			*Ddr,
@@ -766,10 +903,94 @@ SetDdrSdramMode2 (
   UINT16 ESdmode2 = 0;	/** Extended SDRAM Mode 2 */
   UINT16 ESdmode3 = 0;	/** Extended SDRAM Mode 3 */
 
-  INT32 i;
-  UINT32 RttWr = 0;	/** Rtt_WR - dynamic ODT off */
-  UINT32 Srt = 0;	/** self-refresh temerature, normal range */
-  UINT32 Asr = 0;	/** auto self-refresh disable */
+  INT32 I;
+  UINT32 WrCrc = 0;  /** Disable */
+  UINT32 RttWr = 0;	/** Rtt_WR - Dynamic ODT Off */
+  UINT32 Srt = 0;	/** Self-Refresh Temerature, Normal Range */
+  UINT32 Cwl = ComputeCasWriteLatency() - 9;
+  UINT32 Mpr = 0;	/* Serial */
+  UINT32 WcLat;
+  CONST UINT32 MclkPs = GetMemoryClkPeriodPs();
+
+  if (Popts->RttOverride)
+    RttWr = Popts->RttWrOverrideValue;
+  else
+    RttWr = Popts->CsLocalOpts[0].OdtRttWr;
+
+  if (CommonDimm->ExtendedOpSrt)
+    Srt = CommonDimm->ExtendedOpSrt;
+
+  ESdmode2 = (0
+  	| ((WrCrc & 0x1) << 12)
+  	| ((RttWr & 0x3) << 9)
+  	| ((Srt & 0x3) << 6)
+  	| ((Cwl & 0x7) << 3));
+
+  if (MclkPs >= 1250)
+    WcLat = 0;
+  else if (MclkPs >= 833)
+    WcLat = 1;
+  else
+    WcLat = 2;
+
+  ESdmode3 = (0
+	| ((Mpr & 0x3) << 11)
+	| ((WcLat & 0x3) << 9));
+
+  Ddr->DdrSdramMode2 = (0
+	| ((ESdmode2 & 0xFFFF) << 16)
+	| ((ESdmode3 & 0xFFFF) << 0)
+  );
+
+  if (UnqMrsEn) {	/** Unique Mode Registers Are Supported */
+    for (I = 1; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
+      if (Popts->RttOverride)
+        RttWr = Popts->RttWrOverrideValue;
+      else
+        RttWr = Popts->CsLocalOpts[I].OdtRttWr;
+
+      ESdmode2 &= 0xF9FF;	/** Clear Bit 10, 9 */
+      ESdmode2 |= (RttWr & 0x3) << 9;
+      switch (I) {
+	 case 1:
+	   Ddr->DdrSdramMode4 = (0
+			| ((ESdmode2 & 0xFFFF) << 16)
+			| ((ESdmode3 & 0xFFFF) << 0)
+	   );
+	   break;
+	 case 2:
+	   Ddr->DdrSdramMode6 = (0
+	     		| ((ESdmode2 & 0xFFFF) << 16)
+			| ((ESdmode3 & 0xFFFF) << 0)
+	   );
+	   break;
+	 case 3:
+	   Ddr->DdrSdramMode8 = (0
+			| ((ESdmode2 & 0xFFFF) << 16)
+			| ((ESdmode3 & 0xFFFF) << 0)
+	   );
+	   break;
+      }
+    }
+  }
+}
+#elif defined(CONFIG_SYS_FSL_DDR3)
+/* DDR SDRAM Mode Configuration 2 (DDR_SDRAM_MODE_2) */
+VOID
+SetDdrSdramMode2 (
+  OUT  FslDdrCfgRegsT 			*Ddr,
+  IN   CONST MemctlOptionsT 		*Popts,
+  IN   CONST CommonTimingParamsT 		*CommonDimm,
+  IN   CONST UINT32 				UnqMrsEn
+  )
+{
+  UINT16 ESdmode2 = 0;	/** Extended SDRAM Mode 2 */
+  UINT16 ESdmode3 = 0;	/** Extended SDRAM Mode 3 */
+
+  INT32 I;
+  UINT32 RttWr = 0;	/** Rtt_WR - Dynamic ODT Off */
+  UINT32 Srt = 0;	/** Self-Refresh Temerature, Normal Range */
+  UINT32 Asr = 0;	/** Auto Self-Refresh Disable */
   UINT32 Cwl = ComputeCasWriteLatency() - 5;
   UINT32 Pasr = 0;	/** partial array self refresh disable */
 
@@ -794,15 +1015,15 @@ SetDdrSdramMode2 (
   );
 
   if (UnqMrsEn) {	/** unique Mode registers are supported */
-    for (i = 1; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
+    for (I = 1; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
       if (Popts->RttOverride)
         RttWr = Popts->RttWrOverrideValue;
       else
-        RttWr = Popts->CsLocalOpts[i].OdtRttWr;
+        RttWr = Popts->CsLocalOpts[I].OdtRttWr;
 
       ESdmode2 &= 0xF9FF;	/** clear bit 10, 9 */
       ESdmode2 |= (RttWr & 0x3) << 9;
-      switch (i) {
+      switch (I) {
 	 case 1:
 	   Ddr->DdrSdramMode4 = (0
 			| ((ESdmode2 & 0xFFFF) << 16)
@@ -825,10 +1046,120 @@ SetDdrSdramMode2 (
     }
   }
 }
+#endif
 
+#ifdef CONFIG_SYS_FSL_DDR4
+/* DDR SDRAM Mode Configuration 9 (DDR_SDRAM_MODE_9) */
+VOID SetDdrSdramMode9(
+  OUT  FslDdrCfgRegsT *Ddr,
+  IN   CONST MemctlOptionsT *Popts,
+  IN   CONST CommonTimingParamsT *CommonDimm,
+  IN   CONST UINT32 UnqMrsEn
+  )
+{
+  INT32 I;
+  UINT16 Esdmode4 = 0;	/* Extended SDRAM Mode 4 */
+  UINT16 Esdmode5;	/* Extended SDRAM Mode 5 */
 
+  Esdmode5 = 0x00000500;		/* Data Mask Enabled */
+
+  Ddr->DdrSdramMode9 = (0
+	| ((Esdmode4 & 0xffff) << 16)
+	| ((Esdmode5 & 0xffff) << 0)
+	);
+
+  /* Only Mode9 Use 0x500, Others Use 0x400 */
+  Esdmode5 = 0x00000400;		/* Data Mask Enabled */
+
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode9) = 0x%08x\n", Ddr->DdrSdramMode9));
+  if (UnqMrsEn) {	/* Unique Mode Registers Are Supported */
+    for (I = 1; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
+      switch (I) {
+	 case 1:
+	   Ddr->DdrSdramMode11 = (0
+	   		| ((Esdmode4 & 0xFFFF) << 16)
+			| ((Esdmode5 & 0xFFFF) << 0)
+		 );
+	   break;
+	 case 2:
+	   Ddr->DdrSdramMode13 = (0
+			| ((Esdmode4 & 0xFFFF) << 16)
+			| ((Esdmode5 & 0xFFFF) << 0)
+		 );
+	   break;
+	 case 3:
+	   Ddr->DdrSdramMode15 = (0
+			| ((Esdmode4 & 0xFFFF) << 16)
+			| ((Esdmode5 & 0xFFFF) << 0)
+	 	 );
+	   break;
+      }
+    }
+    DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode11 = 0x%08x\n",
+		      Ddr->DdrSdramMode11));
+    DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode13 = 0x%08x\n",
+		      Ddr->DdrSdramMode13));
+    DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode15 = 0x%08x\n",
+		      Ddr->DdrSdramMode15));
+  }
+}
+
+/* DDR SDRAM Mode Configuration 10 (DDR_SDRAM_MODE_10) */
+VOID SetDdrSdramMode10 (
+  OUT FslDdrCfgRegsT *Ddr,
+  IN  CONST MemctlOptionsT *Popts,
+  IN  CONST CommonTimingParamsT *CommonDimm,
+  IN  CONST UINT32 UnqMrsEn
+  )
+{
+  INT32 I;
+  UINT16 Esdmode6 = 0;	/* Extended SDRAM Mode 6 */
+  UINT16 Esdmode7 = 0;	/* Extended SDRAM Mode 7 */
+  UINT32 TccdlMin = PicosToMclk(CommonDimm->TccdlPs);
+
+  Esdmode6 = ((TccdlMin - 4) & 0x7) << 10;
+
+  Ddr->DdrSdramMode10 = (0
+		 | ((Esdmode6 & 0xffff) << 16)
+		 | ((Esdmode7 & 0xffff) << 0)
+	);
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode10) = 0x%08x\n", Ddr->DdrSdramMode10));
+  if (UnqMrsEn) {	/* Unique Mode Registers Are Supported */
+    for (I = 1; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
+      switch (I) {
+	 case 1:
+	   Ddr->DdrSdramMode12 = (0
+			| ((Esdmode6 & 0xFFFF) << 16)
+			| ((Esdmode7 & 0xFFFF) << 0)
+		 );
+	   break;
+	 case 2:
+	   Ddr->DdrSdramMode14 = (0
+			| ((Esdmode6 & 0xFFFF) << 16)
+			| ((Esdmode7 & 0xFFFF) << 0)
+		 );
+	   break;
+	 case 3:
+	   Ddr->DdrSdramMode16 = (0
+			| ((Esdmode6 & 0xFFFF) << 16)
+			| ((Esdmode7 & 0xFFFF) << 0)
+		 );
+	   break;
+	 }
+      }
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode12 = 0x%08x\n",
+		      Ddr->DdrSdramMode12));
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode14 = 0x%08x\n",
+		      Ddr->DdrSdramMode14));
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode16 = 0x%08x\n",
+		      Ddr->DdrSdramMode16));
+  }
+}
+#endif
+
+/* DDR SDRAM Interval Configuration (DDR_SDRAM_INTERVAL) */
 VOID
-set_DdrSdramInterval (
+SetDdrSdramInterval (
   OUT  FslDdrCfgRegsT 			*Ddr,
   IN   CONST MemctlOptionsT 		*Popts,
   IN   CONST CommonTimingParamsT	*CommonDimm
@@ -846,9 +1177,12 @@ set_DdrSdramInterval (
   			   | ((Refint & 0xFFFF) << 16)
   			   | ((Bstopre & 0x3FFF) << 0)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramInterval = 0x%08x\n", Ddr->DdrSdramInterval));
 }
 
 
+#ifdef CONFIG_SYS_FSL_DDR4
+/* DDR SDRAM Mode Configuration Set (DDR_SDRAM_MODE) */
 VOID
 SetDdrSdramMode (
   OUT  FslDdrCfgRegsT 			*Ddr,
@@ -859,6 +1193,172 @@ SetDdrSdramMode (
   IN   CONST UINT32 				UnqMrsEn
   )
 {
+  INT32 I = 0;
+  UINT16 ESdmode;		/** Extended SDRAM Mode */
+  UINT16 Sdmode;		/** SDRAM Mode */
+
+  /** Mode Register - MR1 */
+  UINT32 Qoff = 0;		/** Output Buffer Enable 0=Yes, 1=No */
+  UINT32 TdqsEn = 0;	       /** TDQS Enable: 0=No, 1=Yes */
+  UINT32 Rtt;
+  UINT32 WrlvlEn = 0;	/** Write Level Enable: 0=No, 1=Yes */
+  UINT32 Al = 0;		/** Posted CAS# Additive Latency (AL) */
+  UINT32 Dic = 0;		/** Output Driver Impedance, 40ohm */
+  UINT32 DllEn = 0;	       /** DLL Enable  0=Enable (Normal),
+					       1=Disable (Test/Debug) */
+
+  /** Mode Register - MR0 */
+  UINT32 Wr = 0;	/** Write Recovery */
+  UINT32 DllRst;	/** DLL Reset */
+  UINT32 Mode;	/** Normal=0 Or Test=1 */
+  UINT32 Caslat = 4; /** CAS# Latency, default Set As 6 Cycles */
+  /** BT: Burst Type (0=Nibble Sequential, 1=Interleaved) */
+  UINT32 Bt;
+  UINT32 Bl;	/** BL: Burst Length */
+
+  UINT32 WrMclk;
+  /* DDR4 Support WR 10, 12, 14, 16, 18, 20, 24 */
+  CONST UINT8 WrTable[] = {0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6};
+
+  /* DDR4 Support CAS 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24 */
+  CONST UINT8 CasLatencyTable[] = {
+		0, 1, 2, 3, 4, 5, 6, 7, 8, 8,
+		9, 9, 10, 10, 11, 11};
+
+  if (Popts->RttOverride)
+    Rtt = Popts->RttOverrideValue;
+  else
+    Rtt = Popts->CsLocalOpts[0].OdtRttNorm;
+
+  if (AdditiveLatency == (CasLatency - 1))
+    Al = 1;
+  if (AdditiveLatency == (CasLatency - 2))
+    Al = 2;
+
+  if (Popts->QuadRankPresent)
+    Dic = 1;	/** Output Driver Impedance 240/7 Ohm */
+
+  /**
+    The ESdmode Value Will Also Be Used for Writing
+    MR1 During Write Leveling for DDR3, Although The
+    Bits Specifically Related To The Write Leveling
+    Scheme Will Be Handled Automatically By The Ddr
+    Controller. So We Set The WrlvlEn = 0 Here.
+  **/
+  ESdmode = (0
+  	| ((Qoff & 0x1) << 12)
+  	| ((TdqsEn & 0x1) << 11)
+  	| ((Rtt & 0x7) << 8)   /** Rtt Field Is Split */
+  	| ((WrlvlEn & 0x1) << 7)
+  	| ((Al & 0x3) << 3)
+  	| ((Dic & 0x3) << 1)   /** DIC Field Is Split */
+  	| ((DllEn & 0x1) << 0)
+  );
+
+  /**
+    DLL Control for Precharge PD
+    0=Slow Exit DLL Off (TxpDLL)
+    1=Fast Exit DLL On (Txp)
+  **/
+  WrMclk = PicosToMclk(CommonDimm->TwrPs);
+  if (WrMclk <= 24) {
+    Wr = WrTable[WrMclk - 10];
+  } else {
+    DEBUG((EFI_D_INFO,"Error: Unsupported Write Recovery "
+		"for Mode Register WrMclk = %d\n", WrMclk));
+  }
+
+  DllRst = 0;	/** Dll No Reset */
+  Mode = 0;	/** Normal Mode */
+
+  /** Look Up Table To Get The Cas Latency Bits */
+  if (CasLatency >= 9 && CasLatency <= 24)
+    Caslat = CasLatencyTable[CasLatency - 9];
+  else
+    DEBUG((EFI_D_INFO,"R: Unsupported Cas Latency for Mode Register\n"));
+
+  Bt = 0;	/** Nibble Sequential */
+
+  switch (Popts->BurstLength) {
+    case DDR_BL8:
+      Bl = 0;
+      break;
+    case DDR_OTF:
+      Bl = 1;
+      break;
+    case DDR_BC4:
+      Bl = 2;
+      break;
+    default:
+      DEBUG((EFI_D_INFO,"Error: Invalid Burst Length Of %d Specified. ",
+	       Popts->BurstLength));
+      DEBUG((EFI_D_INFO,"Defaulting To On-The-Fly BC4 Or BL8 Beats.\n"));
+      Bl = 1;
+      break;
+  }
+
+  Sdmode = (0
+  	  | ((Wr & 0x7) << 9)
+  	  | ((DllRst & 0x1) << 8)
+	  | ((Mode & 0x1) << 7)
+	  | (((Caslat >> 1) & 0x7) << 4)
+	  | ((Bt & 0x1) << 3)
+	  | ((Caslat & 1) << 2)
+	  | ((Bl & 0x3) << 0)
+  );
+
+  Ddr->DdrSdramMode = (0
+  		       | ((ESdmode & 0xFFFF) << 16)
+  		       | ((Sdmode & 0xFFFF) << 0)
+  );
+
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramMode = 0x%08x\n", Ddr->DdrSdramMode));
+
+  if (UnqMrsEn) {	/** Unique Mode Registers Are Supported */
+    for (I = 1; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
+      if (Popts->RttOverride)
+        Rtt = Popts->RttOverrideValue;
+      else
+  	 Rtt = Popts->CsLocalOpts[I].OdtRttNorm;
+
+      ESdmode &= 0xF8FF;	/** Clear Bit 10,9,8 for Rtt */
+      ESdmode |= ((Rtt & 0x7) << 8);
+      switch (I) {
+	 case 1:
+	   Ddr->DdrSdramMode3 = (0
+	  	       | ((ESdmode & 0xFFFF) << 16)
+		       | ((Sdmode & 0xFFFF) << 0)
+	   );
+	   break;
+	 case 2:
+	   Ddr->DdrSdramMode5 = (0
+		       | ((ESdmode & 0xFFFF) << 16)
+		       | ((Sdmode & 0xFFFF) << 0)
+	   );
+	   break;
+	 case 3:
+	   Ddr->DdrSdramMode7 = (0
+		       | ((ESdmode & 0xFFFF) << 16)
+		       | ((Sdmode & 0xFFFF) << 0)
+	   );
+	   break;
+      }
+    }
+  }
+}
+#elif defined(CONFIG_SYS_FSL_DDR3)
+/* DDR SDRAM Mode Configuration Set (DDR_SDRAM_MODE) */
+VOID
+SetDdrSdramMode (
+  OUT  FslDdrCfgRegsT 			*Ddr,
+  IN   CONST MemctlOptionsT 		*Popts,
+  IN   CONST CommonTimingParamsT 		*CommonDimm,
+  IN   UINT32 				CasLatency,
+  IN   UINT32 				AdditiveLatency,
+  IN   CONST UINT32 				UnqMrsEn
+  )
+{
+  INT32 I;
   UINT16 ESdmode;		/** Extended SDRAM Mode */
   UINT16 Sdmode;		/** SDRAM Mode */
 
@@ -889,9 +1389,6 @@ SetDdrSdramMode (
     for this table
   **/
   CONST UINT8 WrTable[] = {1, 2, 3, 4, 5, 5, 6, 6, 7, 7, 0, 0};
-
-  CONST UINT32 MclkPs = GetMemoryClkPeriodPs();
-  INT32 i;
 
   if (Popts->RttOverride)
     Rtt = Popts->RttOverrideValue;
@@ -933,7 +1430,7 @@ SetDdrSdramMode (
   **/
   DllOn = 1;
 
-  WrMclk = (CommonDimm->TwrPs + MclkPs - 1) / MclkPs;
+  WrMclk = PicosToMclk(CommonDimm->TwrPs);
   if (WrMclk <= 16) {
     Wr = WrTable[WrMclk - 5];
   }
@@ -943,7 +1440,7 @@ SetDdrSdramMode (
 
   /** look up table to get the cas latency bits */
   if (CasLatency >= 5 && CasLatency <= 16) {
-    UINT8 CasLatency_table[] = {
+    UINT8 CasLatencyTable[] = {
 		0x2,	/** 5 clocks */
 		0x4,	/** 6 clocks */
 		0x6,	/** 7 clocks */
@@ -957,7 +1454,7 @@ SetDdrSdramMode (
 		0x7,	/** 15 clocks */
 		0x9,	/** 16 clocks */
     };
-    Caslat = CasLatency_table[CasLatency - 5];
+    Caslat = CasLatencyTable[CasLatency - 5];
   }
 
   Bt = 0;	/** Nibble sequential */
@@ -994,11 +1491,11 @@ SetDdrSdramMode (
   );
 
   if (UnqMrsEn) {	/** unique Mode registers are supported */
-    for (i = 1; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
+    for (I = 1; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
       if (Popts->RttOverride)
         Rtt = Popts->RttOverrideValue;
       else
-  	 Rtt = Popts->CsLocalOpts[i].OdtRttNorm;
+  	 Rtt = Popts->CsLocalOpts[I].OdtRttNorm;
 
       ESdmode &= 0xFDBB;	/** clear bit 9,6,2 */
       ESdmode |= (0
@@ -1006,7 +1503,7 @@ SetDdrSdramMode (
 		| ((Rtt & 0x2) << 5)   /** Rtt field is split */
 		| ((Rtt & 0x1) << 2)   /** Rtt field is split */
       );
-      switch (i) {
+      switch (I) {
 	 case 1:
 	   Ddr->DdrSdramMode3 = (0
 	  	       | ((ESdmode & 0xFFFF) << 16)
@@ -1029,20 +1526,25 @@ SetDdrSdramMode (
     }
   }
 }
+#endif
 
-
+/* DDR SDRAM Data Initialization (DDR_DATA_INIT) */
 VOID
 SetDdrDataInit (
   OUT  FslDdrCfgRegsT 		*Ddr
   )
 {
-  UINT32 InitValue;	/** Initialization value */
+  UINT32 InitValue;	/** Initialization Value */
 
   InitValue = 0xDEADBEEF;
   Ddr->DdrDataInit = InitValue;
 }
 
-
+/*
+ * DDR SDRAM Clock Control (DDR_SDRAM_CLK_CNTL)
+ * The Old Controller On The 8540/60 Doesn'T Have This Register.
+ * Hope It's OK To Set It (To 0) Anyway.
+ */
 VOID
 SetDdrSdramClkCntl (
   OUT  FslDdrCfgRegsT 			*Ddr,
@@ -1053,9 +1555,10 @@ SetDdrSdramClkCntl (
 
   ClkAdjust = Popts->ClkAdjust;
   Ddr->DdrSdramClkCntl = (ClkAdjust & 0xF) << 23;
+  DEBUG((EFI_D_INFO,"FSLDDR: ClkCntl = 0x%08x\n", Ddr->DdrSdramClkCntl));
 }
 
-
+/* DDR Initialization Address (DDR_INIT_ADDR) */
 VOID
 SetDdrInitAddr (
   OUT  FslDdrCfgRegsT 			*Ddr
@@ -1066,7 +1569,7 @@ SetDdrInitAddr (
   Ddr->DdrInitAddr = InitAddr;
 }
 
-
+/* DDR Initialization Address (DDR_INIT_EXT_ADDR) */
 VOID
 SetDdrInitExtAddr (
   OUT  FslDdrCfgRegsT 		*Ddr
@@ -1081,7 +1584,7 @@ SetDdrInitExtAddr (
   );
 }
 
-
+/* DDR SDRAM Timing Configuration 4 (TIMING_CFG_4) */
 VOID
 SetTimingCfg4 (
   OUT  FslDdrCfgRegsT 		*Ddr,
@@ -1103,7 +1606,11 @@ SetTimingCfg4 (
     Rrt = 2;	/** BL/2 + 2 clocks */
     Wwt = 2;	/** BL/2 + 2 clocks */
   }
-  DllLock = 1;	/** tDLLK = 512 clocks from spec */
+#ifdef CONFIG_SYS_FSL_DDR4
+  DllLock = 2;	/* TDLLK = 1024 Clocks */
+#elif defined(CONFIG_SYS_FSL_DDR3)
+  DllLock = 1;	/* TDLLK = 512 Clocks From Spec */
+#endif
   Ddr->TimingCfg4 = (0
   	     | ((Rwt & 0xf) << 28)
   	     | ((Wrt & 0xf) << 24)
@@ -1111,9 +1618,10 @@ SetTimingCfg4 (
   	     | ((Wwt & 0xf) << 16)
   	     | (DllLock & 0x3)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg4 = 0x%08x\n", Ddr->TimingCfg4));
 }
 
-
+/* DDR SDRAM Timing Configuration 5 (TIMING_CFG_5) */
 VOID
 SetTimingCfg5 (
   OUT  FslDdrCfgRegsT 		*Ddr,
@@ -1125,11 +1633,14 @@ SetTimingCfg5 (
   UINT32 WodtOn = 0;		/** Write to ODT on */
   UINT32 WodtOff = 0;	/** Write to ODT off */
 
-  /** rodtOn = TimingCfg1[Caslat] - TimingCfg2[wrlat] + 1 */
-  RodtOn = CasLatency - ((Ddr->TimingCfg2 & 0x00780000) >> 19) + 1;
-  RodtOff = 4;	/**  4 clocks */
-  WodtOn = 1;		/**  1 clocks */
-  WodtOff = 4;	/**  4 clocks */
+  UINT32 WrLat = ((Ddr->TimingCfg2 & 0x00780000) >> 19) +
+		    ((Ddr->TimingCfg2 & 0x00040000) >> 14);
+  /** RodtOn = TimingCfg1[Caslat] - TimingCfg2[Wrlat] + 1 */
+  if (CasLatency >= WrLat)
+    RodtOn = CasLatency - WrLat + 1;
+  RodtOff = 4;	/**  4 Clocks */
+  WodtOn = 1;		/**  1 Clocks */
+  WodtOff = 4;	/**  4 Clocks */
 
   Ddr->TimingCfg5 = (0
             | ((RodtOn & 0x1f) << 24)
@@ -1137,9 +1648,193 @@ SetTimingCfg5 (
             | ((WodtOn & 0x1f) << 12)
             | ((WodtOff & 0x7) << 8)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg5 = 0x%08x\n", Ddr->TimingCfg5));
 }
 
+#ifdef CONFIG_SYS_FSL_DDR4
+static VOID
+SetTimingCfg6 (
+  OUT  FslDdrCfgRegsT *Ddr
+  )
+{
+  UINT32 HsCaslat = 0;
+  UINT32 HsWrlat = 0;
+  UINT32 HsWrrec = 0;
+  UINT32 HsClkadj = 0;
+  UINT32 HsWrlvlStart = 0;
 
+  Ddr->TimingCfg6 = (0
+		| ((HsCaslat & 0x1f) << 24)
+		| ((HsWrlat & 0x1f) << 19)
+		| ((HsWrrec & 0x1f) << 12)
+		| ((HsClkadj & 0x1f) << 6)
+		| ((HsWrlvlStart & 0x1f) << 0)
+	);
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg6 = 0x%08x\n", Ddr->TimingCfg6));
+}
+
+static VOID
+SetTimingCfg7 (
+  OUT  FslDdrCfgRegsT *Ddr,
+  IN  CONST CommonTimingParamsT *CommonDimm
+  )
+{
+  UINT32 Txpr, Tcksre, Tcksrx;
+  UINT32 CkeRst, Cksre, Cksrx, ParLat, CsToCmd;
+
+  Txpr = Max(5U, PicosToMclk(CommonDimm->Trfc1Ps + 10000));
+  Tcksre = Max(5U, PicosToMclk(10000));
+  Tcksrx = Max(5U, PicosToMclk(10000));
+  ParLat = 0;
+  CsToCmd = 0;
+
+  if (Txpr <= 200)
+    CkeRst = 0;
+  else if (Txpr <= 256)
+    CkeRst = 1;
+  else if (Txpr <= 512)
+    CkeRst = 2;
+  else
+    CkeRst = 3;
+
+  if (Tcksre <= 19)
+    Cksre = Tcksre - 5;
+  else
+    Cksre = 15;
+
+  if (Tcksrx <= 19)
+    Cksrx = Tcksrx - 5;
+  else
+    Cksrx = 15;
+
+  Ddr->TimingCfg7 = (0
+	     | ((CkeRst & 0x3) << 28)
+	     | ((Cksre & 0xf) << 24)
+	     | ((Cksrx & 0xf) << 20)
+	     | ((ParLat & 0xf) << 16)
+	     | ((CsToCmd & 0xf) << 4)
+       );
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg7 = 0x%08x\n", Ddr->TimingCfg7));
+}
+
+static VOID
+SetTimingCfg8 (
+  OUT  FslDdrCfgRegsT *Ddr,
+  IN   CONST MemctlOptionsT *Popts,
+  IN   CONST CommonTimingParamsT *CommonDimm,
+  IN   UINT32 CasLatency
+  )
+{
+  UINT32 RwtBg, WrtBg, RrtBg, WwtBg;
+  UINT32 ActtoactBg, WrtordBg, PreAllRec;
+  UINT32 Tccdl = PicosToMclk(CommonDimm->TccdlPs);
+  UINT32 WrLat = ((Ddr->TimingCfg2 & 0x00780000) >> 19) +
+			      ((Ddr->TimingCfg2 & 0x00040000) >> 14);
+
+  RwtBg = CasLatency + 2 + 4 - WrLat;
+  if (RwtBg < Tccdl)
+    RwtBg = Tccdl - RwtBg;
+  else
+    RwtBg = 0;
+
+  WrtBg = WrLat + 4 + 1 - CasLatency;
+  if (WrtBg < Tccdl)
+    WrtBg = Tccdl - WrtBg;
+  else
+    WrtBg = 0;
+
+  if (Popts->BurstLength == DDR_BL8) {
+    RrtBg = Tccdl - 4;
+    WwtBg = Tccdl - 4;
+  } else {
+    RrtBg = Tccdl - 2;
+    WwtBg = Tccdl - 2;
+  }
+
+  ActtoactBg = PicosToMclk(CommonDimm->TrrdlPs);
+  WrtordBg = Max(4U, PicosToMclk(7500));
+  if (Popts->OtfBurstChopEn)
+    WrtordBg += 2;
+
+  PreAllRec = 0;
+
+  Ddr->TimingCfg8 = (0
+	     | ((RwtBg & 0xf) << 28)
+	     | ((WrtBg & 0xf) << 24)
+	     | ((RrtBg & 0xf) << 20)
+	     | ((WwtBg & 0xf) << 16)
+	     | ((ActtoactBg & 0xf) << 12)
+	     | ((WrtordBg & 0xf) << 8)
+	     | ((PreAllRec & 0x1f) << 0)
+       );
+
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg8 = 0x%08x\n", Ddr->TimingCfg8));
+}
+
+static VOID SetTimingCfg9 (
+  OUT  FslDdrCfgRegsT *Ddr
+  )
+{
+  Ddr->TimingCfg9 = 0;
+  DEBUG((EFI_D_INFO,"FSLDDR: TimingCfg9 = 0x%08x\n", Ddr->TimingCfg9));
+}
+
+/* This Function Needs To Be Called After SetDdrSdramCfg() Is Called */
+static VOID SetDdrDqMapping (
+  OUT  FslDdrCfgRegsT *Ddr,
+  IN   CONST DimmParamsT *DimmParams
+  )
+{
+#ifndef INTPSR_DDR4_WORKAROUND
+  UINT32 AccEccEn = (Ddr->DdrSdramCfg >> 2) & 0x1;
+
+  Ddr->DqMap0 = ((DimmParams->DqMapping[0] & 0x3F) << 26) |
+			((DimmParams->DqMapping[1] & 0x3F) << 20) |
+			((DimmParams->DqMapping[2] & 0x3F) << 14) |
+			((DimmParams->DqMapping[3] & 0x3F) << 8) |
+			((DimmParams->DqMapping[4] & 0x3F) << 2);
+
+  Ddr->DqMap1 = ((DimmParams->DqMapping[5] & 0x3F) << 26) |
+			((DimmParams->DqMapping[6] & 0x3F) << 20) |
+			((DimmParams->DqMapping[7] & 0x3F) << 14) |
+			((DimmParams->DqMapping[10] & 0x3F) << 8) |
+			((DimmParams->DqMapping[11] & 0x3F) << 2);
+
+  Ddr->DqMap2 = ((DimmParams->DqMapping[12] & 0x3F) << 26) |
+			((DimmParams->DqMapping[13] & 0x3F) << 20) |
+			((DimmParams->DqMapping[14] & 0x3F) << 14) |
+			((DimmParams->DqMapping[15] & 0x3F) << 8) |
+			((DimmParams->DqMapping[16] & 0x3F) << 2);
+
+	/* DqMap for ECC[4:7] Is Set To 0 if Accumulated ECC Is Enabled */
+  Ddr->DqMap3 = ((DimmParams->DqMapping[17] & 0x3F) << 26) |
+			((DimmParams->DqMapping[8] & 0x3F) << 20) |
+			(AccEccEn ? 0 :
+			 (DimmParams->DqMapping[9] & 0x3F) << 14) |
+			DimmParams->DqMappingOrs;
+#endif
+	DEBUG((EFI_D_INFO,"FSLDDR: DqMap0 = 0x%08x\n", Ddr->DqMap0));
+	DEBUG((EFI_D_INFO,"FSLDDR: DqMap1 = 0x%08x\n", Ddr->DqMap1));
+	DEBUG((EFI_D_INFO,"FSLDDR: DqMap2 = 0x%08x\n", Ddr->DqMap2));
+	DEBUG((EFI_D_INFO,"FSLDDR: DqMap3 = 0x%08x\n", Ddr->DqMap3));
+}
+
+static VOID SetDdrSdramCfg3 (
+  OUT  FslDdrCfgRegsT *Ddr,
+  IN   CONST MemctlOptionsT *Popts
+  )
+{
+  INT32 RdPre;
+
+  RdPre = Popts->QuadRankPresent ? 1 : 0;
+
+  Ddr->DdrSdramCfg3 = (RdPre & 0x1) << 16;
+
+  DEBUG((EFI_D_INFO,"FSLDDR: DdrSdramCfg3 = 0x%08x\n", Ddr->DdrSdramCfg3));
+}
+#endif	/* CONFIG_SYS_FSL_DDR4 */
+
+/* DDR ZQ Calibration Control (DDR_ZQ_CNTL) */
 VOID
 SetDdrZqCntl (
   OUT  FslDdrCfgRegsT 	*Ddr,
@@ -1151,11 +1846,21 @@ SetDdrZqCntl (
   UINT32 Zqoper = 0;
   /** Normal Operation Short Calibration Time (tZQCS) */
   UINT32 Zqcs = 0;
+#ifdef CONFIG_SYS_FSL_DDR4
+  UINT32 ZqcsInit = 0;
+#endif
 
   if (ZqEn) {
-    Zqinit = 9;	/** 512 clocks */
-    Zqoper = 8;	/** 256 clocks */
-    Zqcs = 6;		/** 64 clocks */
+#ifdef CONFIG_SYS_FSL_DDR4
+    Zqinit = 10;	/* 1024 Clocks */
+    Zqoper = 9;	/* 512 Clocks */
+    Zqcs = 7;		/* 128 Clocks */
+    ZqcsInit = 5;	/* 1024 Refresh Sequences */
+#else
+    Zqinit = 9;	/** 512 Clocks */
+    Zqoper = 8;	/** 256 Clocks */
+    Zqcs = 6;		/** 64 Clocks */
+#endif
   }
 
   Ddr->DdrZqCntl = (0
@@ -1163,10 +1868,14 @@ SetDdrZqCntl (
   	   | ((Zqinit & 0xF) << 24)
   	   | ((Zqoper & 0xF) << 16)
   	   | ((Zqcs & 0xF) << 8)
+#ifdef CONFIG_SYS_FSL_DDR4
+          | ((ZqcsInit & 0xF) << 0)
+#endif
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: ZqCntl = 0x%08x\n", Ddr->DdrZqCntl));
 }
 
-
+/* DDR Write Leveling Control (DDR_WRLVL_CNTL) */
 VOID
 SetDdrWrlvlCntl (
   OUT  FslDdrCfgRegsT 		*Ddr,
@@ -1236,9 +1945,14 @@ SetDdrWrlvlCntl (
          | ((WrlvlWlr & 0x7) << 8)
          | ((WrlvlStart & 0x1F) << 0)
   );
+  DEBUG((EFI_D_INFO,"FSLDDR: WrlvlCntl = 0x%08x\n", Ddr->DdrWrlvlCntl));
+  Ddr->DdrWrlvlCntl2 = Popts->WrlvlCtl2;
+  DEBUG((EFI_D_INFO,"FSLDDR: WrlvlCntl2 = 0x%08x\n", Ddr->DdrWrlvlCntl2));
+  Ddr->DdrWrlvlCntl3 = Popts->WrlvlCtl3;
+  DEBUG((EFI_D_INFO,"FSLDDR: WrlvlCntl3 = 0x%08x\n", Ddr->DdrWrlvlCntl3));
 }
 
-
+/* DDR Self Refresh Counter (DDR_SR_CNTR) */
 VOID
 SetDdrSrCntr (
   OUT  FslDdrCfgRegsT *Ddr,
@@ -1249,18 +1963,17 @@ SetDdrSrCntr (
   Ddr->DdrSrCntr = (SrIt & 0xF) << 16;
 }
 
-
 UINT32
 ComputeFslMemctlConfigRegs (
-  IN   CONST MemctlOptionsT 		*Popts,
-  OUT  FslDdrCfgRegsT 			*Ddr,
+  IN   CONST MemctlOptionsT 	*Popts,
+  OUT  FslDdrCfgRegsT 		*Ddr,
   IN   CONST CommonTimingParamsT 	*CommonDimm,
   IN   CONST DimmParamsT 		*DimmParams,
-  IN   UINT32 				DbwCapAdj,
-  IN   UINT32 				SizeOnly
+  IN   UINT32 			DbwCapAdj,
+  IN   UINT32 			SizeOnly
   )
 {
-  UINT32 i;
+  UINT32 I;
   UINT32 CasLatency;
   UINT32 AdditiveLatency;
   UINT32 SrIt;
@@ -1273,7 +1986,8 @@ ComputeFslMemctlConfigRegs (
   InternalMemZeroMem(Ddr, sizeof(FslDdrCfgRegsT));
 
   if (CommonDimm == NULL) {
-  	return 1;
+    DEBUG((EFI_D_INFO,"Error: Subset DIMM Params struct Null Pointer\n"));
+    return 1;
   }
 
   /**
@@ -1298,12 +2012,12 @@ ComputeFslMemctlConfigRegs (
   WrlvlEn = (Popts->WrlvlEn) ? 1 : 0;
 
   /** Chip Select Memory Bounds (CSn_BNDS) */
-  for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
+  for (I = 0; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
     UINT64 Ea, Sa;
     UINT32 CsPerDimm
 	= CONFIG_CHIP_SELECTS_PER_CTRL / CONFIG_DIMM_SLOTS_PER_CTLR;
     UINT32 DimmNumber
-	= i / CsPerDimm;
+	= I / CsPerDimm;
     UINT64 RankDensity
 	= DimmParams[DimmNumber].RankDensity >> DbwCapAdj;
 
@@ -1316,12 +2030,12 @@ ComputeFslMemctlConfigRegs (
 	   break;
 	 case FSL_DDR_CS0_CS1:
 	 case FSL_DDR_CS0_CS1_AND_CS2_CS3:
-	   if (i > 1)
+	   if (I > 1)
 	     CsEn = 0;
 	     break;
 	 case FSL_DDR_CS2_CS3:
 	 default:
-	   if (i > 0)
+	   if (I > 0)
 	     CsEn = 0;
 	     break;
       }
@@ -1343,7 +2057,7 @@ ComputeFslMemctlConfigRegs (
 	   Ea = Sa + CommonDimm->TotalMem - 1;
 	   break;
 	 case FSL_DDR_CS0_CS1_AND_CS2_CS3:
-	   if ((i >= 2) && (DimmNumber == 0)) {
+	   if ((I >= 2) && (DimmNumber == 0)) {
 	     Sa = DimmParams[DimmNumber].BaseAddress +
 	   		      2 * RankDensity;
 	     Ea = Sa + 2 * RankDensity - 1;
@@ -1353,39 +2067,39 @@ ComputeFslMemctlConfigRegs (
 	   }
 	   break;
 	 case FSL_DDR_CS0_CS1:
-	   if (DimmParams[DimmNumber].NRanks > (i % CsPerDimm)) {
+	   if (DimmParams[DimmNumber].NRanks > (I % CsPerDimm)) {
 	     Sa = DimmParams[DimmNumber].BaseAddress;
 	     Ea = Sa + RankDensity - 1;
-	     if (i != 1)
-	       Sa += (i % CsPerDimm) * RankDensity;
-		Ea += (i % CsPerDimm) * RankDensity;
+	     if (I != 1)
+	       Sa += (I % CsPerDimm) * RankDensity;
+		Ea += (I % CsPerDimm) * RankDensity;
 	     } else {
 	       Sa = 0;
 		Ea = 0;
 	     }
-	     if (i == 0)
+	     if (I == 0)
 	       Ea += RankDensity;
 	     break;
 	 case FSL_DDR_CS2_CS3:
-	   if (DimmParams[DimmNumber].NRanks > (i % CsPerDimm)) {
+	   if (DimmParams[DimmNumber].NRanks > (I % CsPerDimm)) {
 	     Sa = DimmParams[DimmNumber].BaseAddress;
 	     Ea = Sa + RankDensity - 1;
-	     if (i != 3)
-	       Sa += (i % CsPerDimm) * RankDensity;
-	     Ea += (i % CsPerDimm) * RankDensity;
+	     if (I != 3)
+	       Sa += (I % CsPerDimm) * RankDensity;
+	     Ea += (I % CsPerDimm) * RankDensity;
 	   } else {
 	     Sa = 0;
 	     Ea = 0;
 	   }
-	   if (i == 2)
+	   if (I == 2)
 	     Ea += (RankDensity >> DbwCapAdj);
 	   break;
 	 default:  /** No bank(chip-select) interleaving */
 	   Sa = DimmParams[DimmNumber].BaseAddress; /** DOUBT base address shows 0 in uboot code*/
 	   Ea = Sa + RankDensity - 1;
-	   if (DimmParams[DimmNumber].NRanks > (i % CsPerDimm)) {
-	     Sa += (i % CsPerDimm) * RankDensity;
-	     Ea += (i % CsPerDimm) * RankDensity;
+	   if (DimmParams[DimmNumber].NRanks > (I % CsPerDimm)) {
+	     Sa += (I % CsPerDimm) * RankDensity;
+	     Ea += (I % CsPerDimm) * RankDensity;
 	   } else {
 	     Sa = 0;
 	     Ea = 0;
@@ -1398,17 +2112,17 @@ ComputeFslMemctlConfigRegs (
     Ea >>= 24;
 
     if (CsEn) {
-      Ddr->Cs[i].Bnds = (0
+      Ddr->Cs[I].Bnds = (0
 		| ((Sa & 0xffff) << 16)     /* starting address */
 		| ((Ea & 0xffff) << 0)	/* ending address */
       );
     } else {
       /** setting Bnds to 0xffffffff for inactive CS */
-      Ddr->Cs[i].Bnds = 0xffffffff;
+      Ddr->Cs[I].Bnds = 0xffffffff;
     }
 
-    SetCsnConfig(DimmNumber, i, Ddr, Popts, DimmParams);
-    SetCsnConfig_2(i, Ddr);
+    SetCsnConfig(DimmNumber, I, Ddr, Popts, DimmParams);
+    SetCsnConfig_2(I, Ddr);
   }
 
   /**
@@ -1435,17 +2149,32 @@ ComputeFslMemctlConfigRegs (
   if (IpRev > 0x40400)
     UnqMrsEn = 1;
 
+  if ((IpRev > 0x40700) && (Popts->CswlOverride != 0))
+    Ddr->Debug[18] = Popts->CswlOverride;
+
   SetDdrSdramCfg2(Ddr, Popts, UnqMrsEn);
   SetDdrSdramMode(Ddr, Popts, CommonDimm,
 			CasLatency, AdditiveLatency, UnqMrsEn);
   SetDdrSdramMode2(Ddr, Popts, CommonDimm, UnqMrsEn);
-  set_DdrSdramInterval(Ddr, Popts, CommonDimm);
+#ifdef CONFIG_SYS_FSL_DDR4
+  SetDdrSdramMode9(Ddr, Popts, CommonDimm, UnqMrsEn);
+  SetDdrSdramMode10(Ddr, Popts, CommonDimm, UnqMrsEn);
+#endif
+  SetDdrSdramInterval(Ddr, Popts, CommonDimm);
   SetDdrDataInit(Ddr);
   SetDdrSdramClkCntl(Ddr, Popts);
   SetDdrInitAddr(Ddr);
   SetDdrInitExtAddr(Ddr);
   SetTimingCfg4(Ddr, Popts);
   SetTimingCfg5(Ddr, CasLatency);
+#ifdef CONFIG_SYS_FSL_DDR4
+  SetDdrSdramCfg3(Ddr, Popts);
+  SetTimingCfg6(Ddr);
+  SetTimingCfg7(Ddr, CommonDimm);
+  SetTimingCfg8(Ddr, Popts, CommonDimm, CasLatency);
+  SetTimingCfg9(Ddr);
+  SetDdrDqMapping(Ddr, DimmParams);
+#endif
 
   SetDdrZqCntl(Ddr, ZqEn);
   SetDdrWrlvlCntl(Ddr, WrlvlEn, Popts);
@@ -1454,10 +2183,18 @@ ComputeFslMemctlConfigRegs (
 
   SetDdrSdramRcw(Ddr, Popts, CommonDimm);
 
+#ifdef INTPSR_DDR4_WORKAROUND
+  Ddr->Debug[1] = 0x10;	/* Force Slow */
+#endif
+
 #ifdef   CONFIG_SYS_FSL_DDR_EMU
   /* disble Ddr training for emulator */
   Ddr->Debug[2] = 0x00000400;
   Ddr->Debug[4] = 0xff800000;
+  Ddr->Debug[5] = 0x08000800;
+  Ddr->Debug[6] = 0x08000800;
+  Ddr->Debug[7] = 0x08000800;
+  Ddr->Debug[8] = 0x08000800;
 #endif
   return CheckFslMemctlConfigRegs(Ddr);
 }

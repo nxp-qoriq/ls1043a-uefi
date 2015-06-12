@@ -29,16 +29,110 @@ DdrRegDump (
   )
 {
 
-  UINT32 *Ddr;
-  INT32 Count = 0x5D;
+  struct CcsrDdr *Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
 
-  Ddr = (UINT32 *)CONFIG_SYS_FSL_DDR_ADDR;
+  //INT32 Count = 0xE58;
 
+  DEBUG((EFI_D_INFO, "Cs0Bnds = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs0Bnds)));		
+  DEBUG((EFI_D_INFO, "Cs1Bnds = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs1Bnds)));		
+  DEBUG((EFI_D_INFO, "Cs2Bnds = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs2Bnds)));		
+  DEBUG((EFI_D_INFO, "Cs3Bnds = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs3Bnds)));		
+  DEBUG((EFI_D_INFO, "Cs0Config = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs0Config)));		
+  DEBUG((EFI_D_INFO, "Cs1Config = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs1Config)));		
+  DEBUG((EFI_D_INFO, "Cs2Config = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs2Config)));		
+  DEBUG((EFI_D_INFO, "Cs3Config = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs3Config)));		
+  DEBUG((EFI_D_INFO, "Cs0Config2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs0Config2)));		
+  DEBUG((EFI_D_INFO, "Cs1Config2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs1Config2)));		
+  DEBUG((EFI_D_INFO, "Cs2Config2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs2Config2)));		
+  DEBUG((EFI_D_INFO, "Cs3Config2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Cs3Config2)));		
+  DEBUG((EFI_D_INFO, "TimingCfg3 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg3)));		
+  DEBUG((EFI_D_INFO, "TimingCfg0 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg0)));		
+  DEBUG((EFI_D_INFO, "TimingCfg1 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg1)));		
+  DEBUG((EFI_D_INFO, "TimingCfg2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg2)));		
+  DEBUG((EFI_D_INFO, "SdramCfg = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramCfg)));		
+  DEBUG((EFI_D_INFO, "SdramCfg2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramCfg2)));		
+  DEBUG((EFI_D_INFO, "SdramMode = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode)));		
+  DEBUG((EFI_D_INFO, "SdramMode2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode2)));		
+  DEBUG((EFI_D_INFO, "SdramMdCntl = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMdCntl)));		
+  DEBUG((EFI_D_INFO, "SdramInterval = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramInterval)));
+  DEBUG((EFI_D_INFO, "SdramDataInit = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramDataInit)));	
+  DEBUG((EFI_D_INFO, "SdramClkCntl = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramClkCntl)));		
+  DEBUG((EFI_D_INFO, "InitAddr = 0x%x\n",MmioReadBe32((UINTN)&Ddr->InitAddr)));		
+  DEBUG((EFI_D_INFO, "InitExtAddr = 0x%x\n",MmioReadBe32((UINTN)&Ddr->InitExtAddr)));		
+  DEBUG((EFI_D_INFO, "TimingCfg4 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg4)));		
+  DEBUG((EFI_D_INFO, "TimingCfg5 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg5)));		
+  DEBUG((EFI_D_INFO, "TimingCfg6 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg6)));		
+  DEBUG((EFI_D_INFO, "TimingCfg7 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg7)));		
+  DEBUG((EFI_D_INFO, "DdrZqCntl = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrZqCntl)));		
+  DEBUG((EFI_D_INFO, "DdrWrlvlCntl = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrWrlvlCntl)));		
+  DEBUG((EFI_D_INFO, "DdrSrCntr = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrSrCntr)));		
+  DEBUG((EFI_D_INFO, "DdrSdramRcw1 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrSdramRcw1)));		
+  DEBUG((EFI_D_INFO, "DdrSdramRcw2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrSdramRcw2)));		
+  DEBUG((EFI_D_INFO, "DdrWrlvlCntl2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrWrlvlCntl2)));	
+  DEBUG((EFI_D_INFO, "DdrWrlvlCntl3 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrWrlvlCntl3)));	
+  DEBUG((EFI_D_INFO, "DdrSdramRcw3 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrSdramRcw3)));
+  DEBUG((EFI_D_INFO, "DdrSdramRcw4 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrSdramRcw4)));
+  DEBUG((EFI_D_INFO, "DdrSdramRcw5 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrSdramRcw5)));
+  DEBUG((EFI_D_INFO, "DdrSdramRcw6 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrSdramRcw6)));
+  DEBUG((EFI_D_INFO, "SdramMode3 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode3)));		
+  DEBUG((EFI_D_INFO, "SdramMode4 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode4)));		
+  DEBUG((EFI_D_INFO, "SdramMode5 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode5)));		
+  DEBUG((EFI_D_INFO, "SdramMode6 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode6)));		
+  DEBUG((EFI_D_INFO, "SdramMode7 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode7)));		
+  DEBUG((EFI_D_INFO, "SdramMode8 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode8)));		
+  DEBUG((EFI_D_INFO, "SdramMode9 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode9)));		
+  DEBUG((EFI_D_INFO, "SdramMode10 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode10)));		
+  DEBUG((EFI_D_INFO, "SdramMode11 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode11)));		
+  DEBUG((EFI_D_INFO, "SdramMode12 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode12)));		
+  DEBUG((EFI_D_INFO, "SdramMode13 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode13)));		
+  DEBUG((EFI_D_INFO, "SdramMode14 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode14)));		
+  DEBUG((EFI_D_INFO, "SdramMode15 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode15)));		
+  DEBUG((EFI_D_INFO, "SdramMode16 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramMode16)));		
+  DEBUG((EFI_D_INFO, "TimingCfg8 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->TimingCfg8)));        
+  DEBUG((EFI_D_INFO, "SdramCfg3 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->SdramCfg3)));
+  DEBUG((EFI_D_INFO, "DqMap0 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DqMap0)));
+  DEBUG((EFI_D_INFO, "DqMap1 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DqMap1)));
+  DEBUG((EFI_D_INFO, "DqMap2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DqMap2)));
+  DEBUG((EFI_D_INFO, "DqMap3 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DqMap3)));
+  DEBUG((EFI_D_INFO, "DdrDsr1 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrDsr1)));		
+  DEBUG((EFI_D_INFO, "DdrDsr2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrDsr2)));		
+  DEBUG((EFI_D_INFO, "DdrCdr1 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrCdr1)));		
+  DEBUG((EFI_D_INFO, "DdrCdr2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DdrCdr2)));		
+  DEBUG((EFI_D_INFO, "IpRev1 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->IpRev1)));		
+  DEBUG((EFI_D_INFO, "IpRev2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->IpRev2)));		
+  DEBUG((EFI_D_INFO, "Eor = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Eor)));			
+  DEBUG((EFI_D_INFO, "Mtcr = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtcr)));			
+  DEBUG((EFI_D_INFO, "Mtp1 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp1)));			
+  DEBUG((EFI_D_INFO, "Mtp2 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp2)));			
+  DEBUG((EFI_D_INFO, "Mtp3 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp3)));			
+  DEBUG((EFI_D_INFO, "Mtp4 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp4)));			
+  DEBUG((EFI_D_INFO, "Mtp5 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp5)));			
+  DEBUG((EFI_D_INFO, "Mtp6 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp6)));			
+  DEBUG((EFI_D_INFO, "Mtp7 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp7)));			
+  DEBUG((EFI_D_INFO, "Mtp8 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp8)));			
+  DEBUG((EFI_D_INFO, "Mtp9 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp9)));			
+  DEBUG((EFI_D_INFO, "Mtp10 = 0x%x\n",MmioReadBe32((UINTN)&Ddr->Mtp10)));			
+  DEBUG((EFI_D_INFO, "DataErrInjectHi = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DataErrInjectHi)));	
+  DEBUG((EFI_D_INFO, "DataErrInjectLo = 0x%x\n",MmioReadBe32((UINTN)&Ddr->DataErrInjectLo)));	
+  DEBUG((EFI_D_INFO, "EccErrInject = 0x%x\n",MmioReadBe32((UINTN)&Ddr->EccErrInject)));		
+  DEBUG((EFI_D_INFO, "CaptureDataHi = 0x%x\n",MmioReadBe32((UINTN)&Ddr->CaptureDataHi)));	
+  DEBUG((EFI_D_INFO, "CaptureDataLo = 0x%x\n",MmioReadBe32((UINTN)&Ddr->CaptureDataLo)));	
+  DEBUG((EFI_D_INFO, "CaptureEcc = 0x%x\n",MmioReadBe32((UINTN)&Ddr->CaptureEcc)));		
+  DEBUG((EFI_D_INFO, "ErrDetect = 0x%x\n",MmioReadBe32((UINTN)&Ddr->ErrDetect)));		
+  DEBUG((EFI_D_INFO, "ErrDisable = 0x%x\n",MmioReadBe32((UINTN)&Ddr->ErrDisable)));		
+  DEBUG((EFI_D_INFO, "ErrIntEn = 0x%x\n",MmioReadBe32((UINTN)&Ddr->ErrIntEn)));
+  DEBUG((EFI_D_INFO, "CaptureAttributes = 0x%x\n",MmioReadBe32((UINTN)&Ddr->CaptureAttributes)));	
+  DEBUG((EFI_D_INFO, "CaptureAddress = 0x%x\n",MmioReadBe32((UINTN)&Ddr->CaptureAddress)));	
+  DEBUG((EFI_D_INFO, "CaptureExtAddress = 0x%x\n",MmioReadBe32((UINTN)&Ddr->CaptureExtAddress)));	
+  DEBUG((EFI_D_INFO, "ErrSbe = 0x%x\n",MmioReadBe32((UINTN)&Ddr->ErrSbe)));
+
+#if 0
   while (Count) {
-    DEBUG((EFI_D_ERROR, "0x%x : 0x%x\n", Ddr, MmioReadBe32((UINTN)Ddr)));
+    DEBUG((EFI_D_INFO, "0x%x : 0x%x\n", Ddr, MmioReadBe32((UINTN)Ddr)));
     Ddr++;
     Count--;
   }
+#endif
   DEBUG((EFI_D_ERROR,"\n"));
 }
 
@@ -85,7 +179,7 @@ StepAssignAddresses (
   IN   UINT32			DbwCapAdj[]
   )
 {
-  INT32 i, j;
+  INT32 I, J;
   UINTN TotalMem, CurrentMemBase, TotalCtlrMem;
   UINTN RankDensity, CtlrDensity = 0;
 
@@ -98,32 +192,32 @@ StepAssignAddresses (
     computed dimm capacities accordingly before
     assigning addresses.
   **/
-  for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
+  for (I = 0; I < CONFIG_NUM_DDR_CONTROLLERS; I++) {
     UINT32 Found = 0;
 
-    switch (Pinfo->MemctlOpts[i].DataBusWidth) {
+    switch (Pinfo->MemctlOpts[I].DataBusWidth) {
       case 2:
-        /** 16-bit */
-        for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
+        /** 16-Bit */
+        for (J = 0; J < CONFIG_DIMM_SLOTS_PER_CTLR; J++) {
 	   UINT32 Dw;
-	   if (!Pinfo->DimmParams[i][j].NRanks)
+	   if (!Pinfo->DimmParams[I][J].NRanks)
 	     continue;
-	   Dw = Pinfo->DimmParams[i][j].PrimarySdramWidth;
+	   Dw = Pinfo->DimmParams[I][J].PrimarySdramWidth;
 	     if ((Dw == 72 || Dw == 64)) {
-	      	DbwCapAdj[i] = 2;
+	      	DbwCapAdj[I] = 2;
 	      	break;
 	     } else if ((Dw == 40 || Dw == 32)) {
-	      	DbwCapAdj[i] = 1;
+	      	DbwCapAdj[I] = 1;
 	      	break;
 	     }
 	 }
 	 break;
       case 1:
-        /** 32-bit */
- 	 for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
+        /** 32-Bit */
+ 	 for (J = 0; J < CONFIG_DIMM_SLOTS_PER_CTLR; J++) {
    	   UINT32 Dw;
-   	   Dw = Pinfo->DimmParams[i][j].DataWidth;
-   	   if (Pinfo->DimmParams[i][j].NRanks
+   	   Dw = Pinfo->DimmParams[I][J].DataWidth;
+   	   if (Pinfo->DimmParams[I][J].NRanks
    	     && (Dw == 72 || Dw == 64)) {
    	     /**
    	      FIXME: can't really do it
@@ -135,7 +229,7 @@ StepAssignAddresses (
           }
  	 }
  	 if (Found) {
-   	   DbwCapAdj[i] = 1;
+   	   DbwCapAdj[I] = 1;
    	 }
    	 break;
       case 0:
@@ -165,9 +259,9 @@ StepAssignAddresses (
     	 CtlrDensity = RankDensity;
     	 break;
     }
-    for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-      if (Pinfo->MemctlOpts[i].MemctlInterleaving) {
-        switch (Pinfo->MemctlOpts[i].MemctlInterleavingMode) {
+    for (I = 0; I < CONFIG_NUM_DDR_CONTROLLERS; I++) {
+      if (Pinfo->MemctlOpts[I].MemctlInterleaving) {
+        switch (Pinfo->MemctlOpts[I].MemctlInterleavingMode) {
 	   case FSL_DDR_256B_INTERLEAVING:
 	   case FSL_DDR_CACHE_LINE_INTERLEAVING:
 	   case FSL_DDR_PAGE_INTERLEAVING:
@@ -186,26 +280,26 @@ StepAssignAddresses (
 	   	TotalCtlrMem = 4 * CtlrDensity;
 	   	break;
 	 }
-	 Pinfo->CommonTimingParams[i].BaseAddress =
+	 Pinfo->CommonTimingParams[I].BaseAddress =
 				CurrentMemBase;
-	 Pinfo->CommonTimingParams[i].TotalMem =
+	 Pinfo->CommonTimingParams[I].TotalMem =
 				TotalCtlrMem;
 	 TotalMem = CurrentMemBase + TotalCtlrMem;
       } else {
 	 /** when 3rd controller not interleaved */
 	 CurrentMemBase = TotalMem;
 	 TotalCtlrMem = 0;
-	 Pinfo->CommonTimingParams[i].BaseAddress =
+	 Pinfo->CommonTimingParams[I].BaseAddress =
 	 			CurrentMemBase;
-	 for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
+	 for (J = 0; J < CONFIG_DIMM_SLOTS_PER_CTLR; J++) {
 	   UINTN Cap =
-		Pinfo->DimmParams[i][j].Capacity >> DbwCapAdj[i];
-	   Pinfo->DimmParams[i][j].BaseAddress =
+		Pinfo->DimmParams[I][J].Capacity >> DbwCapAdj[I];
+	   Pinfo->DimmParams[I][J].BaseAddress =
 		CurrentMemBase;
 	   CurrentMemBase += Cap;
 	   TotalCtlrMem += Cap;
 	 }
-	 Pinfo->CommonTimingParams[i].TotalMem =
+	 Pinfo->CommonTimingParams[I].TotalMem =
 				TotalCtlrMem;
 	 TotalMem += TotalCtlrMem;
       }
@@ -215,20 +309,20 @@ StepAssignAddresses (
      Simple linear assignment if memory
      controllers are not interleaved.
     **/
-    for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
+    for (I = 0; I < CONFIG_NUM_DDR_CONTROLLERS; I++) {
       TotalCtlrMem = 0;
-      Pinfo->CommonTimingParams[i].BaseAddress =
+      Pinfo->CommonTimingParams[I].BaseAddress =
 				CurrentMemBase;
-      for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
-        /** Compute DIMM base addresses. */
+      for (J = 0; J < CONFIG_DIMM_SLOTS_PER_CTLR; J++) {
+        /** Compute DIMM Base Addresses. */
 	 UINTN Cap =
-		Pinfo->DimmParams[i][j].Capacity >> DbwCapAdj[i];
-	 Pinfo->DimmParams[i][j].BaseAddress =
+		Pinfo->DimmParams[I][J].Capacity >> DbwCapAdj[I];
+	 Pinfo->DimmParams[I][J].BaseAddress =
 		CurrentMemBase;
 	 CurrentMemBase += Cap;
 	 TotalCtlrMem += Cap;
       }
-      Pinfo->CommonTimingParams[i].TotalMem =
+      Pinfo->CommonTimingParams[I].TotalMem =
 				TotalCtlrMem;
       TotalMem += TotalCtlrMem;
     }
@@ -243,40 +337,43 @@ CheckInterleavingOptions (
   IN   FslDdrInfoT		*Pinfo
   )
 {
-  INT32 i, j, k, CheckNRanks, IntlvInvalid = 0;
+  INT32 I, J, K, CheckNRanks, IntlvInvalid = 0;
   UINT32 CheckIntlv, CheckNRowAddr, CheckNColAddr;
   UINTN CheckRankDensity;
   struct DimmParamsS *Dimm;
+  INT32 FirstCtrl = Pinfo->FirstCtrl;
+  INT32 LastCtrl = FirstCtrl + Pinfo->NumCtrls - 1;
   /**
    Check if all controllers are Configured for memory
    controller interleaving. Identical dimms are recommended. At least
    the size, row and col address should be checked.
   **/
-  j = 0;
-  CheckNRanks = Pinfo->DimmParams[0][0].NRanks;
-  CheckRankDensity = Pinfo->DimmParams[0][0].RankDensity;
-  CheckNRowAddr =  Pinfo->DimmParams[0][0].NRowAddr;
-  CheckNColAddr = Pinfo->DimmParams[0][0].NColAddr;
-  CheckIntlv = Pinfo->MemctlOpts[0].MemctlInterleavingMode;
-  for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-    Dimm = &Pinfo->DimmParams[i][0];
-    if (!Pinfo->MemctlOpts[i].MemctlInterleaving) {
+  J = 0;
+  CheckNRanks = Pinfo->DimmParams[FirstCtrl][0].NRanks;
+  CheckRankDensity = Pinfo->DimmParams[FirstCtrl][0].RankDensity;
+  CheckNRowAddr =  Pinfo->DimmParams[FirstCtrl][0].NRowAddr;
+  CheckNColAddr = Pinfo->DimmParams[FirstCtrl][0].NColAddr;
+  CheckIntlv = Pinfo->MemctlOpts[FirstCtrl].MemctlInterleavingMode;
+  for (I = FirstCtrl; I <= LastCtrl; I++) {
+    Dimm = &Pinfo->DimmParams[I][0];
+    if (!Pinfo->MemctlOpts[I].MemctlInterleaving) {
       continue;
     } else if (((CheckRankDensity != Dimm->RankDensity) ||
     	     (CheckNRanks != Dimm->NRanks) ||
     	     (CheckNRowAddr != Dimm->NRowAddr) ||
     	     (CheckNColAddr != Dimm->NColAddr) ||
     	     (CheckIntlv !=
-    		Pinfo->MemctlOpts[i].MemctlInterleavingMode))){
+    		Pinfo->MemctlOpts[I].MemctlInterleavingMode))){
       IntlvInvalid = 1;
       break;
     } else {
-      j++;
+      J++;
     }
   }
   if (IntlvInvalid) {
-    for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++)
-      Pinfo->MemctlOpts[i].MemctlInterleaving = 0;
+    for (I = FirstCtrl; I <= LastCtrl; I++)
+      Pinfo->MemctlOpts[I].MemctlInterleaving = 0;
+    DEBUG((EFI_D_INFO, "Not All DIMMs Are Identical, Interleaving Disabled.\n"));
   } else {
     switch (CheckIntlv) {
       case FSL_DDR_256B_INTERLEAVING:
@@ -285,9 +382,9 @@ CheckInterleavingOptions (
       case FSL_DDR_BANK_INTERLEAVING:
       case FSL_DDR_SUPERBANK_INTERLEAVING:
   	 if (3 == CONFIG_NUM_DDR_CONTROLLERS)
-  	   k = 2;
+  	   K = 2;
   	 else
-  	   k = CONFIG_NUM_DDR_CONTROLLERS;
+  	   K = CONFIG_NUM_DDR_CONTROLLERS;
   	 break;
       case FSL_DDR_3WAY_1KB_INTERLEAVING:
       case FSL_DDR_3WAY_4KB_INTERLEAVING:
@@ -296,12 +393,15 @@ CheckInterleavingOptions (
       case FSL_DDR_4WAY_4KB_INTERLEAVING:
       case FSL_DDR_4WAY_8KB_INTERLEAVING:
       default:
-  	 k = CONFIG_NUM_DDR_CONTROLLERS;
+  	 K = CONFIG_NUM_DDR_CONTROLLERS;
   	 break;
     }
-    if (j && (j != k)) {
-      for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++)
-        Pinfo->MemctlOpts[i].MemctlInterleaving = 0;
+    if (J && (J != K)) {
+      for (I = FirstCtrl; I <= LastCtrl; I++)
+        Pinfo->MemctlOpts[I].MemctlInterleaving = 0;
+      if ((LastCtrl - FirstCtrl) > 1)
+	 DEBUG((EFI_D_INFO,"Not All Controllers Have Compatible "
+		"Interleaving Mode. All Disabled.\n"));
     }
   }
 }
@@ -345,7 +445,7 @@ FslDdrBoardOptions (
     	 Popts->WrlvlStart = Pbsp->WrlvlStart;
     	 Popts->WrlvlCtl2 = Pbsp->WrlvlCtl2;
     	 Popts->WrlvlCtl3 = Pbsp->WrlvlCtl3;
-    	 goto found;
+    	 goto Found;
       }
       PbspHighest = Pbsp;
     }
@@ -357,10 +457,11 @@ FslDdrBoardOptions (
     Popts->WrlvlStart = PbspHighest->WrlvlStart;
     Popts->WrlvlCtl2 = Pbsp->WrlvlCtl2;
     Popts->WrlvlCtl3 = Pbsp->WrlvlCtl3;
-    } else {
+  } else {
+    DEBUG((EFI_D_INFO,"DIMM Is Not Supported By This Board"));
   }
 
-found:
+Found:
   /**
     Factors to consider for half-strength driver enable:
    	- number of DIMMs installed
@@ -380,9 +481,16 @@ found:
   /** Enable ZQ calibration */
   Popts->ZqEn = 1;
 
+
   /** DHC_EN =1, ODT = 75 Ohm */
+#ifdef CONFIG_SYS_FSL_DDR4
+  Popts->DdrCdr1 = DDR_CDR1_DHC_EN | DDR_CDR1_ODT(DDR_CDR_ODT_80ohm);
+  Popts->DdrCdr2 = DDR_CDR2_ODT(DDR_CDR_ODT_80ohm) |
+			DDR_CDR2_VREF_OVRD(70);
+#else
   Popts->DdrCdr1 = DDR_CDR1_DHC_EN | DDR_CDR1_ODT(DDR_CDR_ODT_75ohm);
   Popts->DdrCdr2 = DDR_CDR2_ODT(DDR_CDR_ODT_75ohm);
+#endif
 }
 
 
@@ -434,25 +542,25 @@ HwConfigSubF (
 }
 
 static CONST struct DynamicOdt DualDD[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_SAME_DIMM,
     DDR3_RTT_120_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs1 */
+  {	/** Cs1 */
     FSL_DDR_ODT_OTHER_DIMM,
     FSL_DDR_ODT_OTHER_DIMM,
     DDR3_RTT_30_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs2 */
+  {	/** Cs2 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_SAME_DIMM,
     DDR3_RTT_120_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs3 */
+  {	/** Cs3 */
     FSL_DDR_ODT_OTHER_DIMM,
     FSL_DDR_ODT_OTHER_DIMM,
     DDR3_RTT_30_OHM,
@@ -461,19 +569,19 @@ static CONST struct DynamicOdt DualDD[4] = {
 };
 
 static CONST struct DynamicOdt DualDS[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_SAME_DIMM,
     DDR3_RTT_120_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs1 */
+  {	/** Cs1 */
     FSL_DDR_ODT_OTHER_DIMM,
     FSL_DDR_ODT_OTHER_DIMM,
     DDR3_RTT_30_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs2 */
+  {	/** Cs2 */
     FSL_DDR_ODT_OTHER_DIMM,
     FSL_DDR_ODT_ALL,
     DDR3_RTT_20_OHM,
@@ -484,20 +592,20 @@ static CONST struct DynamicOdt DualDS[4] = {
 
 
 static CONST struct DynamicOdt DualSD[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_OTHER_DIMM,
     FSL_DDR_ODT_ALL,
     DDR3_RTT_20_OHM,
     DDR3_RTT_120_OHM
   },
   {0, 0, 0, 0},
-  {	/** cs2 */
+  {	/** Cs2 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_SAME_DIMM,
     DDR3_RTT_120_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs3 */
+  {	/** Cs3 */
     FSL_DDR_ODT_OTHER_DIMM,
     FSL_DDR_ODT_OTHER_DIMM,
     DDR3_RTT_20_OHM,
@@ -507,14 +615,14 @@ static CONST struct DynamicOdt DualSD[4] = {
 
 
 static CONST struct DynamicOdt DualSS[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_OTHER_DIMM,
     FSL_DDR_ODT_ALL,
     DDR3_RTT_30_OHM,
     DDR3_RTT_120_OHM
   },
   {0, 0, 0, 0},
-  {	/** cs2 */
+  {	/** Cs2 */
     FSL_DDR_ODT_OTHER_DIMM,
     FSL_DDR_ODT_ALL,
     DDR3_RTT_30_OHM,
@@ -524,13 +632,13 @@ static CONST struct DynamicOdt DualSS[4] = {
 };
 
 static CONST struct DynamicOdt DualD0[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_SAME_DIMM,
     DDR3_RTT_40_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs1 */
+  {	/** Cs1 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_NEVER,
     DDR3_RTT_OFF,
@@ -543,13 +651,13 @@ static CONST struct DynamicOdt DualD0[4] = {
 static CONST struct DynamicOdt Dual0D[4] = {
   {0, 0, 0, 0},
   {0, 0, 0, 0},
-  {	/** cs2 */
+  {	/** Cs2 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_SAME_DIMM,
     DDR3_RTT_40_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs3 */
+  {	/** Cs3 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_NEVER,
     DDR3_RTT_OFF,
@@ -558,7 +666,7 @@ static CONST struct DynamicOdt Dual0D[4] = {
 };
 
 static CONST struct DynamicOdt DualS0[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_CS,
     DDR3_RTT_40_OHM,
@@ -572,7 +680,7 @@ static CONST struct DynamicOdt DualS0[4] = {
 static CONST struct DynamicOdt Dual0S[4] = {
   {0, 0, 0, 0},
   {0, 0, 0, 0},
-  {	/** cs2 */
+  {	/** Cs2 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_CS,
     DDR3_RTT_40_OHM,
@@ -582,25 +690,25 @@ static CONST struct DynamicOdt Dual0S[4] = {
 };
 
 STATIC CONST struct DynamicOdt SingleQ[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_CS_AND_OTHER_DIMM,
     DDR3_RTT_20_OHM,
     DDR3_RTT_120_OHM
   },
-  {	/** cs1 */
+  {	/** Cs1 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_NEVER,
     DDR3_RTT_OFF,
     DDR3_RTT_120_OHM
   },
-  {	/** cs2 */
+  {	/** Cs2 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_CS_AND_OTHER_DIMM,
     DDR3_RTT_20_OHM,
     DDR3_RTT_120_OHM
   },
-  {	/** cs3 */
+  {	/** Cs3 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_NEVER,
     DDR3_RTT_OFF,
@@ -609,13 +717,13 @@ STATIC CONST struct DynamicOdt SingleQ[4] = {
 };
 
 static CONST struct DynamicOdt SingleD[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_ALL,
     DDR3_RTT_40_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs1 */
+  {	/** Cs1 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_NEVER,
     DDR3_RTT_OFF,
@@ -627,7 +735,7 @@ static CONST struct DynamicOdt SingleD[4] = {
 
 
 static CONST struct DynamicOdt SingleS[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_ALL,
     DDR3_RTT_40_OHM,
@@ -640,25 +748,25 @@ static CONST struct DynamicOdt SingleS[4] = {
 
 
 STATIC CONST struct DynamicOdt OdtUnknown[4] = {
-  {	/** cs0 */
+  {	/** Cs0 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_CS,
     DDR3_RTT_120_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs1 */
+  {	/** Cs1 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_CS,
     DDR3_RTT_120_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs2 */
+  {	/** Cs2 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_CS,
     DDR3_RTT_120_OHM,
     DDR3_RTT_OFF
   },
-  {	/** cs3 */
+  {	/** Cs3 */
     FSL_DDR_ODT_NEVER,
     FSL_DDR_ODT_CS,
     DDR3_RTT_120_OHM,
@@ -690,10 +798,10 @@ FslDdrSetMemctlRegs (
   IN   INT32 				Step
   )
 {
-  UINT8 i;
-  UINT32 TempSdramCfg;
-  UINT32 TotalGbSizePerController;
-  UINT32 BusWidth, Timeout;
+  UINT8 I = 0;
+  UINT32 TempSdramCfg = 0;
+  UINT32 TotalGbSizePerController = 0;
+  UINT32 BusWidth = 0, Timeout = 0;
   struct CcsrDdr *Ddr;
 
   switch (CtrlNum) {
@@ -704,26 +812,31 @@ FslDdrSetMemctlRegs (
       return;
   }
 
+  if (Step == 2)
+    goto Step2;
+
   if (Regs->DdrEor)
     MmioWriteBe32((UINTN)&Ddr->Eor, Regs->DdrEor);
 
-  for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
-    if (i == 0) {
-      MmioWriteBe32((UINTN)&Ddr->Cs0Bnds, 0x7F);
-      MmioWriteBe32((UINTN)&Ddr->Cs0Config, Regs->Cs[i].Config);
-      MmioWriteBe32((UINTN)&Ddr->Cs0Config2, Regs->Cs[i].Config2);
-    } else if (i == 1) {
-      MmioWriteBe32((UINTN)&Ddr->Cs1Bnds, 0x7F);
-      MmioWriteBe32((UINTN)&Ddr->Cs1Config, Regs->Cs[i].Config);
-      MmioWriteBe32((UINTN)&Ddr->Cs1Config2, Regs->Cs[i].Config2);
-    } else if (i == 2) {
-      MmioWriteBe32((UINTN)&Ddr->Cs2Bnds, Regs->Cs[i].Bnds);
-      MmioWriteBe32((UINTN)&Ddr->Cs2Config, Regs->Cs[i].Config);
-      MmioWriteBe32((UINTN)&Ddr->Cs2Config2, Regs->Cs[i].Config2);
-    } else if (i == 3) {
-      MmioWriteBe32((UINTN)&Ddr->Cs3Bnds, Regs->Cs[i].Bnds);
-      MmioWriteBe32((UINTN)&Ddr->Cs3Config, Regs->Cs[i].Config);
-      MmioWriteBe32((UINTN)&Ddr->Cs3Config2, Regs->Cs[i].Config2);
+  for (I = 0; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
+    if (I == 0) {
+      MmioWriteBe32((UINTN)&Ddr->Cs0Bnds, Regs->Cs[I].Bnds);
+//      MmioWriteBe32((UINTN)&Ddr->Cs0Bnds, 0x7F);
+      MmioWriteBe32((UINTN)&Ddr->Cs0Config, Regs->Cs[I].Config);
+      MmioWriteBe32((UINTN)&Ddr->Cs0Config2, Regs->Cs[I].Config2);
+    } else if (I == 1) {
+//      MmioWriteBe32((UINTN)&Ddr->Cs1Bnds, 0x7F);
+      MmioWriteBe32((UINTN)&Ddr->Cs1Bnds, Regs->Cs[I].Bnds);
+      MmioWriteBe32((UINTN)&Ddr->Cs1Config, Regs->Cs[I].Config);
+      MmioWriteBe32((UINTN)&Ddr->Cs1Config2, Regs->Cs[I].Config2);
+    } else if (I == 2) {
+      MmioWriteBe32((UINTN)&Ddr->Cs2Bnds, Regs->Cs[I].Bnds);
+      MmioWriteBe32((UINTN)&Ddr->Cs2Config, Regs->Cs[I].Config);
+      MmioWriteBe32((UINTN)&Ddr->Cs2Config2, Regs->Cs[I].Config2);
+    } else if (I == 3) {
+      MmioWriteBe32((UINTN)&Ddr->Cs3Bnds, Regs->Cs[I].Bnds);
+      MmioWriteBe32((UINTN)&Ddr->Cs3Config, Regs->Cs[I].Config);
+      MmioWriteBe32((UINTN)&Ddr->Cs3Config2, Regs->Cs[I].Config2);
     }
   }
 
@@ -731,7 +844,6 @@ FslDdrSetMemctlRegs (
   MmioWriteBe32((UINTN)&Ddr->TimingCfg0, Regs->TimingCfg0);
   MmioWriteBe32((UINTN)&Ddr->TimingCfg1, Regs->TimingCfg1);
   MmioWriteBe32((UINTN)&Ddr->TimingCfg2, Regs->TimingCfg2);
-  MmioWriteBe32((UINTN)&Ddr->SdramCfg2, Regs->DdrSdramCfg2);
   MmioWriteBe32((UINTN)&Ddr->SdramMode, Regs->DdrSdramMode);
   MmioWriteBe32((UINTN)&Ddr->SdramMode2, Regs->DdrSdramMode2);
   MmioWriteBe32((UINTN)&Ddr->SdramMode3, Regs->DdrSdramMode3);
@@ -744,13 +856,11 @@ FslDdrSetMemctlRegs (
   MmioWriteBe32((UINTN)&Ddr->SdramInterval, Regs->DdrSdramInterval);
   MmioWriteBe32((UINTN)&Ddr->SdramDataInit, Regs->DdrDataInit);
   MmioWriteBe32((UINTN)&Ddr->SdramClkCntl, Regs->DdrSdramClkCntl);
-  MmioWriteBe32((UINTN)&Ddr->InitAddr, Regs->DdrInitAddr);
-  MmioWriteBe32((UINTN)&Ddr->InitExtAddr, Regs->DdrInitExtAddr);
-
   MmioWriteBe32((UINTN)&Ddr->TimingCfg4, Regs->TimingCfg4);
   MmioWriteBe32((UINTN)&Ddr->TimingCfg5, Regs->TimingCfg5);
   MmioWriteBe32((UINTN)&Ddr->DdrZqCntl, Regs->DdrZqCntl);
   MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl, Regs->DdrWrlvlCntl);
+  DEBUG((EFI_D_INFO,"Regs->DdrWrlvlCntl 0x%x, DdrWrlvlCntl 0x%x\n", Regs->DdrWrlvlCntl, MmioReadBe32((UINTN)&Ddr->DdrWrlvlCntl)));
 
   if (Regs->DdrWrlvlCntl2)
     MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl2, Regs->DdrWrlvlCntl2);
@@ -761,12 +871,17 @@ FslDdrSetMemctlRegs (
   MmioWriteBe32((UINTN)&Ddr->DdrSdramRcw1, Regs->DdrSdramRcw1);
   MmioWriteBe32((UINTN)&Ddr->DdrSdramRcw2, Regs->DdrSdramRcw2);
   MmioWriteBe32((UINTN)&Ddr->DdrCdr1, Regs->DdrCdr1);
+//TODO DEEP_SPLEEP
+  MmioWriteBe32((UINTN)&Ddr->SdramCfg2, Regs->DdrSdramCfg2);
+  MmioWriteBe32((UINTN)&Ddr->InitAddr, Regs->DdrInitAddr);
+  MmioWriteBe32((UINTN)&Ddr->InitExtAddr, Regs->DdrInitExtAddr);
   MmioWriteBe32((UINTN)&Ddr->DdrCdr2, Regs->DdrCdr2);
+
   MmioWriteBe32((UINTN)&Ddr->ErrDisable, Regs->ErrDisable);
   MmioWriteBe32((UINTN)&Ddr->ErrIntEn, Regs->ErrIntEn);
-  for (i = 0; i < 32; i++) {
-    if (Regs->Debug[i]) {
-      MmioWriteBe32((UINTN)&Ddr->Debug[i], Regs->Debug[i]);
+  for (I = 0; I < 32; I++) {
+    if (Regs->Debug[I]) {
+      MmioWriteBe32((UINTN)&Ddr->Debug[I], Regs->Debug[I]);
     }
   }
 
@@ -784,7 +899,8 @@ FslDdrSetMemctlRegs (
     return;
   }
 
-  /** Set, but do not enable the memory */
+Step2:
+  /** Set, But do Not Enable The Memory */
   TempSdramCfg = Regs->DdrSdramCfg;
   TempSdramCfg &= ~(SDRAM_CFG_MEM_EN);
   MmioWriteBe32((UINTN)&Ddr->SdramCfg, TempSdramCfg);
@@ -795,24 +911,26 @@ FslDdrSetMemctlRegs (
    DDR2 need 200 us, and DDR3 need 500 us from spec,
    we choose the Max, that is 500 us for all of case.
    **/
-  //MicroSecondDelay(500);
+  MicroSecondDelay(500);
   asm volatile("dsb sy;isb");
 
-  /** Let the controller go */
+//TODO CONFIG_DEEP_SLEEP
+
+  /** Let The Controller Go */
   TempSdramCfg = MmioReadBe32((UINTN)&Ddr->SdramCfg) & ~SDRAM_CFG_BI;
   MmioWriteBe32((UINTN)&Ddr->SdramCfg, TempSdramCfg | SDRAM_CFG_MEM_EN);
   asm volatile("dsb sy;isb");
 
   TotalGbSizePerController = 0;
-  for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
-    if (!(Regs->Cs[i].Config & 0x80000000))
+  for (I = 0; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
+    if (!(Regs->Cs[I].Config & 0x80000000))
       continue;
     TotalGbSizePerController += 1 << (
-      ((Regs->Cs[i].Config >> 14) & 0x3) + 2 +
-      ((Regs->Cs[i].Config >> 8) & 0x7) + 12 +
-      ((Regs->Cs[i].Config >> 0) & 0x7) + 8 +
+      ((Regs->Cs[I].Config >> 14) & 0x3) + 2 +
+      ((Regs->Cs[I].Config >> 8) & 0x7) + 12 +
+      ((Regs->Cs[I].Config >> 0) & 0x7) + 8 +
       3 - ((Regs->DdrSdramCfg >> 19) & 0x3) -
-      26);	/** minus 26 (Count of 64M) */
+      26);	/** Minus 26 (Count Of 64M) */
   }
   if (Regs->Cs[0].Config & 0x20000000) {
     /** 2-way interleaving */
@@ -830,6 +948,8 @@ FslDdrSetMemctlRegs (
   Timeout = ((TotalGbSizePerController << (6 - BusWidth)) * 100 /
   	(GetDdrFreq() >> 20)) << 1;
   TotalGbSizePerController >>= 4;	/** shift down to gb size */
+  DEBUG((EFI_D_INFO,"Total %d GB\n", TotalGbSizePerController));
+  DEBUG((EFI_D_INFO,"Need To Wait Up To %d * 10ms\n", Timeout));
 
   /** Poll DDR_SDRAM_CFG_2[D_INIT] bit until auto-data init is done. */
   while ((MmioReadBe32((UINTN)&Ddr->SdramCfg2) & SDRAM_CFG2_D_INIT) &&
@@ -837,6 +957,8 @@ FslDdrSetMemctlRegs (
     MicroSecondDelay(10000);	/** throttle polling rate */
     Timeout--;
   }
+
+//TODO CONFIG_DEEP_SLEEP
 }
 
 INT32
@@ -847,6 +969,21 @@ BoardNeedMemReset (
   return EFI_SUCCESS;
 }
 
+VOID
+BoardAssertMemReset (
+  VOID
+  )
+{
+  return;
+}
+
+VOID
+BoardDeassertMemReset (
+  VOID
+  )
+{
+  return;
+}
 
 VOID
 GetSpd (
@@ -859,6 +996,7 @@ GetSpd (
                sizeof(GenericSpdEepromT));
 
   if (Ret != EFI_SUCCESS) {
+    DEBUG((EFI_D_ERROR, "DDR: Failed To Read SPD From Address %d\n", EEPROM0_ADDRESS));
     InternalMemZeroMem(Spd, sizeof(GenericSpdEepromT));
   }
 }
@@ -870,16 +1008,17 @@ FslDdrGetSpd (
   IN   UINT32 		CtrlNum
   )
 {
-  UINT32 i;
+  UINT32 I;
   UINT64 I2cAddress = 0;
 
   if (CtrlNum >= CONFIG_NUM_DDR_CONTROLLERS) {
+    DEBUG((EFI_D_ERROR, "Unexpected CtrlNum = %d\n",CtrlNum));
     return;
   }
 
-  for (i = 0; i < CONFIG_DIMM_SLOTS_PER_CTLR; i++) {
-    I2cAddress = SpdI2cAddr[CtrlNum][i];
-    GetSpd(&(CtrlDimmsSpd[i]), I2cAddress);
+  for (I = 0; I < CONFIG_DIMM_SLOTS_PER_CTLR; I++) {
+    I2cAddress = SpdI2cAddr[CtrlNum][I];
+    GetSpd(&(CtrlDimmsSpd[I]), I2cAddress);
   }
 }
 
@@ -893,12 +1032,12 @@ Crc16 (
   IN   INT32		Count
   )
 {
-  INT32 Crc, i;
+  INT32 Crc, I;
 
   Crc = 0;
   while (--Count >= 0) {
     Crc = Crc ^ (INT32)*Ptr++ << 8;
-    for (i = 0; i < 8; ++i)
+    for (I = 0; I < 8; ++I)
       if (Crc & 0x8000)
         Crc = Crc << 1 ^ 0x1021;
       else
@@ -916,8 +1055,8 @@ Ddr3SpdCheck (
   UINT8 *P = (UINT8 *)Spd;
   INT32 Csum16;
   INT32 Len;
-  UINT8 CrcLsb;	/** byte 126 */
-  UINT8 CrcMsb;	/** byte 127 */
+  UINT8 CrcLsb;	/** Byte 126 */
+  UINT8 CrcMsb;	/** Byte 127 */
 
   /**
     SPD byte0[7] - CRC coverage
@@ -1001,7 +1140,7 @@ ComputeRanksize (
   return Bsize;
 }
 
-
+#ifdef CONFIG_SYS_FSL_DDR3
 /**
   DdrComputeDimmParameters for DDR3 SPD
 
@@ -1024,7 +1163,7 @@ DdrComputeDimmParameters (
   UINT32 Retval;
   UINT32 MtbPs;
   INT32 Ftb10thPs;
-  INT32 i;
+  INT32 I;
 
   if (Spd->MemType) {
     if (Spd->MemType != SPD_MEMTYPE_DDR3) {
@@ -1071,10 +1210,10 @@ DdrComputeDimmParameters (
     case DDR3_SPD_MODULETYPE_72B_SO_RDIMM:
       /** Registered/Buffered DIMMs */
       Pdimm->RegisteredDimm = 1;
-      for (i = 0; i < 16; i += 2) {
-  	 UINT8 Rcw = Spd->ModSection.Registered.Rcw[i/2];
-  	 Pdimm->Rcw[i]   = (Rcw >> 0) & 0x0F;
-  	 Pdimm->Rcw[i+1] = (Rcw >> 4) & 0x0F;
+      for (I = 0; I < 16; I += 2) {
+  	 UINT8 Rcw = Spd->ModSection.Registered.Rcw[I/2];
+  	 Pdimm->Rcw[I]   = (Rcw >> 0) & 0x0F;
+  	 Pdimm->Rcw[I+1] = (Rcw >> 4) & 0x0F;
       }
       break;
     case DDR3_SPD_MODULETYPE_UDIMM:
@@ -1268,6 +1407,7 @@ DdrComputeDimmParameters (
 
   return 0;
 }
+#endif
 
 
 #ifdef CONFIG_SYS_DDR_RAW_TIMING
@@ -1286,7 +1426,7 @@ DimmParamsT DdrRawTiming = {
   .BurstLengthsBitmask = 0x0c,
   .TckminXPs = 937,
   .CaslatX = 0x6FC << 4,  /** 14,13,11,10,9,8,7,6 */
-  
+
   .TaaPs = 13090,
   .TwrPs = 15000,
   .TrcdPs = 13090,
@@ -1351,37 +1491,48 @@ GetMemoryClkPeriodPs (
   return Result;
 }
 
-
-
 UINT32
-ComputeCasLatencyDdr3 (
+ComputeCasLatencyDdr (
   IN   CONST DimmParamsT 		*DimmParams,
   OUT  CommonTimingParamsT 		*Outpdimm,
   IN   UINT32 			NumberOfDimms
   )
 {
-  UINT32 i;
+  UINT32 I;
   UINT32 TaaminPs = 0;
-  UINT32 TckminXPs = 0;
   UINT32 CommonCaslat;
   UINT32 CaslatActual;
   UINT32 Retry = 16;
   UINT32 Tmp;
   CONST UINT32 MclkPs = GetMemoryClkPeriodPs();
 
-  /** compute the common CAS latency supported between slots */
+#ifdef CONFIG_SYS_FSL_DDR3
+  CONST UINT32 Taamax = 20000;
+#else
+  CONST UINT32 Taamax = 18000;
+#endif
+
+  /** Compute The Common CAS Latency Supported Between Slots */
   Tmp = DimmParams[0].CaslatX;
-  for (i = 1; i < NumberOfDimms; i++) {
-    if (DimmParams[i].NRanks)
-      Tmp &= DimmParams[i].CaslatX;
+  for (I = 1; I < NumberOfDimms; I++) {
+    if (DimmParams[I].NRanks)
+      Tmp &= DimmParams[I].CaslatX;
     }
   CommonCaslat = Tmp;
 
-  /** compute the Max tAAmin tCKmin between slots */
-  for (i = 0; i < NumberOfDimms; i++) {
-    TaaminPs = Max(TaaminPs, DimmParams[i].TaaPs);
-    TckminXPs = Max(TckminXPs, DimmParams[i].TckminXPs);
+/* Validate if The Memory Clk Is In The Range Of Dimms */
+  if (MclkPs < Outpdimm->TckminXPs) {
+    DEBUG((EFI_D_ERROR,"DDR Clock (MCLK Cycle %d Ps) Is Faster Than "
+	"The Slowest DIMM(s) (TCKmin %d Ps) Can Support.\n",
+	MclkPs, Outpdimm->TckminXPs));
   }
+#ifdef CONFIG_SYS_FSL_DDR4
+  if (MclkPs > Outpdimm->TckmaxPs) {
+    DEBUG((EFI_D_ERROR,"DDR Clock (MCLK Cycle %d Ps) Is Slower Than "
+       "DIMM(s) (TCKmax %d Ps) Can Support.\n",
+	MclkPs, Outpdimm->TckmaxPs));
+  }
+#endif
   /** determine the acutal cas latency */
   CaslatActual = (TaaminPs + MclkPs - 1) / MclkPs;
   /** check if the dimms support the CAS latency */
@@ -1393,8 +1544,14 @@ ComputeCasLatencyDdr3 (
     once the caculation of CaslatActual is completed
     we must verify that this CAS latency value does not
     exceed tAAmax, which is 20 ns for all DDR3 speed grades
+    18ns for All DDR4 Speed Grades.
   **/
+  if (CaslatActual * MclkPs > Taamax) {
+    DEBUG((EFI_D_ERROR,"The Choosen Cas Latency %d Is Too Large\n",
+		CaslatActual));
+  }
   Outpdimm->LowestCommonSPDCaslat = CaslatActual;
+  DEBUG((EFI_D_INFO, "LowestCommonSpdCaslat Is 0x%x\n", CaslatActual));
 
   return 0;
 }
@@ -1426,21 +1583,35 @@ ComputeLowestCommonDimmParameters (
   IN   CONST UINT32 			NumberOfDimms
   )
 {
-  UINT32 i, j;
+  UINT32 I, J;
 
   UINT32 TckminXPs = 0;
   UINT32 TckmaxPs = 0xFFFFFFFF;
-  UINT32 TckmaxMaxPs = 0;
   UINT32 TrcdPs = 0;
   UINT32 TrpPs = 0;
   UINT32 TrasPs = 0;
+#if defined(CONFIG_SYS_FSL_DDR3) || defined(CONFIG_SYS_FSL_DDR4)
+  UINT32 TaaminPs = 0;
+#endif
+#ifdef CONFIG_SYS_FSL_DDR4
+  UINT32 TwrPs = 15000;
+  UINT32 Trfc1Ps = 0;
+  UINT32 Trfc2Ps = 0;
+  UINT32 Trfc4Ps = 0;
+  UINT32 TrrdsPs = 0;
+  UINT32 TrrdlPs = 0;
+  UINT32 TccdlPs = 0;
+#else
   UINT32 TwrPs = 0;
   UINT32 TwtrPs = 0;
   UINT32 TrfcPs = 0;
   UINT32 TrrdPs = 0;
+  UINT32 TrtpPs = 0;
+#endif
   UINT32 TrcPs = 0;
   UINT32 RefreshRatePs = 0;
   UINT32 ExtendedOpSrt = 1;
+#if defined(CONFIG_SYS_FSL_DDR1) || defined(CONFIG_SYS_FSL_DDR2)
   UINT32 TisPs = 0;
   UINT32 TihPs = 0;
   UINT32 TdsPs = 0;
@@ -1448,21 +1619,23 @@ ComputeLowestCommonDimmParameters (
   UINT32 TrtpPs = 0;
   UINT32 TdqsqMaxPs = 0;
   UINT32 TqhsPs = 0;
-
+#endif
   UINT32 Temp1, Temp2;
   UINT32 AdditiveLatency = 0;
 
   Temp1 = 0;
-  for (i = 0; i < NumberOfDimms; i++) {
+  for (I = 0; I < NumberOfDimms; I++) {
     /**
-     If there are no ranks on this DIMM,
-     it probably doesn't exist, so skip it.
+     if There Are No Ranks On This DIMM,
+     It Probably Doesn'T Exist, So Skip It.
     **/
-    if (DimmParams[i].NRanks == 0) {
+    if (DimmParams[I].NRanks == 0) {
       Temp1++;
       continue;
     }
-    if (DimmParams[i].NRanks == 4 && i != 0) {
+    if (DimmParams[I].NRanks == 4 && I != 0) {
+      DEBUG((EFI_D_INFO, "Found Quad-Rank DIMM In Wrong Bank, Ignored."
+		" Software May Not Run As Expected.\n"));
       Temp1++;
       continue;
     }
@@ -1472,50 +1645,60 @@ ComputeLowestCommonDimmParameters (
      CONFIG_CHIP_SELECT_QUAD_CAPABLE is not defined
      Only the board with proper design is capable
     **/
-    if (DimmParams[i].NRanks == 4 && \
+#ifndef CONFIG_FSL_DDR_FIRST_SLOT_QUAD_CAPABLE
+    if (DimmParams[I].NRanks == 4 && \
  	  CONFIG_CHIP_SELECTS_PER_CTRL/CONFIG_DIMM_SLOTS_PER_CTLR < 4) {
+      DEBUG((EFI_D_INFO,"Found Quad-Rank DIMM, Not Able To Support."));
       Temp1++;
       continue;
     }
+#endif
     /**
       Find minimum TckmaxPs to find fastest slow speed,
       i.e., this is the slowest the whole system can go.
     **/
-    TckmaxPs = Min(TckmaxPs, DimmParams[i].TckmaxPs);
+    TckmaxPs = Min(TckmaxPs, DimmParams[I].TckmaxPs);
 
-    /**
-      Either find maximum value to determine slowest
-      speed, delay, time, period, etc
-    **/
-    TckminXPs = Max(TckminXPs, DimmParams[i].TckminXPs);
-    TckmaxMaxPs = Max(TckmaxMaxPs, DimmParams[i].TckmaxPs);
-    TrcdPs = Max(TrcdPs, DimmParams[i].TrcdPs);
-    TrpPs = Max(TrpPs, DimmParams[i].TrpPs);
-    TrasPs = Max(TrasPs, DimmParams[i].TrasPs);
-    TwrPs = Max(TwrPs, DimmParams[i].TwrPs);
-    TwtrPs = Max(TwtrPs, DimmParams[i].TwtrPs);
-    TrfcPs = Max(TrfcPs, DimmParams[i].TrfcPs);
-    TrrdPs = Max(TrrdPs, DimmParams[i].TrrdPs);
-    TrcPs = Max(TrcPs, DimmParams[i].TrcPs);
-    TisPs = Max(TisPs, DimmParams[i].TisPs);
-    TihPs = Max(TihPs, DimmParams[i].TihPs);
-    TdsPs = Max(TdsPs, DimmParams[i].TdsPs);
-    TdhPs = Max(TdhPs, DimmParams[i].TdhPs);
-    TrtpPs = Max(TrtpPs, DimmParams[i].TrtpPs);
-    TqhsPs = Max(TqhsPs, DimmParams[i].TqhsPs);
-    RefreshRatePs = Max(RefreshRatePs,
-    		      DimmParams[i].RefreshRatePs);
-    /** ExtendedOpSrt is either 0 or 1, 0 having priority */
+#if defined(CONFIG_SYS_FSL_DDR3) || defined(CONFIG_SYS_FSL_DDR4)
+    TaaminPs = Max(TaaminPs, DimmParams[I].TaaPs);
+#endif
+    TckminXPs = Max(TckminXPs, DimmParams[I].TckminXPs);
+    TrcdPs = Max(TrcdPs, DimmParams[I].TrcdPs);
+    TrpPs = Max(TrpPs, DimmParams[I].TrpPs);
+    TrasPs = Max(TrasPs, DimmParams[I].TrasPs);
+#ifdef CONFIG_SYS_FSL_DDR4
+    Trfc1Ps = Max(Trfc1Ps, DimmParams[I].Trfc1Ps);
+    Trfc2Ps = Max(Trfc2Ps, DimmParams[I].Trfc2Ps);
+    Trfc4Ps = Max(Trfc4Ps, DimmParams[I].Trfc4Ps);
+    TrrdsPs = Max(TrrdsPs, DimmParams[I].TrrdsPs);
+    TrrdlPs = Max(TrrdlPs, DimmParams[I].TrrdlPs);
+    TccdlPs = Max(TccdlPs, DimmParams[I].TccdlPs);
+#else
+    TwrPs = Max(TwrPs, DimmParams[I].TwrPs);
+    TwtrPs = Max(TwtrPs, DimmParams[I].TwtrPs);
+    TrfcPs = Max(TrfcPs, DimmParams[I].TrfcPs);
+    TrrdPs = Max(TrrdPs, DimmParams[I].TrrdPs);
+    TrtpPs = Max(TrtpPs, DimmParams[I].TrtpPs);
+#endif
+    TrcPs = Max(TrcPs, DimmParams[I].TrcPs);
+#if defined(CONFIG_SYS_FSL_DDR1) || defined(CONFIG_SYS_FSL_DDR2)
+    TisPs = Max(TisPs, DimmParams[I].TisPs);
+    TihPs = Max(TihPs, DimmParams[I].TihPs);
+    TdsPs = Max(TdsPs, DimmParams[I].TdsPs);
+    TdhPs = Max(TdhPs, DimmParams[I].TdhPs);
+    TqhsPs = Max(TqhsPs, DimmParams[I].TqhsPs);
+    /*
+     * Find Maximum TdqsqMaxPs To Find Slowest.
+     *
+     * FIXME: Is Finding The Slowest Value The Correct
+     * Strategy for This Parameter?
+     */
+    TdqsqMaxPs = Max(TdqsqMaxPs, Dimm_Params[I].TdqsqMaxPs);
+#endif
+    RefreshRatePs = Max(RefreshRatePs, DimmParams[I].RefreshRatePs);
+    /** ExtendedOpSrt Is Either 0 Or 1, 0 Having Priority */
     ExtendedOpSrt = Min(ExtendedOpSrt,
-	    		  DimmParams[i].ExtendedOpSrt);
-
-    /**
-      Find maximum TdqsqMaxPs to find slowest.
-
-      FIXME: is finding the slowest value the correct
-      strategy for this parameter?
-    **/
-    TdqsqMaxPs = Max(TdqsqMaxPs, DimmParams[i].TdqsqMaxPs);
+	    		  DimmParams[I].ExtendedOpSrt);
   }
 
   Outpdimm->NdimmsPresent = NumberOfDimms - Temp1;
@@ -1526,42 +1709,57 @@ ComputeLowestCommonDimmParameters (
 
   Outpdimm->TckminXPs = TckminXPs;
   Outpdimm->TckmaxPs = TckmaxPs;
-  Outpdimm->TckmaxMaxPs = TckmaxMaxPs;
+#if defined(CONFIG_SYS_FSL_DDR3) || defined(CONFIG_SYS_FSL_DDR4)
+  Outpdimm->TaaminPs = TaaminPs;
+#endif
   Outpdimm->TrcdPs = TrcdPs;
   Outpdimm->TrpPs = TrpPs;
   Outpdimm->TrasPs = TrasPs;
-  Outpdimm->TwrPs = TwrPs;
+#ifdef CONFIG_SYS_FSL_DDR4
+  Outpdimm->Trfc1Ps = Trfc1Ps;
+  Outpdimm->Trfc2Ps = Trfc2Ps;
+  Outpdimm->Trfc4Ps = Trfc4Ps;
+  Outpdimm->TrrdsPs = TrrdsPs;
+  Outpdimm->TrrdlPs = TrrdlPs;
+  Outpdimm->TccdlPs = TccdlPs;
+#else
   Outpdimm->TwtrPs = TwtrPs;
   Outpdimm->TrfcPs = TrfcPs;
   Outpdimm->TrrdPs = TrrdPs;
+  Outpdimm->TrtpPs = TrtpPs;
+#endif
+  Outpdimm->TwrPs = TwrPs;
   Outpdimm->TrcPs = TrcPs;
   Outpdimm->RefreshRatePs = RefreshRatePs;
   Outpdimm->ExtendedOpSrt = ExtendedOpSrt;
+#if defined(CONFIG_SYS_FSL_DDR1) || defined(CONFIG_SYS_FSL_DDR2)
   Outpdimm->TisPs = TisPs;
   Outpdimm->TihPs = TihPs;
   Outpdimm->TdsPs = TdsPs;
   Outpdimm->TdhPs = TdhPs;
-  Outpdimm->TrtpPs = TrtpPs;
   Outpdimm->TdqsqMaxPs = TdqsqMaxPs;
   Outpdimm->TqhsPs = TqhsPs;
+#endif
 
   /** Determine common burst length for all DIMMs. */
   Temp1 = 0xff;
-  for (i = 0; i < NumberOfDimms; i++) {
-    if (DimmParams[i].NRanks) {
-      Temp1 &= DimmParams[i].BurstLengthsBitmask;
+  for (I = 0; I < NumberOfDimms; I++) {
+    if (DimmParams[I].NRanks) {
+      Temp1 &= DimmParams[I].BurstLengthsBitmask;
     }
   }
   Outpdimm->AllDimmsBurstLengthsBitmask = Temp1;
 
   /** Determine if all DIMMs Registered Buffered. */
   Temp1 = Temp2 = 0;
-  for (i = 0; i < NumberOfDimms; i++) {
-    if (DimmParams[i].NRanks) {
-      if (DimmParams[i].RegisteredDimm) {
+  for (I = 0; I < NumberOfDimms; I++) {
+    if (DimmParams[I].NRanks) {
+      if (DimmParams[I].RegisteredDimm) {
         Temp1 = 1;
+	 DEBUG((EFI_D_INFO, "Detected RDIMM %s\n", DimmParams[I].Mpart));
       } else {
         Temp2 = 1;
+	 DEBUG((EFI_D_INFO, "Detected UDIMM %s\n", DimmParams[I].Mpart));
       }
     }
   }
@@ -1572,33 +1770,45 @@ ComputeLowestCommonDimmParameters (
     Outpdimm->AllDimmsRegistered= 1;
   } else if (!Temp1 && Temp2) {
     Outpdimm->AllDimmsUnbuffered = 1;
+  } else {
+    DEBUG((EFI_D_ERROR, "ERROR:  Mix Of Registered Buffered And Unbuffered "
+			   "DIMMs Detected!\n"));
   }
 
   Temp1 = 0;
   if (Outpdimm->AllDimmsRegistered)
-    for (j = 0; j < 16; j++) {
-      Outpdimm->Rcw[j] = DimmParams[0].Rcw[j];
-      for (i = 1; i < NumberOfDimms; i++) {
-  	 if (!DimmParams[i].NRanks)
+    for (J = 0; J < 16; J++) {
+      Outpdimm->Rcw[J] = DimmParams[0].Rcw[J];
+      for (I = 1; I < NumberOfDimms; I++) {
+  	 if (!DimmParams[I].NRanks)
   	   continue;
-  	 if (DimmParams[i].Rcw[j] != DimmParams[0].Rcw[j]) {
+  	 if (DimmParams[I].Rcw[J] != DimmParams[0].Rcw[J]) {
   	   Temp1 = 1;
   	   break;
   	 }
       }
     }
 
-  if (ComputeCasLatencyDdr3(DimmParams, Outpdimm, NumberOfDimms))
+  if (Temp1 != 0)
+    DEBUG((EFI_D_INFO,"ERROR: Mix Different RDIMM Detected!\n"));
+
+  /* Calculate Cas Latency for All DDR Types */
+  if (ComputeCasLatencyDdr(DimmParams, Outpdimm, NumberOfDimms))
     return 1;
 
   /** Determine if all DIMMs ECC capable. */
   Temp1 = 1;
-  for (i = 0; i < NumberOfDimms; i++) {
-    if (DimmParams[i].NRanks &&
-     	!(DimmParams[i].EdcConfig & EDC_ECC)) {
+  for (I = 0; I < NumberOfDimms; I++) {
+    if (DimmParams[I].NRanks &&
+     	!(DimmParams[I].EdcConfig & EDC_ECC)) {
       Temp1 = 0;
       break;
     }
+  }
+  if (Temp1) {
+    DEBUG((EFI_D_INFO,"All DIMMs ECC Capable\n"));
+  } else {
+    DEBUG((EFI_D_INFO,"Warning: Not All DIMMs ECC Capable, Cant Enable ECC\n"));
   }
   Outpdimm->AllDimmsEccCapable = Temp1;
 
@@ -1658,18 +1868,11 @@ ComputeLowestCommonDimmParameters (
   AdditiveLatency = 0;
 
   /**
-    The system will not use the global auto-precharge mode.
-    However, it uses the page mode, so we set AL=0
-  **/
-  AdditiveLatency = 0;
-
-  /**
-    Validate additive latency
-    FIXME: move to somewhere else to validate
-
-    AL <= tRCD(Min)
+    Validate Additive Latency
+    AL <= TRCD(Min)
   **/
   if (MclkToPicos(AdditiveLatency) > TrcdPs) {
+    DEBUG((EFI_D_INFO,"Error: Invalid Additive Latency Exceeds TRCD(Min).\n"));
     return 1;
   }
 
@@ -1694,15 +1897,19 @@ ComputeLowestCommonDimmParameters (
 
 UINT32
 PopulateMemctlOptions (
-  IN   INT32 		AllDimmsRegistered,
+  IN   INT32 			AllDimmsRegistered,
   OUT  MemctlOptionsT 	*Popts,
-  IN   DimmParamsT 	*Pdimm,
+  IN   DimmParamsT 		*Pdimm,
   IN   UINT32 		CtrlNum
   )
 {
-  UINT32 i;
+  UINT32 I;
   INT8 *Buf = NULL;
-  CONST struct DynamicOdt *pdodt = OdtUnknown;
+#if defined(CONFIG_SYS_FSL_DDR3) || \
+	defined(CONFIG_SYS_FSL_DDR2) || \
+	defined(CONFIG_SYS_FSL_DDR4)
+  CONST struct DynamicOdt *Pdodt = OdtUnknown;
+#endif
   UINTN DdrFreq;
 
   /**
@@ -1710,67 +1917,85 @@ PopulateMemctlOptions (
     the environment but need it for ddr Config params
   **/
 
-  /** Chip select options. */
+#if defined(CONFIG_SYS_FSL_DDR3) || \
+	defined(CONFIG_SYS_FSL_DDR2) || \
+	defined(CONFIG_SYS_FSL_DDR4)
+  /** Chip Select Options. */
   if (CONFIG_DIMM_SLOTS_PER_CTLR == 1) {
     switch (Pdimm[0].NRanks) {
       case 1:
-        pdodt = SingleS;
+        Pdodt = SingleS;
   	 break;
       case 2:
-        pdodt = SingleD;
+        Pdodt = SingleD;
   	 break;
       case 4:
-        pdodt = SingleQ;
+        Pdodt = SingleQ;
   	 break;
     }
   } else if (CONFIG_DIMM_SLOTS_PER_CTLR == 2) {
     switch (Pdimm[0].NRanks) {
+#ifdef CONFIG_FSL_DDR_FIRST_SLOT_QUAD_CAPABLE
+      case 4:
+        Pdodt = SingleQ;
+	 if (Pdimm[1].NRanks)
+	   DEBUG((EFI_D_INFO,"Error: Quad- And Dual-Rank DIMMs Cannot Be Used Together\n"));
+	 break;
+#endif
       case 2:
 	 switch (Pdimm[1].NRanks) {
 	   case 2:
-	     pdodt = DualDD;
+	     Pdodt = DualDD;
 	     break;
 	   case 1:
-	     pdodt = DualDS;
+	     Pdodt = DualDS;
 	     break;
 	   case 0:
-	     pdodt = DualD0;
+	     Pdodt = DualD0;
 	     break;
 	 }
 	 break;
       case 1:
         switch (Pdimm[1].NRanks) {
 	   case 2:
-	     pdodt = DualSD;
+	     Pdodt = DualSD;
 	     break;
 	   case 1:
-	     pdodt = DualSS;
+	     Pdodt = DualSS;
 	     break;
 	   case 0:
-	     pdodt = DualS0;
+	     Pdodt = DualS0;
 	     break;
 	 }
 	 break;
       case 0:
 	 switch (Pdimm[1].NRanks) {
 	   case 2:
-	     pdodt = Dual0D;
+	     Pdodt = Dual0D;
 	     break;
 	   case 1:
-	     pdodt = Dual0S;
+	     Pdodt = Dual0S;
 	     break;
 	 }
 	 break;
     }
+#endif
   }
 
   /** Pick chip-select local options. */
-  for (i = 0; i < CONFIG_CHIP_SELECTS_PER_CTRL; i++) {
-    Popts->CsLocalOpts[i].OdtRdCfg = pdodt[i].OdtRdCfg;
-    Popts->CsLocalOpts[i].OdtWrCfg = pdodt[i].OdtWrCfg;
-    Popts->CsLocalOpts[i].OdtRttNorm = pdodt[i].OdtRttNorm;
-    Popts->CsLocalOpts[i].OdtRttWr = pdodt[i].OdtRttWr;
-    Popts->CsLocalOpts[i].AutoPrecharge = 0;
+  for (I = 0; I < CONFIG_CHIP_SELECTS_PER_CTRL; I++) {
+#if defined(CONFIG_SYS_FSL_DDR3) || \
+	defined(CONFIG_SYS_FSL_DDR2) || \
+	defined(CONFIG_SYS_FSL_DDR4)
+    Popts->CsLocalOpts[I].OdtRdCfg = Pdodt[I].OdtRdCfg;
+    Popts->CsLocalOpts[I].OdtWrCfg = Pdodt[I].OdtWrCfg;
+    Popts->CsLocalOpts[I].OdtRttNorm = Pdodt[I].OdtRttNorm;
+    Popts->CsLocalOpts[I].OdtRttWr = Pdodt[I].OdtRttWr;
+#else
+    Popts->CsLocalOpts[I].OdtRdCfg = FSL_DDR_ODT_NEVER;
+    Popts->CsLocalOpts[I].OdtWrCfg = FSL_DDR_ODT_CS;
+#endif
+    Popts->CsLocalOpts[I].AutoPrecharge = 0;
   }
 
   /** Pick interleaving mode. */
@@ -1817,7 +2042,14 @@ PopulateMemctlOptions (
 
   /** Pick ECC modes */
   Popts->EccMode = 0;
-  Popts->EccInitUsingMemctl = 1; /* 0 = use DMA, 1 = use memctl */
+#ifdef CONFIG_DDR_ECC
+ // if (HwconfigSubF("FslDdr", "Ecc", Buf)) {
+  //  if (HwconfigSubargCmpF("FslDdr", "Ecc", "On", Buf))
+   //   Popts->EccMode = 1;
+   // } else
+      Popts->EccMode = 1;
+#endif
+  Popts->EccInitUsingMemctl = 1; /* 0 = Use DMA, 1 = Use Memctl */
 
   /**
     Choose DQS Config
@@ -1844,11 +2076,20 @@ PopulateMemctlOptions (
       Popts->DataBusWidth = 1;
     else if (Pdimm[0].PrimarySdramWidth == 16)
       Popts->DataBusWidth = 2;
+    else {
+      DEBUG((EFI_D_ERROR, "Error: Primary Sdram Width %d Is Invalid!\n",
+			Pdimm[0].PrimarySdramWidth));
+    }
   }
 
   Popts->X4En = (Pdimm[0].DeviceWidth == 4) ? 1 : 0;
 
   /** Choose burst length. */
+#if defined(CONFIG_SYS_FSL_DDR3) || defined(CONFIG_SYS_FSL_DDR4)
+#if defined(CONFIG_E500MC)
+  Popts->OtfBurstChopEn = 0;	/* On-The-Fly Burst Chop Disable */
+  Popts->BurstLength = DDR_BL8;	/* Fixed 8-Beat Burst Len */
+#else
   if ((Popts->DataBusWidth == 1) || (Popts->DataBusWidth == 2)) {
     /** 32-bit or 16-bit bus */
     Popts->OtfBurstChopEn = 0;
@@ -1857,10 +2098,18 @@ PopulateMemctlOptions (
     Popts->OtfBurstChopEn = 1;	/** on-the-fly burst chop */
     Popts->BurstLength = DDR_OTF;	/** on-the-fly BC4 and BL8 */
   }
+#endif
+#else
+  Popts->BurstLength = DDR_BL4;	/* Has To Be 4 for DDR2 */
+#endif
 
   /** Choose ddr controller address mirror mode */
+#if defined(CONFIG_SYS_FSL_DDR3) || defined(CONFIG_SYS_FSL_DDR4)
   Popts->MirroredDimm = Pdimm[0].MirroredDimm;
+#endif
 
+  /* Global Timing Parameters. */
+  DEBUG((EFI_D_INFO, "MclkPs = %d Ps\n", GetMemoryClkPeriodPs()));
 
   /** Pick a caslat override. */
   Popts->CasLatencyOverride = 0;
@@ -1898,11 +2147,11 @@ PopulateMemctlOptions (
     e.g. tRAS(Min) = 40 ns
   **/
   Popts->Bstopre = 0x100;
-
+#if 0
   /** Minimum CKE pulse width -- tCKE(MIN) */
   Popts->TckeClockPulseWidthPs
   	= MclkToPicos(FSL_DDR_MIN_TCKE_PULSE_WIDTH_DDR);
-
+#endif
   /**
     Window for four activates -- tFAW
 
@@ -1918,9 +2167,11 @@ PopulateMemctlOptions (
     we suggest to enable write leveling to
     meet the tQDSS under different loading.
   **/
+#if defined(CONFIG_SYS_FSL_DDR3) || defined(CONFIG_SYS_FSL_DDR4)
   Popts->WrlvlEn = 1;
   Popts->ZqEn = 1;
   Popts->WrlvlOverride = 0;
+#endif
 
   /**
     Check interleaving Configuration from environment.
@@ -1937,30 +2188,32 @@ PopulateMemctlOptions (
     with 256 Byte is enabled.
   **/
 
-  if ((HwConfigSubF("fsl_ddr", "bank_intlv", Buf)) &&
+  if ((HwConfigSubF("FslDdr", "BankIntlv", Buf)) &&
 	(CONFIG_CHIP_SELECTS_PER_CTRL > 1)) {
     /**
       test null first. if CONFIG_HWCONFIG is not defined,
       HwConfigSubargCmpF returns non-zero
     **/
-    if (HwConfigSubargCmpF("fsl_ddr", "bank_intlv",
-  			    "null", Buf))
+    if (HwConfigSubargCmpF("FslDdr", "BankIntlv",
+  			    "NULL", Buf))
       Popts->BaIntlvCtl = 0;
-    else if (HwConfigSubargCmpF("fsl_ddr", "bank_intlv",
-  				 "cs0_cs1", Buf))
+    else if (HwConfigSubargCmpF("FslDdr", "BankIntlv",
+  				 "Cs0Cs1", Buf))
       Popts->BaIntlvCtl = FSL_DDR_CS0_CS1;
-    else if (HwConfigSubargCmpF("fsl_ddr", "bank_intlv",
-  				 "cs2_cs3", Buf))
+    else if (HwConfigSubargCmpF("FslDdr", "BankIntlv",
+  				 "Cs2Cs3", Buf))
       Popts->BaIntlvCtl = FSL_DDR_CS2_CS3;
-    else if (HwConfigSubargCmpF("fsl_ddr", "bank_intlv",
-  				 "cs0_cs1_and_cs2_cs3", Buf))
+    else if (HwConfigSubargCmpF("FslDdr", "BankIntlv",
+  				 "Cs0Cs1AndCs2Cs3", Buf))
       Popts->BaIntlvCtl = FSL_DDR_CS0_CS1_AND_CS2_CS3;
-    else if (HwConfigSubargCmpF("fsl_ddr", "bank_intlv",
-					 "cs0_cs1_cs2_cs3", Buf))
+    else if (HwConfigSubargCmpF("FslDdr", "BankIntlv",
+					 "Cs0Cs1Cs2Cs3", Buf))
       Popts->BaIntlvCtl = FSL_DDR_CS0_CS1_CS2_CS3;
-    else if (HwConfigSubargCmpF("fsl_ddr", "bank_intlv",
-					"auto", Buf))
+    else if (HwConfigSubargCmpF("FslDdr", "BankIntlv",
+					"Auto", Buf))
       Popts->BaIntlvCtl = AutoBankIntlv(Pdimm);
+    else
+      DEBUG((EFI_D_INFO,"Hwconfig Has Unrecognized Parameter for BankIntlv.\n"));
 
     Popts->BaIntlvCtl = FSL_DDR_CS0_CS1; /*FIXME*/
 
@@ -1969,12 +2222,14 @@ PopulateMemctlOptions (
 	 if (Pdimm[0].NRanks < 4) {
 	   Popts->BaIntlvCtl = 0;
 	 }
+#if 0
 	 if ((Pdimm[0].NRanks < 2) && (Pdimm[1].NRanks < 2)) {
 	   Popts->BaIntlvCtl = 0;
 	 }
 	 if (Pdimm[0].Capacity != Pdimm[1].Capacity) {
 	   Popts->BaIntlvCtl = 0;
 	 }
+#endif
 	 break;
       case FSL_DDR_CS0_CS1:
 	 if (Pdimm[0].NRanks < 2) {
@@ -1997,11 +2252,11 @@ PopulateMemctlOptions (
     }
   }
 
-  if (HwConfigSubF("fsl_ddr", "AddrHash", Buf)) {
-    if (HwConfigSubargCmpF("fsl_ddr", "AddrHash", "null", Buf))
+  if (HwConfigSubF("FslDdr", "AddrHash", Buf)) {
+    if (HwConfigSubargCmpF("FslDdr", "AddrHash", "NULL", Buf))
       Popts->AddrHash = 0;
-    else if (HwConfigSubargCmpF("fsl_ddr", "AddrHash",
-  				       "true", Buf))
+    else if (HwConfigSubargCmpF("FslDdr", "AddrHash",
+  				       "True", Buf))
       Popts->AddrHash = 1;
   }
 
@@ -2026,7 +2281,7 @@ PopulateMemctlOptions (
 
   return 0;
 }
- 
+
 /**
   Bind the main DDR setup driver's generic data
   to this specific DDR technology.
@@ -2043,7 +2298,11 @@ ComputeDimmParameters(
   IN	UINT32 			DimmNumber
   )
 {
+#ifdef CONFIG_SYS_FSL_DDR4 
+  return Ddr4ComputeDimmParameters(Spd, Pdimm, DimmNumber);
+#elif defined CONFIG_SYS_FSL_DDR3
   return DdrComputeDimmParameters(Spd, Pdimm, DimmNumber);
+#endif
 };
 
 UINTN
@@ -2053,77 +2312,110 @@ FslDdrCompute (
   IN   UINT32 		SizeOnly
   )
 {
-  UINT32 i, j;
+  UINT32 I = 0, J = 0;
   UINTN TotalMem = 0;
-  INT32 AssertReset;
+  INT32 AssertReset = 0;
+  UINT32 FirstCtrl =  Pinfo->FirstCtrl;
+  UINT32 LastCtrl = FirstCtrl + Pinfo->NumCtrls - 1;
 
   FslDdrCfgRegsT *DdrReg = Pinfo->FslDdrConfigReg;
   CommonTimingParamsT *TimingParams = Pinfo->CommonTimingParams;
-  AssertReset = BoardNeedMemReset();
+  if (Pinfo->BoardNeedMemReset)
+    AssertReset = BoardNeedMemReset();
 
   /** data bus width Capacity adjust shift amount */
   UINT32 DbwCapacityAdjust[CONFIG_NUM_DDR_CONTROLLERS];
 
-  for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-  	DbwCapacityAdjust[i] = 0;
+  for (I = FirstCtrl; I <= LastCtrl; I++) {
+  	DbwCapacityAdjust[I] = 0;
   }
 
   switch (StartStep) {
     case STEP_GET_SPD:
 #if defined(CONFIG_DDR_SPD) || defined(CONFIG_SPD_EEPROM)
       /** STEP 1:  Gather all DIMM SPD data */
-      for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-        FslDdrGetSpd(Pinfo->SpdInstalledDimms[i], i);
+      for (I = FirstCtrl; I <= LastCtrl; I++) {
+        FslDdrGetSpd(Pinfo->SpdInstalledDimms[I], I);
       }
     case STEP_COMPUTE_DIMM_PARMS:
       /** STEP 2:  Compute DIMM parameters from SPD data */
-         
-      for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-        for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
+      BOOLEAN GoodSpd = FALSE;
+      for (I = FirstCtrl; I <= LastCtrl; I++) {
+        for (J = 0; J < CONFIG_DIMM_SLOTS_PER_CTLR; J++) {
 	   UINT32 Retval;
 	   GenericSpdEepromT *Spd =
-	  		&(Pinfo->SpdInstalledDimms[i][j]);
+	  		&(Pinfo->SpdInstalledDimms[I][J]);
 	   DimmParamsT *Pdimm =
-	   		&(Pinfo->DimmParams[i][j]);
+	   		&(Pinfo->DimmParams[I][J]);
 
-	   Retval = ComputeDimmParameters(Spd, Pdimm, i);
+	   Retval = ComputeDimmParameters( Spd, Pdimm, J);
+
 #ifdef  CONFIG_SYS_DDR_RAW_TIMING
-	   if (Retval) {
-	     FslDdrGetDimmParams(Pdimm, i, j);
+	   if (!J && Retval) {
+	     DEBUG((EFI_D_INFO,"SPD Error On Controller %d! "
+			"Trying Fallback To Raw Timing "
+			"Calculation\n", I));
+	     FslDdrGetDimmParams(Pdimm, I, J);
 	   }
-#else    
+#else
 	   if (Retval == 2) {
+	     DEBUG((EFI_D_INFO,"Error: ComputeDimmParameters"
+			" Non-Zero Returned FATAL Value "
+			"for Memctl=%d Dimm=%d\n", I, J));
 	     return 0;
 	   }
-#endif   
+#endif
+	   if (Retval) {
+	     DEBUG((EFI_D_ERROR, "Warning: ComputeDimmParameters"
+			" Non-Zero return Value for Memctl=%d "
+			"Dimm=%d\n", I, J));
+	   } else {
+	     GoodSpd = TRUE;
+	   }
 	 }
       }
+      if (!GoodSpd) {
+	 /*
+	  * No Valid SPD Found
+	  * Throw An Error if This Is for Main Memory, I.E.
+	  * FirstCtrl == 0. Otherwise, Siliently return 0
+	  * As The Memory Size.
+	 */
+	 if (FirstCtrl == 0)
+	   DEBUG((EFI_D_ERROR, "Error: No Valid SPD Detected.\n"));
 
+	 return 0;
+      }
 #elif defined(CONFIG_SYS_DDR_RAW_TIMING)
     case STEP_COMPUTE_DIMM_PARMS:
-      for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-        for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
+      for (I = FirstCtrl; I <= LastCtrl; I++) {
+        for (J = 0; J < CONFIG_DIMM_SLOTS_PER_CTLR; J++) {
 	   DimmParamsT *Pdimm =
-	  		&(Pinfo->DimmParams[i][j]);
-	   FslDdrGetDimmParams(Pdimm, i, j);
+	  		&(Pinfo->DimmParams[I][J]);
+	   FslDdrGetDimmParams(Pdimm, I, J);
 	 }
       }
+      DEBUG((EFI_D_INFO,"Filling Dimm Parameters From Board Specific File\n"));
 #endif
     case STEP_COMPUTE_COMMON_PARMS:
       /**
   	 STEP 3: Compute a common set of timing parameters
   	 suitable for all of the DIMMs on each memory controller
       **/
-      for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
+      for (I = FirstCtrl; I <= LastCtrl; I++) {
+	 DEBUG((EFI_D_INFO, "Computing Lowest Common DIMM"
+		" Parameters for Memctl=%d\n", I));
         ComputeLowestCommonDimmParameters(
-  			Pinfo->DimmParams[i],
-  			&TimingParams[i],
+  			Pinfo->DimmParams[I],
+  			&TimingParams[I],
   			CONFIG_DIMM_SLOTS_PER_CTLR);
       }
 
     case STEP_GATHER_OPTS:
       /** STEP 4:  Gather Configuration requirements from user */
-      for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
+      for (I = FirstCtrl; I <= LastCtrl; I++) {
+	 DEBUG((EFI_D_INFO, "Reloading Memory Controller "
+		"Configuration Options for Memctl=%d\n", I));
 	 /**
 	   This "reloads" the memory controller options
 	   to defaults.  If the user "edits" an option,
@@ -2131,40 +2423,47 @@ FslDdrCompute (
 	   which is currently STEP_ASSIGN_ADDRESSES.
 	 **/
 	 PopulateMemctlOptions(
-			TimingParams[i].AllDimmsRegistered,
-			&Pinfo->MemctlOpts[i],
-			Pinfo->DimmParams[i], i);
+			TimingParams[I].AllDimmsRegistered,
+			&Pinfo->MemctlOpts[I],
+			Pinfo->DimmParams[I], I);
 	 /**
 	   For RDIMMs, JEDEC spec requires clocks to be stable
 	   before reset signal is deasserted. For the boards
 	   using fixed parameters, this function should be
 	   be called from board init file.
 	 **/
-	 if (TimingParams[i].AllDimmsRegistered)
+	 if (TimingParams[I].AllDimmsRegistered)
 	   AssertReset = 1;
       }
-      if (AssertReset) {
-	 /** board_assert_mem_reset();*/
+      if (AssertReset && !SizeOnly) {
+ 	 if (Pinfo->BoardMemReset) {
+	   DEBUG((EFI_D_INFO,"Asserting Mem Reset\n"));
+	   Pinfo->BoardMemReset();
+ 	 } else {
+	   DEBUG((EFI_D_INFO,"Asserting Mem Reset Missing\n"));
+	 }
       }
 
     case STEP_ASSIGN_ADDRESSES:
       /** STEP 5:  Assign addresses to chip selects */
       CheckInterleavingOptions(Pinfo);
-      TotalMem = StepAssignAddresses(Pinfo, DbwCapacityAdjust);
+      TotalMem = StepAssignAddresses(Pinfo, DbwCapacityAdjust); //FIXME
+      DEBUG((EFI_D_INFO, "Total Mem %llu Assigned\n", TotalMem));
 
     case STEP_COMPUTE_REGS:
-      /** STEP 6:  compute controller register values */
-      for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-        if (TimingParams[i].NdimmsPresent == 0) {
-	   InternalMemZeroMem(&DdrReg[i], sizeof(FslDdrCfgRegsT));
+	DEBUG((EFI_D_INFO,"FSL Memory Ctrl Register Computation\n"));
+      /** STEP 6:  Compute Controller Register Values */
+      for (I = FirstCtrl; I <= LastCtrl; I++) {
+        if (TimingParams[I].NdimmsPresent == 0) {
+	   InternalMemZeroMem(&DdrReg[I], sizeof(FslDdrCfgRegsT));
           continue;
 	 }
 
 	 ComputeFslMemctlConfigRegs(
-	 	&Pinfo->MemctlOpts[i],
-		&DdrReg[i], &TimingParams[i],
-		Pinfo->DimmParams[i],
-		DbwCapacityAdjust[i],
+	 	&Pinfo->MemctlOpts[I],
+		&DdrReg[I], &TimingParams[I],
+		Pinfo->DimmParams[I],
+		DbwCapacityAdjust[I],
 		SizeOnly);
       }
     default:
@@ -2179,18 +2478,18 @@ FslDdrCompute (
   **/
   UINT32 MaxEnd = 0;
 
-  for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-    for (j = 0; j < CONFIG_CHIP_SELECTS_PER_CTRL; j++) {
-      FslDdrCfgRegsT *Reg = &DdrReg[i];
-      if (Reg->Cs[j].Config & 0x80000000) {
+  for (I = FirstCtrl; I <= LastCtrl ; I++) {
+    for (J = 0; J < CONFIG_CHIP_SELECTS_PER_CTRL; J++) {
+      FslDdrCfgRegsT *Reg = &DdrReg[I];
+      if (Reg->Cs[J].Config & 0x80000000) {
   	 UINT32 End;
   	 /**
   	   0xfffffff is a special value we put
   	   for unused Bnds
   	 **/
-  	 if (Reg->Cs[j].Bnds == 0xffffffff)
+  	 if (Reg->Cs[J].Bnds == 0xffffffff)
   	   continue;
-  	 End = Reg->Cs[j].Bnds & 0xffff;
+  	 End = Reg->Cs[J].Bnds & 0xffff;
   	 if (End > MaxEnd) {
   	   MaxEnd = End;
   	 }
@@ -2199,7 +2498,8 @@ FslDdrCompute (
   }
 
   TotalMem = 1 + (((UINTN)MaxEnd << 24ULL) |
-	 0xFFFFFFULL) - CONFIG_SYS_FSL_DDR_SDRAM_BASE_PHY;
+	 0xFFFFFFULL) - Pinfo->MemBase;
+	 //0xFFFFFFULL) - CONFIG_SYS_FSL_DDR_SDRAM_BASE_PHY;
 
   return TotalMem;
 }
@@ -2224,7 +2524,7 @@ FslDdrSdram (
   VOID
   )
 {
-  UINT32 i;
+  UINT32 I = 0, FirstCtrl = 0, LastCtrl = 0;
   UINTN TotalMemory;
   FslDdrInfoT Info;
   INT32 DeassertReset;
@@ -2232,21 +2532,38 @@ FslDdrSdram (
   /** Reset info structure. */
   InternalMemZeroMem(&Info, sizeof(FslDdrInfoT));
 
-  /** Compute it once normally. */
-  /** TODO Fill data in interactive mode of DDR*/
-  /** TODO Fill data of DDR from SPD */
-  TotalMemory = FslDdrCompute(&Info, STEP_GET_SPD, 0);
-  /** 
-    TODO setup 3-way interleaving before enabling DDRC
-    will give TotalMemory
+  Info.MemBase = CONFIG_SYS_FSL_DDR_SDRAM_BASE_PHY;
+  Info.FirstCtrl = 0;
+  Info.NumCtrls = CONFIG_NUM_DDR_CONTROLLERS;
+  Info.DimmSlotsPerCtrl = CONFIG_DIMM_SLOTS_PER_CTLR;
+  Info.BoardNeedMemReset = BoardNeedMemReset;
+  Info.BoardMemReset = BoardAssertMemReset;
+  Info.BoardMemDeReset = BoardDeassertMemReset;
+
+  FirstCtrl = Info.FirstCtrl;
+  LastCtrl = FirstCtrl + Info.NumCtrls - 1;
+
+  /** Compute It Once Normally. */
+#ifdef CONFIG_FSL_DDR_INTERACTIVE
+#if 0
+  if (GetHIInputInteger() == 'd') {	/* We Got a Key Press Of 'd' */
+    TotalMemory = FslDdrInteractive(Info, 0);
+  } else if (FslDdrInteractiveEnvVarExists()) {
+    TotalMemory = FslDdrInteractive(Info, 1);
+  } else
+#endif
+#endif
+    TotalMemory = FslDdrCompute(&Info, STEP_GET_SPD, 0);
+  /**
+    Setup 3-Way Interleaving Before Enabling DDRC
   **/
-  if (Info.MemctlOpts[0].MemctlInterleaving) {
-    switch (Info.MemctlOpts[0].MemctlInterleavingMode) {
+  if (Info.MemctlOpts[FirstCtrl].MemctlInterleaving) {
+    switch (Info.MemctlOpts[FirstCtrl].MemctlInterleavingMode) {
       case FSL_DDR_3WAY_1KB_INTERLEAVING:
       case FSL_DDR_3WAY_4KB_INTERLEAVING:
       case FSL_DDR_3WAY_8KB_INTERLEAVING:
         FslDdrSetIntl3r(
-  	      Info.MemctlOpts[0].MemctlInterleavingMode);
+  	      Info.MemctlOpts[FirstCtrl].MemctlInterleavingMode);
         break;
       default:
        break;
@@ -2264,40 +2581,57 @@ FslDdrSdram (
     also OK to follow the same flow.
   **/
 
-  /* TODO mem reset board */
-  DeassertReset = BoardNeedMemReset();
-  for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-    if (Info.CommonTimingParams[i].AllDimmsRegistered)
+  if (Info.BoardNeedMemReset)
+    DeassertReset = BoardNeedMemReset();
+  for (I = FirstCtrl; I <= LastCtrl; I++) {
+    if (Info.CommonTimingParams[I].AllDimmsRegistered)
       DeassertReset = 1;
   }
 
-  for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-    if (Info.CommonTimingParams[i].NdimmsPresent == 0) {
+  for (I = FirstCtrl; I <= LastCtrl; I++) {
+    DEBUG((EFI_D_INFO, "Programming Controller %d\n", I));
+    if (Info.CommonTimingParams[I].NdimmsPresent == 0) {
+      DEBUG((EFI_D_INFO, "No Dimms Present On Controller %d; "
+					"Skipping Programming\n", I));
       continue;
     }
     /**
       The following call with step = 1 returns before enabling
       the controller. It has to finish with step = 2 later.
     **/
-    FslDdrSetMemctlRegs(&(Info.FslDdrConfigReg[i]), i, 0);
+    FslDdrSetMemctlRegs(&(Info.FslDdrConfigReg[I]), I,
+				DeassertReset ? 1 : 0);
   }
 
   if (DeassertReset) {
     /** Use board FPGA or GPIO to deassert reset signal */
-    //board_deassert_mem_reset();	/*TODO*/
-    for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
-      /** Call with step = 2 to continue initialization */
-      FslDdrSetMemctlRegs(&(Info.FslDdrConfigReg[i]), i, 2);
+    if (Info.BoardMemDeReset) {
+      DEBUG((EFI_D_INFO,"Deasserting Mem Reset\n"));
+      Info.BoardMemDeReset();
+    } else {
+      DEBUG((EFI_D_INFO,"Deasserting Mem Reset Missing\n"));
+    }
+    for (I = FirstCtrl; I <= LastCtrl; I++) {
+      /** Call With Step = 2 To continue Initialization */
+      FslDdrSetMemctlRegs(&(Info.FslDdrConfigReg[I]), I, 2);
     }
   }
-  
+
+//TODO CONFIG_FSL_DDR_SYNC_REFRESH
+
 #if !defined(CONFIG_PHYS_64BIT)
   /** Check for 4G or more.  Bad. */
-  if (TotalMemory >= (1ull << 32)) {
+  if ((FirstCtrl == 0) && (TotalMemory >= (1ull << 32))) {
+    DEBUG((EFI_D_INFO,"Detected "));
+    PrintSize(TotalMemory, (CONST INT8 *)" Of Memory\n");
+    DEBUG((EFI_D_INFO,"       This d-Boot Only Supports < 4G Of DDR\n"));
+    DEBUG((EFI_D_INFO,"       You Could Rebuild It With CONFIG_PHYS_64BIT\n"));
+    DEBUG((EFI_D_INFO,"       ")); /* Re-Align To Match InitFuncRam Print */
     TotalMemory = CONFIG_MAX_MEM_MAPPED;
   }
 #endif
 
+  DEBUG((EFI_D_INFO,"TotalMemory = %llu\n", TotalMemory));
   return TotalMemory;
 }
 
@@ -2306,16 +2640,82 @@ BoardAddRamInfo (
   VOID
   )
 {
-  struct CcsrDdr *ddr =
+  struct CcsrDdr *Ddr =
          (VOID *)(CONFIG_SYS_FSL_DDR_ADDR);
   INT32 CasLat;
 
   /** Calculate CAS latency based on timing cfg values */
-  CasLat = ((MmioReadBe32((UINTN)&ddr->TimingCfg1) >> 16) & 0xf) + 1;
-  if ((MmioReadBe32((UINTN)&ddr->TimingCfg3) >> 12) & 1)
+  CasLat = ((MmioReadBe32((UINTN)&Ddr->TimingCfg1) >> 16) & 0xf) + 1;
+  if ((MmioReadBe32((UINTN)&Ddr->TimingCfg3) >> 12) & 1)
     CasLat += (8 << 1);
 }
 
+#if 0
+EFI_STATUS
+SelectI2cChPCA9547(U8 Ch)
+{
+       INT32 Ret;
+
+       Ret = I2cWrite(I2C0_BASE_ADDRESS, I2C_MUX_PCA_ADDR_PRI, 0, 1, &Ch, 1);
+       if (Ret) {
+              Puts("PCA: Failed To Select Proper Channel\n");
+              return Ret;
+       }
+
+       return 0;
+}
+#endif
+
+VOID
+DdrmcInit (
+  VOID
+  )
+{
+  struct CcsrDdr *Ddr;
+
+  Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
+
+  MmioWriteBe32((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG);
+
+  MmioWriteBe32((UINTN)&Ddr->Cs0Bnds, CONFIG_CS0_BNDS);
+  MmioWriteBe32((UINTN)&Ddr->Cs0Config, CONFIG_CS0_CONFIG);
+
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg0, CONFIG_TIMING_CFG_0);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg1, CONFIG_TIMING_CFG_1);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg2, CONFIG_TIMING_CFG_2);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg3, CONFIG_TIMING_CFG_3);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg4, CONFIG_TIMING_CFG_4);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg5, CONFIG_TIMING_CFG_5);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg6, CONFIG_TIMING_CFG_7);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg7, CONFIG_TIMING_CFG_8);
+
+  MmioWriteBe32((UINTN)&Ddr->SdramCfg2, CONFIG_DDR_SDRAM_CFG_2);
+
+  MmioWriteBe32((UINTN)&Ddr->SdramMode, CONFIG_DDR_SDRAM_MODE);
+  MmioWriteBe32((UINTN)&Ddr->SdramMode2, 0);
+  MmioWriteBe32((UINTN)&Ddr->SdramInterval, CONFIG_DDR_SDRAM_INTERVAL);
+
+  MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl, CONFIG_DDR_WRLVL_CNTL);
+  MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl2, CONFIG_DDR_WRLVL_CNTL_2);
+  MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl3, 0);
+
+  MmioWriteBe32((UINTN)&Ddr->DdrCdr1, CONFIG_DDRCDR_1);
+  MmioWriteBe32((UINTN)&Ddr->DdrCdr2, CONFIG_DDRCDR_2);
+
+  MmioWriteBe32((UINTN)&Ddr->SdramClkCntl, CONFIG_DDR_SDRAM_CLK_CNTL);
+
+  MmioWriteBe32((UINTN)&Ddr->DdrZqCntl, CONFIG_DDR_ZQ_CNTL);
+
+  MmioWriteBe32((UINTN)&Ddr->SdramMode9, CONFIG_DDR_SDRAM_MODE_9);
+  MmioWriteBe32((UINTN)&Ddr->SdramMode10, CONFIG_DDR_SDRAM_MODE_10);
+
+  MmioWriteBe32((UINTN)&Ddr->Cs0Config2, 0);
+
+  MicroSecondDelay(1);
+
+  MmioWriteBe32((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG
+                     | CONFIG_DDR_SDRAM_CFG_MEM_EN);
+}
 
 /**
   Function to initialize DDR
@@ -2326,12 +2726,37 @@ DramInit (
   )
 {
   UINT32 RamSize = 0;
+
+#ifdef CONFIG_SYS_FSL_DDR4 
+  DdrmcInit();
+  RamSize = 0x80000000;
+#elif defined CONFIG_SYS_FSL_DDR3
+  DEBUG((EFI_D_INFO,"DRAM:  "));
+#if 0  /*
+   * When Resuming From Deep Sleep, The I2C Channel May Not Be
+   * In The default Channel. So, switch To The default Channel
+   * Before Accessing DDR SPD.
+   */
+  SelectI2cChPCA9547(I2C_MUX_CH_DEFAULT);
+#endif
+#ifndef CONFIG_EMU
+  DEBUG((EFI_D_INFO,"Initializing DDR....Using SPD\n"));
   RamSize = FslDdrSdram();
+#else
+  /*
+  * Skip The DDR Memory Controller Initialization
+  * When Boot From Dram
+  */
+#ifndef CONFIG_RAMBOOT
+  DdrmcInit();
+#endif
+  RamSize = CONFIG_EMU_DRAM_SIZE;
+#endif
+#endif
 
   if (RamSize > 0) {
     //BoardAddRamInfo();
   }
-
   return;
 }
 

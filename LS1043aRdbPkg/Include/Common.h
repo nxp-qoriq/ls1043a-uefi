@@ -70,6 +70,9 @@
 #define IF_TYPE_HOST        9
 #define IF_TYPE_MAX         10     /* Max number of IF_TYPE_* supported */
 
+
+#define offsetof(TYPE, MEMBER) ((UINTN) &((TYPE *)0)->MEMBER)
+
 /**
   Funtion to divide N to base Base
 
@@ -83,6 +86,10 @@ __Div64_32 (
   IN   UINT32        Base
   );
 
-#define offsetof(TYPE, MEMBER) ((UINTN) &((TYPE *)0)->MEMBER)
+VOID
+PrintSize (
+  IN  UINT64 Size,
+  IN  CONST INT8 *S
+  );
 
 #endif
