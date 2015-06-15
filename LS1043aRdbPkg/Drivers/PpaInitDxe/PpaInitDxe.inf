@@ -31,19 +31,28 @@
 [Packages]
   MdePkg/MdePkg.dec
   LS1043aRdbPkg/LS1043aRdbPkg.dec
-	ArmPkg/ArmPkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
 
 [LibraryClasses]
-	UefiLib
-	UefiDriverEntryPoint
-	MemoryInitPeiLib
-	ArmLib
+  BaseLib
+  UefiLib
+  UefiDriverEntryPoint
+  MemoryInitPeiLib
+  ArmLib
+  BdsLib
 
 [Guids]
 
 [Protocols]
 
 [Pcd]
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+  gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr
+  gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr
+  gArmPlatformTokenSpaceGuid.PcdPpaFitConfiguration
+  gArmPlatformTokenSpaceGuid.PcdDefaultFitConfiguration
 
 [depex]
   TRUE

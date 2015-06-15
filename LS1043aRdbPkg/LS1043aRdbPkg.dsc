@@ -357,7 +357,8 @@
 
   #
   # LS1043a board Specific PCDs
-  # (DRAM - Region 1 2GB)
+  # XX (DRAM - Region 1 2GB)
+  # (NOR - IFC Region 1 512MB)
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
   gArmTokenSpaceGuid.PcdSystemMemorySize|0x80000000
 
@@ -369,6 +370,12 @@
   gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|TRUE
   gArmPlatformTokenSpaceGuid.PcdCci400Initialize|TRUE
   gArmPlatformTokenSpaceGuid.PcdClockInitialize|TRUE
+  
+  #
+  # PPA specific PCDs
+  #
+  gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x60500000
+  gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr|0x8000000 # (128MB) calculated from top of DDR
 
 !if $(TARGET) == DEBUG
   gArmTokenSpaceGuid.PcdDdrInitialize|TRUE
@@ -395,14 +402,17 @@
   #
   gArmTokenSpaceGuid.PcdArmUncachedMemoryMask|0x0000000040000000
 
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Linux FIT from DDR"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0xB0000000,0xB0F59000)"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Linux FIT from NOR"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x638FFFFF)"
   gArmPlatformTokenSpaceGuid.PcdDefaultBootInitrdPath|L"MemoryMapped(0x0,0xB1000000,0xB1D47EA0)"
   gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|"console=ttyS1,115200 root=/dev/ram0 earlyprintk=uart8250-8bit,0x21c0600"
   gArmPlatformTokenSpaceGuid.PcdDefaultBootType|3 # Linux Kernel with FDT support
   gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|10 #0 no timeout
-  gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L"MemoryMapped(0x0, 0XA0EE0000, 0XA0EE4000)"
+  gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L"MemoryMapped(0x0, 0xA0EE0000, 0XA0EE4000)"
   gArmPlatformTokenSpaceGuid.PcdDefaultFitConfiguration|"config@1"
+
+  # PPA
+  gArmPlatformTokenSpaceGuid.PcdPpaFitConfiguration|"firmware@1"
 
   # Use the serial console for both ConIn & ConOut
   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)/VenPcAnsi();"

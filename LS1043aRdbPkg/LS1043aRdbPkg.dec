@@ -42,13 +42,13 @@
   gArmPlatformTokenSpaceGuid.PcdCounterFrequency|12000000|UINT32|0x00000017
 
   ## LS1043a UART
-  gArmPlatformTokenSpaceGuid.LS1043aUartClkInHz|61440000|UINT32|0x0000001F
-  gArmPlatformTokenSpaceGuid.LS1043aUartInteger|0|UINT32|0x00000020
-  gArmPlatformTokenSpaceGuid.LS1043aUartFractional|0|UINT32|0x0000002D
+  gArmPlatformTokenSpaceGuid.LS1043aUartClkInHz|61440000|UINT32|0x00000018
+  gArmPlatformTokenSpaceGuid.LS1043aUartInteger|0|UINT32|0x00000019
+  gArmPlatformTokenSpaceGuid.LS1043aUartFractional|0|UINT32|0x00000020
 
   ## Timer
-  gArmPlatformTokenSpaceGuid.PcdTimerFrequencyInMHz|30720000|UINT32|0x0000001D
-  gArmPlatformTokenSpaceGuid.PcdTimerPeriodicInterruptNum|0|UINT32|0x0000001E
+  gArmPlatformTokenSpaceGuid.PcdTimerFrequencyInMHz|30720000|UINT32|0x00000021
+  gArmPlatformTokenSpaceGuid.PcdTimerPeriodicInterruptNum|0|UINT32|0x00000022
   gArmPlatformTokenSpaceGuid.PcdLS1043aWatchDogBase|0x0|UINT32|0x00000023
   gArmPlatformTokenSpaceGuid.DUartClkInHz|0x0|UINT32|0x00000024
   gArmPlatformTokenSpaceGuid.DUartInteger|0x0|UINT32|0x00000025
@@ -62,13 +62,20 @@
   gArmPlatformTokenSpaceGuid.PcdCounterFrequencyReal|FALSE|BOOLEAN|0x00000027
   gArmPlatformTokenSpaceGuid.PcdCsuInitialize|FALSE|BOOLEAN|0x00000028
   gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|FALSE|BOOLEAN|0x00000029
-  gArmPlatformTokenSpaceGuid.PcdCci400Initialize|FALSE|BOOLEAN|0x00000030
-  gArmPlatformTokenSpaceGuid.PcdClockInitialize|FALSE|BOOLEAN|0x00000031
+  gArmPlatformTokenSpaceGuid.PcdCci400Initialize|FALSE|BOOLEAN|0x0000002A
+  gArmPlatformTokenSpaceGuid.PcdClockInitialize|FALSE|BOOLEAN|0x0000002B
 
-	gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress|0x0|UINT32|0x00000028
-	gLS1043aRdbTokenSpaceGuid.PcdPiFdSize|0x0|UINT32|0x00000029
-																																	
-	gLS1043aRdbTokenSpaceGuid.PcdPiFvBaseAddress|0x0|UINT32|0x0000003A
-	gLS1043aRdbTokenSpaceGuid.PcdPiFvSize|0x0|UINT32|0x0000003B
-	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x0|UINT32|0x0000003C
-	gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x0|UINT32|0x0000003D
+  gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress|0x0|UINT32|0x0000002C
+  gLS1043aRdbTokenSpaceGuid.PcdPiFdSize|0x0|UINT32|0x0000002D																									
+  gLS1043aRdbTokenSpaceGuid.PcdPiFvBaseAddress|0x0|UINT32|0x0000002E
+  gLS1043aRdbTokenSpaceGuid.PcdPiFvSize|0x0|UINT32|0x0000002F
+  gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x0|UINT32|0x00000030
+  gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x0|UINT32|0x00000031
+  
+  #
+  # PPA specific PCDs
+  #
+  gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x0|UINT64|0x00000032
+  gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr|0x0|UINT64|0x00000033 # calculated from top of DDR
+  gArmPlatformTokenSpaceGuid.PcdPpaFitConfiguration|""|VOID*|0x00000034
+

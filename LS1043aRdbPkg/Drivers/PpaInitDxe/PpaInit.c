@@ -15,10 +15,89 @@
 **/
 
 #include <Chipset/AArch64.h>
+#include <Library/ArmPlatformLib.h>
+#include <Library/PcdLib.h>
+#include <Library/DebugLib.h>
+#include <Library/IoLib.h>
+#include <Library/PrintLib.h>
+#include <Library/BdsLinuxFit.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Library/BaseMemoryLib/MemLibInternals.h>
 
 extern EFI_STATUS PpaInit(UINT64);
 extern VOID El2SwitchSetup(VOID);
 extern VOID InitMmu(VOID);
+
+/**
+ * Copying PPA firmware to DDR
+ */
+VOID
+CopyPpaImage (
+  const char *title,
+  UINTN image_addr,
+  UINTN image_size,
+  UINTN PpaRamAddr)
+{
+	DEBUG((EFI_D_INFO, "%a copied to address 0x%x\n", title, PpaRamAddr));
+  	InternalMemCopyMem((void *)PpaRamAddr, (void *)image_addr, image_size);
+}
+
+UINTN
+GetPpaImagefromFlash (
+  VOID
+  )
+{
+	EFI_STATUS Status;
+	EFI_PHYSICAL_ADDRESS FitImage;
+	EFI_PHYSICAL_ADDRESS PpaImage;
+	INT32 CfgNodeOffset;
+	INT32 NodeOffset;
+	INT32 PpaImageSize;
+	UINTN PpaRamAddr;
+
+	// Assuming that the PPA FW is present on NOR flash
+	// FIXME: Add support for other flash devices.
+	FitImage = PcdGet64 (PcdPpaNorBaseAddr);
+	
+	// PPA will be placed on DDR at this address:
+	// Top of DDR - PcdPpaDdrOffsetAddr
+	PpaRamAddr = PcdGet64 (PcdSystemMemoryBase) + PcdGet64 (PcdSystemMemorySize)
+			- PcdGet64 (PcdPpaDdrOffsetAddr);
+
+	Status = FitCheckHeader(FitImage);
+	if (EFI_ERROR (Status)) {
+		DEBUG((EFI_D_ERROR, "Bad FIT image header (0x%x).\n", Status));
+		goto EXIT_FREE_FIT;
+	}
+
+	Status = FitGetConfNode(FitImage, (void *)(PcdGetPtr(PcdDefaultFitConfiguration/*PcdPpaFitConfiguration*/)), &CfgNodeOffset);
+	if (EFI_ERROR (Status)) {
+		DEBUG((EFI_D_ERROR, "Did not find configuration node in FIT header (0x%x).\n", Status));
+		goto EXIT_FREE_FIT;
+	}
+
+	Status = FitGetNodeFromConf(FitImage, CfgNodeOffset, FIT_FIRMWARE_IMAGE, &NodeOffset);
+	if (EFI_ERROR (Status)) {
+		DEBUG((EFI_D_ERROR, "Did not find PPA node in FIT header (0x%x).\n", Status));
+		goto EXIT_FREE_FIT;
+	}
+
+	Status = FitGetNodeData(FitImage, NodeOffset, (VOID*)&PpaImage, &PpaImageSize);
+	if (EFI_ERROR (Status)) {
+		DEBUG((EFI_D_ERROR, "Did not find PPA f/w in FIT image (0x%x).\n", Status));
+		goto EXIT_FREE_FIT;
+	}
+
+	CopyPpaImage ("PPA Firmware", PpaImage, PpaImageSize, PpaRamAddr);
+
+	return PpaRamAddr;
+
+EXIT_FREE_FIT:
+	// Flow should never reach here
+	ASSERT (Status == EFI_SUCCESS);
+	
+	return 0;
+}
 
 EFI_STATUS
 PpaInitialize (
@@ -27,10 +106,11 @@ PpaInitialize (
   )
 {
 	EFI_STATUS Status;
+	UINTN PpaRamAddr;
 
-//El2SwitchSetup();
-//GicV2InitSecure();
-	Status = PpaInit((UINT64)0x80000000);
+	PpaRamAddr = GetPpaImagefromFlash();
+
+	Status = PpaInit(PpaRamAddr);
 	InitMmu();
 	return Status;
 }
