@@ -113,17 +113,19 @@ NandFlashInitialize (
 {
   EFI_STATUS              Status;
 
-  FslIfcNandFlashInit(&gNandFlashMedia);
+  Status = FslIfcNandFlashInit(&gNandFlashMedia);
 
   //
   // Install driver model protocol(s).
   //
-  Status = gBS->InstallMultipleProtocolInterfaces (
-             &ImageHandle,
-             &gEfiDevicePathProtocolGuid, &gDevicePath,
-             &gEfiBlockIoProtocolGuid, &BlockIo,
-	     NULL
-             );
+	if(!EFI_ERROR(Status)) {
+		Status = gBS->InstallMultipleProtocolInterfaces (
+							 &ImageHandle,
+							 &gEfiDevicePathProtocolGuid, &gDevicePath,
+							 &gEfiBlockIoProtocolGuid, &BlockIo,
+				 NULL
+							 );
+	}
 
   return Status;
 }
