@@ -119,4 +119,11 @@
 #define CONFIG_CPLD_BASE		0x7fb00000
 #define CPLD_BASE_PHYS			CONFIG_CPLD_BASE
 
+/*
+ * Global defines
+ */
+#define CONFIG_LS1043A
+#define CONFIG_SYS_FSL_SDXC_USE_PIO
+#define CONFIG_RDB
+
 #endif

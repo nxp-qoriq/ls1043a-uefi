@@ -187,8 +187,13 @@ MmcSetBlocklen (
 {
   struct MmcCmd Cmd;
 
+  if (Mmc->DdrMode)
+    return EFI_SUCCESS;
+
+#if 0
   if (Mmc->CardCaps & MMC_MODE_DDR_52MHz)
     return 0;
+#endif
 
   Cmd.CmdIdx = MMC_CMD_SET_BLOCKLEN;
   Cmd.RespType = MMC_RSP_R1;
@@ -419,6 +424,8 @@ MmcGetcd (
   )
 {
   INT32 Cd;
+
+  ASSERT(gMmc->Cfg->Ops->Getcd);
   if (gMmc->Cfg->Ops->Getcd)
     Cd = gMmc->Cfg->Ops->Getcd(gMmc);
   else
@@ -679,6 +686,7 @@ MmcStartInit (
   if (Err)
     return Err;
 
+  gMmc->DdrMode = 0;
  // MmcSetBusWidth(gMmc, 1);
  // MmcSetClock(gMmc, 1);
 
@@ -756,8 +764,10 @@ MmcCreate (
   InternalMemZeroMem(Mmc, sizeof(struct Mmc));
 
   Mmc->Cfg = (struct MmcConfig*)AllocatePool(sizeof(struct MmcConfig));
-  if (Mmc->Cfg == NULL)
+  if (Mmc->Cfg == NULL) {
+    FreePool(Mmc);
     return NULL;
+  }
 
   InternalMemZeroMem(Mmc->Cfg, sizeof(struct MmcConfig));
 
@@ -884,6 +894,7 @@ MmcSetCapacity (
   return 0;
 }
 
+#ifndef CONFIG_LS1043A
 static INT32
 SdSwitch (
   IN  struct Mmc *Mmc,
@@ -910,7 +921,9 @@ SdSwitch (
 
   return MmcSendCmd(Mmc, &Cmd, &Data);
 }
+#endif
 
+#ifndef CONFIG_LS1043A
 static INT32
 SdChangeFreq (
   IN  struct Mmc *Mmc
@@ -918,11 +931,12 @@ SdChangeFreq (
 {
   INT32 Err;
   struct MmcCmd Cmd;
-//TODO
-//	ALLOC_CACHE_ALIGN_BUFFER(UINT32, Scr, 2);
-//	ALLOC_CACHE_ALIGN_BUFFER(UINT32, SwitchStatus, 16);
+  ALLOC_CACHE_ALIGN_BUFFER(UINT32, Scr, 2);
+  ALLOC_CACHE_ALIGN_BUFFER(UINT32, SwitchStatus, 16);
+#if 0
   UINT32 Scr[2];
   UINT32 SwitchStatus[16];
+#endif
   struct MmcData Data;
   INT32 Timeout;
 
@@ -1026,6 +1040,7 @@ RetryScr:
 
   return 0;
 }
+#endif
 
 static INT32
 MmcSwitch (
@@ -1054,17 +1069,20 @@ MmcSwitch (
   return Ret;
 }
 
+#ifndef CONFIG_LS1043A
 static INT32
 MmcChangeFreq (
   IN  struct Mmc *Mmc
   )
 {
-  // TODO ALLOC_CACHE_ALIGN_BUFFER(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
+  ALLOC_CACHE_ALIGN_BUFFER(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
+#if 0
   UINT8 ExtCsd[MMC_MAX_BLOCK_LEN];
+#endif
   CHAR8 Cardtype;
   INT32 Err;
 
-  Mmc->CardCaps = 0;
+  Mmc->CardCaps = MMC_MODE_4BIT | MMC_MODE_8BIT;
 
   if (MmcHostIsSpi(Mmc))
     return 0;
@@ -1098,13 +1116,14 @@ MmcChangeFreq (
   if (Cardtype & EXT_CSD_CARD_TYPE_52) {
     if (Cardtype & EXT_CSD_CARD_TYPE_DDR_52)
       Mmc->CardCaps |= MMC_MODE_DDR_52MHz;
-      Mmc->CardCaps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
+    Mmc->CardCaps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
   } else {
      Mmc->CardCaps |= MMC_MODE_HS;
   }
 
   return 0;
 }
+#endif
 
 static INT32
 MmcStartup (
@@ -1115,11 +1134,13 @@ MmcStartup (
   UINT32 Mult, Freq;
   UINT64 CMult, CSize, Capacity;
   struct MmcCmd Cmd;
- //TODO
- //      ALLOC_CACHE_ALIGN_BUFFER(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
- //      ALLOC_CACHE_ALIGN_BUFFER(UINT8, TestCsd, MMC_MAX_BLOCK_LEN);
+
+  ALLOC_CACHE_ALIGN_BUFFER(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
+  ALLOC_CACHE_ALIGN_BUFFER(UINT8, TestCsd, MMC_MAX_BLOCK_LEN);
+#if 0
   UINT8 ExtCsd[MMC_MAX_BLOCK_LEN];
   UINT8 TestCsd[MMC_MAX_BLOCK_LEN];
+#endif
   INT32 Timeout = 1000;
 
 
@@ -1261,11 +1282,12 @@ MmcStartup (
     if (Err)
       return Err;
   }
-
+#if 0
   struct FslSdxcCfg *Cfg = gMmc->Priv;
   struct FslSdxc *Regs = (struct FslSdxc *)Cfg->SdxcBase;
   MmioClearBitsBe32((UINTN)&Regs->Proctl, PROCTL_BE);
   MmioReadBe32((UINTN)&Regs->Proctl);
+#endif
   /*
    * for SD, Its Erase Group Is Always One Sector
    */
@@ -1305,6 +1327,9 @@ MmcStartup (
     case 6:
       Mmc->Version = MMC_VERSION_4_5;
       break;
+    case 7:
+      Mmc->Version = MMC_VERSION_5_0;
+      break;
     }
 
     /*
@@ -1319,11 +1344,28 @@ MmcStartup (
 
       if (Err)
         return Err;
+      else
+        ExtCsd[EXT_CSD_ERASE_GROUP_DEF] = 1;
 
       /* Read Out Group Size From ExtCsd */
       Mmc->EraseGrpSize =
              ExtCsd[EXT_CSD_HC_ERASE_GRP_SIZE] *
                          MMC_MAX_BLOCK_LEN * 1024;
+      /*
+       * if high capacity and partition setting completed
+       * SEC_COUNT is valid even if it is smaller than 2 GiB
+	* JEDEC Standard JESD84-B45, 6.2.4
+	*/
+      if (Mmc->HighCapacity &&
+	 (ExtCsd[EXT_CSD_PARTITION_SETTING] &
+	     EXT_CSD_PARTITION_SETTING_COMPLETED)) {
+	 Capacity = (ExtCsd[EXT_CSD_SEC_CNT]) |
+		     (ExtCsd[EXT_CSD_SEC_CNT + 1] << 8) |
+		     (ExtCsd[EXT_CSD_SEC_CNT + 2] << 16) |
+		     (ExtCsd[EXT_CSD_SEC_CNT + 3] << 24);
+	 Capacity *= MMC_MAX_BLOCK_LEN;
+	 Mmc->CapacityUser = Capacity;
+      }
     } else {
       /* Calculate The Group Size From The Csd Value. */
       INT32 EraseGsz, EraseGmul;
@@ -1356,6 +1398,7 @@ MmcStartup (
   if (Err)
     return Err;
 
+#ifndef CONFIG_LS1043A
   if (IS_SD(Mmc))
     Err = SdChangeFreq(Mmc);
   else
@@ -1363,6 +1406,7 @@ MmcStartup (
 
   if (Err)
     return Err;
+#endif
 
   /* Restrict Card'S Capabilities By What The Host Can do */
   Mmc->CardCaps &= Mmc->Cfg->HostCaps;
@@ -1401,8 +1445,8 @@ MmcStartup (
 
     /* An Array To Map CSD Bus Widths To Host Cap Bits */
     static UINT32 ExtToHostcaps[] = {
-           [EXT_CSD_DDR_BUS_WIDTH_4] = MMC_MODE_DDR_52MHz,
-           [EXT_CSD_DDR_BUS_WIDTH_8] = MMC_MODE_DDR_52MHz,
+           [EXT_CSD_DDR_BUS_WIDTH_4] = MMC_MODE_DDR_52MHz | MMC_MODE_4BIT,
+           [EXT_CSD_DDR_BUS_WIDTH_8] = MMC_MODE_DDR_52MHz | MMC_MODE_8BIT,
            [EXT_CSD_BUS_WIDTH_4] = MMC_MODE_4BIT,
            [EXT_CSD_BUS_WIDTH_8] = MMC_MODE_8BIT,
          };
@@ -1414,13 +1458,18 @@ MmcStartup (
 
     for (Idx=0; Idx < ARRAY_SIZE(ExtCsdBits); Idx++) {
       UINT32 Extw = ExtCsdBits[Idx];
+      UINT32 Caps = ExtToHostcaps[Extw];
 
       /*
        * Check To Make Sure The Controller Supports
        * This Bus Width, if It'S More Than 1
        */
+#if 0
       if (Extw != EXT_CSD_BUS_WIDTH_1 &&
                     !(Mmc->Cfg->HostCaps & ExtToHostcaps[Extw]))
+        continue;
+#endif
+      if ((Mmc->CardCaps & Caps) != Caps)
         continue;
 
       Err = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL,
@@ -1429,24 +1478,31 @@ MmcStartup (
       if (Err)
         continue;
 
+      Mmc->DdrMode = (Caps & MMC_MODE_DDR_52MHz) ? 1 : 0;
       MmcSetBusWidth(Mmc, Widths[Idx]); //2
 
       Err = MmcSendExtCsd(Mmc, TestCsd);
-      if (!Err && ExtCsd[EXT_CSD_PARTITIONING_SUPPORT] \
+      if (Err)
+        continue;
+
+      if (ExtCsd[EXT_CSD_PARTITIONING_SUPPORT] \
                  == TestCsd[EXT_CSD_PARTITIONING_SUPPORT]
-              && ExtCsd[EXT_CSD_ERASE_GROUP_DEF] \
-                 == TestCsd[EXT_CSD_ERASE_GROUP_DEF] \
+              && ExtCsd[EXT_CSD_HC_WP_GRP_SIZE] \
+                 == TestCsd[EXT_CSD_HC_WP_GRP_SIZE] \
               && ExtCsd[EXT_CSD_REV] \
                  == TestCsd[EXT_CSD_REV]
               && ExtCsd[EXT_CSD_HC_ERASE_GRP_SIZE] \
                  == TestCsd[EXT_CSD_HC_ERASE_GRP_SIZE]
               && InternalMemCompareMem(&ExtCsd[EXT_CSD_SEC_CNT], \
-                    &TestCsd[EXT_CSD_SEC_CNT], 4) == 0) {
+                    &TestCsd[EXT_CSD_SEC_CNT], 4) == 0)
 
-        Mmc->CardCaps |= ExtToHostcaps[Extw];
         break;
-      }
+      else
+        Err = -1; 
     }
+
+    if (Err)
+      return Err;
 
     if (Mmc->CardCaps & MMC_MODE_HS) {
       if (Mmc->CardCaps & MMC_MODE_HS_52MHz)
@@ -1457,6 +1513,12 @@ MmcStartup (
   }
 
   MmcSetClock(Mmc, Mmc->TranSpeed);
+
+  /* Fix the block length for DDR mode */
+  if (Mmc->DdrMode) {
+    Mmc->ReadBlLen = MMC_MAX_BLOCK_LEN;
+    Mmc->WriteBlLen = MMC_MAX_BLOCK_LEN;
+  }
 
   /* Fill In Device Description */
   Mmc->BlockDev.Lun = 0;
@@ -1517,23 +1579,4 @@ MmcInit (
     Err = MmcCompleteInit(Mmc);
 
   return Err;
-}
-
-EFI_STATUS
-MmcInitialize (
-  VOID
-  )
-{
-  EFI_STATUS Status;
-
-  if (BoardMmcInit() < 0)
-    SdxcMmcInit();
-
-  Status = DoMmcInfo();
-  if (Status != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "Failed to start MMC\n"));
-    return Status;
-  }
-
-  return Status;
 }

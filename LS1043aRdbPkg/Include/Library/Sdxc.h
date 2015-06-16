@@ -19,8 +19,10 @@
 #define __SDXC_H__
 
 #include "LS1043aRdb.h"
+#include "LS1043aSocLib.h"
 #include "Common.h"
 #include "Bitops.h"
+#include "CpldLib.h"
 #include <Library/MemoryAllocationLib.h>
 #include <PiPei.h>
 #include <Uefi.h>
@@ -136,6 +138,7 @@
 #define MMC_VERSION_4_3            (MMC_VERSION_MMC | 0x403)
 #define MMC_VERSION_4_41    	(MMC_VERSION_MMC | 0x429)
 #define MMC_VERSION_4_5            (MMC_VERSION_MMC | 0x405)
+#define MMC_VERSION_5_0            (MMC_VERSION_MMC | 0x500)
 
 #define IS_SD(X) 			(X->Version & SD_VERSION_SD)
 
@@ -177,6 +180,7 @@
   EXT_CSD Fields
 **/
 #define EXT_CSD_GP_SIZE_MULT              143    // R/W
+#define EXT_CSD_PARTITION_SETTING         155    // R/W
 #define EXT_CSD_PARTITIONS_ATTRIBUTE      156    // R/W
 #define EXT_CSD_PARTITIONING_SUPPORT      160    // RO
 #define EXT_CSD_RST_N_FUNCTION            162    // R/W
@@ -209,6 +213,8 @@
 #define EXT_CSD_BUS_WIDTH_8 		2      // Card Is In 8 Bit Mode
 #define EXT_CSD_DDR_BUS_WIDTH_4    	5      // Card Is In 4 Bit DDR Mode
 #define EXT_CSD_DDR_BUS_WIDTH_8    	6      // Card Is In 8 Bit DDR Mode
+
+#define EXT_CSD_PARTITION_SETTING_COMPLETED      (1 << 0)
 
 /**
   MMC Commands
@@ -354,6 +360,15 @@
 #define MMC_STATUS_ERROR    	(1 << 19)
 #define MMC_STATE_PRG              (7 << 9)
 
+/* For CPLD Settings */
+#define ENABLE_SDXC_SOFT_MUX	0x30
+#define ENABLE_RCW_SOFT_MUX		0x01
+#define SELECT_SW4_SDXC		0x40
+#define SELECT_SW5_SDXC		0x01
+
+/* Dma addresses are 32-bits wide.  */
+typedef UINT32 DmaAddrT;
+
 struct FslSdxc {
        UINT32    Dsaddr;      // SDMA System Address Register
        UINT32    Blkattr;     // Block Attributes Register
@@ -435,9 +450,9 @@ struct Mmc {
        LIST_ENTRY Link;
        struct MmcConfig *Cfg;      // Provided Configuration
        UINT32 Version;
-       VOID *Priv;
+       VOID   *Priv;
        UINT32 HasInit;
-       INT32 HighCapacity;
+       INT32  HighCapacity;
        UINT32 BusWidth;
        UINT32 Clock;
        UINT32 CardCaps;
@@ -448,8 +463,8 @@ struct Mmc {
        UINT32 Csd[4];
        UINT32 Cid[4];
        UINT16 Rca;
-       CHAR8 PartConfig;
-       CHAR8 PartNum;
+       CHAR8  PartConfig;
+       CHAR8  PartNum;
        UINT32 TranSpeed;
        UINT32 ReadBlLen;
        UINT32 WriteBlLen;
@@ -460,9 +475,10 @@ struct Mmc {
        UINT64 CapacityRpmb;
        UINT64 CapacityGp[4];
        BlockDevDescT BlockDev;
-       CHAR8 OpCondPending;       // 1 if We Are Waiting On An OpCond Command
-       CHAR8 InitInProgress;      // 1 if We Have Done MmcStartInit()
-       CHAR8 Preinit;        // Start Init As Early As Possible
+       CHAR8  OpCondPending;       // 1 if We Are Waiting On An OpCond Command
+       CHAR8  InitInProgress;      // 1 if We Have Done MmcStartInit()
+       CHAR8  Preinit;        // Start Init As Early As Possible
+	INT32  DdrMode;
 };
 
 struct MmcOps {
@@ -627,4 +643,15 @@ VOID
 PrintMmcInfo (
   IN  struct Mmc *Mmc
   );
+
+VOID
+DestroyMmc (
+  IN VOID
+  );
+
+VOID
+SelectSdxc (
+  IN VOID
+  );
+
 #endif

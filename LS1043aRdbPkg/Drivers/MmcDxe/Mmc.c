@@ -337,6 +337,12 @@ MmcDxeInitialize (
   EFI_STATUS  Status;
   EFI_MMC_HOST_PROTOCOL   *MmcHost = NULL;
 
+  Status = MmcInitialize();
+  if (Status != EFI_SUCCESS) {
+    DEBUG((EFI_D_ERROR,"Failed to init MMC\n"));
+    return Status;
+  }
+
   MmcHost = AllocateZeroPool (sizeof (EFI_MMC_HOST_PROTOCOL));
   if (MmcHost == NULL) {
     return EFI_OUT_OF_RESOURCES;
@@ -369,8 +375,6 @@ MmcDxeInitialize (
                 TimerPeriodic,
                 (UINT64)(10*1000*200)); // 200 ms
   ASSERT_EFI_ERROR (Status);
-
-  SdxcMmcInit();
 
   /*FIXME Remove below code if installing Driver binding protocol */
   // Update Mmc Host Protocol Register
