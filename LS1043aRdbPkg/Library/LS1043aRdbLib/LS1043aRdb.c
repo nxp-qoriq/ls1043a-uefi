@@ -60,7 +60,7 @@ ArmPlatformInitialize (
 
   if (PcdGetBool(PcdDdrInitialize)) {
     I2cInit(I2C0, I2C_SPEED);
-    DramInit();
+    DramInit(0);
   }
 
   return RETURN_SUCCESS;

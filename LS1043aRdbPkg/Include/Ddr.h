@@ -1074,7 +1074,7 @@ struct CcsrDdr {
  **/
 VOID
 DramInit(
-  VOID
+  UINTN
   );
 
 /**

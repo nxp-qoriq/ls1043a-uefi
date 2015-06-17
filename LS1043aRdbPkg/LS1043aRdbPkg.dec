@@ -79,3 +79,6 @@
   gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr|0x0|UINT64|0x00000033 # calculated from top of DDR
   gArmPlatformTokenSpaceGuid.PcdPpaFitConfiguration|""|VOID*|0x00000034
 
+  gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x0|UINT64|0x00000035
+  gLS1043aRdbTokenSpaceGuid.PcdFvNorBaseAddress|0x0|UINT64|0x00000036
+  gLS1043aRdbTokenSpaceGuid.PcdFvNorSize|0x0|UINT64|0x00000037

@@ -29,4 +29,10 @@
   SKUID_IDENTIFIER               = DEFAULT
   FLASH_DEFINITION               = LS1043aRdbPkg/LS1043aRdbPkgXipBoot.fdf
 
+[PcdsFixedAtBuild.common]
+  gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x60400000
+
+[Components.common]
+	LS1043aRdbPkg/Library/LS1043aPrePiNor/LS1043aPrePiNor.inf
+
 !include LS1043aRdbPkg.dsc
