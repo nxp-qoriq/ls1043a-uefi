@@ -110,7 +110,7 @@
 #define URBR		0x0
 #define UTHR		0x0
 #define UDLB	 	0x0	 
-#define UDMB	 	0x0	 
+#define UDMB	 	0x1	 
 #define UIER	 	0x1 
 #define UIIR	 	0x2 
 #define UFCR	 	0x2 
