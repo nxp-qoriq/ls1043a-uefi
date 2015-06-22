@@ -343,7 +343,7 @@
   #
 
   ## Serial Terminal
-  gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase|0x21D0500
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase|0x21c0500
   gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate|115200
 
   #
