@@ -47,7 +47,8 @@ DuartInitializePort (
 {
 	UINT32	BaudDivisor;
 
-	BaudDivisor = CalculateBaudDivisor(BaudRate);
+	/* BaudDivisor = CalculateBaudDivisor(BaudRate); */
+	BaudDivisor = 0xD9; /* FIXME: Use hardcoded value for now */
 
 	while (!(MmioRead8(UartBase + ULSR) & UART_LSR_TEMT))
 	;
