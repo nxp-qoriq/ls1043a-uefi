@@ -2686,8 +2686,8 @@ DdrmcInit (
   MmioWriteBe32((UINTN)&Ddr->TimingCfg3, CONFIG_TIMING_CFG_3);
   MmioWriteBe32((UINTN)&Ddr->TimingCfg4, CONFIG_TIMING_CFG_4);
   MmioWriteBe32((UINTN)&Ddr->TimingCfg5, CONFIG_TIMING_CFG_5);
-  MmioWriteBe32((UINTN)&Ddr->TimingCfg6, CONFIG_TIMING_CFG_7);
-  MmioWriteBe32((UINTN)&Ddr->TimingCfg7, CONFIG_TIMING_CFG_8);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg7, CONFIG_TIMING_CFG_7);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg8, CONFIG_TIMING_CFG_8);
 
   MmioWriteBe32((UINTN)&Ddr->SdramCfg2, CONFIG_DDR_SDRAM_CFG_2);
 
