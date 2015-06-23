@@ -28,6 +28,7 @@
 #include <Library/IoLib.h>
 #include <Library/PrintLib.h>
 #include <Library/SerialPortLib.h>
+#include <Library/FslIfc.h>
 
 #include <ArmTrustzone.h>
 
@@ -493,7 +494,7 @@ PrintCpuInfo (
   		SerialPortWrite ((UINT8 *) Buffer, CharCount);
 	}
 	
-	CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"\n       Bus:      %-4s MHz  ",
+	CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"\n       Bus:      %-4a MHz  ",
 	       		strmhz(buf, sysinfo.FreqSystemBus));
   	SerialPortWrite ((UINT8 *) Buffer, CharCount);
 	CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"DDR:      %-4a MHz", strmhz(buf, sysinfo.FreqDdrBus));
@@ -507,6 +508,18 @@ PrintSocPersonality (
   VOID
   )
 {
+}
+
+VOID
+IfcInit (
+  VOID
+  )
+{
+	/* NOR Init */
+	IfcNorInit();
+
+	/* CPLD Init */
+	CpldInit();
 }
 
 VOID
@@ -542,10 +555,10 @@ PrintBoardPersonality (
 
 	DEBUG((EFI_D_INFO, "CPLD:  V%x.%x\nPCBA:  V%x.0\n", CPLD_READ(cpld_ver),
 		CPLD_READ(cpld_ver_sub), CPLD_READ(pcba_ver)));
-	
+
 	DEBUG((EFI_D_INFO, "SERDES Reference Clocks:\n"));
 	sd1refclk_sel = CPLD_READ(sd1refclk_sel);
-	DEBUG((EFI_D_INFO, "SD1_CLK1 = %s, SD1_CLK2 = %s\n", freq[sd1refclk_sel], freq[0]));
+	DEBUG((EFI_D_INFO, "SD1_CLK1 = %a, SD1_CLK2 = %a\n", freq[sd1refclk_sel], freq[0]));
 }
 
 VOID
@@ -618,18 +631,19 @@ SocInit (
 
   // Initialize the Serial Port
   SerialPortInitialize ();
-  CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"UEFI firmware (version %s built at %a on %a)\n\r",
+  CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"\nUEFI firmware (version %s built at %a on %a)\n\r",
     (CHAR16*)PcdGetPtr(PcdFirmwareVersionString), __TIME__, __DATE__);
   SerialPortWrite ((UINT8 *) Buffer, CharCount);
   
   PrintCpuInfo();
+  PrintRCW();
 
   PrintSocPersonality();
-  
+ 
+  IfcInit();
+
   PrintBoardPersonality();
 
-  PrintRCW();
-	
   SerDesInit();
   return;
 }

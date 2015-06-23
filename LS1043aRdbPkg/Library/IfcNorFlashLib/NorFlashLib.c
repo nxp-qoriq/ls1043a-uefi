@@ -520,8 +520,8 @@ NorFlashPlatformControllerInitialization (
   VOID
   )
 {
-  // IFC NOR is enabled by default on reset and available on CS0
-  IfcNorInit ();
+  // IFC NOR is enabled by default on reset and available on CS0, so do
+  // nothing here
 
   return EFI_SUCCESS;
 }

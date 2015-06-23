@@ -659,7 +659,7 @@ FslIfcNandFlashFlushBlocks (
   return EFI_SUCCESS;
 }
 
-VOID FslIfcInit(
+VOID FslIfcNandInit(
 	VOID
 )
 {
@@ -711,7 +711,7 @@ FslIfcNandFlashInit (
 
   gNandFlashInfo = &NandFlashInfo;
 
-  FslIfcInit();
+  FslIfcNandInit();
 
   //Reset NAND part
   FslIfcNandFlashReset(NULL, FALSE);

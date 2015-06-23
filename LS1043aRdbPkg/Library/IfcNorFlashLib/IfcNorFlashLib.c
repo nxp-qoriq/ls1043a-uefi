@@ -26,24 +26,16 @@ IfcNorSetMemctlRegs (
   VOID
   )
 {
-  FSL_IFC_REGS *IfcRegs = (FSL_IFC_REGS*) IFC_REG_BASE;
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->cspr_cs[IFC_CS0].cspr_ext, IFC_NOR_CSPR_EXT);
 
-  MmioWriteBe32(
-	(UINTN) IfcRegs->ftim_cs[IFC_CS0].ftim[IFC_FTIM0], IFC_NOR_FTIM0);
-  MmioWriteBe32(
-	(UINTN) IfcRegs->ftim_cs[IFC_CS0].ftim[IFC_FTIM1], IFC_NOR_FTIM1);
-  MmioWriteBe32(
-	(UINTN) IfcRegs->ftim_cs[IFC_CS0].ftim[IFC_FTIM2], IFC_NOR_FTIM2);
-  MmioWriteBe32(
-	(UINTN) IfcRegs->ftim_cs[IFC_CS0].ftim[IFC_FTIM3], IFC_NOR_FTIM3);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS0].ftim[IFC_FTIM0], IFC_NOR_FTIM0);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS0].ftim[IFC_FTIM1], IFC_NOR_FTIM1);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS0].ftim[IFC_FTIM2], IFC_NOR_FTIM2);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS0].ftim[IFC_FTIM3], IFC_NOR_FTIM3);
 
-  MmioWriteBe32(
-	(UINTN) IfcRegs->cspr_cs[IFC_CS0].cspr, IFC_NOR_CSPR0);
-  MmioWriteBe32(
-	(UINTN) IfcRegs->amask_cs[IFC_CS0].amask, IFC_NOR_AMASK0);
-  /* FIXME: Not working for now, but needs to be debugged. */
-  /* MmioWriteBe32(
-	(UINTN) IfcRegs->csor_cs[IFC_CS0].csor, IFC_NOR_CSOR0); */
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->cspr_cs[IFC_CS0].cspr, IFC_NOR_CSPR0);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->amask_cs[IFC_CS0].amask, IFC_NOR_AMASK0);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->csor_cs[IFC_CS0].csor, IFC_NOR_CSOR0);
 }
 
 /*

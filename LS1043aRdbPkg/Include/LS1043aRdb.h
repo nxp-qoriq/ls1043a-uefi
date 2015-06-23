@@ -117,7 +117,6 @@
  * CPLD
  */
 #define CONFIG_CPLD_BASE		0x7fb00000
-#define CPLD_BASE_PHYS			CONFIG_CPLD_BASE
 
 /*
  * Global defines

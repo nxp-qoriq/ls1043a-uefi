@@ -56,6 +56,7 @@ UINT8 CpldRead(UINTN reg);
 VOID CpldWrite(UINTN reg, UINT8 value);
 VOID CpldRevBit(UINT8 *value);
 VOID DoCpld (CpldCmd Cmd);
+VOID CpldInit (VOID);
 
 #define CPLD_READ(reg) CpldRead(offsetof(struct cpld_data, reg))
 #define CPLD_WRITE(reg, value)  \

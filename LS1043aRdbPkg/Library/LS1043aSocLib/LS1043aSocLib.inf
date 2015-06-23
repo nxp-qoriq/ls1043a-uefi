@@ -37,6 +37,8 @@
   ArmLib
   MemoryAllocationLib
   SerialPortLib
+  NandFlashLib
+  NorFlashLib
 
 [Sources.common]
   LS1043aSocLib.c

@@ -33,7 +33,7 @@
 #define NAND_BANK 1
 #define NOR_BANK 0
 
-#define FSL_IFC_BANK_COUNT	7
+#define FSL_IFC_BANK_COUNT	4
 #define PAGE_SIZE(x)		((x) & 0x01)
 #define PAGE_SIZE_2K_VAL	(0x01UL)
 
@@ -364,6 +364,38 @@
 #define FTIM2_NOR_TWP_SHIFT		0
 #define FTIM2_NOR_TWP(n)	((n) << FTIM2_NOR_TWP_SHIFT)
 
+/*
+ * FTIM0 - Normal GPCM Mode
+ */
+#define FTIM0_GPCM			0xF03F3F3F
+#define FTIM0_GPCM_TACSE_SHIFT	28
+#define FTIM0_GPCM_TACSE(n)	((n) << FTIM0_GPCM_TACSE_SHIFT)
+#define FTIM0_GPCM_TEADC_SHIFT	16
+#define FTIM0_GPCM_TEADC(n)	((n) << FTIM0_GPCM_TEADC_SHIFT)
+#define FTIM0_GPCM_TAVDS_SHIFT	8
+#define FTIM0_GPCM_TAVDS(n)	((n) << FTIM0_GPCM_TAVDS_SHIFT)
+#define FTIM0_GPCM_TEAHC_SHIFT	0
+#define FTIM0_GPCM_TEAHC(n)	((n) << FTIM0_GPCM_TEAHC_SHIFT)
+/*
+ * FTIM1 - Normal GPCM Mode
+ */
+#define FTIM1_GPCM			0xFF003F00
+#define FTIM1_GPCM_TACO_SHIFT	24
+#define FTIM1_GPCM_TACO(n)	((n) << FTIM1_GPCM_TACO_SHIFT)
+#define FTIM1_GPCM_TRAD_SHIFT	8
+#define FTIM1_GPCM_TRAD(n)	((n) << FTIM1_GPCM_TRAD_SHIFT)
+/*
+ * FTIM2 - Normal GPCM Mode
+ */
+#define FTIM2_GPCM			0x0F3C00FF
+#define FTIM2_GPCM_TCS_SHIFT	24
+#define FTIM2_GPCM_TCS(n)	((n) << FTIM2_GPCM_TCS_SHIFT)
+#define FTIM2_GPCM_TCH_SHIFT	18
+#define FTIM2_GPCM_TCH(n)	((n) << FTIM2_GPCM_TCH_SHIFT)
+#define FTIM2_GPCM_TWP_SHIFT	0
+#define FTIM2_GPCM_TWP(n)	((n) << FTIM2_GPCM_TWP_SHIFT)
+
+
 /**
  * fls - find last (most-significant) bit set
  * @x: the word to search
@@ -415,26 +447,58 @@ static inline int __ilog2(unsigned int x)
 #define IFC_NOR_AMASK		IFC_AMASK(128*1024*1024)
 
 #define IFC_NOR_CSPR    	((IFC_NOR_BUF_BASE & IFC_NOR_BUF_MASK)\
-				| CSPR_PORT_SIZE_8 \
+				| CSPR_PORT_SIZE_16 \
                                 | CSPR_MSEL_NOR        \
                                 | CSPR_V)
 #define IFC_NOR_CSPR_EXT	0x0
-#define IFC_NOR_CSOR	        CSOR_NOR_ADM_SHIFT(10)
+#define IFC_NOR_CSOR	        (CSOR_NOR_ADM_SHIFT(4) | \
+				 CSOR_NOR_TRHZ_80)
 #define IFC_NOR_FTIM0	        (FTIM0_NOR_TACSE(0x1) | \
 				 FTIM0_NOR_TEADC(0x1) | \
-				 FTIM0_NOR_TEAHC(0x1))
-#define IFC_NOR_FTIM1	        (FTIM1_NOR_TACO(0x1) | \
-			 	 FTIM1_NOR_TRAD_NOR(0x1))
-#define IFC_NOR_FTIM2	        (FTIM2_NOR_TCS(0x0) | \
-				 FTIM2_NOR_TCH(0x0) | \
-				 FTIM2_NOR_TWP(0x1))
-#define IFC_NOR_FTIM3     	0x04000000
+				 FTIM0_NOR_TAVDS(0x0) | \
+				 FTIM0_NOR_TEAHC(0xc))
+#define IFC_NOR_FTIM1	        (FTIM1_NOR_TACO(0x1c) | \
+			 	 FTIM1_NOR_TRAD_NOR(0xb) |\
+				 FTIM1_NOR_TSEQRAD_NOR(0x9))
+#define IFC_NOR_FTIM2	        (FTIM2_NOR_TCS(0x1) | \
+				 FTIM2_NOR_TCH(0x4) | \
+				 FTIM2_NOR_TWPH(0x8) | \
+				 FTIM2_NOR_TWP(0x10))
+#define IFC_NOR_FTIM3     	0x0
 
 #define IFC_NOR_CSPR0		IFC_NOR_CSPR
 #define IFC_NOR_AMASK0		IFC_NOR_AMASK
 #define IFC_NOR_CSOR0		IFC_NOR_CSOR
 
 #define IFC_SRAM_BUF_SIZE	0x4000
+
+/* CPLD */
+
+/* Convert an address into the right format for the CSPR Registers */
+#define CSPR_PHYS_ADDR(x)	(((UINTN)x) & 0xffff0000)
+
+#define CPLD_BASE_PHYS		CONFIG_CPLD_BASE
+
+#define IFC_CPLD_CSPR_EXT	(0x0)
+#define IFC_CPLD_CSPR		(CSPR_PHYS_ADDR(CPLD_BASE_PHYS) | \
+				CSPR_PORT_SIZE_8 | \
+				CSPR_MSEL_GPCM | \
+				CSPR_V)
+#define IFC_CPLD_AMASK		IFC_AMASK(64 * 1024)
+#define IFC_CPLD_CSOR		(CSOR_NOR_ADM_SHIFT(4) | \
+				CSOR_NOR_NOR_MODE_AVD_NOR | \
+				CSOR_NOR_TRHZ_80)
+
+/* CPLD Timing parameters for IFC GPCM */
+#define IFC_CPLD_FTIM0		(FTIM0_GPCM_TACSE(0xf) | \
+				FTIM0_GPCM_TEADC(0xf) | \
+				FTIM0_GPCM_TEAHC(0xf))
+#define IFC_CPLD_FTIM1		(FTIM1_GPCM_TACO(0xff) | \
+				FTIM1_GPCM_TRAD(0x3f))
+#define IFC_CPLD_FTIM2		(FTIM2_GPCM_TCS(0xf) | \
+				FTIM2_GPCM_TCH(0xf) | \
+				FTIM2_GPCM_TWP(0xff))
+#define IFC_CPLD_FTIM3		0x0
 
 typedef enum {
 	IFC_CS0 = 0,
@@ -592,6 +656,22 @@ typedef struct {
 } FSL_IFC_NOR;
 
 /*
+ * IFC controller GPCM Machine registers
+ */
+typedef struct  {
+	UINT32 gpcm_evter_stat;
+	UINT32 res1[0x2];
+	UINT32 gpcm_evter_en;
+	UINT32 res2[0x2];
+	UINT32 gpcm_evter_intr_en;
+	UINT32 res3[0x2];
+	UINT32 gpcm_erattr0;
+	UINT32 gpcm_erattr1;
+	UINT32 gpcm_erattr2;
+	UINT32 gpcm_stat;
+} FSL_IFC_GPCM;
+
+/*
  * IFC Controller Registers
  */
 typedef struct {
@@ -606,7 +686,8 @@ typedef struct {
 	FSL_IFC_FTIM ftim_cs[FSL_IFC_BANK_COUNT];
 	UINT8 res5[IFC_FTIM_REG_LEN - IFC_FTIM_USED_LEN];
 	UINT32 rb_stat;
-	UINT32 res6[0x2];
+	UINT32 rb_map;
+	UINT32 wp_map;
 	UINT32 ifc_gcr;
 	UINT32 res7[0x2];
 	UINT32 cm_evter_stat;
@@ -620,14 +701,18 @@ typedef struct {
 	UINT32 res11[0x2];
 	UINT32 ifc_ccr;
 	UINT32 ifc_csr;
+	UINT32 ddr_ccr_low;
 	UINT32 res12[0x2EB];
 	FSL_IFC_NAND ifc_nand;
 	FSL_IFC_NOR ifc_nor;
+	FSL_IFC_GPCM ifc_gpcm;
 } FSL_IFC_REGS;
 
-VOID
-IfcNorInit (
-  VOID
-  );
+VOID IfcNorInit(VOID);
+
+VOID FslIfcNandInit(VOID);
+
+#define IFC_REGS_BASE \
+	((FSL_IFC_REGS *)IFC_REG_BASE)
 
 #endif //__FLASH_H__

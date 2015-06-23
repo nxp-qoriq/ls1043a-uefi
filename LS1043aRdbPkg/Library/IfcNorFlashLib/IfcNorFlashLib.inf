@@ -30,7 +30,6 @@
 [LibraryClasses]
   ArmLib
   PcdLib
-  UefiLib
   MemoryAllocationLib
   DebugLib
   IoLib
