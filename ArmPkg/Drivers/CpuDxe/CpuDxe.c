@@ -212,7 +212,11 @@ IdleLoopEventCallback (
   IN VOID                     *Context
   )
 {
+#if 0
   CpuSleep ();
+#else
+	return;
+#endif
 }
 
 //
