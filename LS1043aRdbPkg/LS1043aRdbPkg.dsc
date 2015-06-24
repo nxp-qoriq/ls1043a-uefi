@@ -378,7 +378,7 @@
   gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr|0x8000000 # (128MB) calculated from top of DDR
 
 !if $(TARGET) == DEBUG
-  gArmTokenSpaceGuid.PcdDdrInitialize|TRUE
+  gArmTokenSpaceGuid.PcdDdrInitialize|FALSE
 !endif
 
   # Size of the region used by UEFI in permanent memory (Reserved 16MB)
