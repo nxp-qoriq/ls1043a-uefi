@@ -136,7 +136,11 @@ DspiInitialize (
 {
   EFI_STATUS              Status;
 
-  DspiInit(&gDspiMedia);
+  Status = DspiInit(&gDspiMedia);
+  if (Status != EFI_SUCCESS) {
+    DEBUG((EFI_D_ERROR,"Failed to init MMC\n"));
+    return Status;
+  }
 
   //
   // Install driver model protocol(s).

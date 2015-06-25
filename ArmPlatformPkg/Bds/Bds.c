@@ -58,6 +58,9 @@ LS1043aTestBlockIoDevice (
 		&gEfiBlockIoProtocolGuid,
 		NULL, &Size, &Handle);
 
+  if (Size == 0)
+    return EFI_SUCCESS;
+
   if (Status != EFI_SUCCESS) {
 	return Status;
   }
