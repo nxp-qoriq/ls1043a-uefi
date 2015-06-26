@@ -115,6 +115,7 @@ LibResetSystem (
   )
 {
   CALL_STUB   StartOfFv;
+	UINT16 Val;
 
   if (ResetData != NULL) {
     DEBUG((EFI_D_ERROR, "%s", ResetData));
@@ -132,7 +133,13 @@ LibResetSystem (
   case EfiResetShutdown:
   default:
     //Perform cold reset of the system.
-//    MmioWrite32 (WDOG_BASE_ADDR, 4);
+		Val = MmioReadBe16 (WDOG1_BASE_ADDR + WDOG_WCR_OFFSET);
+		Val &= 0xff;
+		Val |= WDOG_WCR_WDE;
+    MmioWriteBe16 (WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
+		MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WSR_OFFSET, WDOG_SERVICE_SEQ1);
+		MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WSR_OFFSET, WDOG_SERVICE_SEQ2);
+		/* FIXME: Need to put a delay > 0.5 secs here, or else ASSERT fails */
     break;
   }
 
