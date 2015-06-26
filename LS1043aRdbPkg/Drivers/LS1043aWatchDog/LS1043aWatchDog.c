@@ -28,7 +28,7 @@
 #include <Protocol/WatchdogTimer.h>
 #include <Include/LS1043aRdb.h>
 
-#define LS1043A_WT_MAX_TIME	128
+#define LS1043A_WT_MAX_TIME	128 
 #define WDOG_SEC_TO_COUNT(s)	(((s) * 2 - 1) << 8)
 #define WDOG_COUNT_TO_SEC(s)	(((s) + 1) / 2) /* use float arithmetic here ? */
 
@@ -40,8 +40,8 @@ LS1043aWdogPing (
   VOID
   )
 {
-  MmioWrite16(WDOG1_BASE_ADDR + WDOG_WSR_OFFSET, WDOG_SERVICE_SEQ1);
-  MmioWrite16(WDOG1_BASE_ADDR + WDOG_WSR_OFFSET, WDOG_SERVICE_SEQ2);
+  MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WSR_OFFSET, WDOG_SERVICE_SEQ1);
+  MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WSR_OFFSET, WDOG_SERVICE_SEQ2);
 }
 
 /**
@@ -185,11 +185,11 @@ LS1043aWdogSetTimerPeriod (
     }
 
     // set the new timeout value in the WCR
-    Val = MmioRead16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET);
+    Val = MmioReadBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET);
     Val &= ~WDOG_WCR_WT;
     // Convert the timeout value from Seconds to timer count
-    Val |= WDOG_SEC_TO_COUNT(TimerPeriodInSec);
-    MmioWrite16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
+    Val |= ((WDOG_SEC_TO_COUNT(TimerPeriodInSec) & 0xff00) << 8);
+    MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
 
     // Start the watchdog
     LS1043aWdogStart();
@@ -230,13 +230,13 @@ LS1043aWdogGetTimerPeriod (
   }
 
   // Check if the watchdog is stopped
-  if ( (MmioRead16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET) & WDOG_WCR_WDE) == 0 ) {
+  if ( (MmioReadBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET) & WDOG_WCR_WDE) == 0 ) {
     // It is stopped, so return zero.
     ReturnValue = 0;
   } else {
     // Convert the Watchdog ticks into equivalent TimerPeriod second
     // value. 
-    Val = (MmioRead16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET) & WDOG_WCR_WT ) >> 8;
+    Val = (MmioReadBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET) & WDOG_WCR_WT ) >> 8;
     ReturnValue = WDOG_COUNT_TO_SEC(Val);
   }
 
@@ -305,23 +305,25 @@ LS1043aWdogInitialize (
   UINT16      Val;
 
 
-  /* Clear PDE bit to disable power counter */
-  Val = MmioRead16(WDOG1_BASE_ADDR + WDOG_WMCR_OFFSET);
-  Val &= ~WDOG_WMCR_PDE;
-  MmioWrite16(WDOG1_BASE_ADDR + WDOG_WMCR_OFFSET, Val);
+  Val = MmioReadBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET);
 
-  Val = MmioRead16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET);
+	/* Suspend timer in low power mode, write once-only */
+	Val |= WDOG_WCR_WDZST;
+	/* Strip the old watchdog Time-Out value */
+	Val &= ~WDOG_WCR_WT;
+	/* Generate reset if WDOG times out */
+	Val &= ~WDOG_WCR_WRE;
+	/* Keep Watchdog Disabled */
+	Val &= ~WDOG_WCR_WDE;
+   /* Set the watchdog's Time-Out value to the MAX one supported */
+  Val |= WDOG_SEC_TO_COUNT(LS1043A_WT_MAX_TIME) & 0xff00;
 
-  /* Strip the old watchdog Time-Out value */
-  Val &= ~WDOG_WCR_WT;
-  /* Set the watchdog's Time-Out value to the MAX one supported */
-  Val |= LS1043A_WT_MAX_TIME;
+  MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
 
-  MmioWrite16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
+  /* FIXME:not enabling the watchdog for now, since Gic is under debug*/
+  //Val |= WDOG_WCR_WDE;
 
-  /* enable the watchdog */
-  Val |= WDOG_WCR_WDE;
-  MmioWrite16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
+  //MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
 
   //
   // Make sure the Watchdog Timer Architectural Protocol has not been installed in the system yet.
@@ -353,5 +355,6 @@ EXIT:
     // The watchdog failed to initialize
     ASSERT(FALSE);
   }
+	LS1043aWdogPing();
   return Status;
 }

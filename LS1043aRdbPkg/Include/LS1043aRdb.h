@@ -59,12 +59,12 @@
 		#define WDOG_WSR_OFFSET		2
 		#define WDOG_WRSR_OFFSET	4
 		#define WDOG_WICR_OFFSET	6
-		#define WDOG_WMCR_OFFSET	8
-		#define WDOG_WMCR_PDE		(1 << 0)
 		#define WDOG_WCR_WT		(0xFF << 8)
 		#define WDOG_WCR_WDE		(1 << 2)
 		#define WDOG_SERVICE_SEQ1	0x5555
 		#define WDOG_SERVICE_SEQ2	0xAAAA
+	#define	WDOG_WCR_WDZST	0x1
+	#define WDOG_WCR_WRE (1 << 3)  /* -> WDOG Reset Enable */ 
 
 	#define I2C0_BASE_ADDRESS		0x02180000
 	#define I2C1_BASE_ADDRESS		0x02190000
