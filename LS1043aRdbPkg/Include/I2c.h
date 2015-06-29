@@ -18,6 +18,7 @@
 
 #include <Uefi.h>
 #include "LS1043aRdb.h"
+#include "LS1043aSocLib.h"
 #include <Library/TimerLib.h>
 #include "Common.h"
 
@@ -33,29 +34,33 @@
 #define I2C_READ_FLAG               0x1
 #define I2C_WRITE_FLAG              0x2
 
-#define I2C_SPEED	0x186a0
+#define I2C_SPEED		100000
 
-#define EEPROM0_ADDRESS	0x51
-#define EEPROM1_ADDRESS	0x52
-#define EEPROM2_ADDRESS	0x53
-#define EEPROM3_ADDRESS	0x54
+#define EEPROM0_ADDRESS	0x52
+#define EEPROM1_ADDRESS	0x53
 
-#define I2CR_IDIS    (1 << 7)
-#define I2CR_IEN     (0 << 7)
-#define I2CR_MSSL    (1 << 5)
-#define I2CR_MTX     (1 << 4)
-#define I2CR_RSTA    (1 << 2)
-#define I2CR_TX_NO_AK       (1 << 3)
+#define LAST_CHIP_ADDRESS	0x80
+
+#define I2CR_IIEN    	(1 << 6)
+#define I2CR_MSTA    	(1 << 5)
+#define I2CR_MTX     	(1 << 4)
+#define I2CR_TX_NO_AK	(1 << 3)
+#define I2CR_RSTA    	(1 << 2)
+
+#define I2SR_ICF     	(1 << 7)
+#define I2SR_IBB     	(1 << 5)
+#define I2SR_IAL     	(1 << 4)
+#define I2SR_IIF     	(1 << 1)
+#define I2SR_RX_NO_AK       (1 << 0)
+
+#define I2CR_IEN     	(0 << 7)
+#define I2CR_IDIS    	(1 << 7)
+#define I2SR_IIF_CLEAR      (1 << 1)
+
 
 #define ST_BUS_IDLE (0 | (I2SR_IBB << 8))
-#define ST_BIF (I2SR_BIF | (I2SR_BIF << 8))
 #define ST_BUS_BUSY (I2SR_IBB | (I2SR_IBB << 8))
-
-#define I2SR_BIF_CLEAR      (1 << 1)
-#define I2SR_IBB     (1 << 5)
-#define I2SR_IAL     (1 << 4)
-#define I2SR_BIF     (1 << 1)
-#define I2SR_RX_NO_AK       (1 << 0)
+#define ST_IIF (I2SR_IIF | (I2SR_IIF << 8))
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -104,7 +109,7 @@ I2cInit (
   @retval  EFI_SUCCESS		Read was successful
 
 **/
-INT32
+EFI_STATUS
 I2cRead (
   IN   VOID 		*Base,
   IN   UINT8 		Chip,
@@ -157,7 +162,7 @@ I2cStop (
   @retval  EFI_SUCCESS             Read was successful
 
 **/
-INT32
+EFI_STATUS
 I2cInitTransfer (
   IN   struct I2cRegs       *I2cRegs,
   IN   UINT8                Chip,
@@ -182,7 +187,7 @@ I2cInitTransfer (
   @retval  EFI_SUCCESS             Read was successful
 
 **/
-INT32
+EFI_STATUS
 I2cWrite (
   IN   VOID          *Base,
   IN   UINT8         Chip,
@@ -202,4 +207,12 @@ VOID
 I2cReset (
   VOID
   );
+
+EFI_STATUS
+EFIAPI
+I2cProbe (
+  IN   INT16		I2c,
+  IN   UINT8		Chip
+  );
+
 #endif

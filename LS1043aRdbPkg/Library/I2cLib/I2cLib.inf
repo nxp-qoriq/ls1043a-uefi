@@ -30,6 +30,7 @@
   IoLib
   BaseMemoryLib
   BaseLib
+  LS1043aSocLib
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec

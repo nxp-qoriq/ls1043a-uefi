@@ -151,9 +151,19 @@ InitializeI2c(
   IN EFI_SYSTEM_TABLE     *SystemTable
   )
 {
-  EFI_STATUS              Status = 0;
+  EFI_STATUS		Status = 0;
+  UINT8		Chip = 0;
 
   Status = I2cInit(I2C0, I2C_SPEED);
+
+  DEBUG((EFI_D_INFO,"Valid Chip Addresses :\n"));
+  for (Chip = 0; Chip < LAST_CHIP_ADDRESS; Chip++) {
+    Status = I2cProbe(I2C0, Chip);
+    if (Status == EFI_SUCCESS)
+      DEBUG((EFI_D_INFO,"0x%x ", Chip));
+  }
+  DEBUG((EFI_D_INFO,"\n"));
+
   Status = gBS->InstallMultipleProtocolInterfaces (
 		&ImageHandle,
 		&gEfiI2cMasterProtocolGuid, (VOID**)&I2c,

@@ -53,12 +53,13 @@ I2cGetClk(
   IN   UINT32		Rate
   )
 {
-  UINT32 I2cClkRate;
+  UINTN I2cClkRate;
   UINT32 Div;
   UINT8 ClkDiv;
 
   /** Divider value calculation */
-  I2cClkRate = (UINT32)GET_CLOCK;
+  I2cClkRate = (UINTN)GetPeripheralClock(I2C_CLK);
+  I2cClkRate = 0x17d78400;
   Div = (I2cClkRate + Rate - 1) / Rate;
   if (Div < I2cClkDiv[0][0])
     ClkDiv = 0;
@@ -133,16 +134,20 @@ WaitForSrState (
 {
   UINT8 Sr;
   UINT64 Cnt = 0;
-  for (Cnt = 0; Cnt < 5; Cnt++) {
+  UINT32 Timer = 0;
+  for (Cnt = 0; Cnt < 25; Cnt++) {
     Sr = MmioRead8((UINTN)&I2cRegs->I2Sr);
     if (Sr & I2SR_IAL) {
        MmioWrite8((UINTN)&I2cRegs->I2Sr, Sr | I2SR_IAL);
-  	return -EFI_NOT_READY;
+  	return EFI_NOT_READY;
     }
     if ((Sr & (State >> 8)) == (UINT8)State)
       	return Sr;
+
+    //WatchdogReset();
+    for (Timer = 0; Timer < 1000; Timer++);
   }
-  return -EFI_TIMEOUT;
+  return EFI_TIMEOUT;
 }
 
 
@@ -164,16 +169,18 @@ TxByte (
   IN   UINT8 			Byte
   )
 {
-  INT32 Ret;
+  EFI_STATUS Ret;
 
-  MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_BIF_CLEAR);
+  MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_IIF_CLEAR);
   MmioWrite8((UINTN)&I2cRegs->I2Dr, Byte);
 
-  Ret = WaitForSrState(I2cRegs, ST_BIF);
-  if (Ret < 0)
+  Ret = WaitForSrState(I2cRegs, ST_IIF);
+  if ((Ret == EFI_TIMEOUT) || (Ret == EFI_NOT_READY))
     return Ret;
-  if (Ret & I2SR_RX_NO_AK)
-    return -EFI_NOT_FOUND;
+
+  if (Ret & I2SR_RX_NO_AK) {
+    return EFI_NOT_FOUND;
+  }
 
   return EFI_SUCCESS;
 }
@@ -197,13 +204,13 @@ I2cStop (
   INT32 Ret;
   UINT32 Temp = MmioRead8((UINTN)&I2cRegs->I2Cr);
 
-  Temp &= ~(I2CR_MSSL | I2CR_MTX);
+  Temp &= ~(I2CR_MSTA | I2CR_MTX);
   MmioWrite8((UINTN)&I2cRegs->I2Cr, Temp);
   Ret = WaitForSrState(I2cRegs, ST_BUS_IDLE);
-  if (Ret > 0)
-    return EFI_SUCCESS;
-  else
+  if (Ret < 0)
     return Ret;
+  else
+    return EFI_SUCCESS;
 }
 
 
@@ -222,7 +229,7 @@ I2cStop (
   @retval  EFI_SUCCESS             Read was successful
 
 **/
-INT32
+EFI_STATUS
 I2cInitTransfer_ (
   IN  	struct I2cRegs	*I2cRegs,
   IN	UINT8			Chip,
@@ -231,30 +238,28 @@ I2cInitTransfer_ (
   )
 {
   UINT32 Temp;
-  INT32 Ret;
+  EFI_STATUS Ret;
 
   /** Enable I2C controller */
-  if (MmioRead8((UINTN)&I2cRegs->I2Cr) & I2CR_IDIS) {
+  if (MmioRead8((UINTN)&I2cRegs->I2Cr) & I2CR_IDIS)
     MmioWrite8((UINTN)&I2cRegs->I2Cr, I2CR_IEN);
-    //MicroSecondDelay(50);
-  }
 
   if (MmioRead8((UINTN)&I2cRegs->IAdr) == (Chip << 1))
     MmioWrite8((UINTN)&I2cRegs->IAdr, (Chip << 1) ^ 2);
 
-  MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_BIF_CLEAR);
+  MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_IIF_CLEAR);
   Ret = WaitForSrState(I2cRegs, ST_BUS_IDLE);
-  if (Ret < 0)
+  if ((Ret == EFI_TIMEOUT) || (Ret == EFI_NOT_READY))
     return Ret;
 
   /** Start I2C transaction */
   Temp = MmioRead8((UINTN)&I2cRegs->I2Cr);
   /** set to master mode */
-  Temp |= I2CR_MSSL;
+  Temp |= I2CR_MSTA;
   MmioWrite8((UINTN)&I2cRegs->I2Cr, Temp);
 
   Ret = WaitForSrState(I2cRegs, ST_BUS_BUSY);
-  if (Ret < 0)
+  if ((Ret == EFI_TIMEOUT) || (Ret == EFI_NOT_READY))
     return Ret;
 
   Temp |= I2CR_MTX | I2CR_TX_NO_AK;
@@ -262,13 +267,15 @@ I2cInitTransfer_ (
 
   /** write slave Address */
   Ret = TxByte(I2cRegs, Chip << 1);
-  if (Ret < 0)
+  if (Ret != EFI_SUCCESS)
     return Ret;
 
-  while (--Alen) {
-    Ret = TxByte(I2cRegs, (Offset >> (Alen * 8)) & 0xff);
-    if (Ret < 0)
-      return Ret;
+  if (Alen >= 0) {
+    while (Alen--) {
+      Ret = TxByte(I2cRegs, (Offset >> (Alen * 8)) & 0xff);
+      if (Ret != EFI_SUCCESS)
+        return Ret;
+    }
   }
   return EFI_SUCCESS;
 }
@@ -305,7 +312,7 @@ I2cIdleBus (
   @retval  EFI_SUCCESS             Read was successful
  
 **/
-INT32
+EFI_STATUS
 I2cInitTransfer (
   IN   struct I2cRegs 	*I2cRegs,
   IN   UINT8 			Chip,
@@ -314,18 +321,21 @@ I2cInitTransfer (
   )
 {
   INT32 Retry;
-  INT32 Ret;
+  EFI_STATUS Ret;
 
   for (Retry = 0; Retry < 3; Retry++) {
     Ret = I2cInitTransfer_(I2cRegs, Chip, Offset, Alen);
     if (Ret == EFI_SUCCESS)
       return EFI_SUCCESS;
-    if (Ret == -EFI_NOT_FOUND)
-      return Ret;
 
-    Ret = I2cStop(I2cRegs);
-    if (Ret != -EFI_NOT_READY)
-      /** Disable controller */
+    I2cStop(I2cRegs);
+
+    if (EFI_NOT_FOUND == Ret) {
+      return Ret;
+    }
+
+    /** Disable controller */
+    if (Ret != EFI_NOT_READY)
       MmioWrite8((UINTN)&I2cRegs->I2Cr, I2CR_IDIS);
 
     //MicroSecondDelay(100);
@@ -352,7 +362,7 @@ I2cInitTransfer (
   @retval  EFI_SUCCESS             Read was successful
 
 **/
-INT32
+EFI_STATUS
 I2cRead (
   IN   VOID 		*Base,
   IN   UINT8 		Chip,
@@ -362,44 +372,41 @@ I2cRead (
   IN   UINT32 	Len
   )
 {
-  INT32 Ret;
+  EFI_STATUS Ret;
   UINT32 Temp;
   INT32 i;
   struct I2cRegs *I2cRegs = (VOID *)Base;
   Ret = I2cInitTransfer(I2cRegs, Chip, Offset, Alen);
-  if (Ret < 0)
+  if (Ret != EFI_SUCCESS)
     return Ret;
 
-  Ret = TxByte(I2cRegs, Offset);
-  if (Ret < 0) {
+  Temp = MmioRead8((UINTN)&I2cRegs->I2Cr);
+  Temp |= I2CR_RSTA;
+  MmioWrite8((UINTN)&I2cRegs->I2Cr, Temp);
+
+  Ret = TxByte(I2cRegs, (Chip << 1) | 1);
+  if (Ret != EFI_SUCCESS) {
     I2cStop(I2cRegs);
     return Ret;
   }
-
-  /** setup bus to read data */
-  Temp = MmioRead8((UINTN)&I2cRegs->I2Cr);
-  Temp |= I2CR_RSTA;
-  if (Len == 1)
-    Temp |= I2CR_TX_NO_AK;
-
-  MmioWrite8((UINTN)&I2cRegs->I2Cr, Temp);
-  MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_BIF_CLEAR);
-
-  Chip = (Chip << 1) | 0x01;
-  MmioWrite8((UINTN)&I2cRegs->I2Dr, Chip);
-
-  MmioRead8((UINTN)&I2cRegs->I2Sr);
   /** setup bus to read data */
   Temp = MmioRead8((UINTN)&I2cRegs->I2Cr);
   Temp &= ~(I2CR_MTX | I2CR_TX_NO_AK);
+  if (Len == 1)
+     Temp |= I2CR_TX_NO_AK;
   MmioWrite8((UINTN)&I2cRegs->I2Cr, Temp);
-  MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_BIF_CLEAR);
+  MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_IIF_CLEAR);
 
   /** read data */
   /** Dummy Read to initiate recieve operation */
   MmioRead8((UINTN)&I2cRegs->I2Dr);
 
   for (i = 0; i < Len; i++) {
+    Ret = WaitForSrState(I2cRegs, ST_IIF);
+    if ((Ret == EFI_TIMEOUT) || (Ret == EFI_NOT_READY)) {
+       I2cStop(I2cRegs);
+       return Ret;
+    }
     /**
       It must generate STOP before read I2DR to prevent
       controller from generating another clock cycle
@@ -411,9 +418,8 @@ I2cRead (
       	Temp |= I2CR_TX_NO_AK;
       	MmioWrite8((UINTN)&I2cRegs->I2Cr, Temp);
     }
+    MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_IIF_CLEAR);
     Buffer[i] = MmioRead8((UINTN)&I2cRegs->I2Dr);
-    MmioRead8((UINTN)&I2cRegs->I2Sr);
-    MmioWrite8((UINTN)&I2cRegs->I2Sr, I2SR_BIF_CLEAR);
   }
 
   I2cStop(I2cRegs);
@@ -437,7 +443,7 @@ I2cRead (
   @retval  EFI_SUCCESS             Read was successful
 
 **/
-INT32
+EFI_STATUS
 I2cWrite (
   IN   VOID 		*Base,
   IN   UINT8 		Chip,
@@ -447,26 +453,64 @@ I2cWrite (
   IN   INT32 		Len
   )
 {
-  INT32 Ret;
+  EFI_STATUS Ret;
   INT32 I;
   struct I2cRegs *I2cRegs = (VOID *)Base;
 
   Ret = I2cInitTransfer(I2cRegs, Chip, Offset, Alen);
-  if (Ret < 0)
+  if (Ret != EFI_SUCCESS)
     return Ret;
 
   /** write data */
   /** Dummy write to initiate write operation */
+#if 0
   MmioWrite8((UINTN)&I2cRegs->I2Dr, 0x00);
+#endif
   for (I = 0; I < Len; I++) {
     Ret = TxByte(I2cRegs, Buffer[I]);
-    if (Ret < 0)
+    if (Ret != EFI_SUCCESS)
       break;
   }
   I2cStop(I2cRegs);
   return Ret;
 }
 
+/**
+  Function to Probe i2c bus
+
+  @param   I2c                     parameter defining I2c controller no
+
+  @retval  EFI_INVALID_PARAMETER   Input parametr I2c was invalid
+  @retval  EFI_SUCCESS             I2c was initialized successfully
+
+**/
+EFI_STATUS
+EFIAPI
+I2cProbe (
+  IN   INT16		I2c,
+  IN   UINT8		Chip
+  )
+{
+  VOID * BaseAddress;
+
+  switch (I2c) {
+    case I2C0:
+      	BaseAddress = (VOID *)I2C0_BASE_ADDRESS;
+  	break;
+    case I2C1:
+  	BaseAddress = (VOID *)I2C1_BASE_ADDRESS;
+  	break;
+    case I2C2:
+  	BaseAddress = (VOID *)I2C2_BASE_ADDRESS;
+  	break;
+    case I2C3:
+  	BaseAddress = (VOID *)I2C3_BASE_ADDRESS;
+    	break;
+    default:
+  	return EFI_INVALID_PARAMETER;
+  }
+  return I2cWrite(BaseAddress, Chip, 0, 0, NULL, 0);
+}
 
 /**
   Function to initialize i2c bus
