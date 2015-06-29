@@ -24,6 +24,7 @@
 
 #include <Guid/EventGroup.h>
 #include <Include/Ddr.h>
+#include <Include/I2c.h>
 #include <Library/LS1043aFileSystem.h>
 
 #define EFI_SET_TIMER_TO_SECOND   10000000
@@ -163,8 +164,8 @@ LS1043aTestI2c (
   EFI_I2C_MASTER_PROTOCOL 	*I2c;
   EFI_I2C_REQUEST_PACKET    *RequestPacket;
   UINT8 Rbuf[6];
-  UINT8 Wbuf[6] = {1, 2, 3, 4, 5};
-  UINTN BusFreq = 0x186a0;
+//  UINT8 Wbuf[6] = {1, 2, 3, 4, 5};
+  UINTN BusFreq = I2C_SPEED;
 
   Status = gBS->LocateProtocol (&gEfiI2cMasterProtocolGuid,
 		NULL,
@@ -194,11 +195,12 @@ LS1043aTestI2c (
   RequestPacket = (EFI_I2C_REQUEST_PACKET*)AllocatePool
 					(sizeof(EFI_I2C_REQUEST_PACKET));
   RequestPacket->OperationCount = 1;
-  RequestPacket->Operation[0].Flags = 0x1;
-  RequestPacket->Operation[0].LengthInBytes = 5;
+  RequestPacket->Operation[0].Flags = I2C_READ_FLAG;
+  RequestPacket->Operation[0].LengthInBytes = 10;
   RequestPacket->Operation[0].Buffer = Rbuf;
 
-  Status = I2c->StartRequest (I2c, 0x51, RequestPacket, NULL, NULL);
+  /* EEPROM0_ADDRESS */
+  Status = I2c->StartRequest (I2c, EEPROM0_ADDRESS, RequestPacket, NULL, NULL);
   if (EFI_ERROR (Status)) {
     DEBUG((EFI_D_ERROR,"Failed to read eeprom on i2c bus \
     Error '%r')\n", Status));
@@ -206,6 +208,12 @@ LS1043aTestI2c (
     return Status;
   }
 
+  DEBUG((EFI_D_INFO,"EEPROM0: 0x%x 0x%x 0x%x  0x%x  0x%x ",
+	Rbuf[0], Rbuf[1], Rbuf[2], Rbuf[3], Rbuf[4]));
+  DEBUG((EFI_D_INFO,"0x%x 0x%x 0x%x  0x%x  0x%x \n",
+	Rbuf[5], Rbuf[6], Rbuf[7], Rbuf[8], Rbuf[9]));
+
+#if 0
   if (Rbuf[0] != 0x92 || Rbuf[1] != 0x10 || Rbuf[2] != 0xb ||
       Rbuf[3] != 0x2 || Rbuf[4] != 0x2) {
     DEBUG((EFI_D_ERROR,"Read data is invalid\n"));
@@ -242,8 +250,8 @@ LS1043aTestI2c (
     FreePool(RequestPacket);
     return EFI_COMPROMISED_DATA;
   }
+#endif
   FreePool(RequestPacket);
-
   return EFI_SUCCESS;
 }
 

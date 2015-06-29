@@ -396,7 +396,8 @@ DspiSetupSlave (
     4096, 8192, 16384, 32768
   };
   UINT32 I, J, Pbrcnt, Brcnt, Diff, Tmp, Dbr = 0;
-  UINT32 BestI, BestJ, Bestmatch = 0x7FFFFFFF, BaudSpeed, BusClk;
+  UINT32 BestI, BestJ, Bestmatch = 0x7FFFFFFF, BaudSpeed;
+  UINTN  BusClk;
   UINT32 BusSetup = 0;
   UINT32 Ret = 0;
 
@@ -420,7 +421,7 @@ DspiSetupSlave (
   MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], CONFIG_SYS_DSPI_CTAR0);
 
   Tmp = (Prescaler[3] * Scaler[15]);
-  BusClk = (UINT32)GET_CLOCK;
+  BusClk = (UINTN)GetPeripheralClock(DSPI_CLK);
 
   /* Maximum And Minimum Baudrate It Can Handle */
   if ((Dspislave->Baudrate > (BusClk >> 1)) ||

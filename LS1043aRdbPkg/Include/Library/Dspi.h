@@ -19,6 +19,7 @@
 #define __DSPI_H__
 
 #include "LS1043aRdb.h"
+#include "LS1043aSocLib.h"
 #include "Common.h"
 #include "Bitops.h"
 #include "Spi.h"

@@ -17,9 +17,6 @@
 #define __COMMON_H__
 
 
-
-#define BUS_CLK      		300000000
-
 /**
   Utility to return minimum among X and Y
 **/
@@ -51,7 +48,6 @@
 	__Rem;						\
  })
 
-#define GET_CLOCK  		((BUS_CLK)  / 2)
 
 #define RoundUp(X, Y)       ((((X) + ((Y) - 1)) / (Y)) * (Y))
 
