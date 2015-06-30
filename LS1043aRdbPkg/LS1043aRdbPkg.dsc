@@ -129,14 +129,15 @@
   BdsLib|ArmPkg/Library/BdsLib/BdsLib.inf
   FdtLib|EmbeddedPkg/Library/FdtLib/FdtLib.inf
 
-  #ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
-  #ShellCommandLib|ShellPkg/Library/UefiShellCommandLib/UefiShellCommandLib.inf
-  #FileHandleLib|ShellPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
-  #ShellCEntryLib|ShellPkg/Library/UefiShellCEntryLib/UefiShellCEntryLib.inf
-  #SortLib|ShellPkg/Library/UefiSortLib/UefiSortLib.inf
-  #HandleParsingLib|ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
+  ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
+  ShellCommandLib|ShellPkg/Library/UefiShellCommandLib/UefiShellCommandLib.inf
+  FileHandleLib|ShellPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+  ShellCEntryLib|ShellPkg/Library/UefiShellCEntryLib/UefiShellCEntryLib.inf
+  SortLib|ShellPkg/Library/UefiSortLib/UefiSortLib.inf
+  HandleParsingLib|ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
 
-  #PathLib|ShellPkg/Library/BasePathLib/BasePathLib.inf
+  PathLib|ShellPkg/Library/BasePathLib/BasePathLib.inf
+  BcfgCommandLib|ShellPkg/Library/UefiShellBcfgCommandLib/UefiShellBcfgCommandLib.inf
 
 
 [LibraryClasses.common.SEC]
@@ -424,12 +425,12 @@
   # LS1043aRdb machine type (OMAP3_LS1043a = 1546) required for ARM Linux:
   gArmTokenSpaceGuid.PcdArmMachineType|1546
 
-  #gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0xFF
-  #gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
-  #gEfiMdePkgTokenSpaceGuid.PcdUefiLibMaxPrintBufferSize|16000
-#!ifdef $(NO_SHELL_PROFILES)
-  #gEfiShellPkgTokenSpaceGuid.PcdShellProfileMask|0x00
-#!endif #$(NO_SHELL_PROFILES)
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0xFF
+  gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
+  gEfiMdePkgTokenSpaceGuid.PcdUefiLibMaxPrintBufferSize|16000
+!ifdef $(NO_SHELL_PROFILES)
+  gEfiShellPkgTokenSpaceGuid.PcdShellProfileMask|0x00
+!endif #$(NO_SHELL_PROFILES)
 
 	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x10010000	
 
@@ -439,7 +440,6 @@
 #
 ################################################################################
 [Components.common]
-
   #
   # SEC
   #
@@ -532,32 +532,22 @@
   #
   MdeModulePkg/Application/HelloWorld/HelloWorld.inf
 
-#  ShellPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
-#  ShellPkg/Library/UefiShellLib/UefiShellLib.inf
-#  ShellPkg/Library/UefiShellCommandLib/UefiShellCommandLib.inf
-#  ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
-#  ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
-#
-#  ShellPkg/Library/UefiDpLib/UefiDpLib.inf {
-#    <LibraryClasses>
-#      TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
-#      PerformanceLib|MdePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull.inf
-#      DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
-#  }
-#
-#  ShellPkg/Application/Shell/Shell.inf {
-#    <LibraryClasses>
-#      NULL|ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
-#      NULL|ShellPkg/Library/UefiShellLevel1CommandsLib/UefiShellLevel1CommandsLib.inf
-#      NULL|ShellPkg/Library/UefiShellLevel3CommandsLib/UefiShellLevel3CommandsLib.inf
-#!ifndef $(NO_SHELL_PROFILES)
-#      NULL|ShellPkg/Library/UefiShellDriver1CommandsLib/UefiShellDriver1CommandsLib.inf
-#      NULL|ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
-#      NULL|ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
-##      NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
-#!ifdef $(INCLUDE_DP)
-#      NULL|ShellPkg/Library/UefiDpLib/UefiDpLib.inf
-#!endif #$(INCLUDE_DP)
-#!endif #$(NO_SHELL_PROFILES)
-#
-###
+  ShellPkg/Application/Shell/Shell.inf {
+    <LibraryClasses>
+      NULL|ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellLevel1CommandsLib/UefiShellLevel1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellLevel3CommandsLib/UefiShellLevel3CommandsLib.inf
+!ifndef $(NO_SHELL_PROFILES)
+      NULL|ShellPkg/Library/UefiShellDriver1CommandsLib/UefiShellDriver1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
+      #NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+!ifdef $(INCLUDE_DP)
+      NULL|ShellPkg/Library/UefiDpLib/UefiDpLib.inf
+!endif #$(INCLUDE_DP)
+!endif #$(NO_SHELL_PROFILES)
+	}
+ 
+
+
+##
