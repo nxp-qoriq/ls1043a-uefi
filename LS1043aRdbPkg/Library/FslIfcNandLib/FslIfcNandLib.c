@@ -37,7 +37,7 @@ INTN FslIfcRunCmd()
 
 	/* set the chip select for NAND Transaction */
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_csel,
-			(NAND_BANK << 26));
+			(IFC_CS1 << 26));
 
 	/* start read/write seq */
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nandseq_strt,
@@ -65,6 +65,44 @@ INTN FslIfcRunCmd()
 
 	/* returns 0 on success otherwise non-zero) */
 	return Status == IFC_NAND_EVTER_STAT_OPC ? 0 : -1;
+}
+
+/*
+ * Set up the IFC hardware block and page address fields, and the ifc nand
+ * structure addr field to point to the correct IFC buffer in memory
+ */
+VOID SetAddr(INTN column, INTN page_addr)
+{
+	/* Program ROW0/COL0 */
+	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.row0, page_addr);
+	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.col0, column);
+}
+
+
+
+EFI_STATUS IfcWait(
+		VOID
+		)
+{
+	EFI_STATUS Status;
+	/* Use READ_STATUS command, but wait for the device to be ready */
+	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir0,
+		  (IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
+		  (IFC_FIR_OP_RDSTAT << IFC_NAND_FIR0_OP1_SHIFT));
+	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0, NAND_CMD_STATUS <<
+		  IFC_NAND_FCR0_CMD0_SHIFT);
+	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 1);
+	SetAddr(0, 0);
+
+	Status = FslIfcRunCmd();
+
+	if(Status != EFI_SUCCESS)
+		return Status;
+
+	//Status = MmioReadBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fsr);
+
+	return Status;
+	//return Status & NAND_STATUS_FAIL;
 }
 
 VOID FslIfcRead(
@@ -102,17 +140,6 @@ VOID FslIfcRead(
 	}
 }
 
-/*
- * Set up the IFC hardware block and page address fields, and the ifc nand
- * structure addr field to point to the correct IFC buffer in memory
- */
-VOID SetAddr(INTN column, INTN page_addr)
-{
-	/* Program ROW0/COL0 */
-	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.row0, page_addr);
-	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.col0, column);
-}
-
 /* cmdfunc send commands to the IFC NAND Machine */
 VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 {
@@ -146,7 +173,7 @@ VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 		 * the maximum 256 bytes(for PARAM)
 		 */
 		MmioWriteBe32(
-			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 8);
+			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 256);
 
 		SetAddr(0, 0);
 		FslIfcRunCmd();
@@ -294,7 +321,7 @@ NandDetectPart (
   VOID
 )
 {
-    UINT8      PartInfo[5];
+    UINT8      PartInfo[8];
     UINTN      Index;
     BOOLEAN    Found = FALSE;
 
@@ -307,7 +334,7 @@ NandDetectPart (
   //Byte 2, 3, 4 = Nand part specific information (Page size, Block size etc)
 
   for(Index = 0; Index < sizeof(PartInfo); Index++) {
-	PartInfo[Index] = MmioRead8((UINTN)gNandFlashInfo->BufBase + Index);
+		PartInfo[Index] = MmioRead8((UINTN)gNandFlashInfo->BufBase + Index);
   }
 
   //Check if the ManufactureId and DeviceId are part of the currently
@@ -397,7 +424,7 @@ NandReadPage (
   //Send READ command
   FslIfcNandCmdSend(NAND_CMD_READ0, 0, PageAddr);
 	SrcAddr = (VOID*)(gNandFlashInfo->BufBase +
-			(gNandFlashInfo->PageSize + 0x40) * (PageIndex % 4));
+			(gNandFlashInfo->PageSize << 1) * (PageIndex & 0x3));
   CopyMem((VOID*) Buffer, SrcAddr, gNandFlashInfo->PageSize);
   return EFI_SUCCESS;
 }
@@ -423,7 +450,7 @@ NandWritePage (
   //NandEnableEcc();
 
 	DestAddr = (VOID*)(gNandFlashInfo->BufBase +  
-			(gNandFlashInfo->PageSize + 0x40) * (PageIndex % 4));
+			(gNandFlashInfo->PageSize << 1) * (PageIndex & 0x3));
   //Data input from Buffer
   CopyMem(DestAddr, (VOID*) Buffer, gNandFlashInfo->PageSize);
   //Calculate ECC.
@@ -511,6 +538,12 @@ NandWriteBlock (
 		PageIndex++) {
       Status = NandWritePage(BlockIndex, PageIndex, Buffer, SpareBuffer);
       if (EFI_ERROR(Status)) {
+				DEBUG((EFI_D_ERROR,"NandWritePage Failed\n"));
+        return Status;
+      }
+			Status = IfcWait();
+      if (EFI_ERROR(Status)) {
+				DEBUG((EFI_D_ERROR,"IfcWait Failed\n"));
         return Status;
       }
       Buffer = ((UINT8 *)Buffer + gNandFlashInfo->PageSize);
@@ -633,6 +666,11 @@ FslIfcNandFlashWriteBlocks (
       DEBUG((EFI_D_ERROR, "Erase block failed. Status: %x\n", Status));
       goto exit;
     }
+		Status = IfcWait();
+    if (EFI_ERROR(Status)) {
+      DEBUG((EFI_D_ERROR, "Wait on Erase block failed. Status: %x\n", Status));
+      goto exit;
+    }
   }
 
   // Program data
@@ -663,20 +701,20 @@ VOID FslIfcNandInit(
 	VOID
 )
 {
-        gNandFlashInfo->IfcRegs = (FSL_IFC_REGS*) IFC_REG_BASE;
+  gNandFlashInfo->IfcRegs = (FSL_IFC_REGS*) IFC_REG_BASE;
 	gNandFlashInfo->BufBase = (VOID*) IFC_NAND_BUF_BASE;
 
-        /* clear event registers */
+  /* clear event registers */
 
 	MmioWriteBe32(
 		(UINTN)
 		&gNandFlashInfo->IfcRegs->ifc_nand.pgrdcmpl_evt_stat, ~0U);
 
-        MmioWriteBe32((UINTN)
+  MmioWriteBe32((UINTN)
 		&gNandFlashInfo->IfcRegs->ifc_nand.nand_evter_stat, ~0U);
 
         /* Enable error and event for any detected errors */
-        MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_evter_en,
+  MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_evter_en,
                   IFC_NAND_EVTER_EN_OPC_EN |
                   IFC_NAND_EVTER_EN_PGRDCMPL_EN |
                   IFC_NAND_EVTER_EN_FTOER_EN |
@@ -685,21 +723,36 @@ VOID FslIfcNandInit(
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.ncfgr, 0x0);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->cspr_cs[NAND_BANK].cspr,
+		&gNandFlashInfo->IfcRegs->ftim_cs[IFC_CS1].ftim[IFC_FTIM0],
+		FTIM0_NAND);
+
+	MmioWriteBe32((UINTN)
+		&gNandFlashInfo->IfcRegs->ftim_cs[IFC_CS1].ftim[IFC_FTIM1],
+		FTIM1_NAND);
+
+	MmioWriteBe32((UINTN)
+		&gNandFlashInfo->IfcRegs->ftim_cs[IFC_CS1].ftim[IFC_FTIM2],
+		FTIM2_NAND);
+
+	MmioWriteBe32((UINTN)
+		&gNandFlashInfo->IfcRegs->ftim_cs[IFC_CS1].ftim[IFC_FTIM3],
+		FTIM3_NAND);
+
+	MmioWriteBe32((UINTN)
+		&gNandFlashInfo->IfcRegs->cspr_cs[IFC_CS1].cspr,
 		IFC_NAND_CSPR);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->cspr_cs[NAND_BANK].cspr_ext,
+		&gNandFlashInfo->IfcRegs->cspr_cs[IFC_CS1].cspr_ext,
 		IFC_NAND_CSPR_EXT);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->amask_cs[NAND_BANK].amask,
+		&gNandFlashInfo->IfcRegs->amask_cs[IFC_CS1].amask,
 		IFC_NAND_AMASK);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->csor_cs[NAND_BANK].csor,
+		&gNandFlashInfo->IfcRegs->csor_cs[IFC_CS1].csor,
 		IFC_NAND_CSOR);
-
 }
 
 EFI_STATUS

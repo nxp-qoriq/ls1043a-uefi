@@ -30,8 +30,6 @@
 #include <Protocol/Cpu.h>
 
 #define NOIBR
-#define NAND_BANK 1
-#define NOR_BANK 0
 
 #define FSL_IFC_BANK_COUNT	4
 #define PAGE_SIZE(x)		((x) & 0x01)
@@ -85,7 +83,9 @@
 
 #define NAND_RESET_STATUS	(0x60UL << 0)
 
-#define MAX_RETRY_COUNT		1500
+#define NAND_STATUS_FAIL 0x1
+
+#define MAX_RETRY_COUNT		150000
 
 #define IFC_REG_BASE	 	0x1530000
 #define IFC_NAND_BUF_BASE	0x70000000
@@ -180,6 +180,65 @@
 #define IFC_NAND_FCR1_CMD6_SHIFT	8
 #define IFC_NAND_FCR1_CMD7		0x000000FF
 #define IFC_NAND_FCR1_CMD7_SHIFT	0
+
+#define CONFIG_SYS_NAND_FTIM0		(FTIM0_NAND_TCCST(0x7) | \
+					FTIM0_NAND_TWP(0x18)   | \
+					FTIM0_NAND_TWCHT(0x7) | \
+					FTIM0_NAND_TWH(0xa))
+#define CONFIG_SYS_NAND_FTIM1		(FTIM1_NAND_TADLE(0x32) | \
+					FTIM1_NAND_TWBE(0x39)  | \
+					FTIM1_NAND_TRR(0xe)   | \
+					FTIM1_NAND_TRP(0x18))
+#define CONFIG_SYS_NAND_FTIM2		(FTIM2_NAND_TRAD(0xf) | \
+					FTIM2_NAND_TREH(0xa) | \
+					FTIM2_NAND_TWHRE(0x1e))
+#define CONFIG_SYS_NAND_FTIM3		0x0
+
+/*
+ * Flash Timing Registers (FTIM0 - FTIM2_CSn)
+ */
+/*
+ * FTIM0 - NAND Flash Mode
+ */
+#define FTIM0_NAND			0x7EFF3F3F
+#define FTIM0_NAND_TCCST_SHIFT	25
+#define FTIM0_NAND_TCCST(n)	((n) << FTIM0_NAND_TCCST_SHIFT)
+#define FTIM0_NAND_TWP_SHIFT	16
+#define FTIM0_NAND_TWP(n)	((n) << FTIM0_NAND_TWP_SHIFT)
+#define FTIM0_NAND_TWCHT_SHIFT	8
+#define FTIM0_NAND_TWCHT(n)	((n) << FTIM0_NAND_TWCHT_SHIFT)
+#define FTIM0_NAND_TWH_SHIFT	0
+#define FTIM0_NAND_TWH(n)	((n) << FTIM0_NAND_TWH_SHIFT)
+/*
+ * FTIM1 - NAND Flash Mode
+ */
+#define FTIM1_NAND			0xFFFF3FFF
+#define FTIM1_NAND_TADLE_SHIFT	24
+#define FTIM1_NAND_TADLE(n)	((n) << FTIM1_NAND_TADLE_SHIFT)
+#define FTIM1_NAND_TWBE_SHIFT	16
+#define FTIM1_NAND_TWBE(n)	((n) << FTIM1_NAND_TWBE_SHIFT)
+#define FTIM1_NAND_TRR_SHIFT	8
+#define FTIM1_NAND_TRR(n)	((n) << FTIM1_NAND_TRR_SHIFT)
+#define FTIM1_NAND_TRP_SHIFT	0
+#define FTIM1_NAND_TRP(n)	((n) << FTIM1_NAND_TRP_SHIFT)
+/*
+ * FTIM2 - NAND Flash Mode
+ */
+#define FTIM2_NAND			0x1FE1F8FF
+#define FTIM2_NAND_TRAD_SHIFT	21
+#define FTIM2_NAND_TRAD(n)	((n) << FTIM2_NAND_TRAD_SHIFT)
+#define FTIM2_NAND_TREH_SHIFT	11
+#define FTIM2_NAND_TREH(n)	((n) << FTIM2_NAND_TREH_SHIFT)
+#define FTIM2_NAND_TWHRE_SHIFT	0
+#define FTIM2_NAND_TWHRE(n)	((n) << FTIM2_NAND_TWHRE_SHIFT)
+/*
+ * FTIM3 - NAND Flash Mode
+ */
+#define FTIM3_NAND			0xFF000000
+#define FTIM3_NAND_TWW_SHIFT	24
+#define FTIM3_NAND_TWW(n)	((n) << FTIM3_NAND_TWW_SHIFT)
+
+
 
 /*
  * Flash ROW and COL Address Register (ROWn, COLn)
@@ -702,7 +761,7 @@ typedef struct {
 	UINT32 ifc_ccr;
 	UINT32 ifc_csr;
 	UINT32 ddr_ccr_low;
-	UINT32 res12[0x2EB];
+	UINT32 res12[0x2EA];
 	FSL_IFC_NAND ifc_nand;
 	FSL_IFC_NOR ifc_nor;
 	FSL_IFC_GPCM ifc_gpcm;
