@@ -105,6 +105,7 @@ PpaInitialize (
   IN EFI_SYSTEM_TABLE   *SystemTable
   )
 {
+#if 0
 	EFI_STATUS Status;
 	UINTN PpaRamAddr;
 
@@ -112,5 +113,9 @@ PpaInitialize (
 
 	Status = PpaInit(PpaRamAddr);
 	InitMmu();
+
 	return Status;
+#else
+	return EFI_SUCCESS;
+#endif
 }
