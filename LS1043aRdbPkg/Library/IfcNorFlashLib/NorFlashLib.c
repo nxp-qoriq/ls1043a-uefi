@@ -131,7 +131,7 @@ NorFlashPlatformWriteSingleWord (
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_PROGRAM_THIRD);
 
   // Store the word into NOR Flash;
-  MmioWrite32 (WordAddress, WriteData);
+  FLASH_WRITE_32 (WordAddress, WriteData);
 
   // Wait for write to complete
   for(Count=0; Count < 2048; Count++)
@@ -196,10 +196,10 @@ NorFlashPlatformWriteBuffer (
   // because word count 0 means one word.
   SEND_NOR_COMMAND(TargetAddress, 0, (BufferSizeInBytes - 1));
 
-	BufferByte = (UINT8*)Buffer;
+  BufferByte = (UINT8*)Buffer;
   // Write the data to the NOR Flash, advancing each address by 1 byte
   for(Count=0; Count < BufferSizeInBytes; Count++, ProgramAddress++, BufferByte++) {
-    MmioWrite8 ((UINTN)ProgramAddress, *BufferByte);
+    FLASH_WRITE_8 ((UINTN)ProgramAddress, *BufferByte);
   }
 
   // Issue the Buffered Program Confirm command
@@ -523,6 +523,7 @@ NorFlashPlatformControllerInitialization (
   // IFC NOR is enabled by default on reset and available on CS0, so do
   // nothing here
 
+  IfcNorInit ();
   return EFI_SUCCESS;
 }
 

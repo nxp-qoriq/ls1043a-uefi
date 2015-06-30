@@ -24,11 +24,39 @@
 #include <Library/UefiLib.h>
 #include <Library/UefiRuntimeLib.h>
 
-#define NOR_FLASH_ERASE_RETRY                     10
+#define NOR_FLASH_ERASE_RETRY			10
 
-#define CREATE_NOR_ADDRESS(BaseAddr,OffsetAddr)   ((BaseAddr) + (OffsetAddr))
-#define SEND_NOR_COMMAND(BaseAddr,Offset,Cmd) MmioWrite8 (CREATE_NOR_ADDRESS(BaseAddr,Offset), Cmd)
-#define GET_NOR_BLOCK_ADDRESS(BaseAddr,Lba,LbaSize)( BaseAddr + (UINTN)((Lba) * LbaSize) )
+/*
+ * Values for the width of the port
+ */
+#define FLASH_CFI_8BIT		0x01
+#define FLASH_CFI_16BIT		0x02
+#define FLASH_CFI_32BIT		0x04
+#define FLASH_CFI_64BIT		0x08
+
+#define CONFIG_SYS_FLASH_CFI_WIDTH		FLASH_CFI_16BIT
+
+VOID FlashWrite8 (UINT8 Val, UINTN Addr);
+UINT8 FlashRead8 (UINTN Addr);
+
+VOID FlashWrite16 (UINT16 Val, UINTN Addr);
+UINT16 FlashRead16 (UINTN Addr);
+
+VOID FlashWrite32 (UINT32 Val, UINTN Addr);
+UINT32 FlashRead32 (UINTN Addr);
+
+#define CREATE_BYTE_OFFSET(OffsetAddr)		((CONFIG_SYS_FLASH_CFI_WIDTH) * (OffsetAddr))
+#define CREATE_NOR_ADDRESS(BaseAddr,OffsetAddr)	((BaseAddr) + (OffsetAddr))
+#define FLASH_READ_8(Addr)			FlashRead8((Addr))
+#define FLASH_WRITE_8(Addr, Val)		FlashWrite8((Val), (Addr))
+#define FLASH_READ_16(Addr)			FlashRead16((Addr))
+#define FLASH_WRITE_16(Addr, Val)		FlashWrite16((Val), (Addr))
+#define FLASH_READ_32(Addr)			FlashRead32((Addr))
+#define FLASH_WRITE_32(Addr, Val)		FlashWrite32((Val), (Addr))
+
+#define SEND_NOR_COMMAND(BaseAddr,Offset,Cmd)	FLASH_WRITE_16(CREATE_NOR_ADDRESS(BaseAddr,CREATE_BYTE_OFFSET(Offset)), (Cmd))
+
+#define GET_NOR_BLOCK_ADDRESS(BaseAddr,Lba,LbaSize)	( BaseAddr + (UINTN)((Lba) * LbaSize) )
 
 // Device Commands for MT28EW01GABA  NOR flash
 
@@ -37,8 +65,8 @@
 #define MT28EW01GABA_CMD_UNLOCK_2_ADDR             0x2AA
 
 // Write Buffer related
-#define MT28EW01GABA_BUFFER_SIZE_IN_BYTES     	  32
-#define MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS      (MT28EW01GABA_BUFFER_SIZE_IN_BYTES/((UINTN)4))
+#define MT28EW01GABA_BUFFER_SIZE_IN_BYTES     	  256 // x8
+#define MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS     (MT28EW01GABA_BUFFER_SIZE_IN_BYTES/((UINTN)4))
 #define BOUNDARY_OF_32_WORDS                      0x7F
 #define MAX_BUFFERED_PROG_ITERATIONS              10000000
 
@@ -49,20 +77,20 @@
 #define CFI_QRY_Y                                 0x59
 #define CFI_QRY                                   0x515259
 
-#define MT28EW01GABA_ENTER_CFI_QUERY_MODE_ADDR     0x55
-#define MT28EW01GABA_ENTER_CFI_QUERY_MODE_CMD      0x98
+#define MT28EW01GABA_ENTER_CFI_QUERY_MODE_ADDR     0x0055
+#define MT28EW01GABA_ENTER_CFI_QUERY_MODE_CMD      0x0098
 
-#define MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_FIRST    0x10
-#define MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_SECOND   0x11
-#define MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_THIRD    0x12
+#define MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_FIRST    0x0020
+#define MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_SECOND   0x0022
+#define MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_THIRD    0x0024
 
-#define MT28EW01GABA_CFI_VENDOR_ID_MAJOR_ADDR	  0x43
-#define MT28EW01GABA_CFI_VENDOR_ID_MAJOR		  0x31
-#define MT28EW01GABA_CFI_VENDOR_ID_MINOR_ADDR      0x44
-#define MT28EW01GABA_CFI_VENDOR_ID_MINOR		  0x33
+#define MT28EW01GABA_CFI_VENDOR_ID_MAJOR_ADDR		0x86
+#define MT28EW01GABA_CFI_VENDOR_ID_MAJOR		0x0031
+#define MT28EW01GABA_CFI_VENDOR_ID_MINOR_ADDR		0x88
+#define MT28EW01GABA_CFI_VENDOR_ID_MINOR		0x0033
 
-#define MT28EW01GABA_CFI_QUERY_BLOCK_SIZE          0x30
-#define MT28EW01GABA_CFI_QUERY_DEVICE_SIZE         0x27
+#define MT28EW01GABA_CFI_QUERY_BLOCK_SIZE          0x60
+#define MT28EW01GABA_CFI_QUERY_DEVICE_SIZE         0x4E
 
 // RESET Command
 #define MT28EW01GABA_CMD_RESET                     0xF0

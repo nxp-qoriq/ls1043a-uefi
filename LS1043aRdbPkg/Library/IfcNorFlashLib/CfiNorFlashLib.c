@@ -20,20 +20,82 @@
 
 #include "Mt28ew01gabaCfiNorFlashLib.h"
 
+UINT8
+FlashRead8 (
+  UINTN Addr
+  )
+{
+	UINT8 Val = *(volatile UINT8 *)(Addr);
+
+	return Val;
+}
+
+VOID
+FlashWrite8 (
+  UINT8 Val,
+  UINTN Addr
+  )
+{
+	*(volatile UINT8 *)(Addr) = (Val);
+}
+
+VOID
+FlashWrite16 (
+   UINT16 Val,
+   UINTN Addr
+   )
+{
+	UINT16 ShiftVal = (((Val >> 8) & 0xff) | ((Val << 8) & 0xff00));
+
+	*(volatile UINT16 *)(Addr) = (ShiftVal);
+}
+
+UINT16
+FlashRead16 (
+  UINTN Addr
+  )
+{
+	UINT16 Val = *(volatile UINT16 *)(Addr);
+
+	return (((Val) >> 8) & 0x00ff) | (((Val) << 8) & 0xff00);
+}
+
+VOID
+FlashWrite32 (
+   UINT32 Val,
+   UINTN Addr
+   )
+{
+	*(volatile UINT32 *)(Addr) = (Val);
+}
+
+UINT32
+FlashRead32 (
+  UINTN Addr
+  )
+{
+	UINT32 Val = *(volatile UINT32 *)(Addr);
+
+	return (Val);
+}
+
 STATIC
 VOID
 NorFlashReadCfiData (
   IN  UINTN                   DeviceBaseAddress,
   IN  UINTN                   CFI_Offset,
-  IN  UINT32                  NumberOfBytes,
-  OUT UINT32                  *Data
+  IN  UINT32                  NumberOfShorts,
+  OUT VOID                    *Data
   )
 {
   UINT32                Count;
-  UINT8			*ByteData = (UINT8 *)Data;
+  UINT16		*TmpData = (UINT16 *)Data;
 	
-  for(Count = 0; Count < NumberOfBytes; Count++, ByteData++, CFI_Offset--) 
-      *ByteData = MmioRead8 ((UINTN)(DeviceBaseAddress + CFI_Offset));
+  for(Count = 0; Count < NumberOfShorts; Count++, TmpData++) {
+      *TmpData = FlashRead16 (DeviceBaseAddress + CFI_Offset);
+      CFI_Offset -= 2;
+
+  }
 }
 
 /*
@@ -46,34 +108,40 @@ CfiNorFlashFlashGetAttributes (
   )
 {
   UINT32                  Count;
-  UINT32                  Data;
-  UINT32       		  Size;
-  UINT32       		  BlockSize;
-  
+  UINT16                  QryData[3] = {0, 0, 0};
+  UINT16                  MajorIdReadData;
+  UINT16                  MinorIdReadData;
+  UINT16       		  Size;
+  UINT16       		  BlockSize[2] = {0, 0};
+ 
   for (Count = 0; Count < Index; Count++) {
+     // Reset flash first
+     SEND_NOR_COMMAND (NorFlashDevices[Count]->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
+     SEND_NOR_COMMAND (NorFlashDevices[Count]->DeviceBaseAddress, 0, 0xFF);
+
      // Enter the CFI Query Mode
-  SEND_NOR_COMMAND (IFC_NOR_BUF_BASE, MT28EW01GABA_ENTER_CFI_QUERY_MODE_ADDR, MT28EW01GABA_ENTER_CFI_QUERY_MODE_CMD);
+     SEND_NOR_COMMAND (NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_ENTER_CFI_QUERY_MODE_ADDR, MT28EW01GABA_ENTER_CFI_QUERY_MODE_CMD);
+     DEBUG ((EFI_D_ERROR, " CFI enter mode command addr=0x%x, cmd=0x%x\n", IFC_NOR_BUF_BASE + MT28EW01GABA_ENTER_CFI_QUERY_MODE_ADDR, MT28EW01GABA_ENTER_CFI_QUERY_MODE_CMD));
 		
      // Query the unique QRY
-		Data = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_THIRD, 3, &Data);
-     if (Data != CFI_QRY) {
-			DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Not a CFI flash (QRY not recvd): Expected = 0x%x, Got = 0x%x\n", CFI_QRY, Data));
-       return EFI_DEVICE_ERROR;
+     NorFlashReadCfiData((NorFlashDevices[Count]->DeviceBaseAddress), MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_THIRD, 3, &QryData);
+     if (QryData[0] != (UINT16)CFI_QRY_Y || QryData[1] != (UINT16)CFI_QRY_R || QryData[2] != (UINT16)CFI_QRY_Q ) {
+	DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Not a CFI flash (QRY not recvd): Got = 0x%x, 0x%x, 0x%x\n", QryData[0], QryData[1], QryData[2]));
+        return EFI_DEVICE_ERROR;
      }
   
      // Check we have the desired NOR flash slave (MT28EW01GABA) connected
- 		 Data = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_VENDOR_ID_MAJOR_ADDR, 1, &Data);
-      if ((UINT8)Data != MT28EW01GABA_CFI_VENDOR_ID_MAJOR) {
-        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a MT28EW01GABA flash (MAJOR ID), Expected=0x%x, Got=0x%x\n", MT28EW01GABA_CFI_VENDOR_ID_MAJOR, (UINT8)Data));
+     MajorIdReadData = 0;
+     NorFlashReadCfiData((NorFlashDevices[Count]->DeviceBaseAddress), MT28EW01GABA_CFI_VENDOR_ID_MAJOR_ADDR, 1, &MajorIdReadData);
+     if (MajorIdReadData != (UINT16)MT28EW01GABA_CFI_VENDOR_ID_MAJOR) {
+        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a MT28EW01GABA flash (MAJOR ID), Expected=0x%x, Got=0x%x\n", MT28EW01GABA_CFI_VENDOR_ID_MAJOR, (UINT16)MajorIdReadData));
        return EFI_DEVICE_ERROR;
      }
   
- 		 Data = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_VENDOR_ID_MINOR_ADDR, 1, &Data);
-      if ((UINT8)Data != MT28EW01GABA_CFI_VENDOR_ID_MINOR) {
-        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a MT28EW01GABA flash (MINOR ID), Expected=0x%x, Got=0x%x\n", MT28EW01GABA_CFI_VENDOR_ID_MINOR, (UINT8)Data));
+     MinorIdReadData = 0;
+     NorFlashReadCfiData((NorFlashDevices[Count]->DeviceBaseAddress), MT28EW01GABA_CFI_VENDOR_ID_MINOR_ADDR, 1, &MinorIdReadData);
+      if ((UINT8)MinorIdReadData != MT28EW01GABA_CFI_VENDOR_ID_MINOR) {
+        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a MT28EW01GABA flash (MINOR ID), Expected=0x%x, Got=0x%x\n", MT28EW01GABA_CFI_VENDOR_ID_MINOR, (UINT8)MinorIdReadData));
        return EFI_DEVICE_ERROR;
      }
 
@@ -81,13 +149,12 @@ CfiNorFlashFlashGetAttributes (
      // Now, retrieve the device geometry definition
   
      // Block Size
-		 BlockSize = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_BLOCK_SIZE, 2, &BlockSize);
-     NorFlashDevices[Count]->BlockSize = 64 * 1024; //BlockSize;
+     NorFlashReadCfiData((NorFlashDevices[Count]->DeviceBaseAddress), MT28EW01GABA_CFI_QUERY_BLOCK_SIZE, 2, &BlockSize);
+     NorFlashDevices[Count]->BlockSize = 128 * 1024; //BlockSize = 128KB;
   
      // Device Size
-		 Size = 0;
-     NorFlashReadCfiData(NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_DEVICE_SIZE, 1, &Size);
+     Size = 0;
+     NorFlashReadCfiData((NorFlashDevices[Count]->DeviceBaseAddress), MT28EW01GABA_CFI_QUERY_DEVICE_SIZE, 1, &Size);
      NorFlashDevices[Count]->Size = (2 << (UINT8)Size); // 2 ^ Size
 
      // Put device back into Read Array mode (via Reset)

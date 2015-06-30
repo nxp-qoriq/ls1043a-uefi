@@ -97,7 +97,7 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_IFC_REGION1_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_IFC_REGION1_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_IFC_REGION1_BASE_SIZE;
-  VirtualMemoryTable[Index].Attributes   = CacheAttributes;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED/*CacheAttributes*/;
 
   // QMAN SWP
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_QMAN_SWP_BASE_ADDR;
