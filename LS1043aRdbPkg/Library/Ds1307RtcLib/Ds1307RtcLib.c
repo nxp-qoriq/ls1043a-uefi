@@ -101,7 +101,7 @@ LibGetTime (
 	Mon = RtcRead (RTC_MON_REG_ADDR);
 	Year = RtcRead (RTC_YR_REG_ADDR);
 
-	DEBUG((EFI_D_ERROR, "Get RTC Year: %02x Mon: %02x Day: %02x "
+	DEBUG((EFI_D_INFO, "Get RTC Year: %02x Mon: %02x Day: %02x "
 		"Hour: %02x Min: %02x Sec: %02x\n",
 		Year, Mon, Day, Hour, Min, Sec));
 
@@ -120,7 +120,7 @@ LibGetTime (
 	Time->Month  = Bcd2Bin (Mon & 0x1F);
 	Time->Year = Bcd2Bin (Year) + ( Bcd2Bin (Year) >= 70 ? 1900 : 2000);
 
-	DEBUG((EFI_D_ERROR, "Get DATE: %4d-%02d-%02d TIME: %2d:%02d:%02d\n",
+	DEBUG((EFI_D_INFO, "Get DATE: %4d-%02d-%02d TIME: %2d:%02d:%02d\n",
 		Time->Year, Time->Month, Time->Day,
 		Time->Hour, Time->Minute, Time->Second));
 
@@ -144,7 +144,7 @@ LibSetTime (
   IN EFI_TIME                *Time
   )
 {
-	DEBUG((EFI_D_ERROR, "Set DATE: %4d-%02d-%02d TIME: %2d:%02d:%02d\n",
+	DEBUG((EFI_D_INFO, "Set DATE: %4d-%02d-%02d TIME: %2d:%02d:%02d\n",
 	Time->Year, Time->Month, Time->Day,
 	Time->Hour, Time->Minute, Time->Second));
 
@@ -153,7 +153,7 @@ LibSetTime (
 
 	RtcWrite (RTC_YR_REG_ADDR, Bin2Bcd (Time->Year % 100));
 	RtcWrite (RTC_MON_REG_ADDR, Bin2Bcd (Time->Month));
-	RtcWrite (RTC_DAY_REG_ADDR, Bin2Bcd (Time->Day + 1));
+	RtcWrite (RTC_DATE_REG_ADDR, Bin2Bcd (Time->Day));
 	RtcWrite (RTC_HR_REG_ADDR, Bin2Bcd (Time->Hour));
 	RtcWrite (RTC_MIN_REG_ADDR, Bin2Bcd (Time->Minute));
 	RtcWrite (RTC_SEC_REG_ADDR, Bin2Bcd (Time->Second));

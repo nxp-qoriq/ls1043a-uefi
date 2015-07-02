@@ -82,7 +82,7 @@
   DefaultExceptionHandlerLib|ArmPkg/Library/DefaultExceptionHandlerLib/DefaultExceptionHandlerLib.inf
   CpuExceptionHandlerLib|MdeModulePkg/Library/CpuExceptionHandlerLibNull/CpuExceptionHandlerLibNull.inf
   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf
-  RealTimeClockLib|LS1043aRdbPkg/Library/RealTimeClockLib/RealTimeClockLib.inf
+  RealTimeClockLib|LS1043aRdbPkg/Library/Ds1307RtcLib/Ds1307RtcLib.inf
   SemihostLib|ArmPkg/Library/SemihostLib/SemihostLib.inf
 
   # UART Driver
