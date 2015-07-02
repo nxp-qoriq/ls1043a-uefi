@@ -39,7 +39,7 @@ SdxcXfertyp (
 
   if (Data) {
     Xfertyp |= XFERTYP_DPSEL;
-#ifndef CONFIG_SYS_FSL_ESDHC_USE_PIO
+#ifndef CONFIG_SYS_FSL_SDXC_USE_PIO
     Xfertyp |= XFERTYP_DMAEN;
 #endif
     if (Data->Blocks > 1) {
@@ -101,9 +101,9 @@ SdxcSetupData (
     if (Upper32Bits(Addr))
       DEBUG((EFI_D_ERROR, "Error found for upper 32 bits\n"));
     else
-      MmioWriteBe32((UINTN)&Regs->Dsaddr, Dsaddr);
+      MmioWriteBe32((UINTN)&Regs->Dsaddr, Lower32Bits(Addr));
 #else
-    MmioWriteBe32((UINTN)&Regs->Dsaddr, Dsaddr);
+    MmioWriteBe32((UINTN)&Regs->Dsaddr, Data->Dest);
 #endif
 #endif
   } else {
@@ -121,9 +121,9 @@ SdxcSetupData (
     if (Upper32Bits(Addr))
       DEBUG((EFI_D_ERROR, "Error found for upper 32 bits\n"));
     else
-      MmioWriteBe32((UINTN)&Regs->Dsaddr,Dsaddr);
+      MmioWriteBe32((UINTN)&Regs->Dsaddr,Lower32Bits(Addr));
 #else
-    MmioWriteBe32((UINTN)&Regs->Dsaddr, Dsaddr);
+    MmioWriteBe32((UINTN)&Regs->Dsaddr, Data->Src);
 #endif
 #endif
   }
@@ -204,7 +204,8 @@ ResetCmdData (
 
 }
 
-static VOID
+#ifdef CONFIG_SYS_FSL_SDXC_USE_PIO
+static EFI_STATUS
 SdxcReadWrite (
  OUT struct MmcData *Data
   )
@@ -228,8 +229,9 @@ SdxcReadWrite (
       while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_BREN)
              && --TimeOut);
       if (TimeOut <= 0) {
-        DEBUG((EFI_D_ERROR, "Data Read Failed in Polling Mode\n"));
-        return;
+        DEBUG((EFI_D_ERROR, "Data Read Failed in PIO Mode 0x%x\n",
+		MmioReadBe32((UINTN)&Regs->Prsstat)));
+        return EFI_DEVICE_ERROR;
       }
       while (Size && (!(Irqstat & IRQSTAT_TC))) {
         MicroSecondDelay(100); /* Wait before last byte transfer complete */
@@ -251,8 +253,9 @@ SdxcReadWrite (
       while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_BWEN)
              && --TimeOut);
       if (TimeOut <= 0) {
-        DEBUG((EFI_D_ERROR, "Data Write Failed in PIO Mode\n"));
-        return;
+        DEBUG((EFI_D_ERROR, "Data Write Failed in PIO Mode 0x%x\n",
+		MmioReadBe32((UINTN)&Regs->Prsstat)));
+        return EFI_DEVICE_ERROR;
       }
       while (Size && (!(Irqstat & IRQSTAT_TC))) {
         MicroSecondDelay(100); /* Wait before last byte transfer complete */
@@ -265,7 +268,10 @@ SdxcReadWrite (
       Blocks--;
     }
   }
+
+  return EFI_SUCCESS;
 }
+#endif
 
 EFI_STATUS
 ReceiveResponse(
@@ -276,10 +282,12 @@ ReceiveResponse(
 {
   struct FslSdxcCfg *Cfg = gMmc->Priv;
   volatile struct FslSdxc *Regs = (struct FslSdxc *)Cfg->SdxcBase;
+  INT32 Timeout = 0;
+  EFI_STATUS Status = 0;
 
    /* Workaround for SDXC Errata ENGcm03648 */
   if (!Data && (RespType & MMC_RSP_BUSY)) {
-    INT32 Timeout = 2500;
+    Timeout = 25000;
 
     /* Poll On DATA0 Line for Cmd With Busy Signal for 250 Ms */
     while (Timeout > 0 && !(MmioReadBe32((UINTN)&Regs->Prsstat) &
@@ -313,10 +321,10 @@ ReceiveResponse(
   /* Wait Until All Of The Blocks Are Transferred */
   if (Data) {
 #ifdef CONFIG_SYS_FSL_SDXC_USE_PIO
-    SdxcReadWrite(Data);
+    Status = SdxcReadWrite(Data);
 #else
     UINT32	Irqstat;
-    Timeout = 10000;
+    Timeout = 10000000;
     do {
 
       Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
@@ -345,7 +353,7 @@ ReceiveResponse(
 
   MmioWriteBe32((UINTN)&Regs->Irqstat, -1);
 
-  return EFI_SUCCESS;
+  return Status;
 }
 
 
@@ -363,7 +371,7 @@ SdxcSendCmd (
   EFI_STATUS Err = 0;
   UINT32	Xfertyp;
   UINT32	Irqstat;
-  INT32	Timeout = 1000;
+  INT32	Timeout = 100000;
   struct FslSdxcCfg *Cfg = Mmc->Priv;
   volatile struct FslSdxc *Regs = (struct FslSdxc *)Cfg->SdxcBase;
 
@@ -416,7 +424,7 @@ SdxcSendCmd (
   MmioWriteBe32((UINTN)&Regs->Xfertyp, Xfertyp);
 
   /* Wait for The Command To Complete */
-  Timeout = 1000;
+  Timeout = 100000;
   while ((!(MmioReadBe32((UINTN)&Regs->Irqstat) & (IRQSTAT_CC | IRQSTAT_CTOE)))
 		&& Timeout--)
   	;
@@ -625,7 +633,7 @@ FslSdxcInitialize (
   Cfg->Cfg.Voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
   if ((Cfg->Cfg.Voltages & VoltageCaps) == 0) {
     DEBUG((EFI_D_ERROR, "Voltage Not Supported By Controller\n"));
-    return -1;
+    return EFI_DEVICE_ERROR;
   }
 
   Cfg->Cfg.HostCaps = MMC_MODE_4BIT | MMC_MODE_8BIT | MMC_MODE_HC;
@@ -641,7 +649,8 @@ FslSdxcInitialize (
     Cfg->Cfg.HostCaps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
 
   Cfg->Cfg.FMin = 400000;
-  Cfg->Cfg.FMax = Min(GetPeripheralClock(ESDHC_CLK), 52000000);
+  //Cfg->Cfg.FMax = Min(GetPeripheralClock(ESDHC_CLK), 52000000);
+  Cfg->Cfg.FMax = Min(1200000000, 52000000);
 
   Cfg->Cfg.BMax = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
@@ -655,10 +664,10 @@ FslSdxcInitialize (
 
   if (gMmc == NULL) {
     FreePool(Cfg);
-    return -1;
+    return EFI_OUT_OF_RESOURCES;
   }
 
-  return 0;
+  return EFI_SUCCESS;
 }
 
 INT32
@@ -671,7 +680,8 @@ SdxcMmcInit (
  InternalMemZeroMem(Cfg, sizeof(struct FslSdxcCfg));
  Cfg->SdxcBase = (VOID *)CONFIG_SYS_FSL_SDXC_ADDR;
  Cfg->SdhcClk = (UINT32)(GetPeripheralClock(ESDHC_CLK));
-
+ Cfg->SdhcClk = 1200000000;
+ DEBUG((EFI_D_ERROR,"Cfg->SdhcClk %d \n", Cfg->SdhcClk));
  return FslSdxcInitialize(Cfg);
 }
 

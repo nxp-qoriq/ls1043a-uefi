@@ -139,21 +139,22 @@ PrintMmcInfo (
   DEBUG((EFI_D_INFO, "Product Serial No. : %04x%04x\n",
                                  (Mmc->Cid[2]) & 0xffff,
                                  (Mmc->Cid[3] >> 16) & 0xffff));
-  DEBUG((EFI_D_INFO, "Manufacturing date : %x/%x\n",
-                                 (Mmc->Cid[1] >> 12) & 0xf,
-                                 (Mmc->Cid[1] >> 8) & 0xf));
+  DEBUG((EFI_D_INFO, "Manufacturing date : %d:%d\n",
+                                 (Mmc->Cid[3] >> 12) & 0xf,
+                                 ((Mmc->Cid[3] >> 8) & 0xf) + 1997));
 
   DEBUG((EFI_D_INFO, "Tran Speed: %d\n", Mmc->TranSpeed));
   DEBUG((EFI_D_INFO, "Rd Block Len: %d\n", Mmc->ReadBlLen));
 
-  DEBUG((EFI_D_INFO, "%s Version %d.%d\n", IS_SD(Mmc) ? "SD" : "MMC",
+  DEBUG((EFI_D_INFO, "%a Version %d.%d\n", IS_SD(Mmc) ? "SD" : "MMC",
 		(Mmc->Version >> 8) & 0xf, Mmc->Version & 0xff));
 
   DEBUG((EFI_D_INFO, "High Capacity: %a\n", Mmc->HighCapacity ? "Yes" : "No"));
   DEBUG((EFI_D_INFO, "Capacity: "));
   PrintSizeSdxc(Mmc->Capacity);
 
-  DEBUG((EFI_D_INFO, "\nBus Width: %d-Bit\n", Mmc->BusWidth));
+  DEBUG((EFI_D_INFO, "\nBus Width: %d-Bit%a\n", Mmc->BusWidth,
+		Mmc->DdrMode ? " DDR" : ""));
 }
 
 EFI_STATUS

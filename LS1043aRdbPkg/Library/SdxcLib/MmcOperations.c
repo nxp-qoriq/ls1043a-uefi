@@ -290,7 +290,7 @@ MmcEraseBlks (
     EndCmd = MMC_CMD_ERASE_GROUP_END;
   }
 
-  DEBUG((EFI_D_INFO, "Going to Erase block  start %d, end %d\n", Start, End));
+  //DEBUG((EFI_D_INFO, "Going to Erase block  start %d, end %d\n", Start, End));
 
   Cmd.CmdIdx = StartCmd;
   Cmd.CmdArg = Start;
@@ -647,7 +647,7 @@ MmcSendOpCond (
   MmcGoIdle(Mmc);
 
   /* Asking To The Card Its Capabilities */
-  Mmc->OpCondPending = 1;
+//  Mmc->OpCondPending = 1;
   for (I = 0; I < 2; I++) {
     Err = MmcSendOpCondIter(Mmc, &Cmd, I != 0);
     if (Err)
@@ -687,8 +687,8 @@ MmcStartInit (
     return Err;
 
   gMmc->DdrMode = 0;
- // MmcSetBusWidth(gMmc, 1);
- // MmcSetClock(gMmc, 1);
+  MmcSetBusWidth(gMmc, 1);
+  MmcSetClock(gMmc, 1);
 
   MmioClearBitsBe32((UINTN)&Regs->Proctl, PROCTL_BE);
 
@@ -706,7 +706,6 @@ MmcStartInit (
 
   if (Err && Err != EFI_ALREADY_STARTED) {
     DEBUG((EFI_D_ERROR, "Not MMC Card\n"));
-    //return EFI_NO_RESPONSE;
 
     /* Test for SD Version 2 */
     Err = MmcSendIfCond(gMmc);
@@ -715,7 +714,8 @@ MmcStartInit (
 
     /* Now Try To Get The SD Card'S Operating Condition */
     Err = SdSendOpCond(gMmc);
-  }
+  } else
+    gMmc->OpCondPending = 1;
 
 #if 0
   /* Test for SD Version 2 */
@@ -1141,7 +1141,7 @@ MmcStartup (
   UINT8 ExtCsd[MMC_MAX_BLOCK_LEN];
   UINT8 TestCsd[MMC_MAX_BLOCK_LEN];
 #endif
-  INT32 Timeout = 1000;
+  INT32 Timeout = 10000;
 
 
   /* Put The Card In Identify Mode */
@@ -1282,12 +1282,6 @@ MmcStartup (
     if (Err)
       return Err;
   }
-#if 0
-  struct FslSdxcCfg *Cfg = gMmc->Priv;
-  struct FslSdxc *Regs = (struct FslSdxc *)Cfg->SdxcBase;
-  MmioClearBitsBe32((UINTN)&Regs->Proctl, PROCTL_BE);
-  MmioReadBe32((UINTN)&Regs->Proctl);
-#endif
   /*
    * for SD, Its Erase Group Is Always One Sector
    */
@@ -1545,8 +1539,7 @@ MmcCompleteInit (
   IN  struct Mmc *Mmc
   )
 {
-  INT32 Err = 0;
-
+  INT32 Err = EFI_SUCCESS;
   if (Mmc->OpCondPending)
     Err = MmcCompleteOpCond(Mmc);
 

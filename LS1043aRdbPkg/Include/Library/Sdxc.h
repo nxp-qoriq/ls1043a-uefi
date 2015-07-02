@@ -288,7 +288,7 @@
 #define XFERTYP_BCEN        	0x00000002
 #define XFERTYP_DMAEN              0x00000001
 
-#define PIO_TIMEOUT         100000
+#define PIO_TIMEOUT         10000000
 
 #define IRQSTAT             (0x0002e030)
 #define IRQSTAT_DMAE        (0x10000000)

@@ -53,6 +53,8 @@ MicroSecondDelay (
   )
 {
   // Dummy
+  UINTN Loop = 0;
+  for (Loop = 0; Loop < MicroSeconds * 10; Loop++);
   return 0;
 }
 

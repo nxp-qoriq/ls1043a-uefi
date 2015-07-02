@@ -47,14 +47,18 @@ MMCNotifyState (
   IN MMC_STATE                State
   )
 {
-  //EFI_STATUS              Status;
+  EFI_STATUS              Status;
 
   switch(State) {
     case MmcInvalidState:
       ASSERT(0);
       break;
     case MmcHwInitializationState:
-	InitMmc(gMmcHostInstance->BlockIo.Media);
+      Status = InitMmc(gMmcHostInstance->BlockIo.Media);
+      if (Status != EFI_SUCCESS) {
+        DEBUG((EFI_D_ERROR,"Failed to initialize MMC\n"));
+        return Status;
+      }
 	return EFI_SUCCESS;
       break;
     case MmcIdleState:
