@@ -307,21 +307,19 @@ LS1043aWdogInitialize (
 
   Val = MmioReadBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET);
 
-	/* Suspend timer in low power mode, write once-only */
-	Val |= WDOG_WCR_WDZST;
 	/* Strip the old watchdog Time-Out value */
 	Val &= ~WDOG_WCR_WT;
-	/* Generate reset if WDOG times out */
-	Val &= ~WDOG_WCR_WRE;
+
 	/* Keep Watchdog Disabled */
 	Val &= ~WDOG_WCR_WDE;
+	
    /* Set the watchdog's Time-Out value to the MAX one supported */
   Val |= WDOG_SEC_TO_COUNT(LS1043A_WT_MAX_TIME) & 0xff00;
 
   MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
 
   /* FIXME:not enabling the watchdog for now, since Gic is under debug*/
-  //Val |= WDOG_WCR_WDE;
+  Val |= WDOG_WCR_WDE;
 
   //MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
 
