@@ -128,7 +128,7 @@ READ_LOCK_STATUS   = TRUE
 
   #
   # Nor Flash
-  # FIXME: To be Added
+  INF LS1043aRdbPkg/Drivers/NorFlashDxe/NorFlashDxe.inf
   
   #
   # Nand Flash

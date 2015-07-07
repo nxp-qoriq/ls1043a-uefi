@@ -96,13 +96,21 @@ LS1043aTestBlockIoDevice (
     }
 
     MediaId = GetMediaId(File);
-    if (MediaId == SIGNATURE_32('m','m','c','o'))
+    if (MediaId == 0)
+      BufferSize = 0x20000;
+    else if (MediaId == SIGNATURE_32('m','m','c','o'))
       BufferSize = 524288;
     else
       BufferSize = 4096;
 
     for(Temp = 0; Temp < BufferSize; Temp++) {
-         SourceBuffer[Temp] = 0x61;
+         if (Temp % 2 == 0)
+		 SourceBuffer[Temp] = 0x61;
+	 else
+		 SourceBuffer[Temp] = 0x52;
+    }
+
+    for(Temp = 0; Temp < BufferSize; Temp++) {
          DestinationBuffer[Temp] = 0x00;
     }
 
@@ -134,6 +142,10 @@ LS1043aTestBlockIoDevice (
 	   DEBUG((EFI_D_ERROR, "SDXC Test Result: FAIL, Error:'%r'\n",
 				Status));
 	   break;
+	 } else if (MediaId == 0) {
+	   DEBUG((EFI_D_ERROR, "Nor Flash Test Result: FAIL, Error:'%r'\n",
+				Status));
+	   break;
 	 }
       }
     }
@@ -145,6 +157,8 @@ LS1043aTestBlockIoDevice (
 	 Print(L"Nand Test Result: PASS\n");
       else if (MediaId == SIGNATURE_32('m', 'm', 'c', 'o'))
 	 Print(L"SDXC Test Result: PASS\n");
+      else if (MediaId == 0)
+	 Print(L"Nor Test Result: PASS\n");
 
       Status = gBS->DisconnectController (Handle[Index], NULL, NULL);
     }

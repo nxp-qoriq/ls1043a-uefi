@@ -46,7 +46,6 @@ FlashWrite16 (
    )
 {
 	UINT16 ShiftVal = (((Val >> 8) & 0xff) | ((Val << 8) & 0xff00));
-
 	*(volatile UINT16 *)(Addr) = (ShiftVal);
 }
 
@@ -155,7 +154,7 @@ CfiNorFlashFlashGetAttributes (
      // Device Size
      Size = 0;
      NorFlashReadCfiData((NorFlashDevices[Count]->DeviceBaseAddress), MT28EW01GABA_CFI_QUERY_DEVICE_SIZE, 1, &Size);
-     NorFlashDevices[Count]->Size = (2 << (UINT8)Size); // 2 ^ Size
+     NorFlashDevices[Count]->Size = (2 << (UINT16)Size); // 2 ^ Size
 
      // Put device back into Read Array mode (via Reset)
      SEND_NOR_COMMAND (NorFlashDevices[Count]->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);

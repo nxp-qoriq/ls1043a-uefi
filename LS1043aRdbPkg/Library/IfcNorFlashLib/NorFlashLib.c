@@ -32,8 +32,8 @@
 NOR_FLASH_DESCRIPTION mNorFlashDevices[NOR_FLASH_DEVICE_COUNT] = {
   // FIXME: Add RCW, PBI, FMAN images here when available
   { // UEFI
-    IFC_NOR_BUF_BASE, //DeviceBaseAddress
-    IFC_NOR_BUF_BASE, //RegionBaseAddress
+    IFC_NOR_RESERVED_REGION_BASE, //DeviceBaseAddress
+    IFC_NOR_RESERVED_REGION_BASE, //RegionBaseAddress
     SIZE_64KB * 128,  //Size
     SIZE_64KB,	      //BlockSize
     { 0x1F15DA3C, 0x37FF, 0x4070, { 0xB4, 0x71, 0xBB, 0x4A, 0xF1, 0x2A, 0x72, 0x4A } }
@@ -49,32 +49,53 @@ NorFlashPlatformEraseSector (
   IN UINTN                  SectorAddress
   )
 {
-  UINTN                 Count;
+  UINT16		EraseStatus1 = 0;
+  UINT16		EraseStatus2 = 0;
+  UINTN           	Count, Temp;
 
   // Request a sector erase by writing two unlock cycles, followed by a
   // setup command and two additional unlock cycles
   
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FIRST);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
+  
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_SECOND);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
 
   // Issue a setup command
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_THIRD);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
 
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FOURTH);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
+  
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FIFTH);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
 
   // Now send the address of the sector to be erased
   SEND_NOR_COMMAND(SectorAddress, 0, MT28EW01GABA_CMD_SECTOR_ERASE_SIXTH);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
   
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++)
-    ;
-
-  // Put device back into Read Array mode (via RESET)
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
-
+  // Read status register to determine ERASE DONE
+  while ((EraseStatus1 = FLASH_READ_16(SectorAddress)) != (EraseStatus2 = FLASH_READ_16(SectorAddress)));
+  
+  // Wait for erase to complete
+  for(Count = 0; Count < 2048000; Count++) {
+  	// Check if we have really erased the flash
+  	EraseStatus1 = FLASH_READ_16(SectorAddress);
+	if (EraseStatus1 == 0xFFFF)
+		break;
+  }
+  
   return EFI_SUCCESS;
 }
 
@@ -86,6 +107,8 @@ NorFlashPlatformEraseChip (
   IN NOR_FLASH_INSTANCE     *Instance
   )
 {
+  UINT16		EraseStatus1 = 0;
+  UINT16		EraseStatus2 = 0;
   UINTN           	Count;
 
   // Request a sector erase by writing two unlock cycles, followed by a
@@ -94,21 +117,38 @@ NorFlashPlatformEraseChip (
   
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FIRST);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
+  
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_SECOND);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
 
   // Issue the setup cmd
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_THIRD);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
 
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FOURTH);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
+  
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FIFTH);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
 
   // Issue the chip erase cmd
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_SIXTH);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
 
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++)
-    ;
+  // Read status register to determine ERASE DONE
+  while ((EraseStatus1 = FLASH_READ_16(Instance->DeviceBaseAddress)) != (EraseStatus2 = FLASH_READ_16(Instance->DeviceBaseAddress)));
+  
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
   
   return EFI_SUCCESS;
 }
@@ -120,26 +160,35 @@ NorFlashPlatformWriteSingleWord (
   IN UINT8                  WriteData
   )
 {
+  UINT16		WriteStatus1 = 0;
+  UINT16		WriteStatus2 = 0;
   UINTN           	Count;
   
   // Request a write program command sequence
   
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_PROGRAM_FIRST);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
+  
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_PROGRAM_SECOND);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
   
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_PROGRAM_THIRD);
+  // Wait for erase to complete
+  for(Count=0; Count < 2048; Count++);
 
   // Store the word into NOR Flash;
   FLASH_WRITE_32 (WordAddress, WriteData);
 
   // Wait for write to complete
-  for(Count=0; Count < 2048; Count++)
-    ;
-
-  // Put device back into Read Array mode (via Reset)
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
-
+  // Read status register to determine WRITE DONE
+  while ((WriteStatus1 = FLASH_READ_16(Instance->DeviceBaseAddress)) != (WriteStatus2 = FLASH_READ_16(Instance->DeviceBaseAddress)));
+  
+  // Wait for write to complete
+  for(Count=0; Count < 2048; Count++);
+  
   return EFI_SUCCESS;
 }
 
@@ -156,12 +205,19 @@ NorFlashPlatformWriteBuffer (
   IN NOR_FLASH_INSTANCE     *Instance,
   IN UINTN                  TargetAddress,
   IN UINTN                  BufferSizeInBytes,
-  IN UINT32                 *Buffer
+  IN UINT16                 *pSrcBuffer
   )
 {
-  UINTN                 Count;
-  volatile UINT8				*ProgramAddress;
-	UINT8									*BufferByte;
+  UINT16		WriteStatus1 = 0;
+  UINT16		WriteStatus2 = 0;
+  UINTN			Count, Temp;
+  volatile UINT16	*ProgramAddress;
+  UINT16		*BufferU16;
+  UINTN			BufferSizeInWords;
+  UINTN			DestAddress = TargetAddress;
+  INTN			EraseCheckFlag = 1;
+  UINTN			U16Cnt;
+  UINT16		*pSrcBufferCpy = pSrcBuffer;
 
   // Check there are some data to program
   if (BufferSizeInBytes == 0) {
@@ -177,40 +233,84 @@ NorFlashPlatformWriteBuffer (
   if ((BufferSizeInBytes % 4) != 0) {
     return EFI_BAD_BUFFER_SIZE;
   }
+  
+  BufferSizeInWords = (BufferSizeInBytes / 4);
+  U16Cnt = BufferSizeInWords;
+
+  DEBUG((DEBUG_BLKIO, "NorFlashPlatformWriteBuffer: TargetAddress=0x%x, "
+	"pSrcBufferCpy=0x%x, U16Cnt=0x%x\n", TargetAddress, pSrcBufferCpy,
+	U16Cnt));
+  
+  // Wait for any previous write operation to complete
+  for(Temp = 0; Temp < 204800; Temp++);
+
+  // Check if the destination block in the flash is erased or not
+  while ((U16Cnt-- > 0) && (EraseCheckFlag == 1)) {
+  	EraseCheckFlag = ((FLASH_READ_16((UINTN)DestAddress) &
+			  FLASH_READ_16((UINTN)pSrcBufferCpy)) ==
+			  FLASH_READ_16((UINTN)pSrcBufferCpy));
+	pSrcBufferCpy += 1;
+	DestAddress += 2;
+  }
+  
+  if (!EraseCheckFlag) {
+	DEBUG((EFI_D_ERROR, "NorFlashPlatformWriteBuffer: ERROR - Flash block "
+	      "not erased properly: BlockAddr = 0x%x\n", TargetAddress));
+	return EFI_DEVICE_ERROR;
+  }
 
   // Prepare the destination program address
-  ProgramAddress = (UINT8 *)TargetAddress;
+  ProgramAddress = (UINT16 *)TargetAddress;
   
   // Pre-programming conditions checked, now start the algorithm.
 
   // Issue the Unlock cmds
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_WRITE_TO_BUFFER_FIRST);
-  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_WRITE_TO_BUFFER_SECOND);
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR,
+		   MT28EW01GABA_CMD_WRITE_TO_BUFFER_FIRST);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
+  
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR,
+		   MT28EW01GABA_CMD_WRITE_TO_BUFFER_SECOND);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
 
   // Write the buffer load
   SEND_NOR_COMMAND(TargetAddress, 0, MT28EW01GABA_CMD_WRITE_TO_BUFFER_THIRD);
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
 
-  // From now on we work in 32-bit words
-  
   // Write the word count, which is (BufferSizeInWords - 1),
   // because word count 0 means one word.
-  SEND_NOR_COMMAND(TargetAddress, 0, (BufferSizeInBytes - 1));
+  SEND_NOR_COMMAND(TargetAddress, 0, (BufferSizeInWords - 1));
+  // Wait for write to complete
+  for(Temp = 0; Temp < 2048; Temp++);
 
-  BufferByte = (UINT8*)Buffer;
-  // Write the data to the NOR Flash, advancing each address by 1 byte
-  for(Count=0; Count < BufferSizeInBytes; Count++, ProgramAddress++, BufferByte++) {
-    FLASH_WRITE_8 ((UINTN)ProgramAddress, *BufferByte);
+  pSrcBufferCpy = pSrcBuffer;
+  BufferU16 = (UINT16 *)pSrcBufferCpy;
+  U16Cnt = BufferSizeInWords;
+
+  // Write the data to the NOR Flash, advancing each address by 1 word
+  for(Count = 0; Count < U16Cnt; Count++, ProgramAddress++, BufferU16++) {
+    FLASH_WRITE_16 ((UINTN)ProgramAddress, FLASH_READ_16((UINTN)BufferU16));
+    // Wait for write to complete
+    for(Temp = 0; Temp < 2048; Temp++);
   }
 
   // Issue the Buffered Program Confirm command
-  SEND_NOR_COMMAND ((UINTN)TargetAddress, 0, MT28EW01GABA_CMD_WRITE_TO_BUFFER_CONFIRM);
+  SEND_NOR_COMMAND ((UINTN)TargetAddress, 0,
+		    MT28EW01GABA_CMD_WRITE_TO_BUFFER_CONFIRM);
 
   // Wait for write to complete
-  for(Count=0; Count < 2048; Count++)
-    ;
-
-  // Put device back into Read Array mode (via Reset)
-  SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
+  for(Temp = 0; Temp < 2048; Temp++);
+  
+  // Wait for write to complete
+  // Read status register to determine WRITE DONE
+  while ((WriteStatus1 = FLASH_READ_16(Instance->DeviceBaseAddress)) !=
+	 (WriteStatus2 = FLASH_READ_16(Instance->DeviceBaseAddress)));
+ 
+  // Wait for write to complete
+  for(Count=0; Count < 2048; Count++);
 
   return EFI_SUCCESS;
 }
@@ -231,65 +331,75 @@ NorFlashPlatformWriteFullBlock (
   UINTN         BuffersInBlock;
   UINTN         RemainingWords;
   UINTN         Cnt;
+  UINT16        *pSrcBuffer = (UINT16 *)DataBuffer;
 
   Status = EFI_SUCCESS;
 
   // Get the physical address of the block
-  BlockAddress = GET_NOR_BLOCK_ADDRESS (Instance->RegionBaseAddress, Lba, BlockSizeInWords * 4);
+  BlockAddress = GET_NOR_BLOCK_ADDRESS (Instance->RegionBaseAddress, Lba,
+					BlockSizeInWords * 4);
 
   // Start writing from the first address at the start of the block
   WordAddress = BlockAddress;
 
-  // Note that SPANSION flash documentation uses the terms Block and Sector
-  // interchangeably to refer to the smallest erasable size in Spansion Flash memory.
+  // Erase the Sector/Block to be written-to
   Status = NorFlashPlatformEraseSector (Instance, BlockAddress);
   if (EFI_ERROR(Status)) {
-    DEBUG((EFI_D_ERROR, "WriteSingleBlock: ERROR - Failed to Erase the single block at 0x%X\n", BlockAddress));
+    DEBUG((EFI_D_ERROR, "NorFlashPlatformWriteFullBlock: ERROR - Failed to "
+			"erase block 0x%x\n", BlockAddress));
     goto EXIT;
   }
 
-  // To speed up the programming operation, NOR Flash is programmed using the Buffered Programming method.
+  // To speed up the programming operation, NOR Flash is programmed using the
+  // Buffered Programming method.
 
-  // Check that the address starts at a 32-word boundary, i.e. last 7 bits must be zero
+  // Check that the address starts at a 32-word boundary, i.e. last 7 bits must
+  // be zero
   if ((WordAddress & BOUNDARY_OF_32_WORDS) == 0x00) {
-
     // First, break the entire block into buffer-sized chunks.
-    BuffersInBlock = (UINTN)(BlockSizeInWords * 4) / MT28EW01GABA_BUFFER_SIZE_IN_BYTES;
-
+    // This product supports a 512-word (x16) maximum program buffer.
+    BuffersInBlock = (BlockSizeInWords / MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS) * 2;
+  
     // Then feed each buffer chunk to the NOR Flash
     // If a buffer does not contain any data, don't write it.
-    for(BufferIndex=0;
-         BufferIndex < BuffersInBlock;
-         BufferIndex++, WordAddress += MT28EW01GABA_BUFFER_SIZE_IN_BYTES, DataBuffer += MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS
-      ) {
-      // Check the buffer to see if it contains any data (not set all 1s).
+    for(BufferIndex = 0; BufferIndex < BuffersInBlock; BufferIndex++) {
+      // Check the source buffer to see if it contains any data (not set all 1s).
       for (Cnt = 0; Cnt < MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS; Cnt++) {
-        if (~DataBuffer[Cnt] != 0 ) {
-          // Some data found, write the buffer.
-          Status = NorFlashPlatformWriteBuffer (Instance, WordAddress, MT28EW01GABA_BUFFER_SIZE_IN_BYTES, DataBuffer);
-          if (EFI_ERROR(Status)) {
-            goto EXIT;
-          }
-          break;
-        }
+        if (~DataBuffer[Cnt] != 0)
+		continue;
+	else
+		break;
       }
-    }
 
-    // Finally, finish off any remaining words that are less than the maximum size of the buffer
-    RemainingWords = BlockSizeInWords % MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS;
+      // Some data found, write the buffer.
+      Status = NorFlashPlatformWriteBuffer (Instance, WordAddress,
+		MT28EW01GABA_BUFFER_SIZE_IN_BYTES, pSrcBuffer);
+      if (EFI_ERROR(Status)) {
+      	goto EXIT;
+      }
+
+      WordAddress += MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS * 2;
+      pSrcBuffer += MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS;
+     }
+
+    // Finally, finish off any remaining words that are less than the
+    // maximum size of the buffer.
+    RemainingWords = (UINTN)(BlockSizeInWords % MT28EW01GABA_MAX_BUFFER_SIZE_IN_WORDS);
 
     if(RemainingWords != 0) {
-      Status = NorFlashPlatformWriteBuffer (Instance, WordAddress, (RemainingWords * 4), DataBuffer);
+      Status = NorFlashPlatformWriteBuffer (Instance, WordAddress,
+		(RemainingWords * 4), pSrcBuffer);
       if (EFI_ERROR(Status)) {
         goto EXIT;
       }
     }
-
   } else {
     // For now, use the single word programming algorithm
-    // It is unlikely that the NOR Flash will exist in an address which falls within a 32 word boundary range,
+    // It is unlikely that the NOR Flash will exist in an address which falls
+    // within a 32 word boundary range,
     // i.e. which ends in the range 0x......01 - 0x......7F.
-    for(WordIndex=0; WordIndex<BlockSizeInWords; WordIndex++, DataBuffer++, WordAddress = WordAddress + 4) {
+    for(WordIndex = 0; WordIndex < BlockSizeInWords; WordIndex++, DataBuffer++,
+	WordAddress = WordAddress + 4) {
       Status = NorFlashPlatformWriteSingleWord (Instance, WordAddress, *DataBuffer);
       if (EFI_ERROR(Status)) {
         goto EXIT;
@@ -299,8 +409,10 @@ NorFlashPlatformWriteFullBlock (
 
 EXIT:
   if (EFI_ERROR(Status)) {
-    DEBUG((EFI_D_ERROR, "NOR FLASH Programming [WriteSingleBlock] failed at address 0x%08x. Exit Status = \"%r\".\n", WordAddress, Status));
+    DEBUG((EFI_D_ERROR, "NorFlashPlatformWriteFullBlock - Failed at addr 0x%x, "
+			"Exit Status = \"%r\".\n", WordAddress, Status));
   }
+
   return Status;
 }
 
@@ -347,18 +459,18 @@ NorFlashPlatformWriteBlocks (
   }
 
   BlockSizeInWords = Instance->Media.BlockSize / 4;
-
-  // Because the target *Buffer is a pointer to VOID, we must put all the data into a pointer
-  // to a proper data type, so use *ReadBuffer
+  
   pWriteBuffer = (UINT32 *)Buffer;
 
   CurrentBlock = Lba;
-  for (BlockCount=0; BlockCount < NumBlocks; BlockCount++, CurrentBlock++, pWriteBuffer = pWriteBuffer + BlockSizeInWords) {
 
-    DEBUG((DEBUG_BLKIO, "NorFlashPlatformWriteBlocks: Writing block #%d\n", (UINTN)CurrentBlock));
-
-    Status = NorFlashPlatformWriteFullBlock (Instance, CurrentBlock, pWriteBuffer, BlockSizeInWords);
-
+  for (BlockCount = 0; BlockCount < NumBlocks; BlockCount++, CurrentBlock++,
+	pWriteBuffer = pWriteBuffer + BlockSizeInWords) {
+    DEBUG((DEBUG_BLKIO, "NorFlashPlatformWriteBlocks: Writing block #%d\n",
+	  (UINTN)CurrentBlock));
+    
+    Status = NorFlashPlatformWriteFullBlock (Instance, CurrentBlock,
+		pWriteBuffer, BlockSizeInWords);
     if (EFI_ERROR(Status)) {
       break;
     }
@@ -366,6 +478,34 @@ NorFlashPlatformWriteBlocks (
 
   DEBUG((DEBUG_BLKIO, "NorFlashPlatformWriteBlocks: Exit Status = \"%r\".\n", Status));
   return Status;
+}
+
+EFI_STATUS
+NorFlashPlatformReadFullBlock (
+  IN NOR_FLASH_INSTANCE   *Instance,
+  IN EFI_LBA              Lba,
+  IN UINT32               *DataBuffer,
+  IN UINTN		  BufferSizeInU16
+  )
+{
+  UINTN               StartAddress;
+  UINTN               Count;
+  UINT16 	      *pReadData = (UINT16 *)DataBuffer;
+  
+  // Get the address to start reading from
+  StartAddress = GET_NOR_BLOCK_ADDRESS (Instance->RegionBaseAddress,
+                                        Lba,
+                                        Instance->Media.BlockSize
+                                       );
+
+  // Readout the data
+  for (Count = 0; Count < BufferSizeInU16; Count++) {
+  	*pReadData = *(volatile UINT16 *)(StartAddress);
+	pReadData += 1;
+	StartAddress += 2;
+  }
+
+  return EFI_SUCCESS;
 }
 
 EFI_STATUS
@@ -377,10 +517,16 @@ NorFlashPlatformReadBlocks (
   )
 {
   UINT32              NumBlocks;
-  UINTN               StartAddress;
+  UINTN               Count;
+  UINTN               BufferSizeInU16;
+  EFI_STATUS	      Status;
+  EFI_LBA             CurrentBlock;
+  UINTN		      BlockCount;
+  UINTN               BlockSizeInWords;
 
-  DEBUG((DEBUG_BLKIO, "NorFlashPlatformReadBlocks: BufferSize=0x%xB BlockSize=0x%xB LastBlock=%ld, Lba=%ld.\n",
-      BufferSizeInBytes, Instance->Media.BlockSize, Instance->Media.LastBlock, Lba));
+  DEBUG((DEBUG_BLKIO, "NorFlashPlatformReadBlocks: BufferSize=0x%x, "
+	"BlockSize=0x%x, LastBlock=%ld, Lba=%ld.\n", BufferSizeInBytes,
+	Instance->Media.BlockSize, Instance->Media.LastBlock, Lba));
 
   // The buffer must be valid
   if (Buffer == NULL) {
@@ -405,19 +551,32 @@ NorFlashPlatformReadBlocks (
     return EFI_INVALID_PARAMETER;
   }
 
-  // Get the address to start reading from
-  StartAddress = GET_NOR_BLOCK_ADDRESS (Instance->RegionBaseAddress,
-                                        Lba,
-                                        Instance->Media.BlockSize
-                                       );
-
   // Put device back into Read Array mode (via Reset)
   SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
-  // Readout the data
-  CopyMem(Buffer, (UINTN *)StartAddress, BufferSizeInBytes);
+  // Wait for flash to enter READ ARRAY mode
+  for(Count=0; Count < 2048; Count++);
+  
+  BufferSizeInU16 = BufferSizeInBytes / 2;
+  
+  BlockSizeInWords = Instance->Media.BlockSize / 4;
 
-  return EFI_SUCCESS;
+  CurrentBlock = Lba;
+
+  for (BlockCount = 0; BlockCount < NumBlocks; BlockCount++, CurrentBlock++,
+	Buffer = Buffer + BlockSizeInWords) {
+    DEBUG((DEBUG_BLKIO, "NorFlashPlatformReadBlocks: Reading block #%d\n",
+	  (UINTN)CurrentBlock));
+    
+    Status = NorFlashPlatformReadFullBlock (Instance, CurrentBlock, Buffer,
+		BufferSizeInU16);
+    if (EFI_ERROR(Status)) {
+      break;
+    }
+  }
+
+  DEBUG((DEBUG_BLKIO, "NorFlashPlatforReadBlocks: Exit Status = \"%r\".\n", Status));
+  return Status;
 }
 
 EFI_STATUS
@@ -429,8 +588,9 @@ NorFlashPlatformRead (
   OUT VOID                *Buffer
   )
 {
-  UINT32              NumBlocks;
-  UINTN               StartAddress;
+  UINTN               BufferSizeInU16;
+  UINTN               Count;
+  EFI_STATUS	      Status;
 
   // The buffer must be valid
   if (Buffer == NULL) {
@@ -442,32 +602,19 @@ NorFlashPlatformRead (
     return EFI_SUCCESS;
   }
 
-  // All blocks must be within the device
-  NumBlocks = ((UINT32)BufferSizeInBytes) / Instance->Media.BlockSize ;
-
-  if ((Lba + NumBlocks) > (Instance->Media.LastBlock + 1)) {
-    DEBUG ((EFI_D_ERROR, "NorFlashPlatformRead: ERROR - Read will exceed last block\n"));
-    return EFI_INVALID_PARAMETER;
-  }
-
-  if (Offset + BufferSizeInBytes >= Instance->Size) {
-    DEBUG ((EFI_D_ERROR, "NorFlashPlatformRead: ERROR - Read will exceed device size.\n"));
-    return EFI_INVALID_PARAMETER;
-  }
-
-  // Get the address to start reading from
-  StartAddress = GET_NOR_BLOCK_ADDRESS (Instance->RegionBaseAddress,
-                                        Lba,
-                                        Instance->Media.BlockSize
-                                       );
-
   // Put the device into Read Array mode (via RESET)
   SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
+  // Wait for flash to enter READ ARRAY mode
+  for(Count=0; Count < 2048; Count++);
+ 
+  BufferSizeInU16 = BufferSizeInBytes / 2;
+  
   // Readout the data
-  CopyMem (Buffer, (UINTN *)(StartAddress + Offset), BufferSizeInBytes);
-
-  return EFI_SUCCESS;
+  Status = NorFlashPlatformReadFullBlock (Instance, 0, Buffer,
+		BufferSizeInU16);
+  
+  return Status;
 }
 
 EFI_STATUS
@@ -520,7 +667,8 @@ NorFlashPlatformControllerInitialization (
   VOID
   )
 {
-  // IFC NOR is enabled by default on reset and available on CS0, so do
+  // IFC NOR is enabled by default on reset and available on CS0, but
+  // still re-init the IFC NOR settings
   // nothing here
 
   IfcNorInit ();
@@ -543,7 +691,7 @@ NorFlashPlatformBlockIoReset (
 
   Instance = INSTANCE_FROM_BLKIO_THIS(This);
 
-  DEBUG ((DEBUG_BLKIO, "NorFlashBlockIoReset(MediaId=0x%x)\n", This->Media->MediaId));
+  DEBUG ((DEBUG_ERROR, "NorFlashBlockIoReset(MediaId=0x%x)\n", This->Media->MediaId));
 
   return NorFlashPlatformReset (Instance);
 }
@@ -572,7 +720,7 @@ NorFlashPlatformBlockIoReadBlocks (
   Instance = INSTANCE_FROM_BLKIO_THIS(This);
   Media = This->Media;
 
-  DEBUG ((DEBUG_BLKIO, "NorFlashBlockIoReadBlocks(MediaId=0x%x, Lba=%ld, BufferSize=0x%x bytes (%d kB), BufferPtr @ 0x%08x)\n", MediaId, Lba, BufferSizeInBytes, Buffer));
+  DEBUG ((DEBUG_INFO, "NorFlashBlockIoReadBlocks(MediaId=0x%x, Lba=%ld, BufferSize=0x%x bytes (%d kB), BufferPtr @ 0x%08x)\n", MediaId, Lba, BufferSizeInBytes, Buffer));
 
   if (!Media) {
     Status = EFI_INVALID_PARAMETER;
@@ -607,7 +755,7 @@ NorFlashPlatformBlockIoWriteBlocks (
 
   Instance = INSTANCE_FROM_BLKIO_THIS(This);
 
-  DEBUG ((DEBUG_BLKIO, "NorFlashBlockIoWriteBlocks(MediaId=0x%x, Lba=%ld, BufferSize=0x%x bytes (%d kB), BufferPtr @ 0x%08x)\n", MediaId, Lba, BufferSizeInBytes, Buffer));
+  DEBUG ((DEBUG_INFO, "NorFlashBlockIoWriteBlocks(MediaId=0x%x, Lba=%ld, BufferSize=0x%x bytes (%d kB), BufferPtr @ 0x%08x)\n", MediaId, Lba, BufferSizeInBytes, Buffer));
 
   if( !This->Media->MediaPresent ) {
     Status = EFI_NO_MEDIA;
@@ -634,7 +782,7 @@ NorFlashPlatformBlockIoFlushBlocks (
   // No Flush required for the NOR Flash driver
   // because cache operations are not permitted.
 
-  DEBUG ((DEBUG_BLKIO, "NorFlashBlockIoFlushBlocks: Function NOT IMPLEMENTED (not required).\n"));
+  DEBUG ((DEBUG_ERROR, "NorFlashBlockIoFlushBlocks: Function NOT IMPLEMENTED (not required).\n"));
 
   // Nothing to do so just return without error
   return EFI_SUCCESS;

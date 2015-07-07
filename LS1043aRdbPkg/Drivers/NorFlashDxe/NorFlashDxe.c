@@ -270,7 +270,9 @@ NorFlashWriteBuffer (
 {
   EFI_STATUS      Status;
 
-  Status = NorFlashPlatformWriteBuffer (Instance, TargetAddress, BufferSizeInBytes, Buffer);
+  UINT16          *pSrcBuffer = (UINT16 *)Buffer;
+
+  Status = NorFlashPlatformWriteBuffer (Instance, TargetAddress, BufferSizeInBytes, pSrcBuffer);
 
   return Status;
 }

@@ -83,7 +83,7 @@ NorFlashPlatformWriteBuffer (
   IN NOR_FLASH_INSTANCE     *Instance,
   IN UINTN                  TargetAddress,
   IN UINTN                  BufferSizeInBytes,
-  IN UINT32                 *Buffer
+  IN UINT16                 *pSrcBuffer
   );
 
 EFI_STATUS
