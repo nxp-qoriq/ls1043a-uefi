@@ -500,6 +500,8 @@ struct ccsr_cci400 {
 
 VOID EnableDevicesNsAccess(struct CsuNsDev *ns_dev, UINT32 num);
 
+VOID GetSysInfo(struct SysInfo *PtrSysInfo);
+
 UINTN GetPeripheralClock(enum PeriphClock Clk);
 
 VOID SocInit(VOID);

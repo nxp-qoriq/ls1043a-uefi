@@ -56,10 +56,11 @@ I2cGetClk(
   UINTN I2cClkRate;
   UINT32 Div;
   UINT8 ClkDiv;
+  struct SysInfo SocSysInfo;
 
-  /** Divider value calculation */
-  I2cClkRate = (UINTN)GetPeripheralClock(I2C_CLK);
-  I2cClkRate = 0x17d78400;
+  /* Divider value calculation */
+  GetSysInfo(&SocSysInfo);
+  I2cClkRate = SocSysInfo.FreqSystemBus;
   Div = (I2cClkRate + Rate - 1) / Rate;
   if (Div < I2cClkDiv[0][0])
     ClkDiv = 0;

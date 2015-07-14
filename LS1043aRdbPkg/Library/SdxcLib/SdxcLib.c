@@ -675,12 +675,15 @@ SdxcMmcInit (
   )
 {
  struct FslSdxcCfg *Cfg;
+ struct SysInfo SocSysInfo;
 
  Cfg = (struct FslSdxcCfg *)AllocatePool(sizeof(struct FslSdxcCfg));
  InternalMemZeroMem(Cfg, sizeof(struct FslSdxcCfg));
  Cfg->SdxcBase = (VOID *)CONFIG_SYS_FSL_SDXC_ADDR;
- Cfg->SdhcClk = (UINT32)(GetPeripheralClock(ESDHC_CLK));
- Cfg->SdhcClk = 1200000000;
+ 
+ GetSysInfo(&SocSysInfo);
+ 
+ Cfg->SdhcClk = (UINT32)SocSysInfo.FreqSdhc;
  DEBUG((EFI_D_ERROR,"Cfg->SdhcClk %d \n", Cfg->SdhcClk));
  return FslSdxcInitialize(Cfg);
 }

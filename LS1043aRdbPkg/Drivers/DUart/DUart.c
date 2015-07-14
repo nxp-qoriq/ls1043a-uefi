@@ -27,8 +27,13 @@ CalculateBaudDivisor (
   OUT UINT64 *BaudRate
   )
 {
-	UINTN DUartClk = GetPeripheralClock(UART_CLK);
-	return ((DUartClk + *BaudRate * 8)/(*BaudRate * 16));
+	struct SysInfo SocSysInfo;
+	UINTN DUartClk;
+
+	GetSysInfo(&SocSysInfo);
+	DUartClk = SocSysInfo.FreqSystemBus;
+
+	return ((DUartClk)/(*BaudRate * 16));
 }
 
 /*
@@ -47,8 +52,7 @@ DuartInitializePort (
 {
 	UINT32	BaudDivisor;
 
-	/* BaudDivisor = CalculateBaudDivisor(BaudRate); */
-	BaudDivisor = 0xD9; /* FIXME: Use hardcoded value for now */
+	BaudDivisor = CalculateBaudDivisor(BaudRate);
 
 	while (!(MmioRead8(UartBase + ULSR) & UART_LSR_TEMT))
 	;
