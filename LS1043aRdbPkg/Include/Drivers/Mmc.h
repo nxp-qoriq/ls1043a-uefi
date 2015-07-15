@@ -136,11 +136,19 @@ typedef struct  {
   CSD       CSDData;
 } CARD_INFO;
 
+typedef struct {
+
+  VENDOR_DEVICE_PATH        Guid;
+
+  EFI_DEVICE_PATH_PROTOCOL  End;
+
+} MMC_DEVICE_PATH;
+
 typedef struct _MMC_HOST_INSTANCE {
   UINTN                     Signature;
   LIST_ENTRY                Link;
   EFI_HANDLE                MmcHandle;
-  EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
+  MMC_DEVICE_PATH		*DevicePath;
   MMC_STATE                 State;
   EFI_BLOCK_IO_PROTOCOL     BlockIo;
   CARD_INFO                 CardInfo;

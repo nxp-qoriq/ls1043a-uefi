@@ -130,7 +130,7 @@ MmcIoBlocks (
     if (Status == EFI_SUCCESS)
       Status = DoMmcWrite(Buffer, 0, (BufferSize / This->Media->BlockSize));
   } else if (Transfer == MMC_DATA_READ)
-    Status = DoMmcRead(Buffer, 0, (BufferSize / This->Media->BlockSize));
+    Status = DoMmcRead(Buffer, Lba, (BufferSize / This->Media->BlockSize));
 
   return Status;
 }

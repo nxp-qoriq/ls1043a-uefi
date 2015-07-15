@@ -665,8 +665,6 @@ MmcStartInit (
   VOID
   )
 {
-  struct FslSdxcCfg *Cfg = gMmc->Priv;
-  struct FslSdxc *Regs = (struct FslSdxc *)Cfg->SdxcBase;
   EFI_STATUS Err;
 
   /* We Pretend There'S No Card When Init Is NULL */
@@ -690,8 +688,6 @@ MmcStartInit (
   MmcSetBusWidth(gMmc, 1);
   MmcSetClock(gMmc, 1);
 
-  MmioClearBitsBe32((UINTN)&Regs->Proctl, PROCTL_BE);
-
   /* Reset The Card */
   Err = MmcGoIdle(gMmc);
 
@@ -714,6 +710,7 @@ MmcStartInit (
 
     /* Now Try To Get The SD Card'S Operating Condition */
     Err = SdSendOpCond(gMmc);
+    if (Err)
       DEBUG((EFI_D_ERROR, "Card Did Not Respond To Voltage Select!\n"));
   } else
     gMmc->OpCondPending = 1;
@@ -874,7 +871,6 @@ MmcSetCapacity (
   return 0;
 }
 
-#ifndef CONFIG_LS1043A
 static INT32
 SdSwitch (
   IN  struct Mmc *Mmc,
@@ -901,9 +897,7 @@ SdSwitch (
 
   return MmcSendCmd(Mmc, &Cmd, &Data);
 }
-#endif
 
-#ifndef CONFIG_LS1043A
 static INT32
 SdChangeFreq (
   IN  struct Mmc *Mmc
@@ -935,7 +929,7 @@ SdChangeFreq (
   Cmd.RespType = MMC_RSP_R1;
   Cmd.CmdArg = 0;
 
-  Timeout = 3;
+  Timeout = 5;
 
 RetryScr:
   Data.Dest = (CHAR8 *)Scr;
@@ -952,9 +946,12 @@ RetryScr:
     return Err;
   }
 
+  MicroSecondDelay(100);
 //TODO
 //	Mmc->Scr[0] = _Be32ToCpu(Scr[0]);
 //	Mmc->Scr[1] = _Be32ToCpu(Scr[1]);
+	Mmc->Scr[0] = Scr[0];
+	Mmc->Scr[1] = Scr[1];
 
   switch ((Mmc->Scr[0] >> 24) & 0xf) {
     case 0:
@@ -1020,7 +1017,6 @@ RetryScr:
 
   return 0;
 }
-#endif
 
 static INT32
 MmcSwitch (
@@ -1049,7 +1045,6 @@ MmcSwitch (
   return Ret;
 }
 
-#ifndef CONFIG_LS1043A
 static INT32
 MmcChangeFreq (
   IN  struct Mmc *Mmc
@@ -1103,7 +1098,6 @@ MmcChangeFreq (
 
   return 0;
 }
-#endif
 
 static INT32
 MmcStartup (
@@ -1371,8 +1365,6 @@ MmcStartup (
   Err = MmcSetCapacity(Mmc, Mmc->PartNum);
   if (Err)
     return Err;
-
-#ifndef CONFIG_LS1043A
   if (IS_SD(Mmc))
     Err = SdChangeFreq(Mmc);
   else
@@ -1380,7 +1372,6 @@ MmcStartup (
 
   if (Err)
     return Err;
-#endif
 
   /* Restrict Card'S Capabilities By What The Host Can do */
   Mmc->CardCaps &= Mmc->Cfg->HostCaps;

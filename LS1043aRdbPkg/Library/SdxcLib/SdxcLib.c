@@ -236,7 +236,7 @@ SdxcReadWrite (
       while (Size && (!(Irqstat & IRQSTAT_TC))) {
         MicroSecondDelay(100); /* Wait before last byte transfer complete */
         Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
-        DataBuf = MmioReadBe32((UINTN)&Regs->Datport);
+        DataBuf = MmioRead32((UINTN)&Regs->Datport);
         *((UINT32 *)Buffer) = DataBuf;
         Buffer += 4;
         Size -= 4;
@@ -263,7 +263,7 @@ SdxcReadWrite (
         Buffer += 4;
         Size -= 4;
         Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
-        MmioWriteBe32((UINTN)&Regs->Datport, DataBuf);
+        MmioWrite32((UINTN)&Regs->Datport, DataBuf);
       }
       Blocks--;
     }
@@ -386,7 +386,7 @@ SdxcSendCmd (
 	;
 
   if (Timeout <= 0) {
-    DEBUG((EFI_D_ERROR, "Bus is not idle\n"));
+    DEBUG((EFI_D_ERROR, "Bus is not idle %d\n", Cmd->CmdIdx));
     return EFI_TIMEOUT;
   }
 

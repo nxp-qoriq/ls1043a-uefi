@@ -21,6 +21,16 @@
 #include <Library/DevicePathLib.h>
 #include <Drivers/Mmc.h>
 
+MMC_DEVICE_PATH gDevicePath = {
+  {
+    { HARDWARE_DEVICE_PATH, HW_VENDOR_DP, { (UINT8)sizeof(VENDOR_DEVICE_PATH), (UINT8)((sizeof(VENDOR_DEVICE_PATH)) >> 8) } },
+    EFI_CALLER_ID_GUID
+  },
+  { END_DEVICE_PATH_TYPE, END_ENTIRE_DEVICE_PATH_SUBTYPE,
+	  { sizeof (EFI_DEVICE_PATH_PROTOCOL), 0}
+  }
+};
+
 EFI_BLOCK_IO_MEDIA mMmcMediaTemplate = {
   SIGNATURE_32('m','m','c','o'),            // MediaId
   TRUE,                                     // RemovableMedia
@@ -125,7 +135,8 @@ CreateMmcHostInstance (
   }
 
   SetDevicePathEndNode (DevicePath);
-  gMmcHostInstance->DevicePath = AppendDevicePathNode (DevicePath, NewDevicePathNode);
+  //gMmcHostInstance->DevicePath = AppendDevicePathNode (DevicePath, NewDevicePathNode);
+  gMmcHostInstance->DevicePath = &gDevicePath;
 
   return EFI_SUCCESS;
 
