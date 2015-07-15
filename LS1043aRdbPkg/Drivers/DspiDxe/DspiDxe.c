@@ -138,7 +138,7 @@ DspiInitialize (
 
   Status = DspiInit(&gDspiMedia);
   if (Status != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR,"Failed to init MMC\n"));
+    DEBUG((EFI_D_ERROR,"Failed to init DSPI\n"));
     return Status;
   }
 

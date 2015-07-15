@@ -388,6 +388,7 @@ DspiSetupSlave (
    *      7 -  0: SPI_CPHA, SPI_CPOL, SPI_LSB_FIRST
    */
   struct DspiSlave *Dspislave;
+  struct SysInfo SocSysInfo;
   INT32 Prescaler[] = { 2, 3, 5, 7 };
   INT32 Scaler[] = {
     2, 4, 6, 8,
@@ -421,7 +422,8 @@ DspiSetupSlave (
   MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], CONFIG_SYS_DSPI_CTAR0);
 
   Tmp = (Prescaler[3] * Scaler[15]);
-  BusClk = (UINTN)GetPeripheralClock(DSPI_CLK);
+  GetSysInfo(&SocSysInfo);
+  BusClk = (UINT32)SocSysInfo.FreqSystemBus;
 
   /* Maximum And Minimum Baudrate It Can Handle */
   if ((Dspislave->Baudrate > (BusClk >> 1)) ||
@@ -493,7 +495,7 @@ DspiSetupSlave (
   }
 
   BusSetup |= (DSPI_CTAR_PBR(BestI) | DSPI_CTAR_BR(BestJ));
-  MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[Dspislave->Slave.Cs], BusSetup);
+  MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], BusSetup);
 
   return Dspislave;
 }
