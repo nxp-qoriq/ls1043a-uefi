@@ -567,8 +567,6 @@ SdxcGetcd (
   struct FslSdxc *Regs = (struct FslSdxc *)Cfg->SdxcBase;
   INT32 Timeout = 1000;
 
-  Timeout = MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_CINS;
-
   while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_CINS) && --Timeout)
     MicroSecondDelay(1000);
 
@@ -674,18 +672,18 @@ INT32
 SdxcMmcInit (
   )
 {
- struct FslSdxcCfg *Cfg;
- struct SysInfo SocSysInfo;
+  struct FslSdxcCfg *Cfg;
+  struct SysInfo SocSysInfo;
 
- Cfg = (struct FslSdxcCfg *)AllocatePool(sizeof(struct FslSdxcCfg));
- InternalMemZeroMem(Cfg, sizeof(struct FslSdxcCfg));
- Cfg->SdxcBase = (VOID *)CONFIG_SYS_FSL_SDXC_ADDR;
+  Cfg = (struct FslSdxcCfg *)AllocatePool(sizeof(struct FslSdxcCfg));
+  InternalMemZeroMem(Cfg, sizeof(struct FslSdxcCfg));
+  Cfg->SdxcBase = (VOID *)CONFIG_SYS_FSL_SDXC_ADDR;
  
- GetSysInfo(&SocSysInfo);
+  GetSysInfo(&SocSysInfo);
  
- Cfg->SdhcClk = (UINT32)SocSysInfo.FreqSdhc;
- DEBUG((EFI_D_ERROR,"Cfg->SdhcClk %d \n", Cfg->SdhcClk));
- return FslSdxcInitialize(Cfg);
+  Cfg->SdhcClk = (UINT32)SocSysInfo.FreqSdhc;
+  DEBUG((EFI_D_ERROR,"Cfg->SdhcClk %d \n", Cfg->SdhcClk));
+  return FslSdxcInitialize(Cfg);
 }
 
 INT32
@@ -694,7 +692,9 @@ BoardMmcInit (
   )
 {
 #ifndef CONFIG_RDB
-  SdxcCfg[0].SdhcClk = (UINT32)(GetPeripheralClock(ESDHC_CLK));
+  struct SysInfo SocSysInfo;
+  GetSysInfo(&SocSysInfo);
+  SdxcCfg[0].SdhcClk = (UINT32)SocSysInfo.FreqSdhc;
   return FslSdxcInitialize(&SdxcCfg[0]);
 #else
   return -1;

@@ -714,29 +714,9 @@ MmcStartInit (
 
     /* Now Try To Get The SD Card'S Operating Condition */
     Err = SdSendOpCond(gMmc);
+      DEBUG((EFI_D_ERROR, "Card Did Not Respond To Voltage Select!\n"));
   } else
     gMmc->OpCondPending = 1;
-
-#if 0
-  /* Test for SD Version 2 */
-
-  Err = MmcSendIfCond(gMmc);
-  if (Err != EFI_NO_RESPONSE)
-    DEBUG((EFI_D_INFO, "Not SD version 2\n"));
-
-  /* Now Try To Get The SD Card'S Operating Condition */
-  Err = SdSendOpCond(gMmc);
-
-  /* if The Command Timed Out, We Check for An MMC Card */
-  if (Err == EFI_TIMEOUT) {
-    Err = MmcSendOpCond(gMmc);
-
-    if (Err && Err != EFI_ALREADY_STARTED) {
-      DEBUG((EFI_D_ERROR, "Card Did Not Respond To Voltage Select!\n"));
-      return EFI_NO_RESPONSE;
-    }
-  }
-#endif
 
   if (Err == EFI_ALREADY_STARTED)
     gMmc->InitInProgress = 1;

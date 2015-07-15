@@ -311,8 +311,10 @@ CheckCardsCallback (
     if (gMmcHostInstance->MmcHost->IsCardPresent (gMmcHostInstance->MmcHost) == !gMmcHostInstance->Initialized) {
       gMmcHostInstance->State = MmcHwInitializationState;
       gMmcHostInstance->BlockIo.Media->MediaPresent = !gMmcHostInstance->Initialized;
-      gMmcHostInstance->Initialized = !gMmcHostInstance->Initialized;
-      InitializeMmcDevice (gMmcHostInstance);
+      if (InitializeMmcDevice (gMmcHostInstance) != EFI_SUCCESS)
+        gMmcHostInstance->Initialized = FALSE;
+      else
+        gMmcHostInstance->Initialized = TRUE;
     }
 }
 
@@ -386,17 +388,17 @@ MmcDxeInitialize (
   } else {
     // Detect card presence now
     CheckCardsCallback (NULL, NULL);
-    gMmcHostInstance->Initialized = TRUE;
-
-    // Publish BlockIO protocol interface
-    Status = gBS->InstallMultipleProtocolInterfaces (
+    if (gMmcHostInstance->Initialized == TRUE) {
+      // Publish BlockIO protocol interface
+      Status = gBS->InstallMultipleProtocolInterfaces (
                 &ImageHandle,
                 &gEfiDevicePathProtocolGuid,gMmcHostInstance->DevicePath,
                 &gEfiBlockIoProtocolGuid,&gMmcHostInstance->BlockIo,
                 NULL
                 );
 
-    gMmcHostInstance->MmcHandle = &ImageHandle;
+      gMmcHostInstance->MmcHandle = &ImageHandle;
+    }
   }
 
   return Status;
