@@ -665,6 +665,8 @@ MmcStartInit (
   VOID
   )
 {
+  struct FslSdxcCfg *Cfg = gMmc->Priv;
+  struct FslSdxc *Regs = (struct FslSdxc *)Cfg->SdxcBase;
   EFI_STATUS Err;
 
   /* We Pretend There'S No Card When Init Is NULL */
@@ -687,6 +689,8 @@ MmcStartInit (
   gMmc->DdrMode = 0;
   MmcSetBusWidth(gMmc, 1);
   MmcSetClock(gMmc, 1);
+
+  MmioClearBitsBe32((UINTN)&Regs->Proctl, PROCTL_BE);
 
   /* Reset The Card */
   Err = MmcGoIdle(gMmc);

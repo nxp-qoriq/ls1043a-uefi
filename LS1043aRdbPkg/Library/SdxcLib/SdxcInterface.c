@@ -223,6 +223,7 @@ DoMmcErase (
   IN UINT32 Count
   )
 {
+#if 0
   UINT32 Cnt, n;
 
   Cnt = Count;
@@ -238,4 +239,6 @@ DoMmcErase (
   DEBUG((EFI_D_INFO, "%d Blocks Erased: %a\n", n, (n == Cnt) ? "OK" : "ERROR"));
 
   return (n == Cnt) ? EFI_SUCCESS : EFI_TIMEOUT;
+#endif
+  return EFI_SUCCESS;
 }
