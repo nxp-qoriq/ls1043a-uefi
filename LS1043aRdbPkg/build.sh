@@ -19,7 +19,9 @@ print_usage_banner()
 	echo "This shell script expects:"
 	echo "	Arg 1 (mandatory): Build candidate (can be RELEASE or DEBUG). By
 		default we build the RELEASE candidate."
-	echo "	Arg 2 (optional): clean - To do a 'make clean' operation."
+	echo "	Arg 2 (mandatory): Boot source type (can be XIP or NONXIP. By default 
+		we build the XIP candidate"
+	echo "	Arg 3 (optional): clean - To do a 'make clean' operation."
 }
 
 # Actual stuff starts from here
@@ -33,30 +35,32 @@ if [[ $1 == "" ]]; then
 	print_usage_banner
 	exit
 fi
-# Check for input arguments
-if [[ $2 == "NONXIP" ]]; then
-	BootSuffix="NonXipBoot.dsc"
-	echo "Compiling for NON-XIP boot" 
-else
-	if [[ $2 == "XIP" ]]; then
-			BootSuffix="XipBoot.dsc"
-			echo "Compiling for XIP boot" 
-	else
-		if [[ $2 == "clean" ]]; then
-			echo "Cleaning up the build directory '../Build/LS1043aRdb/'.."
-			rm -rf ../Build/LS1043aRdb/*
-			exit
-		else
-			echo "Bad boot type argument. Use NONXIP or XIP"
-			exit
-		fi
-	fi
+if [[ $2 == "" ]]; then
+	echo "Error ! No boot source type specified."
+	print_usage_banner
+	exit
 fi
 
-
+# Check for input arguments
 if [[ $1 != "RELEASE" ]]; then
 	if [[ $1 != "DEBUG" ]]; then
 		echo "Error ! Incorrect build target specified."
+		print_usage_banner
+		exit
+	fi
+fi
+
+if [[ $2 == "NONXIP" ]]; then
+	BootSuffix="NonXipBoot.dsc"
+	echo "Compiling for NON-XIP boot"
+	echo "NON-XIP boot not supported in this release. Use XIP"
+	exit
+else
+	if [[ $2 == "XIP" ]]; then
+			BootSuffix="XipBoot.dsc"
+			echo "Compiling for XIP boot"
+	else
+		echo "Bad boot type argument. Use NONXIP or XIP"
 		print_usage_banner
 		exit
 	fi

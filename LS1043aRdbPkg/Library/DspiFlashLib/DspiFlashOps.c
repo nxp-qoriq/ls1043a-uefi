@@ -390,7 +390,7 @@ DspiSetupSlave (
   struct DspiSlave *Dspislave;
   struct SysInfo SocSysInfo;
   INT32 Prescaler[] = { 2, 3, 5, 7 };
-  INT32 Scaler[] = {
+  STATIC INT32 Scaler[] = {
     2, 4, 6, 8,
     16, 32, 64, 128,
     256, 512, 1024, 2048,

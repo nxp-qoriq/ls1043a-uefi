@@ -519,7 +519,7 @@ NorFlashPlatformReadBlocks (
   UINT32              NumBlocks;
   UINTN               Count;
   UINTN               BufferSizeInU16;
-  EFI_STATUS	      Status;
+  EFI_STATUS	      Status = EFI_INVALID_PARAMETER;
   EFI_LBA             CurrentBlock;
   UINTN		      BlockCount;
   UINTN               BlockSizeInWords;

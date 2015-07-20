@@ -30,7 +30,7 @@ EFIAPI ParseParams(
   OUT UINT32	*FileNameLength
 )
 {
-  UINT8 Length, Index;
+  UINT8 Length, Index=0;
   EFI_STATUS	Status;
   CHAR16 *TmpFileName, *Ptr;
 

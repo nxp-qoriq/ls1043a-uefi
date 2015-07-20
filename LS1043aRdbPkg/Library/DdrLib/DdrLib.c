@@ -195,7 +195,7 @@ StepAssignAddresses (
   )
 {
   INT32 I, J;
-  UINTN TotalMem, CurrentMemBase, TotalCtlrMem;
+  UINTN TotalMem, CurrentMemBase, TotalCtlrMem=0;
   UINTN RankDensity, CtlrDensity = 0;
 
   CurrentMemBase = 0ull;

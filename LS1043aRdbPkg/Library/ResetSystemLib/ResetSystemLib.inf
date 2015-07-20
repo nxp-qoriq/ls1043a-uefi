@@ -38,6 +38,7 @@
 [LibraryClasses]
   DebugLib
   ArmLib
+  IoLib
   CacheMaintenanceLib
   MemoryAllocationLib
   UefiRuntimeServicesTableLib

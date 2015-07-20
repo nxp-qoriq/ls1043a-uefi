@@ -81,7 +81,7 @@ MmcIoBlocks (
   OUT VOID                    *Buffer
   )
 {
-  EFI_STATUS              Status;
+  EFI_STATUS              Status = EFI_SUCCESS;
   MMC_HOST_INSTANCE       *MmcHostInstance;
   EFI_MMC_HOST_PROTOCOL   *MmcHost;
 
