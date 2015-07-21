@@ -875,6 +875,7 @@ MmcSetCapacity (
   return 0;
 }
 
+#ifdef GET_SD_REVISION
 static INT32
 SdSwitch (
   IN  struct Mmc *Mmc,
@@ -1021,6 +1022,7 @@ RetryScr:
 
   return 0;
 }
+#endif
 
 static INT32
 MmcSwitch (
@@ -1049,6 +1051,7 @@ MmcSwitch (
   return Ret;
 }
 
+#ifdef GET_SD_REVISION
 static INT32
 MmcChangeFreq (
   IN  struct Mmc *Mmc
@@ -1102,6 +1105,7 @@ MmcChangeFreq (
 
   return 0;
 }
+#endif
 
 static INT32
 MmcStartup (
@@ -1369,6 +1373,8 @@ MmcStartup (
   Err = MmcSetCapacity(Mmc, Mmc->PartNum);
   if (Err)
     return Err;
+
+#ifdef GET_SD_REVISION
   if (IS_SD(Mmc))
     Err = SdChangeFreq(Mmc);
   else
@@ -1376,6 +1382,7 @@ MmcStartup (
 
   if (Err)
     return Err;
+#endif
 
   /* Restrict Card'S Capabilities By What The Host Can do */
   Mmc->CardCaps &= Mmc->Cfg->HostCaps;
