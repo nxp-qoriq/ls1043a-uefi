@@ -87,3 +87,11 @@
 
 [UserExtensions.TianoCore."ExtraFiles"]
   PartitionDxeExtra.uni
+
++
++
++
+
+[Depex]
+ gEfiSimpleFileSystemProtocolGuid
+  
