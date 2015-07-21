@@ -19,8 +19,9 @@ print_usage_banner()
 	echo "This shell script expects:"
 	echo "	Arg 1 (mandatory): Build candidate (can be RELEASE or DEBUG). By
 		default we build the RELEASE candidate."
-	echo "	Arg 2 (mandatory): Boot source type (can be XIP or NONXIP. By default 
-		we build the XIP candidate"
+	echo "	Arg 2 (mandatory): Boot source type (can be XIP, FATXIP or NONXIP. By default 
+		we build the XIP candidate. FATXIP is used for FAT
+		filesystem based XIP boot case"
 	echo "	Arg 3 (optional): clean - To do a 'make clean' operation."
 }
 
@@ -60,9 +61,14 @@ else
 			BootSuffix="XipBoot.dsc"
 			echo "Compiling for XIP boot"
 	else
-		echo "Bad boot type argument. Use NONXIP or XIP"
-		print_usage_banner
-		exit
+		if [[ $2 == "FATXIP" ]]; then
+			BootSuffix="FatXipBoot.dsc"
+			echo "Compiling for FAT filesystem based XIP boot"
+		else
+			echo "Bad boot type argument. Use NONXIP, FATXIP or XIP"
+			print_usage_banner
+			exit
+		fi 
 	fi
 fi
 
