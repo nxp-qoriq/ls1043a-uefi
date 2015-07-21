@@ -29,10 +29,12 @@
 
 [LibraryClasses]
   ArmLib
+  BaseLib
   PcdLib
   MemoryAllocationLib
   DebugLib
   IoLib
+  TimerLib
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec

@@ -20,6 +20,7 @@
 #include <Library/PcdLib.h>
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
+#include <Library/TimerLib.h>
 #include <Library/NorFlashPlatformLib.h>
 #include <Library/NorFlash.h>
 #include <Library/FslIfc.h>
@@ -51,7 +52,7 @@ NorFlashPlatformEraseSector (
 {
   UINT16		EraseStatus1 = 0;
   UINT16		EraseStatus2 = 0;
-  UINTN           	Count, Temp;
+  UINTN           	Count;
 
   // Request a sector erase by writing two unlock cycles, followed by a
   // setup command and two additional unlock cycles
@@ -59,30 +60,30 @@ NorFlashPlatformEraseSector (
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FIRST);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(1000);
   
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_SECOND);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(1000);
 
   // Issue a setup command
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_THIRD);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(1000);
 
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FOURTH);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(1000);
   
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_SECTOR_ERASE_FIFTH);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(1000);
 
   // Now send the address of the sector to be erased
   SEND_NOR_COMMAND(SectorAddress, 0, MT28EW01GABA_CMD_SECTOR_ERASE_SIXTH);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(1000);
   
   // Wait for erase to complete
   // Read status register to determine ERASE DONE
@@ -109,7 +110,6 @@ NorFlashPlatformEraseChip (
 {
   UINT16		EraseStatus1 = 0;
   UINT16		EraseStatus2 = 0;
-  UINTN           	Count;
 
   // Request a sector erase by writing two unlock cycles, followed by a
   // setup command and two additional unlock cycles, which are then
@@ -118,37 +118,37 @@ NorFlashPlatformEraseChip (
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FIRST);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
   
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_SECOND);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
 
   // Issue the setup cmd
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_THIRD);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
 
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FOURTH);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
   
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FIFTH);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
 
   // Issue the chip erase cmd
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_SIXTH);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
 
   // Wait for erase to complete
   // Read status register to determine ERASE DONE
   while ((EraseStatus1 = FLASH_READ_16(Instance->DeviceBaseAddress)) != (EraseStatus2 = FLASH_READ_16(Instance->DeviceBaseAddress)));
   
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
   
   return EFI_SUCCESS;
 }
@@ -162,22 +162,21 @@ NorFlashPlatformWriteSingleWord (
 {
   UINT16		WriteStatus1 = 0;
   UINT16		WriteStatus2 = 0;
-  UINTN           	Count;
   
   // Request a write program command sequence
   
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_PROGRAM_FIRST);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
   
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_PROGRAM_SECOND);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
   
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_PROGRAM_THIRD);
   // Wait for erase to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
 
   // Store the word into NOR Flash;
   FLASH_WRITE_32 (WordAddress, WriteData);
@@ -187,7 +186,7 @@ NorFlashPlatformWriteSingleWord (
   while ((WriteStatus1 = FLASH_READ_16(Instance->DeviceBaseAddress)) != (WriteStatus2 = FLASH_READ_16(Instance->DeviceBaseAddress)));
   
   // Wait for write to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
   
   return EFI_SUCCESS;
 }
@@ -210,7 +209,7 @@ NorFlashPlatformWriteBuffer (
 {
   UINT16		WriteStatus1 = 0;
   UINT16		WriteStatus2 = 0;
-  UINTN			Count, Temp;
+  UINTN			Count;
   volatile UINT16	*ProgramAddress;
   UINT16		*BufferU16;
   UINTN			BufferSizeInWords;
@@ -242,7 +241,7 @@ NorFlashPlatformWriteBuffer (
 	U16Cnt));
   
   // Wait for any previous write operation to complete
-  for(Temp = 0; Temp < 204800; Temp++);
+  MicroSecondDelay(1000);
 
   // Check if the destination block in the flash is erased or not
   while ((U16Cnt-- > 0) && (EraseCheckFlag == 1)) {
@@ -268,23 +267,23 @@ NorFlashPlatformWriteBuffer (
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR,
 		   MT28EW01GABA_CMD_WRITE_TO_BUFFER_FIRST);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(100);
   
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR,
 		   MT28EW01GABA_CMD_WRITE_TO_BUFFER_SECOND);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(100);
 
   // Write the buffer load
   SEND_NOR_COMMAND(TargetAddress, 0, MT28EW01GABA_CMD_WRITE_TO_BUFFER_THIRD);
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(100);
 
   // Write the word count, which is (BufferSizeInWords - 1),
   // because word count 0 means one word.
   SEND_NOR_COMMAND(TargetAddress, 0, (BufferSizeInWords - 1));
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(100);
 
   pSrcBufferCpy = pSrcBuffer;
   BufferU16 = (UINT16 *)pSrcBufferCpy;
@@ -294,7 +293,7 @@ NorFlashPlatformWriteBuffer (
   for(Count = 0; Count < U16Cnt; Count++, ProgramAddress++, BufferU16++) {
     FLASH_WRITE_16 ((UINTN)ProgramAddress, FLASH_READ_16((UINTN)BufferU16));
     // Wait for write to complete
-    for(Temp = 0; Temp < 2048; Temp++);
+    MicroSecondDelay(100);
   }
 
   // Issue the Buffered Program Confirm command
@@ -302,7 +301,7 @@ NorFlashPlatformWriteBuffer (
 		    MT28EW01GABA_CMD_WRITE_TO_BUFFER_CONFIRM);
 
   // Wait for write to complete
-  for(Temp = 0; Temp < 2048; Temp++);
+  MicroSecondDelay(100);
   
   // Wait for write to complete
   // Read status register to determine WRITE DONE
@@ -310,7 +309,7 @@ NorFlashPlatformWriteBuffer (
 	 (WriteStatus2 = FLASH_READ_16(Instance->DeviceBaseAddress)));
  
   // Wait for write to complete
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
 
   return EFI_SUCCESS;
 }
@@ -517,7 +516,6 @@ NorFlashPlatformReadBlocks (
   )
 {
   UINT32              NumBlocks;
-  UINTN               Count;
   UINTN               BufferSizeInU16;
   EFI_STATUS	      Status = EFI_INVALID_PARAMETER;
   EFI_LBA             CurrentBlock;
@@ -555,7 +553,7 @@ NorFlashPlatformReadBlocks (
   SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
   // Wait for flash to enter READ ARRAY mode
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
   
   BufferSizeInU16 = BufferSizeInBytes / 2;
   
@@ -589,7 +587,6 @@ NorFlashPlatformRead (
   )
 {
   UINTN               BufferSizeInU16;
-  UINTN               Count;
   EFI_STATUS	      Status;
 
   // The buffer must be valid
@@ -606,7 +603,7 @@ NorFlashPlatformRead (
   SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
 
   // Wait for flash to enter READ ARRAY mode
-  for(Count=0; Count < 2048; Count++);
+  MicroSecondDelay(100);
  
   BufferSizeInU16 = BufferSizeInBytes / 2;
   

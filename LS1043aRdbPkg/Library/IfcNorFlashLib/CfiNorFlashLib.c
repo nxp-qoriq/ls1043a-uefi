@@ -17,6 +17,7 @@
 #include <Library/FslIfc.h>
 #include <Library/IoLib.h>
 #include <Library/NorFlashPlatformLib.h>
+#include <Library/TimerLib.h>
 
 #include "Mt28ew01gabaCfiNorFlashLib.h"
 
@@ -120,7 +121,7 @@ CfiNorFlashFlashGetAttributes (
 
      // Enter the CFI Query Mode
      SEND_NOR_COMMAND (NorFlashDevices[Count]->DeviceBaseAddress, MT28EW01GABA_ENTER_CFI_QUERY_MODE_ADDR, MT28EW01GABA_ENTER_CFI_QUERY_MODE_CMD);
-     DEBUG ((EFI_D_ERROR, " CFI enter mode command addr=0x%x, cmd=0x%x\n", IFC_NOR_BUF_BASE + MT28EW01GABA_ENTER_CFI_QUERY_MODE_ADDR, MT28EW01GABA_ENTER_CFI_QUERY_MODE_CMD));
+     MicroSecondDelay(1000);
 		
      // Query the unique QRY
      NorFlashReadCfiData((NorFlashDevices[Count]->DeviceBaseAddress), MT28EW01GABA_CFI_QUERY_UNIQUE_QRY_THIRD, 3, &QryData);
@@ -139,11 +140,12 @@ CfiNorFlashFlashGetAttributes (
   
      MinorIdReadData = 0;
      NorFlashReadCfiData((NorFlashDevices[Count]->DeviceBaseAddress), MT28EW01GABA_CFI_VENDOR_ID_MINOR_ADDR, 1, &MinorIdReadData);
-      if ((UINT8)MinorIdReadData != MT28EW01GABA_CFI_VENDOR_ID_MINOR) {
-        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a MT28EW01GABA flash (MINOR ID), Expected=0x%x, Got=0x%x\n", MT28EW01GABA_CFI_VENDOR_ID_MINOR, (UINT8)MinorIdReadData));
+      if (MinorIdReadData != (UINT16)MT28EW01GABA_CFI_VENDOR_ID_MINOR) {
+        DEBUG ((EFI_D_ERROR, "CfiNorFlashFlashGetAttributes: ERROR - Cannot find a MT28EW01GABA flash (MINOR ID), Expected=0x%x, Got=0x%x\n", MT28EW01GABA_CFI_VENDOR_ID_MINOR, (UINT16)MinorIdReadData));
        return EFI_DEVICE_ERROR;
      }
 
+      DEBUG ((EFI_D_INFO, "CfiNorFlashFlashGetAttributes: Found a MT28EW01GABA flash(MajorID=0x%x, MinorID=0x%x)\n", MajorIdReadData, MinorIdReadData));
      // If we reach here, we are connected to the right NOR flash slave.
      // Now, retrieve the device geometry definition
   
