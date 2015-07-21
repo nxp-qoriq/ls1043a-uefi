@@ -406,12 +406,10 @@
   gArmTokenSpaceGuid.PcdArmUncachedMemoryMask|0x0000000040000000
 
   gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Linux FIT from NOR"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x638FFFFF)"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootInitrdPath|L"MemoryMapped(0x0,0xB1000000,0xB1D47EA0)"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|"console=ttyS1,115200 root=/dev/ram0 earlyprintk=uart8250-8bit,0x21c0600"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x62300000)"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|"console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,0x21c0500,115200"
   gArmPlatformTokenSpaceGuid.PcdDefaultBootType|3 # Linux Kernel with FDT support
-  gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|10 #0 no timeout
-  gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L"MemoryMapped(0x0, 0xA0EE0000, 0XA0EE4000)"
+  gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|10 #0 means no timeout
   gArmPlatformTokenSpaceGuid.PcdDefaultFitConfiguration|"config@1"
 
   # PPA
@@ -421,12 +419,6 @@
   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)/VenPcAnsi();"
   gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)/VenPcAnsi()"
 
-  #
-  # ARM OS Loader
-  #
-  # LS1043aRdb machine type (OMAP3_LS1043a = 1546) required for ARM Linux:
-  gArmTokenSpaceGuid.PcdArmMachineType|1546
-
   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0xFF
   gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
   gEfiMdePkgTokenSpaceGuid.PcdUefiLibMaxPrintBufferSize|16000
@@ -434,7 +426,7 @@
   gEfiShellPkgTokenSpaceGuid.PcdShellProfileMask|0x00
 !endif #$(NO_SHELL_PROFILES)
 
-	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x10010000	
+  gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x10010000
 
 ################################################################################
 #
