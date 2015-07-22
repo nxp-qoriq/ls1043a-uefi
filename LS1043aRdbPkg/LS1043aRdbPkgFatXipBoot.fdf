@@ -123,7 +123,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # Semi-hosting filesystem
   #
-  INF ArmPkg/Filesystem/SemihostFs/SemihostFs.inf
+  # INF ArmPkg/Filesystem/SemihostFs/SemihostFs.inf
 !endif
 
   #
