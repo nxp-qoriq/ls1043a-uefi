@@ -215,9 +215,10 @@ LS1043aTestI2c (
 
   /* EEPROM0_ADDRESS */
   Status = I2c->StartRequest (I2c, EEPROM0_ADDRESS, RequestPacket, NULL, NULL);
-  if (EFI_ERROR (Status)) {
-    DEBUG((EFI_D_ERROR,"Failed to read eeprom on i2c bus \
-    Error '%r')\n", Status));
+
+  if (Status != EFI_SUCCESS) {
+    DEBUG((EFI_D_ERROR,"Failed to read eeprom on i2c bus Error '%r')\n",
+		Status));
     FreePool(RequestPacket);
     return Status;
   }
@@ -279,8 +280,6 @@ VOID LS1043aTestCode
   Status = LS1043aTestI2c();
   if(Status == EFI_SUCCESS)
 	Print(L"I2c Test Result: PASS\n");
-  else
-	DEBUG((EFI_D_ERROR, "I2c Test Result: FAIL, Error:'%r'\n", Status));
 
   /*FIXME A tempory solution, will be provided by UEFI shell command*/
   DdrRegDump();
