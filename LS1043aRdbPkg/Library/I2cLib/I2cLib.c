@@ -135,8 +135,8 @@ WaitForSrState (
 {
   UINT8 Sr;
   UINT64 Cnt = 0;
-  UINT32 Timer = 0;
-  for (Cnt = 0; Cnt < 25; Cnt++) {
+
+  for (Cnt = 0; Cnt < 50; Cnt++) {
     Sr = MmioRead8((UINTN)&I2cRegs->I2Sr);
     if (Sr & I2SR_IAL) {
        MmioWrite8((UINTN)&I2cRegs->I2Sr, Sr | I2SR_IAL);
@@ -146,7 +146,7 @@ WaitForSrState (
       	return Sr;
 
     //WatchdogReset();
-    for (Timer = 0; Timer < 1000; Timer++);
+    MicroSecondDelay(300);
   }
   return EFI_TIMEOUT;
 }
@@ -339,7 +339,6 @@ I2cInitTransfer (
     if (Ret != EFI_NOT_READY)
       MmioWrite8((UINTN)&I2cRegs->I2Cr, I2CR_IDIS);
 
-    //MicroSecondDelay(100);
     if (I2cIdleBus(I2cRegs) < 0)
       break;
   }
