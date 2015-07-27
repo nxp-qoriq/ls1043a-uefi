@@ -2739,7 +2739,6 @@ DdrmcInit (
  **/
 VOID
 DramInit (
-  UINTN	Offset
   )
 {
   UINT32 RamSize = 0;

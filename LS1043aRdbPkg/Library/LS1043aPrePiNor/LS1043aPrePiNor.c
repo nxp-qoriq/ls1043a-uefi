@@ -31,7 +31,7 @@ VOID CEntryPoint(
   // Enable Instruction Caches on all cores.
   ArmEnableInstructionCache ();
 
-	((VOID (*)(UINTN))DramInitAddr)(UefiMemoryBase - UefiNorBase);
+	((VOID (*)())DramInitAddr)();
 
 	CopyImage((VOID*)UefiMemoryBase, (VOID*)UefiNorBase, UefiMemorySize);
 	

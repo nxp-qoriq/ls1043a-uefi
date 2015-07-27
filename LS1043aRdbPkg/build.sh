@@ -54,8 +54,6 @@ fi
 if [[ $2 == "NONXIP" ]]; then
 	BootSuffix="NonXipBoot.dsc"
 	echo "Compiling for NON-XIP boot"
-	echo "NON-XIP boot not supported in this release. Use XIP"
-	exit
 else
 	if [[ $2 == "XIP" ]]; then
 			BootSuffix="XipBoot.dsc"
