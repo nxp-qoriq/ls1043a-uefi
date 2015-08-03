@@ -147,3 +147,18 @@ typedef struct {
   FSL_IFC_REGS*     IfcRegs;
   UINT32	    cs_nand;
 } NAND_FLASH_INFO;
+
+
+#define NAND_FTIM0   (FTIM0_NAND_TCCST(0x7) | \
+		          FTIM0_NAND_TWP(0x18)   | \
+		          FTIM0_NAND_TWCHT(0x7) | \
+		          FTIM0_NAND_TWH(0xa))
+#define NAND_FTIM1   (FTIM1_NAND_TADLE(0x32) | \
+		          FTIM1_NAND_TWBE(0x39)  | \
+		          FTIM1_NAND_TRR(0xe)   | \
+		          FTIM1_NAND_TRP(0x18))
+#define NAND_FTIM2   (FTIM2_NAND_TRAD(0xf) | \
+		          FTIM2_NAND_TREH(0xa) | \
+		          FTIM2_NAND_TWHRE(0x1e))
+#define NAND_FTIM3   0x0
+

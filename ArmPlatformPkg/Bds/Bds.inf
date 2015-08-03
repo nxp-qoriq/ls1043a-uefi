@@ -87,6 +87,7 @@
   gEfiMdePkgTokenSpaceGuid.PcdPlatformBootTimeOut
   gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths
   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode
 
   gEfiIntelFrameworkModulePkgTokenSpaceGuid.PcdShellFile
 

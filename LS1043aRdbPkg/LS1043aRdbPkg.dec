@@ -88,3 +88,6 @@
   gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x0|UINT64|0x00000035
   gLS1043aRdbTokenSpaceGuid.PcdFvNorBaseAddress|0x0|UINT64|0x00000036
   gLS1043aRdbTokenSpaceGuid.PcdFvNorSize|0x0|UINT64|0x00000037
+  
+	gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x0|UINT32|0x00000038
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNandLba|0x10|UINT32|0x00000039

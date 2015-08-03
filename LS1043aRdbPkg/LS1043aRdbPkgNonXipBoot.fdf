@@ -155,10 +155,10 @@ FV = FVMAIN_COMPACT
 
 [FD.LS1043aRdbPi_EFI]
 BaseAddress   = 0x10000000|gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress  #The base address of the FLASH Device.
-Size          = 0x00020000|gLS1043aRdbTokenSpaceGuid.PcdPiFdSize         #The size in bytes of the FLASH Device
+Size          = 0x00008000|gLS1043aRdbTokenSpaceGuid.PcdPiFdSize         #The size in bytes of the FLASH Device
 ErasePolarity = 1
 BlockSize     = 0x1
-NumBlocks     = 0x20000
+NumBlocks     = 0x8000
 
 ################################################################################
 #
@@ -176,7 +176,7 @@ NumBlocks     = 0x20000
 #
 ################################################################################
 
-0x00000000|0x000020000
+0x00000000|0x000008000
 gLS1043aRdbTokenSpaceGuid.PcdPiFvBaseAddress|gLS1043aRdbTokenSpaceGuid.PcdPiFvSize
 FV = FVPI_COMPACT
 

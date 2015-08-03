@@ -776,4 +776,7 @@ VOID FslIfcNandInit(VOID);
 #define IFC_REGS_BASE \
 	((FSL_IFC_REGS *)IFC_REG_BASE)
 
+#define NAND_BOOT 0x1
+#define NOR_BOOT 0x0
+
 #endif //__FLASH_H__

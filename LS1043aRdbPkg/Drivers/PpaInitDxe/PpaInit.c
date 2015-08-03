@@ -23,10 +23,32 @@
 #include <Library/BdsLinuxFit.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/BaseMemoryLib/MemLibInternals.h>
+#include <Library/FslIfc.h>
+#include <Library/FslIfcNand.h>
 
 extern EFI_STATUS PpaInit(UINT64);
 extern VOID El2SwitchSetup(VOID);
 extern VOID InitMmu(VOID);
+
+
+EFI_STATUS GetPpaFromNand(
+		UINT32								PpaLba, 
+		EFI_PHYSICAL_ADDRESS *FitImage)
+{
+	EFI_STATUS Status;
+	UINTN PpaMaxSize = 128 * 1024;
+	Status = FslIfcNandFlashInit(NULL);
+	if (Status!=EFI_SUCCESS)
+		return Status;
+
+	*FitImage = (EFI_PHYSICAL_ADDRESS)AllocateRuntimePages(EFI_SIZE_TO_PAGES(PpaMaxSize));
+	if(*FitImage == 0x0)
+		return EFI_OUT_OF_RESOURCES;
+
+//Copy from Nand to DDR
+	return FslIfcNandFlashReadBlocks(NULL, 0, PpaLba, PpaMaxSize, (VOID*)*FitImage);  	
+}
+
 
 /**
  * Copying PPA firmware to DDR
@@ -57,7 +79,12 @@ GetPpaImagefromFlash (
 
 	// Assuming that the PPA FW is present on NOR flash
 	// FIXME: Add support for other flash devices.
-	FitImage = PcdGet64 (PcdPpaNorBaseAddr);
+	if(PcdGet32(PcdBootMode) == NAND_BOOT) {
+		Status = GetPpaFromNand(PcdGet32(PcdPpaNandLba), &FitImage);
+		ASSERT(Status == EFI_SUCCESS);
+	}
+	else
+		FitImage = PcdGet64 (PcdPpaNorBaseAddr);
 	
 	// PPA will be placed on DDR at this address:
 	// Top of DDR - PcdPpaDdrOffsetAddr

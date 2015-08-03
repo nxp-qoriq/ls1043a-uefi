@@ -43,4 +43,5 @@
   ArmPlatformPkg/ArmPlatformPkg.dec
   LS1043aRdbPkg/LS1043aRdbPkg.dec
 
-[Pcd]
+[FixedPcd]
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode

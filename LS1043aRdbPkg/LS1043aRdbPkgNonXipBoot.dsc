@@ -35,4 +35,6 @@
 [Components.common]
   LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043aPrePiOcram.inf
 [PcdsFixedAtBuild.common]
-	gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x0	
+	gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x1	
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x1
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNandLba|0x10

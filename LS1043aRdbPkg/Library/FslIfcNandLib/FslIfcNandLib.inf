@@ -41,3 +41,7 @@
 [Pcd]
   gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase
   gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate
+
+[FixedPcd]
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode
+

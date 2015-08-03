@@ -31,6 +31,7 @@
 
 [PcdsFixedAtBuild.common]
   gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x60400000
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x0
 
 [LibraryClasses.common.PEIM]
   PeimEntryPoint|MdePkg/Library/PeimEntryPoint/PeimEntryPoint.inf

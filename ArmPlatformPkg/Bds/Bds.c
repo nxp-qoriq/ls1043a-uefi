@@ -89,7 +89,7 @@ LS1043aTestBlockIoDevice (
     }
 
     File = NULL;
-    Status = Fs->Open (Fs, &File, L"0x0|0x1000", EFI_FILE_MODE_READ, 0);
+    Status = Fs->Open (Fs, &File, L"0x400000|0x1000", EFI_FILE_MODE_READ, 0);
     if (Status != EFI_SUCCESS) {
       gBS->FreePool(Handle);
       return Status;
@@ -795,7 +795,8 @@ BdsEntry (
   ASSERT_EFI_ERROR (Status);
 
 DEBUG_CODE_BEGIN();
-  LS1043aTestCode();
+	if(PcdGet32(PcdBootMode) == 0) //For now only for NOR boot
+		LS1043aTestCode();
 DEBUG_CODE_END();
 
   // Timer before initiating the default boot selection

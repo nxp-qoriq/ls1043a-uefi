@@ -18,6 +18,8 @@
 #include <Library/NorFlashPlatformLib.h>
 #include <Library/FslIfc.h>
 
+UINT32 NorCs;
+
 /*
   Tune IFC NOR timings.
 */
@@ -26,16 +28,16 @@ IfcNorSetMemctlRegs (
   VOID
   )
 {
-  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->cspr_cs[IFC_CS0].cspr_ext, IFC_NOR_CSPR_EXT);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->cspr_cs[NorCs].cspr_ext, IFC_NOR_CSPR_EXT);
 
-  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS0].ftim[IFC_FTIM0], IFC_NOR_FTIM0);
-  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS0].ftim[IFC_FTIM1], IFC_NOR_FTIM1);
-  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS0].ftim[IFC_FTIM2], IFC_NOR_FTIM2);
-  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS0].ftim[IFC_FTIM3], IFC_NOR_FTIM3);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[NorCs].ftim[IFC_FTIM0], IFC_NOR_FTIM0);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[NorCs].ftim[IFC_FTIM1], IFC_NOR_FTIM1);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[NorCs].ftim[IFC_FTIM2], IFC_NOR_FTIM2);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[NorCs].ftim[IFC_FTIM3], IFC_NOR_FTIM3);
 
-  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->cspr_cs[IFC_CS0].cspr, IFC_NOR_CSPR0);
-  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->amask_cs[IFC_CS0].amask, IFC_NOR_AMASK0);
-  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->csor_cs[IFC_CS0].csor, IFC_NOR_CSOR0);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->cspr_cs[NorCs].cspr, IFC_NOR_CSPR0);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->amask_cs[NorCs].amask, IFC_NOR_AMASK0);
+  MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->csor_cs[NorCs].csor, IFC_NOR_CSOR0);
 }
 
 /*
@@ -46,6 +48,10 @@ IfcNorInit (
   VOID
   )
 {
+	if(PcdGet32(PcdBootMode) == NOR_BOOT)
+		NorCs = IFC_CS0;
+	else
+		NorCs = IFC_CS1;
   // Tune IFC NOR timings.
   IfcNorSetMemctlRegs ();
 }

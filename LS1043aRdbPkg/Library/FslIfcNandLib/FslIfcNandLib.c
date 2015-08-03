@@ -21,6 +21,7 @@ NAND_PART_INFO_TABLE gNandPartInfoTable[1] = {
   { 0x2C, 0xAC, 17, 11}
 };
 
+UINT32 NandCs;
 NAND_FLASH_INFO NandFlashInfo;
 NAND_FLASH_INFO *gNandFlashInfo = NULL;
 
@@ -37,7 +38,7 @@ INTN FslIfcRunCmd()
 
 	/* set the chip select for NAND Transaction */
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_csel,
-			(IFC_CS1 << 26));
+			(NandCs << 26));
 
 	/* start read/write seq */
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nandseq_strt,
@@ -141,9 +142,9 @@ VOID FslIfcRead(
 }
 
 /* cmdfunc send commands to the IFC NAND Machine */
-VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
+EFI_STATUS FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 {
-
+	EFI_STATUS Status;
 	switch (command) {
 	/* READ0 read the entire buffer to use hardware ECC. */
 	case NAND_CMD_READ0:
@@ -152,8 +153,7 @@ VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 		SetAddr(0, page_addr);
 
 		FslIfcRead();
-		FslIfcRunCmd();
-		return;
+		return FslIfcRunCmd();
 
 	/* READID must read all possible bytes while CEB is active */
 	case NAND_CMD_READID:
@@ -176,13 +176,12 @@ VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 256);
 
 		SetAddr(0, 0);
-		FslIfcRunCmd();
-		return;
+		return FslIfcRunCmd();
 
 	/* ERASE1 stores the block and page address */
 	case NAND_CMD_ERASE1:
 		SetAddr(0, page_addr);
-		return;
+		return EFI_SUCCESS;
 
 	/* ERASE2 uses the block and page address from ERASE1 */
 	case NAND_CMD_ERASE2:
@@ -199,8 +198,7 @@ VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 0);
-		FslIfcRunCmd();
-		return;
+		return FslIfcRunCmd();
 
 	/* SEQIN sets up the addr buffer and all registers except the length */
 	case NAND_CMD_SEQIN: {
@@ -259,7 +257,7 @@ VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 		MmioWriteBe32(
 		(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0, nand_fcr0);
 		SetAddr(column, page_addr);
-		return;
+		return EFI_SUCCESS;
 	}
 
 	/* PAGEPROG reuses all of the setup from SEQIN and adds the length */
@@ -267,8 +265,7 @@ VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 		MmioWriteBe32(
 		(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 0);
 
-		FslIfcRunCmd();
-		return;
+		return FslIfcRunCmd();
 
 	case NAND_CMD_STATUS:
 		MmioWriteBe32(
@@ -282,14 +279,14 @@ VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 1);
 		SetAddr(0, 0);
 
-		FslIfcRunCmd();
+		Status  = FslIfcRunCmd();
 
 		/* Chip sometimes reporting write protect even when it's not */
 		MmioWrite8(
 			(UINTN)gNandFlashInfo->BufBase,
 			MmioRead8(
 			(UINTN)gNandFlashInfo->BufBase) | NAND_STATUS_WP);
-		return;
+		return Status;
 
 	case NAND_CMD_RESET:
 		MmioWriteBe32(
@@ -298,12 +295,12 @@ VOID FslIfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0,
 			NAND_CMD_RESET << IFC_NAND_FCR0_CMD0_SHIFT);
-		FslIfcRunCmd();
-		return;
+	return	FslIfcRunCmd();
 
 	default:
 		DEBUG ((EFI_D_ERROR, "error, unsupported command 0x%x.\n",
 			command));
+		return EFI_UNSUPPORTED;
 	}
 }
 
@@ -324,9 +321,12 @@ NandDetectPart (
     UINT8      PartInfo[8];
     UINTN      Index;
     BOOLEAN    Found = FALSE;
+		EFI_STATUS Status;
 
   //Send READ ID command
-  FslIfcNandCmdSend(NAND_CMD_READID, 0, 0);
+  Status = FslIfcNandCmdSend(NAND_CMD_READID, 0, 0);
+	if(EFI_ERROR(Status))
+		return Status;
 
   //Read 5-bytes to idenfity code programmed into the NAND flash devices.
   //BYTE 0 = Manufacture ID
@@ -411,21 +411,27 @@ EFI_STATUS
 NandReadPage (
   IN  UINTN                         BlockIndex,
   IN  UINTN                         PageIndex,
-  OUT VOID                          *Buffer,
-  OUT UINT8                         *SpareBuffer
+  OUT VOID                          *Buffer
 )
 {
+	EFI_STATUS Status;
   UINTN      PageAddr;
 	VOID			*SrcAddr;
+	UINT8			*SpareArea;
 
   //Generate device address in bytes to access specific block and page index
   PageAddr = GetActualPageAddress(BlockIndex, PageIndex);
 
   //Send READ command
-  FslIfcNandCmdSend(NAND_CMD_READ0, 0, PageAddr);
+  Status = FslIfcNandCmdSend(NAND_CMD_READ0, 0, PageAddr);
+	if(EFI_ERROR(Status))
+		return Status;
 	SrcAddr = (VOID*)(gNandFlashInfo->BufBase +
 			(gNandFlashInfo->PageSize << 1) * (PageIndex & 0x3));
-  CopyMem((VOID*) Buffer, SrcAddr, gNandFlashInfo->PageSize);
+	SpareArea = (UINT8*)SrcAddr + gNandFlashInfo->PageSize;
+	if(*SpareArea != 0xff)
+		return EFI_DEVICE_ERROR;
+  CopyMem(Buffer, SrcAddr, gNandFlashInfo->PageSize);
   return EFI_SUCCESS;
 }
 
@@ -469,9 +475,7 @@ NandWritePage (
  // }
 
   //Send PROGRAM command
-  FslIfcNandCmdSend(NAND_CMD_PAGEPROG, 0, Address);
-
-  return EFI_SUCCESS;
+  return FslIfcNandCmdSend(NAND_CMD_PAGEPROG, 0, Address);
 }
 
 EFI_STATUS
@@ -488,35 +492,27 @@ NandEraseBlock (
   FslIfcNandCmdSend(NAND_CMD_ERASE1, 0, Address);
 
   //Send ERASE CONFIRM command
-  FslIfcNandCmdSend(NAND_CMD_ERASE2, 0, Address);
+  return FslIfcNandCmdSend(NAND_CMD_ERASE2, 0, Address);
 
-  return EFI_SUCCESS;
 }
 
 EFI_STATUS
 NandReadBlock (
-  IN UINTN                          StartBlockIndex,
-  IN UINTN                          EndBlockIndex,
-  OUT VOID                          *Buffer,
-  OUT VOID                          *SpareBuffer
+  IN UINTN                          BlockIndex,
+  OUT VOID                          *Buffer
 )
 {
-  UINTN      BlockIndex;
   UINTN      PageIndex;
   EFI_STATUS Status = EFI_SUCCESS;
 
-  for (BlockIndex = StartBlockIndex; BlockIndex <= EndBlockIndex; BlockIndex++){
-    //For each block read number of pages
-    for (PageIndex = 0; PageIndex < gNandFlashInfo->NumPagesPerBlock;
+  for (PageIndex = 0; PageIndex < gNandFlashInfo->NumPagesPerBlock;
 		PageIndex++) {
-      Status = NandReadPage(BlockIndex, PageIndex, Buffer, SpareBuffer);
+      Status = NandReadPage(BlockIndex, PageIndex, Buffer);
       if (EFI_ERROR(Status)) {
         return Status;
       }
       Buffer = ((UINT8 *)Buffer + gNandFlashInfo->PageSize);
-    }
   }
-
   return Status;
 }
 
@@ -560,9 +556,7 @@ FslIfcNandFlashReset (
   IN BOOLEAN                        ExtendedVerification
   )
 {
-  FslIfcNandCmdSend(NAND_CMD_RESET, 0, 0);
-
-  return EFI_SUCCESS;
+  return FslIfcNandCmdSend(NAND_CMD_RESET, 0, 0);
 }
 
 EFI_STATUS
@@ -575,10 +569,11 @@ FslIfcNandFlashReadBlocks (
   OUT VOID                          *Buffer
   )
 {
-  UINTN      NumBlocks;
-  UINTN      EndBlockIndex;
+  UINTN			NumBlocks;
+  UINTN			Index;
+  UINTN			BlockCount;
+	VOID			*TBuf;
   EFI_STATUS Status;
-  UINT8      *SpareBuffer = NULL;
 
   if (Buffer == NULL) {
     Status = EFI_INVALID_PARAMETER;
@@ -596,26 +591,23 @@ FslIfcNandFlashReadBlocks (
   }
 
   NumBlocks = DivU64x32(BufferSize, gNandFlashInfo->BlockSize);
-  EndBlockIndex = ((UINTN)Lba + NumBlocks) - 1;
 
-  //SpareBuffer = (UINT8 *)AllocatePool(gNandFlashInfo->SparePageSize);
-  //if (SpareBuffer == NULL) {
-  //  Status = EFI_OUT_OF_RESOURCES;
-  //  goto exit;
- // }
-
-  //Read block
-  Status = NandReadBlock((UINTN)Lba, EndBlockIndex, Buffer, SpareBuffer);
-  if (EFI_ERROR(Status)) {
-    DEBUG((EFI_D_ERROR, "Read block fails: %x\n", Status));
-    goto exit;
-  }
+	TBuf = Buffer;
+	Index = Lba;
+	BlockCount = 0;
+	while(BlockCount < NumBlocks) {
+		Status = NandReadBlock((UINTN)Index, TBuf);
+	  if (EFI_ERROR(Status)) {
+		  DEBUG((EFI_D_ERROR, "Read block failed, skipping %x\n", Status));
+			Index++;
+			continue;
+		}
+		TBuf+=gNandFlashInfo->BlockSize;
+		BlockCount++;
+		Index++;
+	}
 
 exit:
-  if (SpareBuffer != NULL) {
-    FreePool (SpareBuffer);
-  }
-
   return Status;
 }
 
@@ -701,6 +693,11 @@ VOID FslIfcNandInit(
 	VOID
 )
 {
+	if(PcdGet32(PcdBootMode) == NAND_BOOT)
+		NandCs = IFC_CS0;
+	else
+		NandCs = IFC_CS1;
+  gNandFlashInfo = &NandFlashInfo;
   gNandFlashInfo->IfcRegs = (FSL_IFC_REGS*) IFC_REG_BASE;
 	gNandFlashInfo->BufBase = (VOID*) IFC_NAND_BUF_BASE;
 
@@ -719,39 +716,38 @@ VOID FslIfcNandInit(
                   IFC_NAND_EVTER_EN_PGRDCMPL_EN |
                   IFC_NAND_EVTER_EN_FTOER_EN |
                   IFC_NAND_EVTER_EN_WPER_EN);
-
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.ncfgr, 0x0);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->ftim_cs[IFC_CS1].ftim[IFC_FTIM0],
-		FTIM0_NAND);
+		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[IFC_FTIM0],
+		NAND_FTIM0);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->ftim_cs[IFC_CS1].ftim[IFC_FTIM1],
-		FTIM1_NAND);
+		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[IFC_FTIM1],
+		NAND_FTIM1);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->ftim_cs[IFC_CS1].ftim[IFC_FTIM2],
-		FTIM2_NAND);
+		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[IFC_FTIM2],
+		NAND_FTIM2);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->ftim_cs[IFC_CS1].ftim[IFC_FTIM3],
-		FTIM3_NAND);
+		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[IFC_FTIM3],
+		NAND_FTIM3);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->cspr_cs[IFC_CS1].cspr,
+		&gNandFlashInfo->IfcRegs->cspr_cs[NandCs].cspr,
 		IFC_NAND_CSPR);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->cspr_cs[IFC_CS1].cspr_ext,
+		&gNandFlashInfo->IfcRegs->cspr_cs[NandCs].cspr_ext,
 		IFC_NAND_CSPR_EXT);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->amask_cs[IFC_CS1].amask,
+		&gNandFlashInfo->IfcRegs->amask_cs[NandCs].amask,
 		IFC_NAND_AMASK);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->csor_cs[IFC_CS1].csor,
+		&gNandFlashInfo->IfcRegs->csor_cs[NandCs].csor,
 		IFC_NAND_CSOR);
 }
 
@@ -761,10 +757,13 @@ FslIfcNandFlashInit (
 )
 {
   EFI_STATUS  Status;
-
+	if(PcdGet32(PcdBootMode) == NAND_BOOT)
+		NandCs = IFC_CS0;
+	else
+		NandCs = IFC_CS1;
   gNandFlashInfo = &NandFlashInfo;
-
-  FslIfcNandInit();
+	gNandFlashInfo->IfcRegs = (FSL_IFC_REGS*) IFC_REG_BASE;
+	gNandFlashInfo->BufBase = (VOID*) IFC_NAND_BUF_BASE;
 
   //Reset NAND part
   FslIfcNandFlashReset(NULL, FALSE);

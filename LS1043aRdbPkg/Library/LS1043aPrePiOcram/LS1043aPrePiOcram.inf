@@ -46,3 +46,4 @@
   gArmTokenSpaceGuid.PcdSystemMemoryBase
   gArmTokenSpaceGuid.PcdSystemMemorySize
 	gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode

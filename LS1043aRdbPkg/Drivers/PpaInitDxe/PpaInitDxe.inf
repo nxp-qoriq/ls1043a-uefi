@@ -53,6 +53,11 @@
   gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr
   gArmPlatformTokenSpaceGuid.PcdPpaFitConfiguration
   gArmPlatformTokenSpaceGuid.PcdDefaultFitConfiguration
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNandLba
+
+[FixedPcd]
+
 
 [depex]
   TRUE

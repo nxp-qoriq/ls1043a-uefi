@@ -520,6 +520,9 @@ IfcInit (
 
 	/* CPLD Init */
 	CpldInit();
+	
+	/* NAND Init */
+	FslIfcNandInit();
 }
 
 VOID
