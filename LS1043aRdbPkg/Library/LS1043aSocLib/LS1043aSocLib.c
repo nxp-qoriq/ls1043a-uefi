@@ -36,6 +36,8 @@
 #include <LS1043aSocLib.h>
 #include <CpldLib.h>
 
+#include <libfdt.h>
+
 /* Global Clock Information pointer */
 static SocClockInfo gClkInfo;
 
@@ -301,6 +303,7 @@ GetSysInfo (
 	rcw_tmp = MmioReadBe32((UINTN)&gur->rcwsr[15]);
 	rcw_tmp = (rcw_tmp & HWA_CGA_M2_CLK_SEL) >> HWA_CGA_M2_CLK_SHIFT;
 	PtrSysInfo->FreqSdhc = freq_c_pll[1] / rcw_tmp;
+	PtrSysInfo->FreqQman = 0 /* FIXME */;
 }
 
 VOID
@@ -651,3 +654,117 @@ SocInit (
   return;
 }
 
+/* fdt fixup for LS1043A */
+
+VOID do_fixup_by_compat(VOID *fdt, CONST char *compat,
+			CONST char *prop, CONST VOID *val, INTN len, INTN create)
+{
+	INTN off = -1;
+	off = fdt_node_offset_by_compatible(fdt, -1, compat);
+	while (off != -FDT_ERR_NOTFOUND) {
+		if (create || (fdt_get_property(fdt, off, prop, NULL) != NULL))
+			fdt_setprop(fdt, off, prop, val, len);
+		off = fdt_node_offset_by_compatible(fdt, off, compat);
+	}
+}
+
+VOID do_fixup_by_compat_u32(VOID *fdt, CONST char *compat,
+			    CONST char *prop, UINT32 val, INTN create)
+{
+	fdt32_t tmp = cpu_to_fdt32(val);
+	do_fixup_by_compat(fdt, compat, prop, &tmp, 4, create);
+}
+
+#define BMAN_IP_REV_1 0xBF8
+#define BMAN_IP_REV_2 0xBFC
+VOID fdt_fixup_bportals(VOID *blob)
+{
+	UINTN off, err;
+	UINTN maj, min;
+	UINTN ip_cfg;
+
+	UINT32 rev_1 = MmioReadBe32(CONFIG_SYS_FSL_BMAN_ADDR + BMAN_IP_REV_1);
+	UINT32 rev_2 = MmioReadBe32(CONFIG_SYS_FSL_BMAN_ADDR + BMAN_IP_REV_2);
+	char compat[64];
+	INTN compat_len;
+
+	maj = (rev_1 >> 8) & 0xff;
+	min = rev_1 & 0xff;
+
+	ip_cfg = rev_2 & 0xff;
+
+	compat_len = AsciiSPrint(compat, sizeof(compat), "fsl,bman-portal-%u.%u.%u",
+				 maj, min, ip_cfg) + 1;
+	compat_len += AsciiSPrint(compat + compat_len,  sizeof(compat), "fsl,bman-portal") + 1;
+
+	off = fdt_node_offset_by_compatible(blob, -1, "fsl,bman-portal");
+	while (off != -FDT_ERR_NOTFOUND) {
+		err = fdt_setprop(blob, off, "compatible", compat, compat_len);
+		if (err < 0) {
+			DEBUG((EFI_D_ERROR, "ERROR: unable to create props for %a: %s\n",
+				fdt_get_name(blob, off, NULL), fdt_strerror(err)));
+			return;
+		}
+
+		off = fdt_node_offset_by_compatible(blob, off, "fsl,bman-portal");
+	}
+}
+
+#define QMAN_IP_REV_1 0xBF8
+#define QMAN_IP_REV_2 0xBFC
+VOID fdt_fixup_qportals(VOID *blob)
+{
+	INTN off, err;
+	UINTN maj, min;
+	UINTN ip_cfg;
+	UINT32 rev_1 = MmioReadBe32(CONFIG_SYS_FSL_QMAN_ADDR + QMAN_IP_REV_1);
+	UINT32 rev_2 = MmioReadBe32(CONFIG_SYS_FSL_QMAN_ADDR + QMAN_IP_REV_2);
+	char compat[64];
+	INTN compat_len;
+
+	maj = (rev_1 >> 8) & 0xff;
+	min = rev_1 & 0xff;
+	ip_cfg = rev_2 & 0xff;
+
+	compat_len = AsciiSPrint(compat, sizeof(compat), "fsl,qman-portal-%u.%u.%u",
+					maj, min, ip_cfg) + 1;
+	compat_len += AsciiSPrint(compat + compat_len,  sizeof(compat), "fsl,qman-portal") + 1;
+
+	off = fdt_node_offset_by_compatible(blob, -1, "fsl,qman-portal");
+	while (off != -FDT_ERR_NOTFOUND) {
+		err = fdt_setprop(blob, off, "compatible", compat, compat_len);
+		if (err < 0) {
+			DEBUG((EFI_D_ERROR, "ERROR: unable to create props for %a: %a\n",
+				fdt_get_name(blob, off, NULL), fdt_strerror(err)));
+			return;
+		}
+
+		off = fdt_node_offset_by_compatible(blob, off, "fsl,qman-portal");
+	}
+}
+
+VOID fdt_fixup_esdhc(VOID *blob, UINTN SdhcClk)
+{
+	const char *compat = "fsl,esdhc";
+
+	do_fixup_by_compat_u32(blob, compat, "clock-frequency", SdhcClk, 1);
+
+	do_fixup_by_compat(blob, compat, "status", "okay", 4 + 1, 1);
+}
+
+VOID fdt_cpu_setup(VOID *blob)
+{
+  	struct SysInfo SocSysInfo;
+	GetSysInfo(&SocSysInfo);
+
+	do_fixup_by_compat_u32(blob, "fsl,ns16550",
+			       "clock-frequency", SocSysInfo.FreqSystemBus, 1);
+
+	fdt_fixup_esdhc(blob, SocSysInfo.FreqSdhc);
+
+	fdt_fixup_bportals(blob);
+	fdt_fixup_qportals(blob);
+
+	do_fixup_by_compat_u32(blob, "fsl,qman",
+			"clock-frequency", SocSysInfo.FreqQman, 1);
+}

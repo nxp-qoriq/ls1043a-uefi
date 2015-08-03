@@ -32,6 +32,7 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec
+  LS1043aRdbPkg/LS1043aRdbPkg.dec
 
 [LibraryClasses]
   ArmLib
@@ -41,6 +42,7 @@
   HobLib
   PcdLib
   NetLib
+  LS1043aSocLib
 
 [Guids]
   gEfiFileInfoGuid

@@ -103,6 +103,7 @@ struct SysInfo {
 	UINTN FreqLocalBus;
 	UINTN FreqSdhc;
 	UINTN FreqFman[CONFIG_SYS_NUM_FMAN];
+	UINTN FreqQman;
 };
 
 typedef struct SocClocks {
@@ -509,5 +510,7 @@ VOID SocInit(VOID);
 UINTN GetDdrFreq(VOID);
 
 VOID SerDesInit(VOID);
+
+VOID fdt_cpu_setup(VOID *blob);
 
 #endif /* __LS1043A_SOC_H__ */

@@ -16,6 +16,8 @@
 #include <Library/ArmLib.h>
 #include <Library/HobLib.h>
 
+#include <LS1043aSocLib.h>
+
 #include <Guid/ArmMpCoreInfo.h>
 
 #include "LinuxLoader.h"
@@ -202,8 +204,9 @@ PrepareFdt (
     goto FAIL_RELOCATE_FDT;
   }
 
-  fdt = (VOID*)(UINTN)NewFdtBlobBase;
 
+  fdt = (VOID*)(UINTN)NewFdtBlobBase;
+  
   node = fdt_subnode_offset (fdt, 0, "chosen");
   if (node < 0) {
     // The 'chosen' node does not exist, create it
@@ -309,6 +312,9 @@ PrepareFdt (
       MemoryMapPtr = (EFI_MEMORY_DESCRIPTOR*)((UINTN)MemoryMapPtr + DescriptorSize);
     }
   }
+
+/* fdt fixup for LS1043A */
+  fdt_cpu_setup((VOID *)fdt);
 
   //
   // Setup Arm Mpcore Info if it is a multi-core or multi-cluster platforms.
