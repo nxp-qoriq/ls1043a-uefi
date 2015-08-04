@@ -50,17 +50,17 @@ VOID CEntryPoint(
 
 	SerialPortInitialize();
 
-	DEBUG((EFI_D_INFO, "\nUEFI NON XIP Boot Firmware\n"));
+	DEBUG((EFI_D_INFO, "\nUEFI primary boot firmware (built at %a on %a)\n", __TIME__, __DATE__));
 	
 	if(PcdGet32(PcdBootMode) == NAND_BOOT) {
-		DEBUG((EFI_D_INFO, "\nBooting from NAND.....\n"));
+		DEBUG((EFI_D_INFO, "Loading secondary firmware from NAND.....\n"));
 		UefiFdNandToDdr(FixedPcdGet32(PcdFdNandLba), FixedPcdGet32(PcdFdSize), UefiMemoryBase);
 	} else {
 		DEBUG((EFI_D_ERROR, "Unsupported boot mode\n"));
 		ASSERT(0);
 	}
 
-	DEBUG((EFI_D_INFO, "\nStarting second stage UEFI bootloader\n"));
+	DEBUG((EFI_D_INFO, "Starting secondary boot firmware....\n"));
 	PrePiStart = (VOID (*)())UefiMemoryBase;
   PrePiStart();
 

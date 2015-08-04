@@ -246,13 +246,6 @@ READ_LOCK_STATUS   = TRUE
   INF EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
   INF EmbeddedPkg/SimpleTextInOutSerial/SimpleTextInOutSerial.inf
 
-!if $(TARGET) == RELEASE
-  #
-  # Semi-hosting filesystem
-  #
-  INF ArmPkg/Filesystem/SemihostFs/SemihostFs.inf
-!endif
-
   #
   # Nor Flash
   # FIXME: To be Added
