@@ -156,14 +156,14 @@ InitializeI2c(
 
   Status = I2cInit(I2C0, I2C_SPEED);
 
-  DEBUG((EFI_D_INFO,"Valid Chip Addresses :\n"));
+  DEBUG((EFI_D_RELEASE,"Valid Chip Addresses :\n"));
   if (Status == EFI_SUCCESS) {
     for (Chip = 0; Chip < LAST_CHIP_ADDRESS; Chip++) {
       Status = I2cProbe(I2C0, Chip);
       if (Status == EFI_SUCCESS)
-        DEBUG((EFI_D_INFO,"0x%x ", Chip));
+        DEBUG((EFI_D_RELEASE,"0x%x ", Chip));
     }
-    DEBUG((EFI_D_INFO,"\n"));
+    DEBUG((EFI_D_RELEASE,"\n"));
 
     Status = gBS->InstallMultipleProtocolInterfaces (
 		&ImageHandle,

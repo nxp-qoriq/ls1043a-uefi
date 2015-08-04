@@ -288,10 +288,10 @@
 # ASSERT_DEADLOOP_ENABLED    0x20
 !if $(TARGET) == RELEASE
   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x27
-  gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x80000040 #0x8000000F #Print almost everything
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x81000000 #0x8000000F #Print almost everything
 !else
   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x2F
-  gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x80000044 #0x8000000F #Print almost everything
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x81000044 #0x8000000F #Print almost everything
 !endif
 
 #  DEBUG_INIT      0x00000001  // Initialization

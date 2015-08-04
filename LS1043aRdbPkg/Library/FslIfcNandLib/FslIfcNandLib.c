@@ -573,7 +573,7 @@ FslIfcNandFlashReadBlocks (
   UINTN			Index;
   UINTN			BlockCount;
 	VOID			*TBuf;
-  EFI_STATUS Status;
+  EFI_STATUS Status = EFI_SUCCESS;
 
   if (Buffer == NULL) {
     Status = EFI_INVALID_PARAMETER;

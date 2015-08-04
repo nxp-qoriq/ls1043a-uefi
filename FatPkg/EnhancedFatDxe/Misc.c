@@ -397,7 +397,6 @@ Returns:
         //
         DiskIo      = Volume->DiskIo;
         IoFunction  = (IoMode == READ_DISK) ? DiskIo->ReadDisk : DiskIo->WriteDisk;
-	 DEBUG((EFI_D_INFO, "BufferSize 0x%x, Offset %d \n",BufferSize, Offset));
         Status      = IoFunction (DiskIo, Volume->MediaId, Offset, BufferSize, Buffer);
 #if 0
         Status      = IoFunction (DiskIo, Volume->MediaId, Offset, BufferSize, &Arr);

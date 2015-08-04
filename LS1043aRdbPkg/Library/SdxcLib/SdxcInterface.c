@@ -97,7 +97,7 @@ PrintSizeSdxc (
   }
 
   if (!C) {
-    DEBUG((EFI_D_ERROR, "%Ld Bytes", Size));
+    DEBUG((EFI_D_RELEASE, "%Ld Bytes", Size));
     return;
   }
 
@@ -114,11 +114,11 @@ PrintSizeSdxc (
     }
   }
 
-  DEBUG((EFI_D_ERROR, "%Ld", n));
+  DEBUG((EFI_D_RELEASE, "%Ld", n));
   if (M) {
-    DEBUG((EFI_D_ERROR, ".%Ld", M));
+    DEBUG((EFI_D_RELEASE, ".%Ld", M));
   }
-  DEBUG((EFI_D_ERROR, " %ciB", C));
+  DEBUG((EFI_D_RELEASE, " %ciB", C));
 }
 
 VOID
@@ -126,34 +126,34 @@ PrintMmcInfo (
   IN  struct Mmc *Mmc
   )
 {
-  DEBUG((EFI_D_INFO, "Device: %a\n", Mmc->Cfg->Name));
-  DEBUG((EFI_D_INFO, "Manufacturer ID: %x\n", Mmc->Cid[0] >> 24));
-  DEBUG((EFI_D_INFO, "OEM: %x\n", (Mmc->Cid[0] >> 8) & 0xffff));
-  DEBUG((EFI_D_INFO, "Name: %c%c%c%c%c \n", Mmc->Cid[0] & 0xff,
+  DEBUG((EFI_D_RELEASE, "Device: %a\n", Mmc->Cfg->Name));
+  DEBUG((EFI_D_RELEASE, "Manufacturer ID: %x\n", Mmc->Cid[0] >> 24));
+  DEBUG((EFI_D_RELEASE, "OEM: %x\n", (Mmc->Cid[0] >> 8) & 0xffff));
+  DEBUG((EFI_D_RELEASE, "Name: %c%c%c%c%c \n", Mmc->Cid[0] & 0xff,
 		(Mmc->Cid[1] >> 24), (Mmc->Cid[1] >> 16) & 0xff,
 		(Mmc->Cid[1] >> 8) & 0xff, Mmc->Cid[1] & 0xff));
 
-  DEBUG((EFI_D_INFO, "Card: %x\n", (Mmc->Cid[0] >> 16) & 0x03));
-  DEBUG((EFI_D_INFO, "Product revision: %d.%d\n", (Mmc->Cid[2] >> 20) & 0xf,
+  DEBUG((EFI_D_RELEASE, "Card: %x\n", (Mmc->Cid[0] >> 16) & 0x03));
+  DEBUG((EFI_D_RELEASE, "Product revision: %d.%d\n", (Mmc->Cid[2] >> 20) & 0xf,
                                                   (Mmc->Cid[2] >> 16) & 0xf));
-  DEBUG((EFI_D_INFO, "Product Serial No. : %04x%04x\n",
+  DEBUG((EFI_D_RELEASE, "Product Serial No. : %04x%04x\n",
                                  (Mmc->Cid[2]) & 0xffff,
                                  (Mmc->Cid[3] >> 16) & 0xffff));
-  DEBUG((EFI_D_INFO, "Manufacturing date : %d:%d\n",
+  DEBUG((EFI_D_RELEASE, "Manufacturing date : %d:%d\n",
                                  (Mmc->Cid[3] >> 12) & 0xf,
                                  ((Mmc->Cid[3] >> 8) & 0xf) + 1997));
 
-  DEBUG((EFI_D_INFO, "Tran Speed: %d\n", Mmc->TranSpeed));
-  DEBUG((EFI_D_INFO, "Rd Block Len: %d\n", Mmc->ReadBlLen));
+  DEBUG((EFI_D_RELEASE, "Tran Speed: %d\n", Mmc->TranSpeed));
+  DEBUG((EFI_D_RELEASE, "Rd Block Len: %d\n", Mmc->ReadBlLen));
 
-  DEBUG((EFI_D_INFO, "%a Version %d.%d\n", IS_SD(Mmc) ? "SD" : "MMC",
+  DEBUG((EFI_D_RELEASE, "%a Version %d.%d\n", IS_SD(Mmc) ? "SD" : "MMC",
 		(Mmc->Version >> 8) & 0xf, Mmc->Version & 0xff));
 
-  DEBUG((EFI_D_INFO, "High Capacity: %a\n", Mmc->HighCapacity ? "Yes" : "No"));
-  DEBUG((EFI_D_INFO, "Capacity: "));
+  DEBUG((EFI_D_RELEASE, "High Capacity: %a\n", Mmc->HighCapacity ? "Yes" : "No"));
+  DEBUG((EFI_D_RELEASE, "Capacity: "));
   PrintSizeSdxc(Mmc->Capacity);
 
-  DEBUG((EFI_D_INFO, "\nBus Width: %d-Bit%a\n", Mmc->BusWidth,
+  DEBUG((EFI_D_RELEASE, "\nBus Width: %d-Bit%a\n", Mmc->BusWidth,
 		Mmc->DdrMode ? " DDR" : ""));
 }
 
