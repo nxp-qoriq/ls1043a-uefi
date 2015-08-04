@@ -50,7 +50,7 @@ VOID CEntryPoint(
 
 	SerialPortInitialize();
 
-	DEBUG((EFI_D_INFO, "\nUEFI primary boot firmware (built at %a on %a)\n", __TIME__, __DATE__));
+	DEBUG((EFI_D_RELEASE, "\nUEFI primary boot firmware (built at %a on %a)\n", __TIME__, __DATE__));
 	
 	if(PcdGet32(PcdBootMode) == NAND_BOOT) {
 		DEBUG((EFI_D_INFO, "Loading secondary firmware from NAND.....\n"));
