@@ -297,7 +297,7 @@ GetSysInfo (
 		PtrSysInfo->FreqFman[0] = freq_c_pll[1] / 3;
 		break;
 	default:
-		DEBUG((EFI_D_ERROR, "Error: Unknown FMan1 clock select!\n"));
+		DEBUG((EFI_D_WARN, "Error: Unknown FMan1 clock select!\n"));
 		break;
 	}
 	rcw_tmp = MmioReadBe32((UINTN)&gur->rcwsr[15]);
