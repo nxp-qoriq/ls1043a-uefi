@@ -21,7 +21,8 @@ print_usage_banner()
 		default we build the RELEASE candidate."
 	echo "	Arg 2 (mandatory): Boot source type (can be XIP, FATXIP or NONXIP. By default 
 		we build the XIP candidate. FATXIP is used for FAT
-		filesystem based XIP boot case"
+		filesystem based XIP boot case, while NONXIP is used for
+		NAND boot currently"
 	echo "	Arg 3 (optional): clean - To do a 'make clean' operation."
 }
 
@@ -54,6 +55,12 @@ fi
 if [[ $2 == "NONXIP" ]]; then
 	BootSuffix="NonXipBoot.dsc"
 	echo "Compiling for NON-XIP boot"
+	if [[ $3 != "clean" ]]; then
+		echo "Enter the absolute path for mkimage utility: "
+		echo "(Hint: Usually this is the path of the u-boot/tools directory) "
+		read MKIMAGE_PATH
+		echo "mkimage utility is available at this path: $MKIMAGE_PATH"
+	fi
 else
 	if [[ $2 == "XIP" ]]; then
 			BootSuffix="XipBoot.dsc"
@@ -66,7 +73,7 @@ else
 			echo "Bad boot type argument. Use NONXIP, FATXIP or XIP"
 			print_usage_banner
 			exit
-		fi 
+		fi
 	fi
 fi
 
@@ -76,10 +83,10 @@ if [[ $3 == "clean" ]]; then
 	exit
 else
 	if [[ $3 == "" ]]; then
-		# Do nothing as argument 2 is optional.
+		# Do nothing as argument 3 is optional.
 		echo " "
 	else
-		echo "Error ! Incorrect 2nd argument to build script."
+		echo "Error ! Incorrect 3rd argument to build script."
 		print_usage_banner
 		exit
 	fi
@@ -106,6 +113,6 @@ TARGET_TOOLS=GCC48
 # Actual build command
 build -p "$WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg$BootSuffix" -a $ARCH -t $TARGET_TOOLS -b $1
 if [[ $2 == "NONXIP" ]]; then
-mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_nand.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_EFI.pbl
+$MKIMAGE_PATH/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_nand.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_EFI.pbl
 echo "PBL image created at $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_EFI.pbl"
 fi
