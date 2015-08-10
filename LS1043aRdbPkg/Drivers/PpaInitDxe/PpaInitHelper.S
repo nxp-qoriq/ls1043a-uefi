@@ -45,7 +45,12 @@ ASM_PFX(PpaInit):
 //Pop out return address from stack
 //ldur x30, [sp, #0] 
 //add sp, sp, #16
-	
+
+	// Enable GICv2 interrupts in EL2 mode
+	mrs x0, hcr_el2
+	orr x0, x0, #0x18
+	msr hcr_el2, x0
+
 //return 0
 	mov x0, #0
 	ret

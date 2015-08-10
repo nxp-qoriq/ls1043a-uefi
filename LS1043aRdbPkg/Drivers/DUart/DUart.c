@@ -57,7 +57,7 @@ DuartInitializePort (
 	while (!(MmioRead8(UartBase + ULSR) & UART_LSR_TEMT))
 	;
 
-	MmioWrite8(UartBase + UIER, 0);
+	MmioWrite8(UartBase + UIER, 0x1);
 	MmioWrite8(UartBase + ULCR, UART_LCR_BKSE | UART_LCRVAL);
 	MmioWrite8(UartBase + UDLB, 0);
 	MmioWrite8(UartBase + UDMB, 0);
