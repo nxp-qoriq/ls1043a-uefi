@@ -121,9 +121,6 @@ MmcSendStatus (
     MicroSecondDelay(1000);
   } while (Timeout--);
 
-  //DEBUG((EFI_D_INFO, "Current State : %d\n",
-  //     (Cmd.Response[0] & MMC_STATUS_CURR_STATE) >> 9));
-
   if (Timeout <= 0) {
     DEBUG((EFI_D_ERROR, "Timeout Waiting Card Ready\n"));
     return EFI_TIMEOUT;
@@ -289,8 +286,6 @@ MmcEraseBlks (
     StartCmd = MMC_CMD_ERASE_GROUP_START;
     EndCmd = MMC_CMD_ERASE_GROUP_END;
   }
-
-  //DEBUG((EFI_D_INFO, "Going to Erase block  start %d, end %d\n", Start, End));
 
   Cmd.CmdIdx = StartCmd;
   Cmd.CmdArg = Start;
@@ -705,7 +700,7 @@ MmcStartInit (
   Err = MmcSendOpCond(gMmc);
 
   if (Err && Err != EFI_ALREADY_STARTED) {
-    DEBUG((EFI_D_ERROR, "Not MMC Card\n"));
+    DEBUG((EFI_D_INFO, "Not MMC Card\n"));
 
     /* Test for SD Version 2 */
     Err = MmcSendIfCond(gMmc);

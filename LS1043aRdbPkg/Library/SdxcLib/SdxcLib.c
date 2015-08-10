@@ -682,7 +682,6 @@ SdxcMmcInit (
   GetSysInfo(&SocSysInfo);
  
   Cfg->SdhcClk = (UINT32)SocSysInfo.FreqSdhc;
-  DEBUG((EFI_D_ERROR,"Cfg->SdhcClk %d \n", Cfg->SdhcClk));
   return FslSdxcInitialize(Cfg);
 }
 

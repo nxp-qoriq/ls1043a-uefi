@@ -164,6 +164,8 @@ DoMmcInfo (
 {
   struct Mmc *Mmc;
 
+  SelectSdxc();
+
   Mmc = InitMmcDevice(FALSE);
   if (!Mmc)
     return EFI_NO_MAPPING;
@@ -186,6 +188,8 @@ DoMmcRead (
 
   DEBUG((EFI_D_INFO, "MMC Read: Block # %d, Count %d ...\n", StartBlk, Cnt));
 
+  SelectSdxc();
+
   n = gMmc->BlockDev.BlockRead(StartBlk, Cnt, InAddr);
   /* Flush Cache After Read */
   // TODO FlushCache((Ulong)InAddr, Cnt * 512); /* FIXME */
@@ -206,6 +210,8 @@ DoMmcWrite (
   Cnt = Count;
 
   DEBUG((EFI_D_INFO, "MMC Write: Block # %d, Count %d ... \n", StartBlk, Cnt));
+
+  SelectSdxc();
 
   if (MmcGetwp(gMmc) == 1) {
     DEBUG((EFI_D_ERROR, "Error: Card Is Write Protected!\n"));
@@ -228,6 +234,8 @@ DoMmcErase (
   Cnt = Count;
 
   DEBUG((EFI_D_INFO, "MMC Erase: Block # %d, Count %d\n", StartBlk, Cnt));
+
+  SelectSdxc();
 
   if (MmcGetwp(gMmc) == 1) {
      DEBUG((EFI_D_ERROR, "Error: Card Is Write Protected!\n"));
