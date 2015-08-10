@@ -23,6 +23,7 @@
 #include "Common.h"
 #include "Bitops.h"
 #include "Spi.h"
+#include "CpldLib.h"
 #include <Library/MemoryAllocationLib.h>
 #include <PiPei.h>
 #include <Uefi.h>
@@ -32,23 +33,19 @@
 #include <Library/PcdLib.h>
 #include <Protocol/BlockIo.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include <Library/TimerLib.h>
 
-#define CMD_READ_ID 			0x9f
 
 #define SPI_BUS_FSL_DSPI1	 	1
+#define CONFIG_SPI_FLASH_BAR
 
-#ifndef CONFIG_SF_DEFAULT_SPEED
-# define CONFIG_SF_DEFAULT_SPEED 	1000000
-#endif
-#ifndef CONFIG_SF_DEFAULT_MODE
-# define CONFIG_SF_DEFAULT_MODE 	SPI_MODE_3
-#endif
-#ifndef CONFIG_SF_DEFAULT_CS
-# define CONFIG_SF_DEFAULT_CS 	0
-#endif
-#ifndef CONFIG_SF_DEFAULT_BUS
-# define CONFIG_SF_DEFAULT_BUS 	0
-#endif
+#define CONFIG_SF_DEFAULT_SPEED 	10000000
+#define CONFIG_SF_DEFAULT_MODE 	SPI_MODE_0
+#define CONFIG_SF_DEFAULT_CS 	0
+#define CONFIG_SF_DEFAULT_BUS 	1
+
+/* Subsectors in a sector */
+#define NUM_OF_SUBSECTOR		16
 
 /* Common Status */
 #define STATUS_WIP			(1 << 0)
@@ -162,12 +159,27 @@
 #define CMD_ERASE_CHIP		0xc7
 #define CMD_ERASE_64K		0xd8
 
+#define DSPI_PUSHR_CTAS_MASK     (UINT32)(0x70000000)
+#define DSPI_PUSHR_PCS_MASK      (UINT32)(0x003f0000)
+
 /* Sf Param Flags */
-#define SECT_2K			(1 << 0)
-#define SECT_4K			(1 << 1)
-#define SECT_32K			(1 << 2)
-#define E_FSR				(1 << 3)
-#define WR_QPP			(1 << 4)
+enum {
+  SECT_4K    = 1 << 0,
+  SECT_32K   = 1 << 1,
+  E_FSR      = 1 << 2,
+  SST_BP     = 1 << 3,
+  SST_WP     = 1 << 4,
+  WR_QPP     = 1 << 5,
+  AT45DB_CMD = 1 << 6
+};
+
+/* Bank addr access commands */
+#ifdef CONFIG_SPI_FLASH_BAR
+# define CMD_BANKADDR_BRWR         0x17
+# define CMD_BANKADDR_BRRD         0x16
+# define CMD_EXTNADDR_WREAR        0xC5
+# define CMD_EXTNADDR_RDEAR        0xC8
+#endif
 
 #define CONFIG_SYS_DSPI_CTAR0 	(DSPI_CTAR_TRSZ(7) | DSPI_CTAR_PCSSCK_1CLK |\
 					DSPI_CTAR_PASC(0) | DSPI_CTAR_PDT(0) | \
@@ -182,7 +194,7 @@
 /* LAST BLOCK */
 #define BLOCK_COUNT             	1024	/* For SST25WF040 
 						(4MB/4K (sector erase size))*/
-#define LAST_BLOCK              	(BLOCK_COUNT - 1)
+#define LAST_BLOCK              	BLOCK_COUNT
 
 /**
  * struct Dspi - Dspi Controller Registers
@@ -271,6 +283,9 @@ struct DspiFlash {
   UINT32 SectorSize;
   UINT32 EraseSize;
   UINT32 BlockSize;
+  UINT8 BankReadCmd;
+  UINT8 BankWriteCmd;
+  UINT8 BankCurr;
   UINT8 PollCmd;
   UINT8 EraseCmd;
   UINT8 ReadCmd;
@@ -463,6 +478,36 @@ DspiInit (
   );
 
 /**
+  This API Erases BufferSize * NUM_OF_SUBSECTOR bytes starting from Lba.
+
+  @param[in]  This    	Indicates a pointer to the calling context.
+  @param[in]  MediaId 	Id of the media, changes every time media is replaced.
+  @param[in]  Lba		The starting Logical Block Address to be erased
+  @param[in]  BufferSize	Size of Buffer, must be a multiple of device
+  				block size.
+
+  @retval EFI_SUCCESS       	The data was erased successfully.
+  @retval EFI_WRITE_PROTECTED	The device cannot be written to.
+  @retval EFI_DEVICE_ERROR   	The device reported an error while performing
+					the erase.
+  @retval EFI_NO_MEDIA         	There is no media in the device.
+  @retval EFI_MEDIA_CHANGED     	The MediaId does not matched the current
+  					device.
+  @retval EFI_BAD_BUFFER_SIZE   	Buffer not a multiple of the block size
+  					of the device.
+  @retval EFI_INVALID_PARAMETER 	The erase request contains LBAs that are
+  					not valid.
+**/
+EFI_STATUS
+EFIAPI
+DspiErase (
+  IN  EFI_BLOCK_IO_PROTOCOL  *This,
+  IN  UINT32                 MediaId,
+  IN  EFI_LBA                Lba,
+  IN  UINTN                  BufferSize
+);
+
+/**
   This API Writes BufferSize bytes from Lba into Buffer.
 
   @param[in]  This    	Indicates a pointer to the calling context.
@@ -538,6 +583,11 @@ DspiRead (
 VOID
 DspiFlashFree (
   VOID
+  );
+
+VOID
+SelectDspi (
+  IN VOID
   );
 
 #endif

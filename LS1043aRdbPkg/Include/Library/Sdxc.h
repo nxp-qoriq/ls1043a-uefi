@@ -360,12 +360,6 @@
 #define MMC_STATUS_ERROR    	(1 << 19)
 #define MMC_STATE_PRG              (7 << 9)
 
-/* For CPLD Settings */
-#define ENABLE_SDXC_SOFT_MUX	0x30
-#define ENABLE_RCW_SOFT_MUX		0x01
-#define SELECT_SW4_SDXC		0x40
-#define SELECT_SW5_SDXC		0x01
-
 /* Dma addresses are 32-bits wide.  */
 typedef UINT32 DmaAddrT;
 

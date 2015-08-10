@@ -66,6 +66,21 @@
 /* SPI TX Operation Modes */
 #define SPI_OPM_TX_QPP 			(1 << 0)
 
+/* Enum list - Full read commands */
+enum SpiReadCmds {
+  ARRAY_SLOW           = 1 << 0,
+  ARRAY_FAST           = 1 << 1,
+  DUAL_OUTPUT_FAST     = 1 << 2,
+  DUAL_IO_FAST         = 1 << 3,
+  QUAD_OUTPUT_FAST     = 1 << 4,
+  QUAD_IO_FAST         = 1 << 5,
+};
+
+/* Normal - Extended - Full command set */
+#define RD_NORM      (ARRAY_SLOW | ARRAY_FAST)
+#define RD_EXTN      (RD_NORM | DUAL_OUTPUT_FAST | DUAL_IO_FAST)
+#define RD_FULL      (RD_EXTN | QUAD_OUTPUT_FAST | QUAD_IO_FAST)
+
 /* Dual SPI Flash Memories */
 enum SpiDualFlash {
   SF_SINGLE_FLASH = 0,

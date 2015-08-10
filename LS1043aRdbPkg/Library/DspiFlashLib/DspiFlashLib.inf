@@ -37,6 +37,7 @@
   BaseMemoryLib
   BaseLib
   LS1043aSocLib
+  CpldLib
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec

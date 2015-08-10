@@ -44,7 +44,7 @@ DspiFlashWrite (
   if (Offset + Len > gFlash->Size) {
     DEBUG((EFI_D_ERROR, "ERROR: Attempting %s Past Flash Size (0x%x)\n",
 		Len, gFlash->Size));
-    return 1;
+    return EFI_INVALID_PARAMETER;
   }
 
   return gFlash->Write(gFlash, Offset, Len, Buf);
@@ -61,7 +61,7 @@ DspiFlashRead (
   if (Offset + Len > gFlash->Size) {
     DEBUG((EFI_D_ERROR, "ERROR: Attempting %s Past Flash Size (0x%x)\n",
 		Len, gFlash->Size));
-    return 1;
+    return EFI_INVALID_PARAMETER;
   }
 
   return gFlash->Read(gFlash, Offset, Len, Buf);
@@ -74,6 +74,26 @@ DspiFlashFree (
 {
   FreePool(gFlash->Dspi);
   FreePool(gFlash);
+}
+
+VOID
+SelectDspi (
+  IN VOID
+  )
+{
+  UINT8 Data = 0;
+
+  /* Enable soft mux */
+  Data = CPLD_READ(soft_mux_on);
+  if ((Data & (ENABLE_SDXC_SOFT_MUX | ENABLE_RCW_SOFT_MUX)) 
+	!= (ENABLE_SDXC_SOFT_MUX | ENABLE_RCW_SOFT_MUX))
+    CPLD_WRITE(soft_mux_on, (Data | (ENABLE_SDXC_SOFT_MUX |
+					ENABLE_RCW_SOFT_MUX)));
+
+  /* Enable sdhc */
+  Data = CPLD_READ(sdhc_spics_sel);
+  if ((Data & 0x01) != 0x01)
+    CPLD_WRITE(sdhc_spics_sel, (Data | 0x01));
 }
 
 EFI_STATUS

@@ -88,6 +88,12 @@ DspiWriteBlocks (
   IN VOID                           *Buffer
   )
 {
+  EFI_STATUS Status = EFI_SUCCESS;
+
+  Status = DspiErase(This, MediaId, Lba, BufferSize);
+  if (Status != EFI_SUCCESS)
+    return Status;
+
   return DspiWrite(This, MediaId, Lba, BufferSize, Buffer);
 }
 

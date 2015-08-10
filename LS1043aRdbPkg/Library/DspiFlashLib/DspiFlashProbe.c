@@ -19,6 +19,7 @@
 /* Read Commands Array */
 static UINT8 SpiReadCmdsArray[] = {
   CMD_READ_ARRAY_SLOW,
+  CMD_READ_ARRAY_FAST,
   CMD_READ_DUAL_OUTPUT_FAST,
   CMD_READ_DUAL_IO_FAST,
   CMD_READ_QUAD_OUTPUT_FAST,
@@ -26,6 +27,7 @@ static UINT8 SpiReadCmdsArray[] = {
 };
 
 CONST struct SpiFlashParams SpiFlashParamsTable[] = {
+#ifdef CONFIG_SIMULATOR
   {(CONST INT8 *)"SST25WF512", 0xbf2501, 0x0,
 	64 * 1024, 1, 0, SECT_4K | SST_WP},
   {(CONST INT8 *)"SST25WF010", 0xbf2502, 0x0,
@@ -34,6 +36,49 @@ CONST struct SpiFlashParams SpiFlashParamsTable[] = {
 	64 * 1024, 4, 0, SECT_4K | SST_WP},
   {(CONST INT8 *)"SST25WF040", 0xbf2504, 0x0,
 	64 * 1024, 8, 0, SECT_4K | SST_WP},
+#endif
+#ifdef CONFIG_SPI_FLASH_SPANSION	/* SPANSION */
+  {(CONST INT8 *)"S25FL008A", 0x010213, 0x0,	64 * 1024,  16, RD_NORM, 0},
+  {(CONST INT8 *)"S25FL016A", 0x010214, 0x0,	64 * 1024,  32, RD_NORM, 0},
+  {(CONST INT8 *)"S25FL032A", 0x010215, 0x0,	64 * 1024,  64, RD_NORM, 0},
+  {(CONST INT8 *)"S25FL064A", 0x010216, 0x0,	64 * 1024, 128, RD_NORM, 0},
+  {(CONST INT8 *)"S25FL116K", 0x014015, 0x0,	64 * 1024, 128, RD_NORM, 0},
+  {(CONST INT8 *)"S25FL164K", 0x014017, 0x0140,	64 * 1024, 128, RD_NORM, 0},
+  {(CONST INT8 *)"S25FL128P_256K", 0x012018, 0x0300, 256 * 1024,  64, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL128P_64K",  0x012018, 0x0301,  64 * 1024, 256, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL032P", 0x010215, 0x4d00, 64 * 1024,  64, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL064P", 0x010216, 0x4d00, 64 * 1024, 128, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL128S_256K", 0x012018, 0x4d00, 256 * 1024,   64, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL128S_64K",  0x012018, 0x4d01,  64 * 1024,  256, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL256S_256K", 0x010219, 0x4d00, 256 * 1024,  128, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL256S_64K",  0x010219, 0x4d01,  64 * 1024,  512, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL512S_256K", 0x010220, 0x4d00, 256 * 1024,  256, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL512S_64K",  0x010220, 0x4d01,  64 * 1024, 1024, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL512S_512K", 0x010220, 0x4f00, 256 * 1024,  256, RD_FULL, WR_QPP},
+#endif
+  {(CONST INT8 *)"M25P10",   0x202011, 0x0,    32 * 1024, 4,    RD_NORM, 0},
+  {(CONST INT8 *)"M25P20",   0x202012, 0x0,    64 * 1024, 4,    RD_NORM, 0},
+  {(CONST INT8 *)"M25P40",   0x202013, 0x0,    64 * 1024, 8,    RD_NORM, 0},
+  {(CONST INT8 *)"M25P80",   0x202014, 0x0,    64 * 1024, 16,   RD_NORM, 0},
+  {(CONST INT8 *)"M25P16",   0x202015, 0x0,    64 * 1024, 32,   RD_NORM, 0},
+  {(CONST INT8 *)"M25PE16",  0x208015, 0x1000, 64 * 1024, 32,   RD_NORM, 0},
+  {(CONST INT8 *)"M25PX16",  0x207115, 0x1000, 64 * 1024, 32,   RD_EXTN, 0},
+  {(CONST INT8 *)"M25P32",   0x202016, 0x0,    64 * 1024, 64,   RD_NORM, 0},
+  {(CONST INT8 *)"M25P64",   0x202017, 0x0,    64 * 1024, 128,  RD_NORM, 0},
+  {(CONST INT8 *)"M25P128",  0x202018, 0x0,    256 * 1024,64,   RD_NORM, 0},
+  {(CONST INT8 *)"M25PX64",  0x207117, 0x0,    64 * 1024, 128,  RD_NORM, SECT_4K},
+  {(CONST INT8 *)"N25Q32",   0x20ba16, 0x0,    64 * 1024, 64,   RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q32A",  0x20bb16, 0x0,    64 * 1024, 64,   RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q64",   0x20ba17, 0x0,    64 * 1024, 128,  RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q64A",  0x20bb17, 0x0,    64 * 1024, 128,  RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q128",  0x20ba18, 0x0,    64 * 1024, 256,  RD_FULL, WR_QPP},
+  {(CONST INT8 *)"N25Q128A", 0x20bb18, 0x0,    64 * 1024, 256,  RD_FULL, WR_QPP},
+  {(CONST INT8 *)"N25Q256",  0x20ba19, 0x0,    64 * 1024, 512,  RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q256A", 0x20bb19, 0x0,    64 * 1024, 512,  RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q512",  0x20ba20, 0x0,    64 * 1024, 1024, RD_FULL, WR_QPP | E_FSR | SECT_4K},
+  {(CONST INT8 *)"N25Q512A", 0x20bb20, 0x0,    64 * 1024, 1024, RD_FULL, WR_QPP | E_FSR | SECT_4K},
+  {(CONST INT8 *)"N25Q1024", 0x20ba21, 0x0,    64 * 1024, 2048, RD_FULL, WR_QPP | E_FSR | SECT_4K},
+  {(CONST INT8 *)"N25Q1024A",0x20bb21, 0x0,    64 * 1024, 2048, RD_FULL, WR_QPP | E_FSR | SECT_4K},
 };
 
 struct DspiFlash *
@@ -116,7 +161,10 @@ DspiFlashValidateParams (
     Flash->EraseSize = Flash->SectorSize;
   }
 
-  Flash->BlockSize = Flash->EraseSize;
+  if (Params->Name == (CONST INT8 *)"N25Q128")
+    Flash->BlockSize = Flash->SectorSize/NUM_OF_SUBSECTOR;
+  else
+    Flash->BlockSize = Flash->SectorSize;
 
   /* Look for The Fastest Read Cmd */
   Cmd = GenericFls(Params->ERdCmd & Flash->Dspi->Slave.OpModeRx);
@@ -156,6 +204,33 @@ DspiFlashValidateParams (
 
   /* Poll Cmd Selection */
   Flash->PollCmd = CMD_READ_STATUS;
+
+
+  if (Params->Flags & E_FSR)
+    Flash->PollCmd = CMD_FLAG_STATUS;
+
+
+  /* Configure the BAR - discover bank cmds and read current bank */
+  UINT8 CurrBank = 0;
+
+  if (Flash->Size > SPI_FLASH_16MB_BOUN) {
+    INT32 Ret;
+
+    Flash->BankReadCmd = (Idcode[0] == 0x01) ?
+                         CMD_BANKADDR_BRRD : CMD_EXTNADDR_RDEAR;
+    Flash->BankWriteCmd = (Idcode[0] == 0x01) ?
+                         CMD_BANKADDR_BRWR : CMD_EXTNADDR_WREAR;
+
+    Ret = DspiFlashReadCommon(Flash, &Flash->BankReadCmd, 1,
+                             &CurrBank, 1);
+    if (Ret != EFI_SUCCESS) {
+      DEBUG((EFI_D_ERROR,"SF: fail to read bank addr register\n"));
+      return NULL;
+    }
+    Flash->BankCurr = CurrBank;
+  } else {
+    Flash->BankCurr = CurrBank;
+  }
 #if 0
   if (BoardSpiIsDataflash(Dspi->Slave.Bus, Dspi->Slave.Cs)) {
     Flash->PollCmd = CMD_ATMEL_READ_STATUS;
@@ -167,6 +242,20 @@ DspiFlashValidateParams (
   return Flash;
 }
 
+/* enable the W#/Vpp signal to disable writing to the status register */
+EFI_STATUS
+DspiEnableWpPin (
+  IN  struct DspiFlash *Flash
+  )
+{
+  return EFI_SUCCESS;
+}
+
+/**
+ * DspiFlashProbeSlave() - Probe for a SPI flash device on a bus
+ *
+ * @Dspi: Bus to probe
+ */
 struct DspiFlash *
 DspiFlashProbeSlave (
   IN  struct DspiSlave *Dspi
@@ -208,11 +297,11 @@ DspiFlashProbeSlave (
     }
   }
 
-  DEBUG((EFI_D_INFO, "SF: Detected %a With Page Size ", Flash->Name));
+  DEBUG((EFI_D_RELEASE, "SF: Detected %a With Page Size ", Flash->Name));
   PrintSize(Flash->PageSize, (CONST INT8 *)"Erase Size ");
   PrintSize(Flash->EraseSize, (CONST INT8 *)"Total ");
   PrintSize(Flash->Size, (CONST INT8 *)"");
-  DEBUG((EFI_D_INFO, "\n"));
+  DEBUG((EFI_D_RELEASE, "\n"));
 
   if (Flash->MemoryMap)
     DEBUG((EFI_D_INFO, ", Mapped At %p\n", Flash->MemoryMap));
@@ -224,6 +313,9 @@ DspiFlashProbeSlave (
     DEBUG((EFI_D_WARN, "SF: Warning - Only Lower 16MiB Accessible, "\
   		"Full Access #define CONFIG_SPI_FLASH_BAR\n"));
   }
+
+  if (DspiEnableWpPin(Flash) != EFI_SUCCESS)
+    DEBUG((EFI_D_WARN,"Enable WP pin failed\n"));
 
   /* Release Dspi Bus */
   DspiReleaseBus(Dspi);

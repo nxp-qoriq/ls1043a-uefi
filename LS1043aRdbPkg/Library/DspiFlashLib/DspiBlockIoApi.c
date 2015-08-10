@@ -34,21 +34,62 @@ DspiRead (
   }
 
   if (Lba > LAST_BLOCK) {
-    DEBUG((EFI_D_ERROR, "Offset value is invalid\n"));
+    DEBUG((EFI_D_ERROR, "Offset value is invalid %d > %d\n", Lba, LAST_BLOCK));
     return EFI_INVALID_PARAMETER;
   }
 
   if ((BufferSize % gFlash->BlockSize) != 0) {
-    DEBUG((EFI_D_ERROR, "Buffer size is not multiple of blocksize\n"));
+    DEBUG((EFI_D_ERROR, "Buffer size is not multiple of blocksize (%d)\n",
+			gFlash->BlockSize));
     return EFI_BAD_BUFFER_SIZE;
   }
 
   //Read block
+  SelectDspi();
+
   Status = DspiFlashRead(((UINTN)Lba * gFlash->BlockSize), BufferSize, Buffer);
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR, "Read block fails: %x\n", Status));
     return Status;
   }
+
+  DEBUG((EFI_D_INFO,"SF: %d bytes read %a\n",
+		BufferSize, Status ? "ERROR" : "OK"));
+  return Status;
+}
+
+EFI_STATUS
+EFIAPI
+DspiErase (
+  IN  EFI_BLOCK_IO_PROTOCOL  *This,
+  IN  UINT32                 MediaId,
+  IN  EFI_LBA                Lba,
+  IN  UINTN                  BufferSize
+)
+{
+  EFI_STATUS Status;
+
+  if (Lba > LAST_BLOCK) {
+    DEBUG((EFI_D_ERROR, "Offset value is invalid %d > %d\n", Lba, LAST_BLOCK));
+    return EFI_INVALID_PARAMETER;
+  }
+
+  if ((BufferSize % gFlash->BlockSize) != 0) {
+    DEBUG((EFI_D_ERROR, "Buffer size is not multiple of blocksize (%d)\n",
+                     gFlash->BlockSize));
+    return EFI_BAD_BUFFER_SIZE;
+  }
+
+  // Erase data
+  SelectDspi();
+
+  Status = DspiFlashErase(((UINTN)Lba * gFlash->BlockSize), BufferSize * NUM_OF_SUBSECTOR);
+  if (EFI_ERROR(Status)) {
+    DEBUG((EFI_D_ERROR, "Block Erase fails: %x\n", Status));
+    return Status;
+  }
+  DEBUG((EFI_D_INFO,"SF: %d bytes erased %a\n",
+		BufferSize * NUM_OF_SUBSECTOR, Status ? "ERROR" : "OK"));
 
   return Status;
 }
@@ -64,9 +105,6 @@ DspiWrite (
 )
 {
   EFI_STATUS Status;
-  UINTN      BlockIndex;
-  UINTN      NumBlocks;
-  UINTN      EndBlockIndex;
 
   if (Buffer == NULL) {
     DEBUG((EFI_D_ERROR, "Buffer is NULL\n"));
@@ -74,34 +112,26 @@ DspiWrite (
   }
 
   if (Lba > LAST_BLOCK) {
-    DEBUG((EFI_D_ERROR, "Offset value is invalid\n"));
+    DEBUG((EFI_D_ERROR, "Offset value is invalid %d > %d\n", Lba, LAST_BLOCK));
     return EFI_INVALID_PARAMETER;
   }
 
   if ((BufferSize % gFlash->BlockSize) != 0) {
-    DEBUG((EFI_D_ERROR, "Buffer size is not multiple of blocksize\n"));
+    DEBUG((EFI_D_ERROR, "Buffer size is not multiple of blocksize (%d)\n",
+			gFlash->BlockSize));
     return EFI_BAD_BUFFER_SIZE;
   }
 
-  NumBlocks = DivU64x32(BufferSize, gFlash->BlockSize);
-  EndBlockIndex = ((UINTN)Lba + NumBlocks) - 1;
-
-  // Erase block
-  for (BlockIndex = (UINTN)Lba; BlockIndex <= EndBlockIndex; BlockIndex++) {
-    Status = DspiFlashErase((BlockIndex * gFlash->BlockSize),
-         		(NumBlocks * gFlash->BlockSize));
-    if (EFI_ERROR(Status)) {
-      DEBUG((EFI_D_ERROR, "Erase block failed. Status: %x\n", Status));
-      return Status;
-    }
-  }
-
   // Program data
+  SelectDspi();
+
   Status = DspiFlashWrite(((UINTN)Lba * gFlash->BlockSize), BufferSize, Buffer);
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR, "Block write fails: %x\n", Status));
     return Status;
   }
+  DEBUG((EFI_D_INFO,"SF: %d bytes written %a\n",
+		BufferSize, Status ? "ERROR" : "OK"));
 
   return Status;
 }
@@ -113,6 +143,8 @@ DspiInit (
 {
 
   EFI_STATUS  Status;
+
+  SelectDspi();
 
   Status = DspiDetect();
 

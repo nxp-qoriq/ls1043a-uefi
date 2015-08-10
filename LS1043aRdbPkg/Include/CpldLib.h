@@ -67,4 +67,10 @@ VOID CpldInit (VOID);
 #define CPLD_BANK_SEL_MASK	0x07
 #define CPLD_BANK_SEL_ALTBANK	0x04
 
+/* SDXC/DSPI CPLD Settings */
+#define ENABLE_SDXC_SOFT_MUX	0x30
+#define ENABLE_RCW_SOFT_MUX		0x01
+#define SELECT_SW4_SDXC		0x40
+#define SELECT_SW5_SDXC		0x01
+
 #endif

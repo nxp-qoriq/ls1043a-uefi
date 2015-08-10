@@ -16,6 +16,99 @@
 
 #include "Library/Dspi.h"
 
+void DumpDspiRegs(struct DspiSlave *Dspi)
+{
+  DEBUG((EFI_D_INFO,"Mcr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Mcr)));
+  DEBUG((EFI_D_INFO,"Tcr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tcr)));
+  DEBUG((EFI_D_INFO,"Ctar[0]:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Ctar[0])));
+  DEBUG((EFI_D_INFO,"Ctar[1]:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Ctar[1])));
+  DEBUG((EFI_D_INFO,"Ctar[2]:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Ctar[2])));
+  DEBUG((EFI_D_INFO,"Ctar[3]:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Ctar[3])));
+  DEBUG((EFI_D_INFO,"Sr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Sr)));
+  DEBUG((EFI_D_INFO,"Irsr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Irsr)));
+  DEBUG((EFI_D_INFO,"Tfr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfr)));
+  DEBUG((EFI_D_INFO,"Tfdr[0]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[0] )));
+  DEBUG((EFI_D_INFO,"Tfdr[1]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[1] )));
+  DEBUG((EFI_D_INFO,"Tfdr[2]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[2] )));
+  DEBUG((EFI_D_INFO,"Tfdr[3]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[3] )));
+  DEBUG((EFI_D_INFO,"Tfdr[4]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[4] )));
+  DEBUG((EFI_D_INFO,"Tfdr[5]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[5] )));
+  DEBUG((EFI_D_INFO,"Tfdr[6]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[6] )));
+  DEBUG((EFI_D_INFO,"Tfdr[7]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[7] )));
+  DEBUG((EFI_D_INFO,"Tfdr[8]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[8] )));
+  DEBUG((EFI_D_INFO,"Tfdr[9]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[9] )));
+  DEBUG((EFI_D_INFO,"Tfdr[10]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[10])));
+  DEBUG((EFI_D_INFO,"Tfdr[11]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[11])));
+  DEBUG((EFI_D_INFO,"Tfdr[12]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[12])));
+  DEBUG((EFI_D_INFO,"Tfdr[13]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[13])));
+  DEBUG((EFI_D_INFO,"Tfdr[14]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[14])));
+  DEBUG((EFI_D_INFO,"Tfdr[15]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[15])));
+  DEBUG((EFI_D_INFO,"Rfdr[0] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[0] )));
+  DEBUG((EFI_D_INFO,"Rfdr[1] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[1] )));
+  DEBUG((EFI_D_INFO,"Rfdr[2] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[2] )));
+  DEBUG((EFI_D_INFO,"Rfdr[3] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[3] )));
+  DEBUG((EFI_D_INFO,"Rfdr[4] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[4] )));
+  DEBUG((EFI_D_INFO,"Rfdr[5] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[5] )));
+  DEBUG((EFI_D_INFO,"Rfdr[6] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[6] )));
+  DEBUG((EFI_D_INFO,"Rfdr[7] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[7] )));
+  DEBUG((EFI_D_INFO,"Rfdr[8] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[8] )));
+  DEBUG((EFI_D_INFO,"Rfdr[9] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[9] )));
+  DEBUG((EFI_D_INFO,"Rfdr[10]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[10])));
+  DEBUG((EFI_D_INFO,"Rfdr[11]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[11])));
+  DEBUG((EFI_D_INFO,"Rfdr[12]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[12])));
+  DEBUG((EFI_D_INFO,"Rfdr[13]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[13])));
+  DEBUG((EFI_D_INFO,"Rfdr[14]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[14])));
+  DEBUG((EFI_D_INFO,"Rfdr[15]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[15])));
+}
+
+#ifdef CONFIG_SPI_FLASH_BAR
+EFI_STATUS
+DspiFlashCmdBankaddrWrite (
+  IN  struct DspiFlash *Flash,
+  IN  UINT8 BankSel
+  )
+{
+  UINT8 Cmd;
+  INT32 Ret;
+
+  if (Flash->BankCurr == BankSel) {
+    return EFI_SUCCESS;
+  }
+
+  Cmd = Flash->BankWriteCmd;
+
+  Ret = DspiFlashWriteCommon(Flash, &Cmd, 1, &BankSel, 1);
+  if (Ret != EFI_SUCCESS) {
+    DEBUG((EFI_D_ERROR,"SF: fail to write bank register\n"));
+    return Ret;
+  }
+
+  Flash->BankCurr = BankSel;
+
+  return 0;
+}  
+ 
+INT32
+DspiFlashBank (
+  IN struct DspiFlash *Flash,
+  IN  UINT32 Offset
+  )
+{  
+  UINT8 BankSel;
+  INT32 Ret;
+
+  BankSel = Offset / (SPI_FLASH_16MB_BOUN << Flash->Shift);
+
+  Ret = DspiFlashCmdBankaddrWrite(Flash, BankSel);
+  if (Ret) {
+    DEBUG((EFI_D_ERROR,"SF: fail to set bank%d\n", BankSel));
+    return Ret;
+  }
+
+  return BankSel;
+}
+#endif
+
 struct DspiSlave *
 DspiAllocSlave (
   IN  INT32 Offset,
@@ -77,7 +170,7 @@ PrintSize (
   }
 
   if (!C) {
-    DEBUG((EFI_D_ERROR, "%Ld Bytes,\n %a", Size, S));
+    DEBUG((EFI_D_RELEASE, "%Ld Bytes,\n %a", Size, S));
     return;
   }
 
@@ -94,11 +187,11 @@ PrintSize (
     }
   }
 
-  DEBUG((EFI_D_ERROR, "%Ld", N));
+  DEBUG((EFI_D_RELEASE, "%Ld", N));
   if (M) {
-    DEBUG((EFI_D_ERROR, ".%Ld", M));
+    DEBUG((EFI_D_RELEASE, ".%Ld", M));
   }
-  DEBUG((EFI_D_ERROR, " %ciB, %a ", C, S));
+  DEBUG((EFI_D_RELEASE, " %ciB, %a ", C, S));
 }
 
 EFI_STATUS
@@ -197,6 +290,9 @@ DspiFlashSetQeb (
   case SPI_FLASH_CFI_MFR_SPANSION:
   case SPI_FLASH_CFI_MFR_WINBOND:
     return DspiFlashSetQebWinspan(Flash);
+  case SPI_FLASH_CFI_MFR_STMICRO:
+    DEBUG((EFI_D_INFO,"SF: QEB is volatile for %02x flash\n", Idcode0));
+    return EFI_SUCCESS;
   default:
     DEBUG((EFI_D_ERROR, "SF: Need Set QEB Func for %02x Flash\n",
 			Idcode0));
@@ -211,17 +307,13 @@ DspiTx (
   IN  UINT16 Data
   )
 {
-  UINT32 Ret = 0;
   INT32 Timeout = 10000;
 
-  Ret = MmioRead32((UINTN)&Dspislave->Regs->Sr);
-
-  while (((Ret & 0x0000F000) >= 4) && Timeout--) {
-    Ret = MmioRead32((UINTN)&Dspislave->Regs->Sr);
-  }
+  while (((MmioReadBe32((UINTN)&Dspislave->Regs->Sr) & 0x0000F000) >= 4) && Timeout--)
+			;
 
   if (Timeout <= 0) {
-    DEBUG((EFI_D_ERROR, "Failed to get status register\n"));
+    DEBUG((EFI_D_ERROR, "DspiTx: Failed to get status register\n"));
     return EFI_TIMEOUT;
   }
 
@@ -237,17 +329,15 @@ DspiRx (
   UINT32 Ret = 0;
   INT32 Timeout = 10000;
 
-  Ret = MmioRead32((UINTN)&Dspislave->Regs->Sr);
-  while (((Ret & 0x000000F0) == 0) && Timeout--) {
-    Ret = MmioRead32((UINTN)&Dspislave->Regs->Sr);
-  }
+  while (((MmioReadBe32((UINTN)&Dspislave->Regs->Sr) & 0x000000F0) == 0) && Timeout--)
+			;
 
   if (Timeout <= 0) {
-    DEBUG((EFI_D_ERROR, "Failed to get status register\n"));
+    DEBUG((EFI_D_ERROR, "DspiRx : Failed to get status register\n"));
     return -1;
   }
   Ret = 0;
-  Ret = MmioRead32((UINTN)&Dspislave->Regs->Rfr);
+  Ret = (UINT16)(MmioReadBe32((UINTN)&Dspislave->Regs->Rfr) & 0xFFFF);
 
   return Ret;
 }
@@ -266,23 +356,22 @@ DspiXfer (
   UINT8 *SpiRd = NULL, *SpiWr = NULL;
   static UINT32 Ctrl = 0;
   UINT32 Len = Bitlen >> 3;
-  INT32 ShiftCount = 0;
 
   if (DspiSlave->Charbit == 16) {
     Bitlen >>= 1;
     SpiWr16 = (UINT16 *) Dout;
     SpiRd16 = (UINT16 *) Din;
-    ShiftCount = 16;
   } else {
     SpiWr = (UINT8 *) Dout;
     SpiRd = (UINT8 *) Din;
-    ShiftCount = 24;
   }
 
   if ((Flags & SPI_XFER_BEGIN) == SPI_XFER_BEGIN)
     Ctrl |= DSPI_TFR_CONT;
 
-  Ctrl = (Ctrl & 0xFF000000) | ((1 << DspiSlave->Slave.Cs) << 16); /* */
+  Ctrl &= ~DSPI_PUSHR_CTAS_MASK;
+  Ctrl &= ~DSPI_PUSHR_PCS_MASK;
+  Ctrl = (Ctrl & 0xFF000000) | ((1 << DspiSlave->Slave.Cs) << 16);
 
   if (Len > 1) {
     INT32 TmpLen = Len - 1;
@@ -311,9 +400,9 @@ DspiXfer (
 	   return EFI_TIMEOUT;
 
 	 if (DspiSlave->Charbit == 16)
-	   *SpiRd16++ = Status >> ShiftCount;
+	   *SpiRd16++ = Status;
 	 else
-	   *SpiRd++ = Status >> ShiftCount;
+	   *SpiRd++ = Status;
       }
     }
     Len = 1;	/* Remaining Byte */
@@ -348,9 +437,9 @@ DspiXfer (
 	 return EFI_TIMEOUT;
 
       if (DspiSlave->Charbit == 16)
-        *SpiRd16 = Status >> ShiftCount;
+        *SpiRd16 = Status;
       else
-	*SpiRd = Status >> ShiftCount;
+	*SpiRd = Status;
     }
   } else {
     /* Dummy Read */
@@ -388,7 +477,6 @@ DspiSetupSlave (
    *      7 -  0: SPI_CPHA, SPI_CPOL, SPI_LSB_FIRST
    */
   struct DspiSlave *Dspislave;
-  struct SysInfo SocSysInfo;
   INT32 Prescaler[] = { 2, 3, 5, 7 };
   STATIC INT32 Scaler[] = {
     2, 4, 6, 8,
@@ -401,6 +489,7 @@ DspiSetupSlave (
   UINTN  BusClk;
   UINT32 BusSetup = 0;
   UINT32 Ret = 0;
+  struct SysInfo SocSysInfo;
 
   Dspislave = DspiAllocSlave(0, sizeof(struct DspiSlave), Bus, Cs);
   if (!Dspislave)
@@ -409,16 +498,13 @@ DspiSetupSlave (
   Dspislave->Baudrate = MaxHz;
   Dspislave->Regs = (VOID *)CONFIG_SYS_FSL_DSPI_ADDR;
 
-  /* MCR : 0x80FF 0C00 */
   MmioWriteBe32((UINTN)&Dspislave->Regs->Mcr,
     DSPI_MCR_MSTR | DSPI_MCR_CSIS7 | DSPI_MCR_CSIS6 |
     DSPI_MCR_CSIS5 | DSPI_MCR_CSIS4 | DSPI_MCR_CSIS3 |
     DSPI_MCR_CSIS2 | DSPI_MCR_CSIS1 | DSPI_MCR_CSIS0 |
     DSPI_MCR_CRXF | DSPI_MCR_CTXF);
 
-  Ret = MmioReadBe32((UINTN)&Dspislave->Regs->Mcr);
-
-  /* default Setting In Platform Configuration 0x3800 0000 */
+  /* default Setting In Platform Configuration */
   MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], CONFIG_SYS_DSPI_CTAR0);
 
   Tmp = (Prescaler[3] * Scaler[15]);
@@ -449,7 +535,7 @@ DspiSetupSlave (
     BusSetup |= DSPI_CTAR_LSBFE;
 
   /* Overwrite default Value Set In Platform Configuration File */
-  Ret = MmioReadBe32((UINTN)&Dspislave->Regs->Ctar[Dspislave->Slave.Cs]);
+  Ret = MmioReadBe32((UINTN)&Dspislave->Regs->Ctar[0]);
   if (Mode & SPI_MODE_MOD) {
     if ((Mode & 0xF0000000) == 0) {
       BusSetup |= Ret & 0x78000000;	/* 0x0000 002F */
@@ -567,12 +653,10 @@ DspiFlashCmdWaitReady (
   UINT64 Timebase;
   UINT64 Flags = SPI_XFER_BEGIN;
   EFI_STATUS Ret = EFI_SUCCESS;
-  INT32 OutOfTime = 1;
   UINT8 Status = 0;
   UINT8 CheckStatus = 0x0;
   UINT8 PollBit = STATUS_WIP;
   UINT8 Cmd = Flash->PollCmd;
-  UINT8 ClearCmd = CMD_CLEAR_FLAG_STATUS;
 
   if (Cmd == CMD_FLAG_STATUS || Cmd == CMD_ATMEL_FLAG_STATUS) {
     PollBit = STATUS_PEC;
@@ -588,7 +672,7 @@ DspiFlashCmdWaitReady (
 
   Timebase = 0;
   do {
-    //WATCHDOG_RESET();
+    MicroSecondDelay(10000);
 
     Ret = DspiXfer(Dspi, 8, NULL, &Status, 0);
     if (Ret != EFI_SUCCESS) {
@@ -597,24 +681,19 @@ DspiFlashCmdWaitReady (
     }
 
     if ((Status & PollBit) == CheckStatus) {
-      OutOfTime = 0;
       break;
     }
 
   } while (++Timebase < Timeout);
 
   DspiXfer(Dspi, 0, NULL, NULL, SPI_XFER_END);
+  if ((Status & PollBit) == CheckStatus)
+    return EFI_SUCCESS;
 
-  if (OutOfTime) {
-    /* Timed Out */
-    DEBUG((EFI_D_ERROR, "SF: Time Out!\n"));
-    if (Cmd == CMD_FLAG_STATUS) {
-      if (DspiFlashReadWrite(Flash->Dspi, &ClearCmd, 1, NULL, NULL, 0)
-			!= EFI_SUCCESS)
-        DEBUG((EFI_D_ERROR, "SF: Clear Flag Status Failed\n"));
-    }
-    Ret = EFI_TIMEOUT;
-  }
+  /* Timed Out */
+  DEBUG((EFI_D_ERROR, "SF: Time Out!\n"));
+  Ret = EFI_TIMEOUT;
+
   return Ret;
 }
 
@@ -630,15 +709,7 @@ DspiFlashWriteCommon (
   struct DspiSlave *Dspi = Flash->Dspi;
   UINT64 Timeout = SPI_FLASH_PROG_TIMEOUT;
   INT32 Ret;
-  UINT8 *Wcmd = NULL;
-  Wcmd = (UINT8 *)AllocatePool(CmdLen);
-  InternalMemZeroMem(Wcmd, CmdLen);
-  if (!Wcmd) {
-    DEBUG((EFI_D_ERROR, "SF: Failed To Allocate Cmd\n"));
-    return EFI_OUT_OF_RESOURCES;
-  }
-
-  Wcmd[0] = CMD_WRITE_ENABLE;
+  UINT8 Wcmd = 0;
 
   if (Buf == NULL)
     Timeout = SPI_FLASH_PAGE_ERASE_TIMEOUT;
@@ -649,7 +720,9 @@ DspiFlashWriteCommon (
     return Ret;
   }
 
-  Ret = DspiFlashReadWrite(Dspi, Wcmd, 1, NULL, NULL, 0);
+  Wcmd = CMD_WRITE_ENABLE;
+
+  Ret = DspiFlashReadWrite(Dspi, &Wcmd, 1, NULL, NULL, 0);
   if (Ret != EFI_SUCCESS) {
     DEBUG((EFI_D_ERROR, "SF: Enabling Write Failed\n"));
     return Ret;
@@ -754,6 +827,11 @@ DspiFlashCmdReadOps (
   while (Len) {
     ReadAddr = Offset;
 
+#ifdef CONFIG_SPI_FLASH_BAR
+  BankSel = DspiFlashBank(Flash, ReadAddr);
+  if (BankSel < 0)
+    return Ret;
+#endif
     RemainLen = ((SPI_FLASH_16MB_BOUN << Flash->Shift) *
                  (BankSel + 1)) - Offset;
     if (Len < RemainLen)
@@ -773,6 +851,7 @@ DspiFlashCmdReadOps (
     Data += ReadLen;
   }
 
+  FreePool(Cmd);
   return Ret;
 }
 
@@ -788,6 +867,7 @@ DspiFlashCmdEraseOps (
   INT32 Ret = -1;
 
   EraseSize = Flash->EraseSize;
+
   if (Offset % EraseSize || Len % EraseSize) {
     DEBUG((EFI_D_ERROR, "SF: Erase Offset/Length Not"\
           "Multiple Of Erase Size\n"));
@@ -798,6 +878,11 @@ DspiFlashCmdEraseOps (
   while (Len) {
     EraseAddr = Offset;
 
+#ifdef CONFIG_SPI_FLASH_BAR
+  Ret = DspiFlashBank(Flash, EraseAddr);
+  if (Ret < 0)
+    return Ret;
+#endif
     DspiFlashAddr(EraseAddr, Cmd);
 
     Ret = DspiFlashWriteCommon(Flash, Cmd, sizeof(Cmd), NULL, 0);
@@ -821,13 +906,29 @@ DspiFlashCmdWriteOps (
   IN  CONST VOID *Buf
   )
 {
+  UINT64 ByteAddr, PageSize;
   UINT32 WriteAddr;
   UINT64 ChunkLen = 1, Actual;
   UINT8 Cmd[SPI_FLASH_CMD_LEN];
   INT32 Ret = -1;
+
+  PageSize = Flash->PageSize;
+
   Cmd[0] = Flash->WriteCmd;
-  for (Actual = 0; Actual < Len; Actual++) {
+  for (Actual = 0; Actual < Len; Actual += ChunkLen) {
     WriteAddr = Offset;
+
+#ifdef CONFIG_SPI_FLASH_BAR
+    Ret = DspiFlashBank(Flash, WriteAddr);
+    if (Ret < 0)
+      return Ret;
+#endif
+    ByteAddr = Offset % PageSize;
+    ChunkLen = Min(Len - Actual, (PageSize - ByteAddr));
+
+    if (Flash->Dspi->Slave.MaxWriteSize)
+      ChunkLen = Min(ChunkLen,
+		Flash->Dspi->Slave.MaxWriteSize);
 
     DspiFlashAddr(WriteAddr, Cmd);
 
