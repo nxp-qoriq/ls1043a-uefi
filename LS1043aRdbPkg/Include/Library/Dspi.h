@@ -2,7 +2,7 @@
   Header Defining The Dspi Flash Controller Constants (Base Addresses, Sizes,
   Flags), Function Prototype, Structures etc
 
-  Copyright (C) 2015, Freescale Ltd. All Rights Reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This Program And The Accompanying Materials
   Are Licensed And Made Available Under The Terms And Conditions Of The BSD
@@ -120,11 +120,11 @@
 #define DSPI_CTAR_PDT_5CLK		(0x00080000)
 #define DSPI_CTAR_PDT_3CLK		(0x00040000)
 #define DSPI_CTAR_PDT_1CLK		(0x00000000)
-#define DSPI_CTAR_PBR(X) 		(((X)&0x03)<<16)
-#define DSPI_CTAR_PBR_7CLK		(0x00030000)
-#define DSPI_CTAR_PBR_5CLK		(0x00020000)
-#define DSPI_CTAR_PBR_3CLK		(0x00010000)
-#define DSPI_CTAR_PBR_1CLK		(0x00000000)
+#define DSPI_CTAR_PREBR(X) 		(((X)&0x03)<<16)
+#define DSPI_CTAR_PREBR_7CLK		(0x00030000)
+#define DSPI_CTAR_PREBR_5CLK		(0x00020000)
+#define DSPI_CTAR_PREBR_3CLK		(0x00010000)
+#define DSPI_CTAR_PREBR_1CLK		(0x00000000)
 #define DSPI_CTAR_CSSCK(X)		(((X)&0x0F)<<12)
 #define DSPI_CTAR_ASC(X)		(((X)&0x0F)<<8)
 #define DSPI_CTAR_DT(X)		(((X)&0x0F)<<4)
@@ -161,6 +161,9 @@
 
 #define DSPI_PUSHR_CTAS_MASK     (UINT32)(0x70000000)
 #define DSPI_PUSHR_PCS_MASK      (UINT32)(0x003f0000)
+
+#define CHARBIT_MASK			0x78000000
+
 
 /* Sf Param Flags */
 enum {
@@ -302,7 +305,7 @@ struct DspiFlash {
 /* Function Prototypes */
 
 EFI_STATUS
-DspiFlashReadCommon (
+DspiCommonRead (
   IN  struct DspiFlash *Flash,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
@@ -311,7 +314,7 @@ DspiFlashReadCommon (
   );
 
 EFI_STATUS
-DspiFlashWriteCommon (
+DspiCommonWrite (
   IN  struct DspiFlash *Flash,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
@@ -320,7 +323,7 @@ DspiFlashWriteCommon (
   );
 
 EFI_STATUS
-DspiFlashCmdWriteOps (
+DspiWriteOps (
   IN  struct DspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len,
@@ -328,14 +331,14 @@ DspiFlashCmdWriteOps (
   );
 
 EFI_STATUS
-DspiFlashCmdEraseOps (
+DspiEraseOps (
   IN  struct DspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len
   );
 
 EFI_STATUS
-DspiFlashCmdReadOps (
+DspiReadOps (
   IN  struct DspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len,
@@ -354,7 +357,7 @@ DspiClaimBus (
   );
 
 EFI_STATUS
-DspiFlashReadWrite (
+DspiReadWrite (
   IN  struct DspiSlave *Dspi,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
@@ -364,13 +367,13 @@ DspiFlashReadWrite (
   );
 
 EFI_STATUS
-DspiFlashSetQeb (
+DspiSetQeb (
   IN  struct DspiFlash *Flash,
   IN  UINT8 Idcode0
   );
 
 VOID
-PrintSize (
+PrintMemorySize (
   IN  UINT64 Size,
   IN  CONST INT8 *S
   );
@@ -386,7 +389,7 @@ DspiFreeSlave (
   );
 
 struct DspiFlash *
-DspiFlashProbeSlave (
+DspiProbeDevice (
   IN  struct DspiSlave *Dspi
   );
 

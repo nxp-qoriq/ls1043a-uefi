@@ -2,7 +2,7 @@
 
   Probing function to detect device connected to DSPI controller
 
-  Copyright (c) 2015, Freescale Ltd. All rights reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -17,7 +17,7 @@
 #include "Library/Dspi.h"
 
 /* Read Commands Array */
-static UINT8 SpiReadCmdsArray[] = {
+static UINT8 ReadCmdsArray[] = {
   CMD_READ_ARRAY_SLOW,
   CMD_READ_ARRAY_FAST,
   CMD_READ_DUAL_OUTPUT_FAST,
@@ -26,7 +26,7 @@ static UINT8 SpiReadCmdsArray[] = {
   CMD_READ_QUAD_IO_FAST,
 };
 
-CONST struct SpiFlashParams SpiFlashParamsTable[] = {
+CONST struct DspiFlashParameters DspiFlashTable[] = {
 #ifdef CONFIG_SIMULATOR
   {(CONST INT8 *)"SST25WF512", 0xbf2501, 0x0,
 	64 * 1024, 1, 0, SECT_4K | SST_WP},
@@ -82,52 +82,53 @@ CONST struct SpiFlashParams SpiFlashParamsTable[] = {
 };
 
 struct DspiFlash *
-DspiFlashValidateParams (
+ValidateParameters (
   IN  struct DspiSlave *Dspi,
-  IN  UINT8 *Idcode
+  IN  UINT8 *Id
   )
 {
-  CONST struct SpiFlashParams *Params;
+  CONST struct DspiFlashParameters *Parameters;
   struct DspiFlash *Flash;
   UINT8 Cmd;
-  UINT16 Jedec = Idcode[1] << 8 | Idcode[2];
-  UINT16 ExtJedec = Idcode[3] << 8 | Idcode[4];
+  UINT16 Jedec = Id[1] << 8 | Id[2];
+  UINT16 ExtJedec = Id[3] << 8 | Id[4];
+  UINT8 CurrBank = 0;
 
-  Params = SpiFlashParamsTable;
-  for (; Params->Name != NULL; Params++) {
-    if ((Params->Jedec >> 16) == Idcode[0]) {
-      if ((Params->Jedec & 0xFFFF) == Jedec) {
-	if (Params->ExtJedec == 0)
+  Parameters = DspiFlashTable;
+  for (; Parameters->Name != NULL; Parameters++) {
+    if ((Parameters->Jedec >> 16) == Id[0]) {
+      if ((Parameters->Jedec & 0xFFFF) == Jedec) {
+	if (Parameters->ExtJedec == 0)
 	  break;
-	else if (Params->ExtJedec == ExtJedec)
+	else if (Parameters->ExtJedec == ExtJedec)
 	  break;
       }
     }
   }
 
-  if (!Params->Name) {
-    DEBUG((EFI_D_ERROR, "SF: Unsupported Flash IDs: "));
+  if (!Parameters->Name) {
+    DEBUG((EFI_D_ERROR, "Unsupported DSPI Flash IDs: "));
     DEBUG((EFI_D_ERROR, "Manuf %02x, Jedec %04x, ExtJedec %04x\n",
-		Idcode[0], Jedec, ExtJedec));
+		Id[0], Jedec, ExtJedec));
     return NULL;
   }
   Flash = (struct DspiFlash *)AllocatePool(sizeof(struct DspiFlash));
   InternalMemZeroMem(Flash, sizeof(struct DspiFlash));
   if (!Flash) {
-    DEBUG((EFI_D_ERROR, "SF: Failed To Allocate DspiFlash\n"));
+    DEBUG((EFI_D_ERROR, "Failed To Allocate DspiFlash\n"));
     return NULL;
   }
 
   /* Assign Spi Data */
   Flash->Dspi = Dspi;
-  Flash->Name = Params->Name;
+  Flash->Name = Parameters->Name;
   Flash->MemoryMap = Dspi->Slave.MemoryMap;
   Flash->DualFlash = Flash->Dspi->Slave.Option;
 
   /* Assign DspiFlash Ops */
-  Flash->Write = DspiFlashCmdWriteOps;
-  Flash->Erase = DspiFlashCmdEraseOps;
-  Flash->Read = DspiFlashCmdReadOps;
+  Flash->Write = DspiWriteOps;
+  Flash->Erase = DspiEraseOps;
+  Flash->Read = DspiReadOps;
 
   /* Compute The Flash Size */
   Flash->Shift = (Flash->DualFlash & SF_DUAL_PARALLEL_FLASH) ? 1 : 0;
@@ -146,14 +147,14 @@ DspiFlashValidateParams (
     Flash->PageSize = 256;
   }
   Flash->PageSize <<= Flash->Shift;
-  Flash->SectorSize = Params->SectorSize << Flash->Shift;
-  Flash->Size = Flash->SectorSize * Params->NrSectors << Flash->Shift;
+  Flash->SectorSize = Parameters->SectorSize << Flash->Shift;
+  Flash->Size = Flash->SectorSize * Parameters->NoOfSectors << Flash->Shift;
 
   /* Compute Erase Sector And Command */
-  if (Params->Flags & SECT_4K) {
+  if (Parameters->Flags & SECT_4K) {
     Flash->EraseCmd = CMD_ERASE_4K;
     Flash->EraseSize = 4096 << Flash->Shift;
-  } else if (Params->Flags & SECT_32K) {
+  } else if (Parameters->Flags & SECT_32K) {
     Flash->EraseCmd = CMD_ERASE_32K;
     Flash->EraseSize = 32768 << Flash->Shift;
   } else {
@@ -161,15 +162,15 @@ DspiFlashValidateParams (
     Flash->EraseSize = Flash->SectorSize;
   }
 
-  if (Params->Name == (CONST INT8 *)"N25Q128")
+  if (Parameters->Name == (CONST INT8 *)"N25Q128")
     Flash->BlockSize = Flash->SectorSize/NUM_OF_SUBSECTOR;
   else
     Flash->BlockSize = Flash->SectorSize;
 
   /* Look for The Fastest Read Cmd */
-  Cmd = GenericFls(Params->ERdCmd & Flash->Dspi->Slave.OpModeRx);
+  Cmd = GenericFls(Parameters->EnumRdCmd & Flash->Dspi->Slave.OpModeRx);
   if (Cmd) {
-    Cmd = SpiReadCmdsArray[Cmd - 1];
+    Cmd = ReadCmdsArray[Cmd - 1];
     Flash->ReadCmd = Cmd;
   } else {
     /* Go for default Supported Read Cmd */
@@ -177,7 +178,7 @@ DspiFlashValidateParams (
   }
 
   /* Not Require To Look for Fastest Only Two Write Cmds Yet */
-  if (Params->Flags & WR_QPP && Flash->Dspi->Slave.OpModeTx & SPI_OPM_TX_QPP)
+  if (Parameters->Flags & WR_QPP && Flash->Dspi->Slave.OpModeTx & SPI_OPM_TX_QPP)
     Flash->WriteCmd = CMD_QUAD_PAGE_PROGRAM;
   else
     /* Go for default Supported Write Cmd */
@@ -206,25 +207,23 @@ DspiFlashValidateParams (
   Flash->PollCmd = CMD_READ_STATUS;
 
 
-  if (Params->Flags & E_FSR)
+  if (Parameters->Flags & E_FSR)
     Flash->PollCmd = CMD_FLAG_STATUS;
 
 
   /* Configure the BAR - discover bank cmds and read current bank */
-  UINT8 CurrBank = 0;
-
   if (Flash->Size > SPI_FLASH_16MB_BOUN) {
     INT32 Ret;
 
-    Flash->BankReadCmd = (Idcode[0] == 0x01) ?
+    Flash->BankReadCmd = (Id[0] == 0x01) ?
                          CMD_BANKADDR_BRRD : CMD_EXTNADDR_RDEAR;
-    Flash->BankWriteCmd = (Idcode[0] == 0x01) ?
+    Flash->BankWriteCmd = (Id[0] == 0x01) ?
                          CMD_BANKADDR_BRWR : CMD_EXTNADDR_WREAR;
 
-    Ret = DspiFlashReadCommon(Flash, &Flash->BankReadCmd, 1,
+    Ret = DspiCommonRead(Flash, &Flash->BankReadCmd, 1,
                              &CurrBank, 1);
     if (Ret != EFI_SUCCESS) {
-      DEBUG((EFI_D_ERROR,"SF: fail to read bank addr register\n"));
+      DEBUG((EFI_D_ERROR,"Fail to read bank addr register\n"));
       return NULL;
     }
     Flash->BankCurr = CurrBank;
@@ -232,10 +231,10 @@ DspiFlashValidateParams (
     Flash->BankCurr = CurrBank;
   }
 #if 0
-  if (BoardSpiIsDataflash(Dspi->Slave.Bus, Dspi->Slave.Cs)) {
+  if (IsDataflash(Dspi->Slave.Bus, Dspi->Slave.Cs)) {
     Flash->PollCmd = CMD_ATMEL_READ_STATUS;
     Flash->WriteCmd = CMD_ATMEL_PAGE_PROGRAM;
-    if (Params->Flags & SECT_32K)
+    if (Parameters->Flags & SECT_32K)
       Flash->EraseCmd = CMD_ATMEL_ERASE_32K;
   }
 #endif
@@ -244,7 +243,7 @@ DspiFlashValidateParams (
 
 /* enable the W#/Vpp signal to disable writing to the status register */
 EFI_STATUS
-DspiEnableWpPin (
+DspiEnableWritePin (
   IN  struct DspiFlash *Flash
   )
 {
@@ -252,17 +251,17 @@ DspiEnableWpPin (
 }
 
 /**
- * DspiFlashProbeSlave() - Probe for a SPI flash device on a bus
+ * DspiProbeDevice() - Probe for a SPI flash device on a bus
  *
  * @Dspi: Bus to probe
  */
 struct DspiFlash *
-DspiFlashProbeSlave (
+DspiProbeDevice (
   IN  struct DspiSlave *Dspi
   )
 {
   struct DspiFlash *Flash = NULL;
-  UINT8 Idcode[5] = {0};
+  UINT8 Id[5] = {0};
   INT32 Ret;
   UINT8 Cmd;
 
@@ -275,15 +274,15 @@ DspiFlashProbeSlave (
 
   /* Read The ID Codes */
   Cmd = CMD_READ_JEDEC_ID;
-  Ret = DspiFlashReadWrite(Dspi, &Cmd, 1, NULL, Idcode,
-		sizeof(Idcode));
+  Ret = DspiReadWrite(Dspi, &Cmd, 1, NULL, Id,
+		sizeof(Id));
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Failed To Get Idcodes\n"));
+    DEBUG((EFI_D_ERROR, "SF: Failed To Get Ids\n"));
     goto ErrClaimBus;
   }
 
-  /* Validate Params From SpiFlashParams Table */
-  Flash = DspiFlashValidateParams(Dspi, Idcode);
+  /* Validate Parameters From SpiFlashParameters Table */
+  Flash = ValidateParameters(Dspi, Id);
   if (!Flash)
     goto ErrClaimBus;
 
@@ -291,16 +290,16 @@ DspiFlashProbeSlave (
   if ((Flash->ReadCmd == CMD_READ_QUAD_OUTPUT_FAST) ||
       (Flash->ReadCmd == CMD_READ_QUAD_IO_FAST) ||
       (Flash->WriteCmd == CMD_QUAD_PAGE_PROGRAM)) {
-    if (DspiFlashSetQeb(Flash, Idcode[0]) != EFI_SUCCESS) {
-      DEBUG((EFI_D_ERROR, "SF: Fail To Set QEB for %02x\n", Idcode[0]));
+    if (DspiSetQeb(Flash, Id[0]) != EFI_SUCCESS) {
+      DEBUG((EFI_D_ERROR, "Fail To Set QEB for %02x\n", Id[0]));
       return NULL;
     }
   }
 
-  DEBUG((EFI_D_RELEASE, "SF: Detected %a With Page Size ", Flash->Name));
-  PrintSize(Flash->PageSize, (CONST INT8 *)"Erase Size ");
-  PrintSize(Flash->EraseSize, (CONST INT8 *)"Total ");
-  PrintSize(Flash->Size, (CONST INT8 *)"");
+  DEBUG((EFI_D_RELEASE, "Detected DSPI Flash %a With Page Size ", Flash->Name));
+  PrintMemorySize(Flash->PageSize, (CONST INT8 *)"Erase Size ");
+  PrintMemorySize(Flash->EraseSize, (CONST INT8 *)"Total ");
+  PrintMemorySize(Flash->Size, (CONST INT8 *)"");
   DEBUG((EFI_D_RELEASE, "\n"));
 
   if (Flash->MemoryMap)
@@ -310,11 +309,11 @@ DspiFlashProbeSlave (
        (Flash->Size > SPI_FLASH_16MB_BOUN)) ||
        ((Flash->DualFlash > SF_SINGLE_FLASH) &&
        (Flash->Size > SPI_FLASH_16MB_BOUN << 1))) {
-    DEBUG((EFI_D_WARN, "SF: Warning - Only Lower 16MiB Accessible, "\
+    DEBUG((EFI_D_WARN, "Warning - Only Lower 16MiB Accessible, "\
   		"Full Access #define CONFIG_SPI_FLASH_BAR\n"));
   }
 
-  if (DspiEnableWpPin(Flash) != EFI_SUCCESS)
+  if (DspiEnableWritePin(Flash) != EFI_SUCCESS)
     DEBUG((EFI_D_WARN,"Enable WP pin failed\n"));
 
   /* Release Dspi Bus */

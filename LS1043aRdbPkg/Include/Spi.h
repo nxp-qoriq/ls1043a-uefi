@@ -1,7 +1,7 @@
 /** @Spi.h
   Header Defining The Spi Flash Controller Constants, Structures etc
 
-  Copyright (C) 2015, Freescale Ltd. All Rights Reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This Program And The Accompanying Materials
   Are Licensed And Made Available Under The Terms And Conditions Of The BSD
@@ -89,23 +89,23 @@ enum SpiDualFlash {
 };
 
 /**
- * struct SpiFlashParams - Flash Device Parameter Structure
+ * struct DspiFlashParameters - Flash Device Parameter Structure
  *
  * @Name:            Device Name ([MANUFLETTER][DEVTYPE][DENSITY][EXTRAINFO])
  * @Jedec:           Device Jedec ID (0x[1byteManufId][2byteDevId])
  * @ExtJedec:        Device ExtJedec ID
  * @SectorSize:      Sector Size Of This Device
- * @NrSectors:       No.Of Sectors On This Device
- * @ERdCmd:          enum List for Read Commands
+ * @NoOfSectors:       No.Of Sectors On This Device
+ * @EnumRdCmd:          enum List for Read Commands
  * @Flags:           Important Param, for Flash Specific Behaviour
  */
-struct SpiFlashParams {
+struct DspiFlashParameters {
   CONST INT8 *Name;
   UINT32 Jedec;
   UINT16 ExtJedec;
   UINT32 SectorSize;
-  UINT32 NrSectors;
-  UINT8  ERdCmd;
+  UINT32 NoOfSectors;
+  UINT8  EnumRdCmd;
   UINT16 Flags;
 };
 

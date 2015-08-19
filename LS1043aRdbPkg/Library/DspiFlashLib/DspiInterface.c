@@ -2,7 +2,7 @@
   Dspi Flash Library Containing Functions for Read, Write, Initialize, Set Speed
   Etc
 
-  Copyright (C) 2015, Freescale Ltd. All Rights Reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This Program And The Accompanying Materials
   Are Licensed And Made Available Under The Terms And Conditions Of The BSD
@@ -116,7 +116,7 @@ DspiDetect(
     return EFI_OUT_OF_RESOURCES;
   }
 
-  New = DspiFlashProbeSlave(Dspi);
+  New = DspiProbeDevice(Dspi);
 
   if (!New)
     return EFI_OUT_OF_RESOURCES;

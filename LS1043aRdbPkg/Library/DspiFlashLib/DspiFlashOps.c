@@ -2,7 +2,7 @@
 
   Functions for implementing DSI Controller functionality.
 
-  Copyright (c) 2015, Freescale Ltd. All rights reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -63,7 +63,7 @@ void DumpDspiRegs(struct DspiSlave *Dspi)
 
 #ifdef CONFIG_SPI_FLASH_BAR
 EFI_STATUS
-DspiFlashCmdBankaddrWrite (
+DspiCmdBankAddrWrite (
   IN  struct DspiFlash *Flash,
   IN  UINT8 BankSel
   )
@@ -77,19 +77,19 @@ DspiFlashCmdBankaddrWrite (
 
   Cmd = Flash->BankWriteCmd;
 
-  Ret = DspiFlashWriteCommon(Flash, &Cmd, 1, &BankSel, 1);
+  Ret = DspiCommonWrite(Flash, &Cmd, 1, &BankSel, 1);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR,"SF: fail to write bank register\n"));
+    DEBUG((EFI_D_ERROR,"Fail to write bank register\n"));
     return Ret;
   }
 
   Flash->BankCurr = BankSel;
 
-  return 0;
+  return EFI_SUCCESS;
 }  
  
 INT32
-DspiFlashBank (
+DspiWriteBankAddr (
   IN struct DspiFlash *Flash,
   IN  UINT32 Offset
   )
@@ -99,9 +99,9 @@ DspiFlashBank (
 
   BankSel = Offset / (SPI_FLASH_16MB_BOUN << Flash->Shift);
 
-  Ret = DspiFlashCmdBankaddrWrite(Flash, BankSel);
+  Ret = DspiCmdBankAddrWrite(Flash, BankSel);
   if (Ret) {
-    DEBUG((EFI_D_ERROR,"SF: fail to set bank%d\n", BankSel));
+    DEBUG((EFI_D_ERROR,"Fail to set bank%d\n", BankSel));
     return Ret;
   }
 
@@ -110,7 +110,7 @@ DspiFlashBank (
 #endif
 
 struct DspiSlave *
-DspiAllocSlave (
+DspiCreateSlave (
   IN  INT32 Offset,
   IN  INT32 Size,
   IN  UINT32 Bus,
@@ -133,7 +133,7 @@ DspiAllocSlave (
 }
 
 INT32
-BoardSpiIsDataflash (
+IsDataflash (
   IN  UINT32 Bus,
   IN  UINT32 Cs
   )
@@ -150,7 +150,7 @@ BoardSpiIsDataflash (
  * (Like "\n")
  */
 VOID
-PrintSize (
+PrintMemorySize (
   IN  UINT64 Size,
   IN  CONST INT8 *S
   )
@@ -195,7 +195,7 @@ PrintSize (
 }
 
 EFI_STATUS
-DspiFlashCmdReadStatus (
+DspiReadStatus (
   IN  struct DspiFlash *Flash,
   OUT UINT8 *Res
   )
@@ -204,9 +204,9 @@ DspiFlashCmdReadStatus (
   UINT8 Cmd;
   Cmd = CMD_READ_STATUS;
 
-  Ret = DspiFlashReadCommon(Flash, &Cmd, 1, Res, 1);
+  Ret = DspiCommonRead(Flash, &Cmd, 1, Res, 1);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Fail To Read Status Register\n"));
+    DEBUG((EFI_D_ERROR, "Fail To Read DSPI Status Register\n"));
     return Ret;
   }
 
@@ -214,7 +214,7 @@ DspiFlashCmdReadStatus (
 }
 
 EFI_STATUS
-DspiFlashCmdWriteConfig (
+DspiWriteConfig (
   IN  struct DspiFlash *Flash,
   IN  UINT8 WCmd
   )
@@ -223,15 +223,15 @@ DspiFlashCmdWriteConfig (
   UINT8 Cmd;
   INT32 Ret;
 
-  Ret = DspiFlashCmdReadStatus(Flash, &Data[0]);
+  Ret = DspiReadStatus(Flash, &Data[0]);
   if (Ret != EFI_SUCCESS)
     return Ret;
 
   Cmd = CMD_WRITE_STATUS;
   Data[1] = WCmd;
-  Ret = DspiFlashWriteCommon(Flash, &Cmd, 1, &Data, 2);
+  Ret = DspiCommonWrite(Flash, &Cmd, 1, &Data, 2);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Fail To Write Config Register\n"));
+    DEBUG((EFI_D_ERROR, "Fail To Write DSPI Config Register\n"));
     return Ret;
   }
 
@@ -239,7 +239,7 @@ DspiFlashCmdWriteConfig (
 }
 
 EFI_STATUS
-DspiFlashCmdReadConfig (
+DspiReadConfig (
   IN  struct DspiFlash *Flash,
   IN  UINT8 *RCmd
   )
@@ -248,9 +248,9 @@ DspiFlashCmdReadConfig (
   UINT8 Cmd;
 
   Cmd = CMD_READ_CONFIG;
-  Ret = DspiFlashReadCommon(Flash, &Cmd, 1, RCmd, 1);
+  Ret = DspiCommonRead(Flash, &Cmd, 1, RCmd, 1);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Fail To Read Config Register\n"));
+    DEBUG((EFI_D_ERROR, "Fail To Read DSPI Config Register\n"));
     return Ret;
   }
 
@@ -258,21 +258,21 @@ DspiFlashCmdReadConfig (
 }
 
 EFI_STATUS
-DspiFlashSetQebWinspan (
+DspiSetQebWinspan (
   IN  struct DspiFlash *Flash
   )
 {
   UINT8 QebStatus;
   INT32 Ret;
 
-  Ret = DspiFlashCmdReadConfig(Flash, &QebStatus);
+  Ret = DspiReadConfig(Flash, &QebStatus);
   if (Ret != EFI_SUCCESS)
     return Ret;
 
   if (QebStatus & STATUS_QEB_WINSPAN) {
-    DEBUG((EFI_D_ERROR, "SF: Winspan: QEB Is Already Set\n"));
+    DEBUG((EFI_D_ERROR, "Winspan: QEB Is Already Set\n"));
   } else {
-    Ret = DspiFlashCmdWriteConfig(Flash, STATUS_QEB_WINSPAN);
+    Ret = DspiWriteConfig(Flash, STATUS_QEB_WINSPAN);
     if (Ret != EFI_SUCCESS)
       return Ret;
   }
@@ -281,7 +281,7 @@ DspiFlashSetQebWinspan (
 }
 
 EFI_STATUS
-DspiFlashSetQeb (
+DspiSetQeb (
   IN  struct DspiFlash *Flash,
   IN  UINT8 Idcode0
   )
@@ -289,12 +289,12 @@ DspiFlashSetQeb (
   switch (Idcode0) {
   case SPI_FLASH_CFI_MFR_SPANSION:
   case SPI_FLASH_CFI_MFR_WINBOND:
-    return DspiFlashSetQebWinspan(Flash);
+    return DspiSetQebWinspan(Flash);
   case SPI_FLASH_CFI_MFR_STMICRO:
-    DEBUG((EFI_D_INFO,"SF: QEB is volatile for %02x flash\n", Idcode0));
+    DEBUG((EFI_D_INFO,"QEB is volatile for %02x flash\n", Idcode0));
     return EFI_SUCCESS;
   default:
-    DEBUG((EFI_D_ERROR, "SF: Need Set QEB Func for %02x Flash\n",
+    DEBUG((EFI_D_ERROR, "Need Set QEB Func for %02x Flash\n",
 			Idcode0));
     return EFI_UNSUPPORTED;
   }
@@ -346,25 +346,16 @@ EFI_STATUS
 DspiXfer (
   IN  struct DspiSlave *DspiSlave,
   IN  UINT32 Bitlen,
-  IN  CONST VOID *Dout,
-  OUT VOID *Din,
+  IN  CONST VOID *OutData,
+  OUT VOID *InData,
   IN  UINT64 Flags
   )
 {
   EFI_STATUS Status = EFI_SUCCESS;
-  UINT16 *SpiRd16 = NULL, *SpiWr16 = NULL;
-  UINT8 *SpiRd = NULL, *SpiWr = NULL;
+  UINT16 *DspiRead16 = NULL, *DspiWrite16 = NULL;
+  UINT8 *DspiRead = NULL, *DspiWrite = NULL;
   static UINT32 Ctrl = 0;
   UINT32 Len = Bitlen >> 3;
-
-  if (DspiSlave->Charbit == 16) {
-    Bitlen >>= 1;
-    SpiWr16 = (UINT16 *) Dout;
-    SpiRd16 = (UINT16 *) Din;
-  } else {
-    SpiWr = (UINT8 *) Dout;
-    SpiRd = (UINT8 *) Din;
-  }
 
   if ((Flags & SPI_XFER_BEGIN) == SPI_XFER_BEGIN)
     Ctrl |= DSPI_TFR_CONT;
@@ -373,14 +364,23 @@ DspiXfer (
   Ctrl &= ~DSPI_PUSHR_PCS_MASK;
   Ctrl = (Ctrl & 0xFF000000) | ((1 << DspiSlave->Slave.Cs) << 16);
 
+  if (DspiSlave->Charbit == 16) {
+    Bitlen >>= 1;
+    DspiWrite16 = (UINT16 *) OutData;
+    DspiRead16 = (UINT16 *) InData;
+  } else {
+    DspiWrite = (UINT8 *) OutData;
+    DspiRead = (UINT8 *) InData;
+  }
+
   if (Len > 1) {
-    INT32 TmpLen = Len - 1;
-    while (TmpLen--) {
-      if (Dout != NULL) {
+    INT32 TempLen = Len - 1;
+    while (TempLen--) {
+      if (OutData != NULL) {
         if (DspiSlave->Charbit == 16)
-	   Status = DspiTx(DspiSlave, Ctrl, *SpiWr16++);
+	   Status = DspiTx(DspiSlave, Ctrl, *DspiWrite16++);
 	 else
-	   Status = DspiTx(DspiSlave, Ctrl, *SpiWr++);
+	   Status = DspiTx(DspiSlave, Ctrl, *DspiWrite++);
 
         if (Status != EFI_SUCCESS)
 	   return Status;
@@ -390,7 +390,7 @@ DspiXfer (
 	   return EFI_TIMEOUT;
       }
 
-      if (Din != NULL) {
+      if (InData != NULL) {
 	 Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
         if (Status != EFI_SUCCESS)
 	   return Status;
@@ -400,9 +400,9 @@ DspiXfer (
 	   return EFI_TIMEOUT;
 
 	 if (DspiSlave->Charbit == 16)
-	   *SpiRd16++ = Status;
+	   *DspiRead16++ = Status;
 	 else
-	   *SpiRd++ = Status;
+	   *DspiRead++ = Status;
       }
     }
     Len = 1;	/* Remaining Byte */
@@ -412,11 +412,11 @@ DspiXfer (
     Ctrl &= ~DSPI_TFR_CONT;
 
   if (Len) {
-    if (Dout != NULL) {
+    if (OutData != NULL) {
       if (DspiSlave->Charbit == 16)
-        Status = DspiTx(DspiSlave, Ctrl, *SpiWr16);
+        Status = DspiTx(DspiSlave, Ctrl, *DspiWrite16);
       else
-        Status = DspiTx(DspiSlave, Ctrl, *SpiWr);
+        Status = DspiTx(DspiSlave, Ctrl, *DspiWrite);
 	
       if (Status != EFI_SUCCESS)
 	 return Status;
@@ -426,7 +426,7 @@ DspiXfer (
         return EFI_TIMEOUT;
     }
 
-    if (Din != NULL) {
+    if (InData != NULL) {
       Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
        
       if (Status != EFI_SUCCESS)
@@ -437,9 +437,9 @@ DspiXfer (
 	 return EFI_TIMEOUT;
 
       if (DspiSlave->Charbit == 16)
-        *SpiRd16 = Status;
+        *DspiRead16 = Status;
       else
-	*SpiRd = Status;
+	*DspiRead = Status;
     }
   } else {
     /* Dummy Read */
@@ -484,14 +484,14 @@ DspiSetupSlave (
     256, 512, 1024, 2048,
     4096, 8192, 16384, 32768
   };
-  UINT32 I, J, Pbrcnt, Brcnt, Diff, Tmp, Dbr = 0;
+  UINT32 I, J, PrescalerCnt, ScalerCnt, Diff, Temp, Dbr = 0;
   UINT32 BestI, BestJ, Bestmatch = 0x7FFFFFFF, BaudSpeed;
   UINTN  BusClk;
   UINT32 BusSetup = 0;
   UINT32 Ret = 0;
   struct SysInfo SocSysInfo;
 
-  Dspislave = DspiAllocSlave(0, sizeof(struct DspiSlave), Bus, Cs);
+  Dspislave = DspiCreateSlave(0, sizeof(struct DspiSlave), Bus, Cs);
   if (!Dspislave)
     return NULL;
 
@@ -507,15 +507,15 @@ DspiSetupSlave (
   /* default Setting In Platform Configuration */
   MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], CONFIG_SYS_DSPI_CTAR0);
 
-  Tmp = (Prescaler[3] * Scaler[15]);
   GetSysInfo(&SocSysInfo);
   BusClk = (UINT32)SocSysInfo.FreqSystemBus;
 
   /* Maximum And Minimum Baudrate It Can Handle */
+  Temp = (Prescaler[3] * Scaler[15]);
   if ((Dspislave->Baudrate > (BusClk >> 1)) ||
-    (Dspislave->Baudrate < (BusClk / Tmp))) {
+    (Dspislave->Baudrate < (BusClk / Temp))) {
     DEBUG((EFI_D_INFO, "Exceed Baudrate Limitation: Max %d - Min %d\n",
-		(INT32)(BusClk >> 1), (INT32)(BusClk / Tmp)));
+		(INT32)(BusClk >> 1), (INT32)(BusClk / Temp)));
 
     return NULL;
   }
@@ -556,21 +556,21 @@ DspiSetupSlave (
   } else
     BusSetup |= Ret & 0x78FCFFF0;
 
-  Dspislave->Charbit = ((Ret & 0x78000000) == 0x78000000) ? 16 : 8;
-
-  Pbrcnt = sizeof(Prescaler) / sizeof(INT32);
-  Brcnt = sizeof(Scaler) / sizeof(INT32);
+  Dspislave->Charbit = ((Ret & CHARBIT_MASK) == CHARBIT_MASK) ? 16 : 8;
 
   /* Baudrate Calculation - To Closer Value, May Not Be Exact Match */
-  for (BestI = 0, BestJ = 0, I = 0; I < Pbrcnt; I++) {
-    BaudSpeed = BusClk / Prescaler[I];
-    for (J = 0; J < Brcnt; J++) {
-      Tmp = (BaudSpeed / Scaler[J]) * (1 + Dbr);
+  PrescalerCnt = sizeof(Prescaler) / sizeof(INT32);
+  ScalerCnt = sizeof(Scaler) / sizeof(INT32);
 
-      if (Tmp > Dspislave->Baudrate)
-	Diff = Tmp - Dspislave->Baudrate;
+  for (BestI = 0, BestJ = 0, I = 0; I < PrescalerCnt; I++) {
+    BaudSpeed = BusClk / Prescaler[I];
+    for (J = 0; J < ScalerCnt; J++) {
+      Temp = (BaudSpeed / Scaler[J]) * (1 + Dbr);
+
+      if (Temp > Dspislave->Baudrate)
+	Diff = Temp - Dspislave->Baudrate;
       else
-	Diff = Dspislave->Baudrate - Tmp;
+	Diff = Dspislave->Baudrate - Temp;
 
       if (Diff < Bestmatch) {
 	Bestmatch = Diff;
@@ -580,7 +580,7 @@ DspiSetupSlave (
     }
   }
 
-  BusSetup |= (DSPI_CTAR_PBR(BestI) | DSPI_CTAR_BR(BestJ));
+  BusSetup |= (DSPI_CTAR_PREBR(BestI) | DSPI_CTAR_BR(BestJ));
   MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], BusSetup);
 
   return Dspislave;
@@ -611,7 +611,7 @@ DspiReleaseBus (
 }
 
 EFI_STATUS
-DspiFlashReadWrite (
+DspiReadWrite (
   IN  struct DspiSlave *Dspi,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
@@ -628,13 +628,13 @@ DspiFlashReadWrite (
 
   Ret = DspiXfer(Dspi, CmdLen * 8, Cmd, NULL, Flags);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Failed To Send Command (%zu Bytes): %d\n",
+    DEBUG((EFI_D_ERROR, "DSPI: Failed To Send Command (%zu Bytes): %d\n",
 			CmdLen, Ret));
     return Ret;
   } else if (DataLen != 0) {
     Ret = DspiXfer(Dspi, DataLen * 8, DataOut, DataIn, SPI_XFER_END);
     if (Ret != EFI_SUCCESS) {
-      DEBUG((EFI_D_ERROR, "SF: Failed To Transfer %zu Bytes Of Data: %d\n",
+      DEBUG((EFI_D_ERROR, "DSPI: Failed To Transfer %zu Bytes Of Data: %d\n",
 			DataLen, Ret));
       return Ret;
     }
@@ -644,7 +644,7 @@ DspiFlashReadWrite (
 }
 
 EFI_STATUS
-DspiFlashCmdWaitReady (
+DspiWaitReady (
   IN  struct DspiFlash *Flash,
   IN  UINT64 Timeout
   )
@@ -665,7 +665,7 @@ DspiFlashCmdWaitReady (
 
   Ret = DspiXfer(Dspi, 8, &Cmd, NULL, Flags);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Fail To Read %a Status Register\n",
+    DEBUG((EFI_D_ERROR, "DSPI: Fail To Read %a Status Register\n",
           Cmd == CMD_READ_STATUS ? "Read" : "Flag"));
     return Ret;
   }
@@ -691,14 +691,14 @@ DspiFlashCmdWaitReady (
     return EFI_SUCCESS;
 
   /* Timed Out */
-  DEBUG((EFI_D_ERROR, "SF: Time Out!\n"));
+  DEBUG((EFI_D_ERROR, "DSPI: Time Out!\n"));
   Ret = EFI_TIMEOUT;
 
   return Ret;
 }
 
 EFI_STATUS
-DspiFlashWriteCommon (
+DspiCommonWrite (
   IN  struct DspiFlash *Flash,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
@@ -716,27 +716,27 @@ DspiFlashWriteCommon (
 
   Ret = DspiClaimBus(Flash->Dspi);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Unable To Claim SPI Bus\n"));
+    DEBUG((EFI_D_ERROR, "Unable To Claim DSPI Bus\n"));
     return Ret;
   }
 
   Wcmd = CMD_WRITE_ENABLE;
 
-  Ret = DspiFlashReadWrite(Dspi, &Wcmd, 1, NULL, NULL, 0);
+  Ret = DspiReadWrite(Dspi, &Wcmd, 1, NULL, NULL, 0);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Enabling Write Failed\n"));
+    DEBUG((EFI_D_ERROR, "Enabling DSPI Write Failed\n"));
     return Ret;
   }
 
-  Ret = DspiFlashReadWrite(Dspi, Cmd, CmdLen, Buf, NULL, BufLen);
+  Ret = DspiReadWrite(Dspi, Cmd, CmdLen, Buf, NULL, BufLen);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Write Cmd Failed\n"));
+    DEBUG((EFI_D_ERROR, "DSPI Write Cmd Failed\n"));
     return Ret;
   }
 
-  Ret = DspiFlashCmdWaitReady(Flash, Timeout);
+  Ret = DspiWaitReady(Flash, Timeout);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Write %s Failed\n",
+    DEBUG((EFI_D_ERROR, "DSPI Write %s Failed\n",
           Timeout == SPI_FLASH_PROG_TIMEOUT ?
            "Program" : "Page Erase"));
     return Ret;
@@ -747,7 +747,7 @@ DspiFlashWriteCommon (
 }
 
 VOID
-DspiFlashAddr (
+DspiCreateAddr (
   IN  UINT32 Addr,
   OUT UINT8 *Cmd
   )
@@ -759,7 +759,7 @@ DspiFlashAddr (
 }
 
 EFI_STATUS
-DspiFlashReadCommon (
+DspiCommonRead (
   IN  struct DspiFlash *Flash,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
@@ -772,13 +772,13 @@ DspiFlashReadCommon (
 
   Ret = DspiClaimBus(Flash->Dspi);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Unable To Claim SPI Bus\n"));
+    DEBUG((EFI_D_ERROR, "Unable To Claim DSPI Bus\n"));
     return Ret;
   }
 
-  Ret = DspiFlashReadWrite(Dspi, Cmd, CmdLen, NULL, Data, DataLen);
+  Ret = DspiReadWrite(Dspi, Cmd, CmdLen, NULL, Data, DataLen);
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Read Cmd Failed\n"));
+    DEBUG((EFI_D_ERROR, "DSPI Read Cmd Failed\n"));
     return Ret;
   }
 
@@ -788,7 +788,7 @@ DspiFlashReadCommon (
 }
 
 EFI_STATUS
-DspiFlashCmdReadOps (
+DspiReadOps (
   IN  struct DspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len,
@@ -805,7 +805,7 @@ DspiFlashCmdReadOps (
   if (Flash->MemoryMap) {
     Ret = DspiClaimBus(Flash->Dspi);
     if (Ret != EFI_SUCCESS) {
-      DEBUG((EFI_D_ERROR, "SF: Unable To Claim SPI Bus\n"));
+      DEBUG((EFI_D_ERROR, "Unable To Claim DSPI Bus\n"));
       return Ret;
     }
     DspiXfer(Flash->Dspi, 0, NULL, NULL, SPI_XFER_MMAP);
@@ -819,7 +819,7 @@ DspiFlashCmdReadOps (
 
   Cmd = (UINT8 *)AllocatePool(CmdSz);
   if (!Cmd) {
-    DEBUG((EFI_D_ERROR, "SF: Out of Memory\n"));
+    DEBUG((EFI_D_ERROR, "DSPI: Out of Memory\n"));
     return EFI_OUT_OF_RESOURCES;
   }
 
@@ -828,7 +828,7 @@ DspiFlashCmdReadOps (
     ReadAddr = Offset;
 
 #ifdef CONFIG_SPI_FLASH_BAR
-  BankSel = DspiFlashBank(Flash, ReadAddr);
+  BankSel = DspiWriteBankAddr(Flash, ReadAddr);
   if (BankSel < 0)
     return Ret;
 #endif
@@ -839,10 +839,10 @@ DspiFlashCmdReadOps (
     else
       ReadLen = RemainLen;
 
-    DspiFlashAddr(ReadAddr, Cmd);
-    Ret = DspiFlashReadCommon(Flash, Cmd, CmdSz, Data, ReadLen);
+    DspiCreateAddr(ReadAddr, Cmd);
+    Ret = DspiCommonRead(Flash, Cmd, CmdSz, Data, ReadLen);
     if (Ret != EFI_SUCCESS) {
-      DEBUG((EFI_D_ERROR, "SF: Read Failed\n"));
+      DEBUG((EFI_D_ERROR, "DSPI Read Failed\n"));
       break;
     }
 
@@ -856,7 +856,7 @@ DspiFlashCmdReadOps (
 }
 
 EFI_STATUS
-DspiFlashCmdEraseOps (
+DspiEraseOps (
   IN  struct DspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len
@@ -869,7 +869,7 @@ DspiFlashCmdEraseOps (
   EraseSize = Flash->EraseSize;
 
   if (Offset % EraseSize || Len % EraseSize) {
-    DEBUG((EFI_D_ERROR, "SF: Erase Offset/Length Not"\
+    DEBUG((EFI_D_ERROR, "DSPI Erase Offset/Length Not"\
           "Multiple Of Erase Size\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -879,15 +879,15 @@ DspiFlashCmdEraseOps (
     EraseAddr = Offset;
 
 #ifdef CONFIG_SPI_FLASH_BAR
-  Ret = DspiFlashBank(Flash, EraseAddr);
+  Ret = DspiWriteBankAddr(Flash, EraseAddr);
   if (Ret < 0)
     return Ret;
 #endif
-    DspiFlashAddr(EraseAddr, Cmd);
+    DspiCreateAddr(EraseAddr, Cmd);
 
-    Ret = DspiFlashWriteCommon(Flash, Cmd, sizeof(Cmd), NULL, 0);
+    Ret = DspiCommonWrite(Flash, Cmd, sizeof(Cmd), NULL, 0);
     if (Ret != EFI_SUCCESS) {
-      DEBUG((EFI_D_ERROR, "SF: Erase Failed\n"));
+      DEBUG((EFI_D_ERROR, "DSPI Erase Failed\n"));
       break;
     }
 
@@ -899,7 +899,7 @@ DspiFlashCmdEraseOps (
 }
 
 EFI_STATUS
-DspiFlashCmdWriteOps (
+DspiWriteOps (
   IN  struct DspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len,
@@ -919,7 +919,7 @@ DspiFlashCmdWriteOps (
     WriteAddr = Offset;
 
 #ifdef CONFIG_SPI_FLASH_BAR
-    Ret = DspiFlashBank(Flash, WriteAddr);
+    Ret = DspiWriteBankAddr(Flash, WriteAddr);
     if (Ret < 0)
       return Ret;
 #endif
@@ -930,12 +930,12 @@ DspiFlashCmdWriteOps (
       ChunkLen = Min(ChunkLen,
 		Flash->Dspi->Slave.MaxWriteSize);
 
-    DspiFlashAddr(WriteAddr, Cmd);
+    DspiCreateAddr(WriteAddr, Cmd);
 
-    Ret = DspiFlashWriteCommon(Flash, Cmd, sizeof(Cmd),
+    Ret = DspiCommonWrite(Flash, Cmd, sizeof(Cmd),
                          Buf + Actual, ChunkLen);
     if (Ret != EFI_SUCCESS) {
-      DEBUG((EFI_D_ERROR, "SF: Write Failed\n"));
+      DEBUG((EFI_D_ERROR, "DSPI Write Failed\n"));
       break;
     }
 
