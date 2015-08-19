@@ -84,16 +84,16 @@ SelectDspi (
   UINT8 Data = 0;
 
   /* Enable soft mux */
-  Data = CPLD_READ(soft_mux_on);
+  Data = CPLD_READ(SoftMuxOn);
   if ((Data & (ENABLE_SDXC_SOFT_MUX | ENABLE_RCW_SOFT_MUX)) 
 	!= (ENABLE_SDXC_SOFT_MUX | ENABLE_RCW_SOFT_MUX))
-    CPLD_WRITE(soft_mux_on, (Data | (ENABLE_SDXC_SOFT_MUX |
+    CPLD_WRITE(SoftMuxOn, (Data | (ENABLE_SDXC_SOFT_MUX |
 					ENABLE_RCW_SOFT_MUX)));
 
   /* Enable sdhc */
-  Data = CPLD_READ(sdhc_spics_sel);
+  Data = CPLD_READ(SdhcSpiCsSel);
   if ((Data & 0x01) != 0x01)
-    CPLD_WRITE(sdhc_spics_sel, (Data | 0x01));
+    CPLD_WRITE(SdhcSpiCsSel, (Data | 0x01));
 }
 
 EFI_STATUS

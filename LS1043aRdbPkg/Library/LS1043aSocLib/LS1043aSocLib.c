@@ -545,25 +545,25 @@ PrintBoardPersonality (
 #ifdef CONFIG_SD_BOOT
 	DEBUG((EFI_D_INFO, "SD\n"));
 #else
-	cfg_rcw_src1 = CPLD_READ(cfg_rcw_src1);
-	cfg_rcw_src2 = CPLD_READ(cfg_rcw_src2);
+	cfg_rcw_src1 = CPLD_READ(RcwSource1);
+	cfg_rcw_src2 = CPLD_READ(RcwSource1);
 	CpldRevBit(&cfg_rcw_src1);
 	cfg_rcw_src = cfg_rcw_src1;
 	cfg_rcw_src = (cfg_rcw_src << 1) | cfg_rcw_src2;
 
 	if (cfg_rcw_src == 0x25)
-		DEBUG((EFI_D_INFO, "vBank %d\n", CPLD_READ(vbank)));
+		DEBUG((EFI_D_INFO, "vBank %d\n", CPLD_READ(Vbank)));
 	else if (cfg_rcw_src == 0x106)
 		DEBUG((EFI_D_INFO, "NAND\n"));
 	else
 		DEBUG((EFI_D_INFO, "Invalid setting of SW4\n"));
 #endif
 
-	DEBUG((EFI_D_INFO, "CPLD:  V%x.%x\nPCBA:  V%x.0\n", CPLD_READ(cpld_ver),
-		CPLD_READ(cpld_ver_sub), CPLD_READ(pcba_ver)));
+	DEBUG((EFI_D_INFO, "CPLD:  V%x.%x\nPCBA:  V%x.0\n", CPLD_READ(CpldVersionMajor),
+		CPLD_READ(CpldVersionMinor), CPLD_READ(PcbaVersion)));
 
 	DEBUG((EFI_D_INFO, "SERDES Reference Clocks:\n"));
-	sd1refclk_sel = CPLD_READ(sd1refclk_sel);
+	sd1refclk_sel = CPLD_READ(Sd1RefClkSel);
 	DEBUG((EFI_D_INFO, "SD1_CLK1 = %a, SD1_CLK2 = %a\n", freq[sd1refclk_sel], freq[0]));
 }
 

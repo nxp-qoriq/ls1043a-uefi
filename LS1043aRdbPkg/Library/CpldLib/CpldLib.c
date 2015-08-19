@@ -2,7 +2,7 @@
   Cpld specific Library for LS1043A-RDB board, containing functions to
   program and read the Cpld registers.
 
-  Copyright (c) 2015, Freescale Ltd. All rights reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -30,40 +30,40 @@
 
 UINT8
 CpldRead (
-  OUT UINTN reg
+  OUT UINTN Reg
   )
 {
-	VOID *p = (VOID *)CONFIG_CPLD_BASE;
+	VOID *Base = (VOID *)CONFIG_CPLD_BASE;
 
-	return MmioRead8((UINTN)(p + reg));
+	return MmioRead8((UINTN)(Base + Reg));
 }
 
 VOID
 CpldWrite (
-  IN UINTN reg,
-  IN UINT8 value
+  IN UINTN Reg,
+  IN UINT8 Value
   )
 {
-	VOID *p = (VOID *)CONFIG_CPLD_BASE;
+	VOID *Base = (VOID *)CONFIG_CPLD_BASE;
 
-	MmioWrite8((UINTN)(p + reg), value);
+	MmioWrite8((UINTN)(Base + Reg), Value);
 }
 
 /* Set the boot bank to the alternate bank */
 VOID
-CpldSetAltbank (
+CpldSetAlternatebank (
   VOID
   )
 {
-	UINT8 reg4 = CPLD_READ(soft_mux_on);
-	UINT8 reg7 = CPLD_READ(vbank);
+	UINT8 Reg4 = CPLD_READ(SoftMuxOn);
+	UINT8 Reg7 = CPLD_READ(Vbank);
 
-	CPLD_WRITE(soft_mux_on, reg4 | CPLD_SW_MUX_BANK_SEL);
+	CPLD_WRITE(SoftMuxOn, Reg4 | CPLD_SW_MUX_BANK_SEL);
 
-	reg7 = (reg7 & ~CPLD_BANK_SEL_MASK) | CPLD_BANK_SEL_ALTBANK;
-	CPLD_WRITE(vbank, reg7);
+	Reg7 = (Reg7 & ~CPLD_BANK_SEL_MASK) | CPLD_BANK_SEL_ALTBANK;
+	CPLD_WRITE(Vbank, Reg7);
 
-	CPLD_WRITE(system_rst, 1);
+	CPLD_WRITE(SystemReset, 1);
 }
 
 /* Set the boot bank to the default bank */
@@ -72,7 +72,7 @@ CpldSetDefaultBank (
   VOID
   )
 {
-	CPLD_WRITE(global_rst, 1);
+	CPLD_WRITE(GlobalReset, 1);
 }
 
 VOID
@@ -80,38 +80,38 @@ CpldDumpRegs (
   VOID
   )
 {
-	DEBUG((EFI_D_INFO, "cpld_ver	= %x\n", CPLD_READ(cpld_ver)));
-	DEBUG((EFI_D_INFO, "cpld_ver_sub	= %x\n", CPLD_READ(cpld_ver_sub)));
-	DEBUG((EFI_D_INFO, "pcba_ver	= %x\n", CPLD_READ(pcba_ver)));
-	DEBUG((EFI_D_INFO, "soft_mux_on	= %x\n", CPLD_READ(soft_mux_on)));
-	DEBUG((EFI_D_INFO, "cfg_rcw_src1	= %x\n", CPLD_READ(cfg_rcw_src1)));
-	DEBUG((EFI_D_INFO, "cfg_rcw_src2	= %x\n", CPLD_READ(cfg_rcw_src2)));
-	DEBUG((EFI_D_INFO, "vbank		= %x\n", CPLD_READ(vbank)));
-	DEBUG((EFI_D_INFO, "sysclk_sel	= %x\n", CPLD_READ(sysclk_sel)));
-	DEBUG((EFI_D_INFO, "uart_sel	= %x\n", CPLD_READ(uart_sel)));
-	DEBUG((EFI_D_INFO, "sd1refclk_sel	= %x\n", CPLD_READ(sd1refclk_sel)));
-	DEBUG((EFI_D_INFO, "tdmclk_mux_sel	= %x\n", CPLD_READ(tdmclk_mux_sel)));
-	DEBUG((EFI_D_INFO, "sdhc_spics_sel	= %x\n", CPLD_READ(sdhc_spics_sel)));
-	DEBUG((EFI_D_INFO, "status_led	= %x\n", CPLD_READ(status_led)));
+	DEBUG((EFI_D_INFO, "CpldVersionMajor	= %x\n", CPLD_READ(CpldVersionMajor)));
+	DEBUG((EFI_D_INFO, "CpldVersionMinor	= %x\n", CPLD_READ(CpldVersionMinor)));
+	DEBUG((EFI_D_INFO, "PcbaVersion	= %x\n", CPLD_READ(PcbaVersion)));
+	DEBUG((EFI_D_INFO, "SoftMuxOn	= %x\n", CPLD_READ(SoftMuxOn)));
+	DEBUG((EFI_D_INFO, "RcwSource1	= %x\n", CPLD_READ(RcwSource1)));
+	DEBUG((EFI_D_INFO, "RcwSource2	= %x\n", CPLD_READ(RcwSource2)));
+	DEBUG((EFI_D_INFO, "Vbank		= %x\n", CPLD_READ(Vbank)));
+	DEBUG((EFI_D_INFO, "SysclkSelect	= %x\n", CPLD_READ(SysclkSelect)));
+	DEBUG((EFI_D_INFO, "UartSel	= %x\n", CPLD_READ(UartSel)));
+	DEBUG((EFI_D_INFO, "Sd1RefClkSel	= %x\n", CPLD_READ(Sd1RefClkSel)));
+	DEBUG((EFI_D_INFO, "TdmClkMuxSel	= %x\n", CPLD_READ(TdmClkMuxSel)));
+	DEBUG((EFI_D_INFO, "SdhcSpiCsSel	= %x\n", CPLD_READ(SdhcSpiCsSel)));
+	DEBUG((EFI_D_INFO, "StatusLed	= %x\n", CPLD_READ(StatusLed)));
 }
 
 VOID
 CpldRevBit (
-  OUT UINT8 *value
+  OUT UINT8 *Value
   )
 {
-	UINT8 rev_val, val;
-	UINTN i;
+	UINT8 Rev, Val;
+	UINTN Index;
 
-	val = *value;
-	rev_val = val & 1;
-	for (i = 1; i <= 7; i++) {
-		val >>= 1;
-		rev_val <<= 1;
-		rev_val |= val & 1;
+	Val = *Value;
+	Rev = Val & 1;
+	for (Index = 1; Index <= 7; Index++) {
+		Val >>= 1;
+		Rev <<= 1;
+		Rev |= Val & 1;
 	}
 
-	*value = rev_val;
+	*Value = Rev;
 }
 
 VOID
@@ -124,7 +124,7 @@ DoCpld (
 		CpldSetDefaultBank();
 		break;
 	case RESET_ALTBANK:
-		CpldSetAltbank();
+		CpldSetAlternatebank();
 		break;
 	case DUMP_REGISTERS:
 		CpldDumpRegs();
