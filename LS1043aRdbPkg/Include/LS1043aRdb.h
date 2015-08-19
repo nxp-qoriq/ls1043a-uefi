@@ -1,8 +1,7 @@
 /** LS1043aRdb.h
 *  Header defining the LS1043aRdb constants (Base addresses, sizes, flags)
 *
-*  Copyright (c) 2013, Freescale Ltd. All rights reserved.
-*  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
+*  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 *
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
