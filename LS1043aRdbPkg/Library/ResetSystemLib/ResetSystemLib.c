@@ -22,6 +22,7 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/IoLib.h>
 #include <Library/PcdLib.h>
+#include <Library/TimerLib.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 
@@ -139,7 +140,7 @@ LibResetSystem (
     MmioWriteBe16 (WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
 		MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WSR_OFFSET, WDOG_SERVICE_SEQ1);
 		MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WSR_OFFSET, WDOG_SERVICE_SEQ2);
-		/* FIXME: Need to put a delay > 0.5 secs here, or else ASSERT fails */
+		MicroSecondDelay(1000000);
     break;
   }
 

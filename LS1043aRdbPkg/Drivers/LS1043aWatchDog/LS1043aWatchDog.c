@@ -29,8 +29,8 @@
 #include <Include/LS1043aRdb.h>
 
 #define LS1043A_WT_MAX_TIME	128 
-#define WDOG_SEC_TO_COUNT(s)	(((s) * 2 - 1) << 8)
-#define WDOG_COUNT_TO_SEC(s)	(((s) + 1) / 2) /* use float arithmetic here ? */
+#define LS1043A_WD_COUNT(sec)	(((sec) * 2 - 1) << 8)
+#define LS1043A_WD_SEC(cnt)	(((cnt) + 1) / 2)
 
 EFI_EVENT                           EfiExitBootServicesEvent = (EFI_EVENT)NULL;
 
@@ -188,7 +188,7 @@ LS1043aWdogSetTimerPeriod (
     Val = MmioReadBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET);
     Val &= ~WDOG_WCR_WT;
     // Convert the timeout value from Seconds to timer count
-    Val |= ((WDOG_SEC_TO_COUNT(TimerPeriodInSec) & 0xff00) << 8);
+    Val |= ((LS1043A_WD_COUNT(TimerPeriodInSec) & 0xff00) << 8);
     MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
 
     // Start the watchdog
@@ -237,7 +237,7 @@ LS1043aWdogGetTimerPeriod (
     // Convert the Watchdog ticks into equivalent TimerPeriod second
     // value. 
     Val = (MmioReadBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET) & WDOG_WCR_WT ) >> 8;
-    ReturnValue = WDOG_COUNT_TO_SEC(Val);
+    ReturnValue = LS1043A_WD_SEC(Val);
   }
 
   *TimerPeriod = ReturnValue;
@@ -307,14 +307,11 @@ LS1043aWdogInitialize (
 
   Val = MmioReadBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET);
 
-	/* Strip the old watchdog Time-Out value */
 	Val &= ~WDOG_WCR_WT;
 
-	/* Keep Watchdog Disabled */
 	Val &= ~WDOG_WCR_WDE;
 	
-   /* Set the watchdog's Time-Out value to the MAX one supported */
-  Val |= WDOG_SEC_TO_COUNT(LS1043A_WT_MAX_TIME) & 0xff00;
+  Val |= LS1043A_WD_COUNT(LS1043A_WT_MAX_TIME) & 0xff00;
 
   MmioWriteBe16(WDOG1_BASE_ADDR + WDOG_WCR_OFFSET, Val);
 
