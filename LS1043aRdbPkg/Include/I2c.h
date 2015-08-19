@@ -1,7 +1,7 @@
 /** @I2c.h
   Header defining the constant, base address amd function for I2C controller
 
-  Copyright (c) 2014, Freescale Ltd. All rights reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -41,39 +41,39 @@
 
 #define LAST_CHIP_ADDRESS	0x80
 
-#define I2CR_IIEN    	(1 << 6)
-#define I2CR_MSTA    	(1 << 5)
-#define I2CR_MTX     	(1 << 4)
-#define I2CR_TX_NO_AK	(1 << 3)
-#define I2CR_RSTA    	(1 << 2)
+#define I2C_CR_IIEN    	(1 << 6)
+#define I2C_CR_MSTA    	(1 << 5)
+#define I2C_CR_MTX     	(1 << 4)
+#define I2C_CR_TX_NO_AK	(1 << 3)
+#define I2C_CR_RSTA    	(1 << 2)
 
-#define I2SR_ICF     	(1 << 7)
-#define I2SR_IBB     	(1 << 5)
-#define I2SR_IAL     	(1 << 4)
-#define I2SR_IIF     	(1 << 1)
-#define I2SR_RX_NO_AK       (1 << 0)
+#define I2C_SR_ICF     	(1 << 7)
+#define I2C_SR_IBB     	(1 << 5)
+#define I2C_SR_IAL     	(1 << 4)
+#define I2C_SR_IIF     	(1 << 1)
+#define I2C_SR_RX_NO_AK       (1 << 0)
 
-#define I2CR_IEN     	(0 << 7)
-#define I2CR_IDIS    	(1 << 7)
-#define I2SR_IIF_CLEAR      (1 << 1)
+#define I2C_CR_IEN     	(0 << 7)
+#define I2C_CR_IDIS    	(1 << 7)
+#define I2C_SR_IIF_CLEAR      (1 << 1)
 
 
-#define ST_BUS_IDLE (0 | (I2SR_IBB << 8))
-#define ST_BUS_BUSY (I2SR_IBB | (I2SR_IBB << 8))
-#define ST_IIF (I2SR_IIF | (I2SR_IIF << 8))
+#define BUS_IDLE (0 | (I2C_SR_IBB << 8))
+#define BUS_BUSY (I2C_SR_IBB | (I2C_SR_IBB << 8))
+#define IIF (I2C_SR_IIF | (I2C_SR_IIF << 8))
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 /**
-  record defining i2c registers
+  Record defining i2c registers
 **/
 
 struct I2cRegs {
-  UINT8     IAdr;
-  UINT8     IFdr;
-  UINT8     I2Cr;
-  UINT8     I2Sr;
-  UINT8     I2Dr;
+  UINT8     I2cAdr;
+  UINT8     I2cFdr;
+  UINT8     I2cCr;
+  UINT8     I2cSr;
+  UINT8     I2cDr;
 };
 
 /**
@@ -88,7 +88,7 @@ struct I2cRegs {
 **/
 EFI_STATUS
 EFIAPI
-I2cInit (
+I2cBusInit (
   IN   INT16		I2c,
   IN   UINT32        Speed
   );
@@ -110,7 +110,7 @@ I2cInit (
 
 **/
 EFI_STATUS
-I2cRead (
+I2cDataRead (
   IN   VOID 		*Base,
   IN   UINT8 		Chip,
   IN   UINT32 	Offset,
@@ -128,7 +128,7 @@ I2cRead (
 **/
 EFI_STATUS
 EFIAPI
-BusI2cSetBusSpeed (
+I2cSetBusSpeed (
   IN   VOID		*BaseAddress,
   IN   UINT32		Speed
   );
@@ -163,7 +163,7 @@ I2cStop (
 
 **/
 EFI_STATUS
-I2cInitTransfer (
+I2cBusInitTransfer (
   IN   struct I2cRegs       *I2cRegs,
   IN   UINT8                Chip,
   IN   UINT32               Offset,
@@ -188,7 +188,7 @@ I2cInitTransfer (
 
 **/
 EFI_STATUS
-I2cWrite (
+I2cDataWrite (
   IN   VOID          *Base,
   IN   UINT8         Chip,
   IN   UINT32        Offset,
@@ -210,7 +210,7 @@ I2cReset (
 
 EFI_STATUS
 EFIAPI
-I2cProbe (
+I2cProbeDevices (
   IN   INT16		I2c,
   IN   UINT8		Chip
   );

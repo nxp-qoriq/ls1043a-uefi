@@ -1005,7 +1005,7 @@ GetSpd (
   )
 {
   VOID *Address = (VOID *)I2cAddress;
-  UINT32 Ret = I2cRead(Address, EEPROM0_ADDRESS, 0x0, 0x01, (UINT8 *)Spd,
+  UINT32 Ret = I2cDataRead(Address, EEPROM0_ADDRESS, 0x0, 0x01, (UINT8 *)Spd,
                sizeof(GenericSpdEepromT));
 
   if (Ret != EFI_SUCCESS) {

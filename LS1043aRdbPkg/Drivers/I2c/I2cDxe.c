@@ -1,7 +1,7 @@
 /** I2c.c
   I2c driver APIs for read, write, initialize, set speed and reset
 
-  Copyright (c) 2014, Freescale Ltd. All rights reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -28,7 +28,7 @@ SetBusFrequency (
 {
   VOID * BaseAddress = (VOID *)I2C0_BASE_ADDRESS;
 
-  return (BusI2cSetBusSpeed(BaseAddress, *BusClockHertz));
+  return (I2cSetBusSpeed(BaseAddress, *BusClockHertz));
 }
 
 EFI_STATUS
@@ -43,7 +43,7 @@ Reset (
 
   I2cReset();
 
-  Ret = BusI2cSetBusSpeed(BaseAddress, BusFreq);
+  Ret = I2cSetBusSpeed(BaseAddress, BusFreq);
 
   return Ret;
 }
@@ -85,14 +85,14 @@ EFIAPI StartRequest (
     }
 
     if (Flag == I2C_READ_FLAG) {
-      Ret = I2cRead ((VOID *)I2C0_BASE_ADDRESS, SlaveAddress,
+      Ret = I2cDataRead ((VOID *)I2C0_BASE_ADDRESS, SlaveAddress,
               0x00, sizeof(SlaveAddress)/8, Buffer, Length);
       if (Ret != EFI_SUCCESS) {
         DEBUG((EFI_D_ERROR," I2c read operation failed (error %d)\n", Ret));
         return Ret;
       }
     } else if (Flag == I2C_WRITE_FLAG) {
-      Ret = I2cWrite ((VOID *)I2C0_BASE_ADDRESS, SlaveAddress,
+      Ret = I2cDataWrite ((VOID *)I2C0_BASE_ADDRESS, SlaveAddress,
               0x00, sizeof(SlaveAddress)/8, Buffer, Length);
       if (Ret != EFI_SUCCESS) {
         DEBUG((EFI_D_ERROR," I2c write operation failed (error %d)\n", Ret));
@@ -154,12 +154,12 @@ InitializeI2c(
   EFI_STATUS		Status = 0;
   UINT8		Chip = 0;
 
-  Status = I2cInit(I2C0, I2C_SPEED);
+  Status = I2cBusInit(I2C0, I2C_SPEED);
 
   DEBUG((EFI_D_RELEASE,"Valid Chip Addresses :\n"));
   if (Status == EFI_SUCCESS) {
     for (Chip = 0; Chip < LAST_CHIP_ADDRESS; Chip++) {
-      Status = I2cProbe(I2C0, Chip);
+      Status = I2cProbeDevices(I2C0, Chip);
       if (Status == EFI_SUCCESS)
         DEBUG((EFI_D_RELEASE,"0x%x ", Chip));
     }

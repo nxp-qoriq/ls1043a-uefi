@@ -59,7 +59,7 @@ ArmPlatformInitialize (
   // ArmDataSyncronizationBarrier ();
 
   if (PcdGetBool(PcdDdrInitialize)) {
-    I2cInit(I2C0, I2C_SPEED);
+    I2cBusInit(I2C0, I2C_SPEED);
     DramInit(0);
   }
 

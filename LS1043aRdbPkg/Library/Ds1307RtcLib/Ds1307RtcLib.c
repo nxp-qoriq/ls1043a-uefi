@@ -53,7 +53,7 @@ UINT8 RtcRead(
 {
 	INT32 Status;
 	UINT8 Val = 0;
-	Status = I2cRead((VOID*)I2C0_BASE_ADDRESS, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
+	Status = I2cDataRead((VOID*)I2C0_BASE_ADDRESS, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
 	if(EFI_ERROR(Status))
 		DEBUG((EFI_D_ERROR, "RTC read error at Addr:0x%x\n", RtcRegAddr));
 	return Val;
@@ -64,7 +64,7 @@ VOID RtcWrite(
 		UINT8 Val)
 {
 	INT32 Status;
-	Status = I2cWrite((VOID*)I2C0_BASE_ADDRESS, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
+	Status = I2cDataWrite((VOID*)I2C0_BASE_ADDRESS, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
 	if(EFI_ERROR(Status))
 		DEBUG((EFI_D_ERROR, "RTC write error at Addr:0x%x\n", RtcRegAddr));
 
