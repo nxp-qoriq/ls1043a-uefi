@@ -1,8 +1,7 @@
 /** SoCLib.h
 *  Header defining the LS1043a SoC specific constants (Base addresses, sizes, flags)
 *
-*  Copyright (c) 2015, Freescale Ltd. All rights reserved.
-*  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
+*  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 *
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
@@ -18,8 +17,8 @@
 #define __LS1043A_SOC_H__
 
 #define CONFIG_SYS_FSL_NUM_CC_PLLS	2
-#define HWA_CGA_M1_CLK_SEL		0x70000000
-#define HWA_CGA_M1_CLK_SHIFT		28
+#define HWA_CGA_M1_CLK_SEL		0xe0000000
+#define HWA_CGA_M1_CLK_SHIFT		29
 #define HWA_CGA_M2_CLK_SEL		0x00000007
 #define HWA_CGA_M2_CLK_SHIFT		0
 
@@ -65,22 +64,16 @@
 )
 
 /*
- * hweightN: returns the hamming weight (i.e. the number
- * of bits set) of a N-bit word
+ * HammingWeight32: returns the hamming weight (i.e. the number
+ * of bits set) of a 32-bit word
  */
-#define hweight32(x) generic_hweight32(x)
-
-/*
- * hweightN: returns the hamming weight (i.e. the number
- * of bits set) of a N-bit word
- */
-static inline UINTN generic_hweight32(UINTN w)
+static inline UINTN HammingWeight32(UINTN w)
 {
-	UINTN res = (w & 0x55555555) + ((w >> 1) & 0x55555555);
-	res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
-	res = (res & 0x0F0F0F0F) + ((res >> 4) & 0x0F0F0F0F);
-	res = (res & 0x00FF00FF) + ((res >> 8) & 0x00FF00FF);
-	return (res & 0x0000FFFF) + ((res >> 16) & 0x0000FFFF);
+	UINTN Res = (w & 0x55555555) + ((w >> 1) & 0x55555555);
+	Res = (Res & 0x33333333) + ((Res >> 2) & 0x33333333);
+	Res = (Res & 0x0F0F0F0F) + ((Res >> 4) & 0x0F0F0F0F);
+	Res = (Res & 0x00FF00FF) + ((Res >> 8) & 0x00FF00FF);
+	return (Res & 0x0000FFFF) + ((Res >> 16) & 0x0000FFFF);
 }
 
 static inline UINTN CpuMaskNext(UINTN Cpu, UINTN Mask)
@@ -214,12 +207,12 @@ enum CsuCslxInd {
 };
 
 struct CsuNsDev {
-	UINTN ind;
-	UINT32 val;
+	UINTN Ind;
+	UINT32 Val;
 };
 
 /* Device Configuration and Pin Control */
-struct ccsr_gur {
+struct CcsrGur {
 	UINT32     porsr1;         /* POR status 1 */
 #define FSL_CHASSIS2_CCSR_PORSR1_RCW_MASK	0xFF800000
 	UINT32     porsr2;         /* POR status 2 */
@@ -365,7 +358,7 @@ struct ccsr_gur {
 };
 
 /* Supplemental Configuration Unit */
-struct ccsr_scfg {
+struct CcsrScfg {
 	UINT8 res_000[0x100-0x000];
 	UINT32 usb2_icid;
 	UINT32 usb3_icid;
@@ -430,7 +423,7 @@ struct ccsr_scfg {
 };
 
 /* Clocking */
-struct ccsr_clk {
+struct CcsrClk {
 	struct {
 		UINT32 clkcncsr;	/* core cluster n clock control status */
 		UINT8 res_004[0x0c];
@@ -458,7 +451,7 @@ struct ccsr_clk {
 #define CCI400_SNOOP_REQ_EN		0x00000001
 
 /* CCI-400 registers */
-struct ccsr_cci400 {
+struct CcsrCci400 {
 	UINT32 ctrl_ord;			/* Control Override */
 	UINT32 spec_ctrl;			/* Speculation Control */
 	UINT32 secure_access;		/* Secure Access */
@@ -499,18 +492,14 @@ struct ccsr_cci400 {
 	UINT8 res_e004[0x10000 - 0xe004];
 };
 
-VOID EnableDevicesNsAccess(struct CsuNsDev *ns_dev, UINT32 num);
+VOID EnableDevicesNsAccess(struct CsuNsDev *NonSecureDevices, UINT32 Num);
 
 VOID GetSysInfo(struct SysInfo *PtrSysInfo);
 
-UINTN GetPeripheralClock(enum PeriphClock Clk);
-
 VOID SocInit(VOID);
-
-UINTN GetDdrFreq(VOID);
 
 VOID SerDesInit(VOID);
 
-VOID fdt_cpu_setup(VOID *blob);
+VOID FdtCpuSetup(VOID *Blob);
 
 #endif /* __LS1043A_SOC_H__ */

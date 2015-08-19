@@ -313,8 +313,8 @@ PrepareFdt (
     }
   }
 
-/* fdt fixup for LS1043A */
-  fdt_cpu_setup((VOID *)fdt);
+  /* fdt fixup for LS1043A */
+  FdtCpuSetup((VOID *)fdt);
 
   //
   // Setup Arm Mpcore Info if it is a multi-core or multi-cluster platforms.

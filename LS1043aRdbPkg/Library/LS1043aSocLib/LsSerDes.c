@@ -109,7 +109,7 @@ SerDesGetFirstLane
  IN SrdsPrtcl Device
 )
 {
-  struct ccsr_gur *Gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+  struct CcsrGur *Gur = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
   UINT32 Cfg = MmioReadBe32((UINTN)&Gur->rcwsr[4]);
   INTN Cnt;
 
@@ -147,7 +147,7 @@ LSSerDesInit
  UINT16 SerDesPrtclMap[SERDES_PRCTL_COUNT]
 )
 {
-  struct ccsr_gur *Gur = (VOID *)(CONFIG_SYS_FSL_GUTS_ADDR);
+  struct CcsrGur *Gur = (VOID *)(CONFIG_SYS_FSL_GUTS_ADDR);
   UINT32 Cfg;
   INTN Lane;
   UINT32 Flag = 0;
