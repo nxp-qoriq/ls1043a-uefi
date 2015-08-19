@@ -23,29 +23,29 @@
 #include <I2c.h>
 
 
-#define Bcd2Bin(val) ((val) & 0x0f) + ((val) >> 4) * 10
-#define Bin2Bcd(val) (((val / 10) << 4) | (val % 10))
+#define Bin(Bcd) ((Bcd) & 0x0f) + ((Bcd) >> 4) * 10
+#define Bcd(Bin) (((Bin / 10) << 4) | (Bin % 10))
 
-#define RTC_I2C_ADDR			0x68
+#define DS1307_I2C_ADDR			0x68
 
 /*
  * RTC register addresses
  */
-#define RTC_SEC_REG_ADDR	0x00
-#define RTC_MIN_REG_ADDR	0x01
-#define RTC_HR_REG_ADDR		0x02
-#define RTC_DAY_REG_ADDR	0x03
-#define RTC_DATE_REG_ADDR	0x04
-#define RTC_MON_REG_ADDR	0x05
-#define RTC_YR_REG_ADDR		0x06
-#define RTC_CTL_REG_ADDR	0x07
+#define DS1307_SEC_REG_ADDR	0x00
+#define DS1307_MIN_REG_ADDR	0x01
+#define DS1307_HR_REG_ADDR		0x02
+#define DS1307_DAY_REG_ADDR	0x03
+#define DS1307_DATE_REG_ADDR	0x04
+#define DS1307_MON_REG_ADDR	0x05
+#define DS1307_YR_REG_ADDR		0x06
+#define DS1307_CTL_REG_ADDR	0x07
 
-#define RTC_SEC_BIT_CH		0x80	/* Clock Halt (in Register 0)   */
+#define DS1307_SEC_BIT_CH		0x80	/* Clock Halt (in Register 0)   */
 
-#define RTC_CTL_BIT_RS0		0x01	/* Rate select 0                */
-#define RTC_CTL_BIT_RS1		0x02	/* Rate select 1                */
-#define RTC_CTL_BIT_SQWE	0x10	/* Square Wave Enable           */
-#define RTC_CTL_BIT_OUT		0x80	/* Output Control               */
+#define DS1307_CTL_BIT_RS0		0x01	/* Rate select 0                */
+#define DS1307_CTL_BIT_RS1		0x02	/* Rate select 1                */
+#define DS1307_CTL_BIT_SQWE	0x10	/* Square Wave Enable           */
+#define DS1307_CTL_BIT_OUT		0x80	/* Output Control               */
 
 UINT8 RtcRead(
 		UINT8 RtcRegAddr
@@ -53,7 +53,7 @@ UINT8 RtcRead(
 {
 	INT32 Status;
 	UINT8 Val = 0;
-	Status = I2cRead((VOID*)I2C0_BASE_ADDRESS, RTC_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
+	Status = I2cRead((VOID*)I2C0_BASE_ADDRESS, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
 	if(EFI_ERROR(Status))
 		DEBUG((EFI_D_ERROR, "RTC read error at Addr:0x%x\n", RtcRegAddr));
 	return Val;
@@ -64,7 +64,7 @@ VOID RtcWrite(
 		UINT8 Val)
 {
 	INT32 Status;
-	Status = I2cWrite((VOID*)I2C0_BASE_ADDRESS, RTC_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
+	Status = I2cWrite((VOID*)I2C0_BASE_ADDRESS, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
 	if(EFI_ERROR(Status))
 		DEBUG((EFI_D_ERROR, "RTC write error at Addr:0x%x\n", RtcRegAddr));
 
@@ -92,37 +92,29 @@ LibGetTime (
   )
 {
 	EFI_STATUS Status = EFI_SUCCESS;
-	CHAR16 Sec, Min, Hour, Day, Mon, Year;
+	CHAR16 Second, Minute, Hour, Day, Month, Year;
 
-	Sec = RtcRead (RTC_SEC_REG_ADDR);
-	Min = RtcRead (RTC_MIN_REG_ADDR);
-	Hour = RtcRead (RTC_HR_REG_ADDR);
-	Day = RtcRead (RTC_DATE_REG_ADDR);
-	Mon = RtcRead (RTC_MON_REG_ADDR);
-	Year = RtcRead (RTC_YR_REG_ADDR);
+	Second = RtcRead (DS1307_SEC_REG_ADDR);
+	Minute = RtcRead (DS1307_MIN_REG_ADDR);
+	Hour = RtcRead (DS1307_HR_REG_ADDR);
+	Day = RtcRead (DS1307_DATE_REG_ADDR);
+	Month = RtcRead (DS1307_MON_REG_ADDR);
+	Year = RtcRead (DS1307_YR_REG_ADDR);
 
-	DEBUG((EFI_D_INFO, "Get RTC Year: %02x Mon: %02x Day: %02x "
-		"Hour: %02x Min: %02x Sec: %02x\n",
-		Year, Mon, Day, Hour, Min, Sec));
-
-	if (Sec & RTC_SEC_BIT_CH) {
+	if (Second & DS1307_SEC_BIT_CH) {
 		DEBUG((EFI_D_ERROR, "### Warning: RTC oscillator has stopped\n"));
 		/* clear the CH flag */
-		RtcWrite (RTC_SEC_REG_ADDR,
-			   RtcRead (RTC_SEC_REG_ADDR) & ~RTC_SEC_BIT_CH);
+		RtcWrite (DS1307_SEC_REG_ADDR,
+			   RtcRead (DS1307_SEC_REG_ADDR) & ~DS1307_SEC_BIT_CH);
 		Status = EFI_DEVICE_ERROR;
 	}
 
-	Time->Second  = Bcd2Bin (Sec & 0x7F);
-	Time->Minute  = Bcd2Bin (Min & 0x7F);
-	Time->Hour = Bcd2Bin (Hour & 0x3F);
-	Time->Day = Bcd2Bin (Day & 0x3F);
-	Time->Month  = Bcd2Bin (Mon & 0x1F);
-	Time->Year = Bcd2Bin (Year) + ( Bcd2Bin (Year) >= 70 ? 1900 : 2000);
-
-	DEBUG((EFI_D_INFO, "Get DATE: %4d-%02d-%02d TIME: %2d:%02d:%02d\n",
-		Time->Year, Time->Month, Time->Day,
-		Time->Hour, Time->Minute, Time->Second));
+	Time->Second  = Bin (Second & 0x7F);
+	Time->Minute  = Bin (Minute & 0x7F);
+	Time->Hour = Bin (Hour & 0x3F);
+	Time->Day = Bin (Day & 0x3F);
+	Time->Month  = Bin (Month & 0x1F);
+	Time->Year = Bin (Year) + ( Bin (Year) >= 70 ? 1900 : 2000);
 
   return Status;
 }
@@ -144,19 +136,15 @@ LibSetTime (
   IN EFI_TIME                *Time
   )
 {
-	DEBUG((EFI_D_INFO, "Set DATE: %4d-%02d-%02d TIME: %2d:%02d:%02d\n",
-	Time->Year, Time->Month, Time->Day,
-	Time->Hour, Time->Minute, Time->Second));
-
 	if (Time->Year < 1970 || Time->Year > 2069)
-		DEBUG((EFI_D_ERROR, "WARNING: year should be between 1970 and 2069!\n"));
+		DEBUG((EFI_D_ERROR, "WARNING: Year should be between 1970 and 2069!\n"));
 
-	RtcWrite (RTC_YR_REG_ADDR, Bin2Bcd (Time->Year % 100));
-	RtcWrite (RTC_MON_REG_ADDR, Bin2Bcd (Time->Month));
-	RtcWrite (RTC_DATE_REG_ADDR, Bin2Bcd (Time->Day));
-	RtcWrite (RTC_HR_REG_ADDR, Bin2Bcd (Time->Hour));
-	RtcWrite (RTC_MIN_REG_ADDR, Bin2Bcd (Time->Minute));
-	RtcWrite (RTC_SEC_REG_ADDR, Bin2Bcd (Time->Second));
+	RtcWrite (DS1307_YR_REG_ADDR, Bcd (Time->Year % 100));
+	RtcWrite (DS1307_MON_REG_ADDR, Bcd (Time->Month));
+	RtcWrite (DS1307_DATE_REG_ADDR, Bcd (Time->Day));
+	RtcWrite (DS1307_HR_REG_ADDR, Bcd (Time->Hour));
+	RtcWrite (DS1307_MIN_REG_ADDR, Bcd (Time->Minute));
+	RtcWrite (DS1307_SEC_REG_ADDR, Bcd (Time->Second));
 
   return EFI_SUCCESS;
 }
@@ -260,6 +248,3 @@ LibRtcVirtualNotifyEvent (
   //
   return;
 }
-
-
-
