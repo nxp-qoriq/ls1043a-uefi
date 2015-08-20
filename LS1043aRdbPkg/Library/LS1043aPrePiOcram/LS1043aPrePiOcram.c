@@ -1,7 +1,23 @@
+/** @LS1043aPrePiOcram.c
+#
+#  Driver for installing BlockIo protocol over IFC NAND
+#
+#  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+**/
+
 #include <Library/ArmLib.h>
 #include <Library/PcdLib.h>
 #include <Library/FslIfc.h>
-#include <Library/FslIfcNand.h>
+#include <Library/IfcNand.h>
 #include <Library/IoLib.h>
 #include <Library/SerialPortLib.h>
 #include <CpldLib.h>
@@ -20,14 +36,14 @@ EFI_STATUS UefiFdNandToDdr(
 	EFI_STATUS Status;
 	
 	//Init Nand Flash
-	FslIfcNandInit();
+	IfcNandInit();
 
-	Status = FslIfcNandFlashInit(NULL);
+	Status = IfcNandFlashInit(NULL);
 	if (Status!=EFI_SUCCESS)
 		return Status;
 
 //Copy from NAnd to DDR
-	return FslIfcNandFlashReadBlocks(NULL, 0, Lba, FdSize, (VOID*)DdrDestAddress);  	
+	return IfcNandFlashReadBlocks(NULL, 0, Lba, FdSize, (VOID*)DdrDestAddress);  	
 }
 
 VOID CEntryPoint(
