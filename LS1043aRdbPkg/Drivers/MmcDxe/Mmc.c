@@ -374,6 +374,7 @@ MmcDxeInitialize (
   ASSERT_EFI_ERROR (Status);
 
   // Use a timer to detect if a card has been plugged in or removed
+#if 0
   Status = gBS->CreateEvent (
                 EVT_NOTIFY_SIGNAL | EVT_TIMER,
                 TPL_CALLBACK,
@@ -387,7 +388,7 @@ MmcDxeInitialize (
                 TimerPeriodic,
                 (UINT64)(10*1000*200)); // 200 ms
   ASSERT_EFI_ERROR (Status);
-
+#endif
   /*FIXME Remove below code if installing Driver binding protocol */
   // Update Mmc Host Protocol Register
   CreateMmcHostProtocol(MmcHost);
