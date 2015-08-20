@@ -1,9 +1,9 @@
-/** @file
+/** @LS1043aFileSystem.c
 #
 #  Driver for insalling SimpleFileSystem and DiskIo protocol over
 #  BlockIo protocol
 #
-#  Copyright (c) 2014, Freescale Ltd. All rights reserved.
+#  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 #
 #  This program and the accompanying materials
 #  are licensed and made available under the terms and conditions of the BSD License

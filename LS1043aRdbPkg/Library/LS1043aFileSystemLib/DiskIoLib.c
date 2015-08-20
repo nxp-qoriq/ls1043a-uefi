@@ -1,8 +1,8 @@
-/** @file
+/** @DiskIoLib.c
 #
 #  API for implementing DiskIo protocol over BlockIo protocol
 #
-#  Copyright (c) 2014, Freescle Ltd. All rights reserved.
+#  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 #
 #  This program and the accompanying materials
 #  are licensed and made available under the terms and conditions of the BSD License
