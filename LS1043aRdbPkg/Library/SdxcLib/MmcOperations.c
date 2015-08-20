@@ -1,7 +1,7 @@
 /** MmcOperations.C
   File Containing Functions for Erase, Read, Write, Initialize Etc
 
-  Copyright (C) 2014, Freescale Ltd. All Rights Reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This Program And The Accompanying Materials
   Are Licensed And Made Available Under The Terms And Conditions Of The BSD License
