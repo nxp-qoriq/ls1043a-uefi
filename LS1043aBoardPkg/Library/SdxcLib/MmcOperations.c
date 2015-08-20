@@ -1,7 +1,8 @@
-/** SdxcLib.C
-  Sdxc Library Containing Functions for Reset Read, Write, Initialize Etc
+/** MmcOperations.c
 
-  Copyright (C) 2014, Freescale Ltd. All Rights Reserved.
+  Functions for Reset Read, Write, Initialize Etc
+
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This Program And The Accompanying Materials
   Are Licensed And Made Available Under The Terms And Conditions Of The BSD License

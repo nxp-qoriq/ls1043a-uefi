@@ -1,12 +1,17 @@
-/*
- * Copyright 2014 Freescale Semiconductor, Inc.
- *
- * Calculate The Organization And Timing Parameter
- * From Ddr3 Spd, Please Refer To The Spec
- * JEDEC Standard No.21-C 4_01_02_12R23A.Pdf
- *
- *
- */
+/** @Ddr4DimmParams.c
+
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+
+  This program and the accompanying materials
+  are licensed and made available under the terms and conditions of the BSD
+  License which accompanies this distribution. The full text of the license
+  may be found at
+  http://opensource.org/licenses/bsd-license.php
+
+  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+
+**/
 
 #include <Common.h>
 #include <Ddr.h>

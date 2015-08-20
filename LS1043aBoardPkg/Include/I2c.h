@@ -1,7 +1,7 @@
 /** @I2c.h
   Header defining the constant, base address amd function for I2C controller
 
-  Copyright (c) 2014, Freescale Ltd. All rights reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License

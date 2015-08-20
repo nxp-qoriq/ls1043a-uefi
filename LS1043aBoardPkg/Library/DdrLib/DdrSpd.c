@@ -1,10 +1,19 @@
-/*
- * Copyright 2008-2014 Freescale Semiconductor, Inc.
- *
- * This Program Is Free Software; You Can Redistribute It And/Or
- * Modify It Under The Terms Of The GNU General Public License
- * Version 2 As Published By The Free Software Foundation.
- */
+/** @DdrSpd.c
+
+  Functions for getting and validating spd settings.
+
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+
+  This program and the accompanying materials
+  are licensed and made available under the terms and conditions of the BSD
+  License which accompanies this distribution. The full text of the license
+  may be found at
+  http://opensource.org/licenses/bsd-license.php
+
+  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+
+**/
 
 #include <Ddr.h>
 
