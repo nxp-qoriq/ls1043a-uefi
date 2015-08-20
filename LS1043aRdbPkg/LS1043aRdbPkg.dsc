@@ -103,7 +103,7 @@
   UefiApplicationEntryPoint|MdePkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
 
   NorFlashLib|LS1043aRdbPkg/Library/IfcNorFlashLib/IfcNorFlashLib.inf
-  NandFlashLib|LS1043aRdbPkg/Library/FslIfcNandLib/FslIfcNandLib.inf
+  NandFlashLib|LS1043aRdbPkg/Library/IfcNandFlashLib/IfcNandFlashLib.inf
   FileSystemLib|LS1043aRdbPkg/Library/LS1043aFileSystemLib/LS1043aFileSystemLib.inf
   DspiFlashLib|LS1043aRdbPkg/Library/DspiFlashLib/DspiFlashLib.inf
   SdxcLib|LS1043aRdbPkg/Library/SdxcLib/SdxcLib.inf

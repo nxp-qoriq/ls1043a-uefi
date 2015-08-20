@@ -26,7 +26,7 @@
   MdePkg/MdePkg.dec
   ArmPkg/ArmPkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec
-  LS1043aBoardPkg/LS1043aBoardPkg.dec
+  LS1043aRdbPkg/LS1043aRdbPkg.dec
 
 [LibraryClasses]
   BaseLib
