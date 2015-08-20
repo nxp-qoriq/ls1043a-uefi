@@ -474,7 +474,7 @@ IfcInit (
 	CpldInit();
 
 	/* NAND Init */
-	FslIfcNandInit();
+	IfcNandInit();
 }
 
 VOID

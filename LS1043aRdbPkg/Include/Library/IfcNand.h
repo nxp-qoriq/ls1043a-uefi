@@ -1,6 +1,6 @@
-/** @file
- 
-  Copyright (c) 2014, Freescale Ltd. All rights reserved.
+/** @IfcNand.h
+
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -21,7 +21,7 @@
 **/
 
 EFI_STATUS
-FslIfcNandFlashInit (
+IfcNandFlashInit (
   OUT EFI_BLOCK_IO_MEDIA *gNandFlashMedia;
 );
 
@@ -51,7 +51,7 @@ FslIfcNandFlashInit (
 
 EFI_STATUS
 EFIAPI
-FslIfcNandFlashWriteBlocks (
+IfcNandFlashWriteBlocks (
   IN EFI_BLOCK_IO_PROTOCOL          *This,
   IN UINT32                         MediaId,
   IN EFI_LBA                        Lba,
@@ -83,7 +83,7 @@ FslIfcNandFlashWriteBlocks (
 
 EFI_STATUS
 EFIAPI
-FslIfcNandFlashReadBlocks (
+IfcNandFlashReadBlocks (
   IN EFI_BLOCK_IO_PROTOCOL          *This,
   IN UINT32                         MediaId,
   IN EFI_LBA                        Lba,
@@ -104,7 +104,7 @@ FslIfcNandFlashReadBlocks (
 
 EFI_STATUS
 EFIAPI
-FslIfcNandFlashReset (
+IfcNandFlashReset (
   IN EFI_BLOCK_IO_PROTOCOL          *This,
   IN BOOLEAN                        ExtendedVerification
   );
@@ -122,7 +122,7 @@ FslIfcNandFlashReset (
 
 EFI_STATUS
 EFIAPI
-FslIfcNandFlashFlushBlocks (
+IfcNandFlashFlushBlocks (
   IN EFI_BLOCK_IO_PROTOCOL  *This
   );
 

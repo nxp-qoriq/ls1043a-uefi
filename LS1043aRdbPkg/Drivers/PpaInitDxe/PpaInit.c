@@ -24,7 +24,7 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/BaseMemoryLib/MemLibInternals.h>
 #include <Library/FslIfc.h>
-#include <Library/FslIfcNand.h>
+#include <Library/IfcNand.h>
 
 extern EFI_STATUS PpaInit(UINT64);
 extern VOID El2SwitchSetup(VOID);
@@ -37,7 +37,7 @@ EFI_STATUS GetPpaFromNand(
 {
 	EFI_STATUS Status;
 	UINTN PpaMaxSize = 128 * 1024;
-	Status = FslIfcNandFlashInit(NULL);
+	Status = IfcNandFlashInit(NULL);
 	if (Status!=EFI_SUCCESS)
 		return Status;
 
@@ -46,7 +46,7 @@ EFI_STATUS GetPpaFromNand(
 		return EFI_OUT_OF_RESOURCES;
 
 //Copy from Nand to DDR
-	return FslIfcNandFlashReadBlocks(NULL, 0, PpaLba, PpaMaxSize, (VOID*)*FitImage);  	
+	return IfcNandFlashReadBlocks(NULL, 0, PpaLba, PpaMaxSize, (VOID*)*FitImage);  	
 }
 
 
