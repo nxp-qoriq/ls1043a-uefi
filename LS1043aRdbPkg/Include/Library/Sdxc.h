@@ -2,7 +2,7 @@
   Header Defining The Sdxc Memory Controller Constants (Base Addresses, Sizes,
   Flags), Function Prototype, Structures Etc
 
-  Copyright (C) 2015, Freescale Ltd. All Rights Reserved.
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This Program And The Accompanying Materials
   Are Licensed And Made Available Under The Terms And Conditions Of The BSD
@@ -34,9 +34,6 @@
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/TimerLib.h>
 #include <Library/PrintLib.h>
-
-
-#define EFI_SDXC_SIGNATURE SIGNATURE_32('S','D','X','C')
 
 /**
   Set Block Count Limit Because Of 16 Bit Register Limit On Some Hardware
@@ -269,26 +266,26 @@
 #define WML_RD_WML_MASK     	0xff
 #define WML_WR_WML_MASK     	0xff0000
 
-#define XFERTYP                    0x0002e00c
-#define XFERTYP_CMD(X)             ((X & 0x3f) << 24)
-#define XFERTYP_CMDTYP_NORMAL      0x0
-#define XFERTYP_CMDTYP_SUSPEND     0x00400000
-#define XFERTYP_CMDTYP_RESUME      0x00800000
-#define XFERTYP_CMDTYP_ABORT       0x00c00000
-#define XFERTYP_DPSEL              0x00200000
-#define XFERTYP_CICEN              0x00100000
-#define XFERTYP_CCCEN              0x00080000
-#define XFERTYP_RSPTYP_NONE 	0
-#define XFERTYP_RSPTYP_136  	0x00010000
-#define XFERTYP_RSPTYP_48   	0x00020000
-#define XFERTYP_RSPTYP_48_BUSY     0x00030000
-#define XFERTYP_MSBSEL             0x00000020
-#define XFERTYP_DTDSEL             0x00000010
-#define XFERTYP_AC12EN             0x00000004
-#define XFERTYP_BCEN        	0x00000002
-#define XFERTYP_DMAEN              0x00000001
+#define XFERTYPE                    0x0002e00c
+#define XFERTYPE_CMD(X)             ((X & 0x3f) << 24)
+#define XFERTYPE_CMDTYP_NORMAL      0x0
+#define XFERTYPE_CMDTYP_SUSPEND     0x00400000
+#define XFERTYPE_CMDTYP_RESUME      0x00800000
+#define XFERTYPE_CMDTYP_ABORT       0x00c00000
+#define XFERTYPE_DPSEL              0x00200000
+#define XFERTYPE_CICEN              0x00100000
+#define XFERTYPE_CCCEN              0x00080000
+#define XFERTYPE_RSPTYP_NONE 	0
+#define XFERTYPE_RSPTYP_136  	0x00010000
+#define XFERTYPE_RSPTYP_48   	0x00020000
+#define XFERTYPE_RSPTYP_48_BUSY     0x00030000
+#define XFERTYPE_MSBSEL             0x00000020
+#define XFERTYPE_DTDSEL             0x00000010
+#define XFERTYPE_AC12EN             0x00000004
+#define XFERTYPE_BCEN        	0x00000002
+#define XFERTYPE_DMAEN              0x00000001
 
-#define PIO_TIMEOUT         10000000
+#define CPU_POLL_TIMEOUT         10000000
 
 #define IRQSTAT             (0x0002e030)
 #define IRQSTAT_DMAE        (0x10000000)
@@ -361,17 +358,17 @@
 #define MMC_STATE_PRG              (7 << 9)
 
 /* Dma addresses are 32-bits wide.  */
-typedef UINT32 DmaAddrT;
+typedef UINT32 DmaAddr;
 
-struct FslSdxc {
+struct SdxcRegs {
        UINT32    Dsaddr;      // SDMA System Address Register
        UINT32    Blkattr;     // Block Attributes Register
        UINT32    CmdArg;      // Command Argument Register
-       UINT32    Xfertyp;     // Transfer Type Register
-       UINT32    Cmdrsp0;     // Command Response 0 Register
-       UINT32    Cmdrsp1;     // Command Response 1 Register
-       UINT32    Cmdrsp2;     // Command Response 2 Register
-       UINT32    Cmdrsp3;     // Command Response 3 Register
+       UINT32    Xfertype;     // Transfer Type Register
+       UINT32    Rspns0;     // Command Response 0 Register
+       UINT32    Rspns1;     // Command Response 1 Register
+       UINT32    Rspns2;     // Command Response 2 Register
+       UINT32    Rspns3;     // Command Response 3 Register
        UINT32    Datport;     // Buffer Data Port Register
        UINT32    Prsstat;     // Present State Register
        UINT32    Proctl;      // Protocol Control Register
@@ -403,7 +400,7 @@ struct FslSdxc {
        UINT32    Scr;         // SDXC Control Register
 };
 
-struct MmcData {
+struct SdData {
        union {
               CHAR8 *Dest;
               CONST CHAR8 *Src; // Src Buffers Don'T Get Written To
@@ -413,38 +410,29 @@ struct MmcData {
        UINT32 Blocksize;
 };
 
-struct MmcCmd {
+struct SdCmd {
        UINT16 CmdIdx;
        UINT32 RespType;
        UINT32 CmdArg;
        UINT32 Response[4];
 };
 
-typedef struct BlockDevDesc {
-       INT32           IfType;      // Type Of The Interface
-       UINT8 PartType;    // Partition Type
-       UINT8 Target;              // Target SCSI ID
-       UINT8 Lun;          // Target LUN
-       UINT8 Type;         // Device Type
-       UINT8 Removable;    // Removable Device
-       UINT64      Lba;          // Number Of Blocks
+typedef struct BlockDev {
+       UINT64 Lba;          // Number Of Blocks
        UINT64 Blksz;        // Block Size
-       INT32           Log2blksz;    // for Convenience: Log2(Blksz)
-       CHAR8          Vendor [40+1];       // IDE Model, SCSI Vendor
-       CHAR8          Product[20+1];       // IDE Serial No, SCSI Product
-       CHAR8          Revision[8+1];       // Firmware Revision
-       UINT32 (*BlockRead)(UINT32 Start, UINT32 Blkcnt, VOID *Buffer);
-       UINT32 (*BlockWrite)(UINT32 Start, UINT32 Blkcnt, CONST VOID *Buffer);
-       UINT32 (*BlockErase)(UINT32 Start, UINT32 Blkcnt);
-       VOID          *Priv;        // Driver Private struct Pointer
-}BlockDevDescT;
+       CHAR8  Vendor [41];       // IDE Model, SCSI Vendor
+       CHAR8  Product[21];       // IDE Serial No, SCSI Product
+       CHAR8  Revision[9];       // Firmware Revision
+       UINT32 (*BlkRead)(UINT32 Start, UINT32 Blkcnt, VOID *Buffer);
+       UINT32 (*BlkWrite)(UINT32 Start, UINT32 Blkcnt, CONST VOID *Buffer);
+       UINT32 (*BlkErase)(UINT32 Start, UINT32 Blkcnt);
+       VOID   *Private;        // Driver Privateate struct Pointer
+}BlockDevT;
 
 struct Mmc {
-	UINTN Signature;
-       LIST_ENTRY Link;
        struct MmcConfig *Cfg;      // Provided Configuration
        UINT32 Version;
-       VOID   *Priv;
+       VOID   *Private;
        UINT32 HasInit;
        INT32  HighCapacity;
        UINT32 BusWidth;
@@ -460,42 +448,41 @@ struct Mmc {
        CHAR8  PartConfig;
        CHAR8  PartNum;
        UINT32 TranSpeed;
-       UINT32 ReadBlLen;
-       UINT32 WriteBlLen;
+       UINT32 ReadBlkLen;
+       UINT32 WriteBlkLen;
        UINT32 EraseGrpSize;
        UINT64 Capacity;
        UINT64 CapacityUser;
        UINT64 CapacityBoot;
        UINT64 CapacityRpmb;
        UINT64 CapacityGp[4];
-       BlockDevDescT BlockDev;
+       BlockDevT BlockDev;
        CHAR8  OpCondPending;       // 1 if We Are Waiting On An OpCond Command
-       CHAR8  InitInProgress;      // 1 if We Have Done MmcStartInit()
+       CHAR8  InitInProgress;      // 1 if We Have Done SdStartInit()
        CHAR8  Preinit;        // Start Init As Early As Possible
 	INT32  DdrMode;
 };
 
-struct MmcOps {
-       EFI_STATUS (*SendCmd)(struct Mmc *Mmc,
-                     struct MmcCmd *Cmd, struct MmcData *Data);
-       VOID (*SetIos)(struct Mmc *Mmc);
-       INT32 (*Init)(struct Mmc *Mmc);
-       INT32 (*Getcd)(struct Mmc *Mmc);
-       INT32 (*Getwp)(struct Mmc *Mmc);
+struct SdxcOperations {
+       EFI_STATUS (*SdxcSendCmd)(struct Mmc *Mmc,
+                     struct SdCmd *Cmd, struct SdData *Data);
+       VOID (*SdxcSetIos)(struct Mmc *Mmc);
+       INT32 (*SdxcInit)(struct Mmc *Mmc);
+       INT32 (*SdxcGetcd)(struct Mmc *Mmc);
+       INT32 (*SdxcGetwp)(struct Mmc *Mmc);
 };
 
 struct MmcConfig {
        CHAR8 *Name;
-       struct MmcOps *Ops;
+       struct SdxcOperations *Ops;
        UINT32 HostCaps;
        UINT32 Voltages;
        UINT32 FMin;
        UINT32 FMax;
        UINT32 BMax;
-       UINT8 PartType;
 };
 
-struct FslSdxcCfg {
+struct SdxcCfg {
        VOID *    SdxcBase;
        UINT32    SdhcClk;
        UINT8     MaxBusWidth;
@@ -503,13 +490,13 @@ struct FslSdxcCfg {
 };
 
 struct Mmc *
-MmcCreate (
+CreateMmcNode (
   IN struct MmcConfig *Cfg,
-  IN VOID *Priv
+  IN VOID *Private
   );
 
 VOID
-MmcSetClock (
+SdxcSetClock (
   IN  struct Mmc *Mmc,
   IN  UINT32 Clock
   );
@@ -517,8 +504,8 @@ MmcSetClock (
 EFI_STATUS
 SdxcSendCmd (
   IN  struct Mmc *Mmc,
-  IN  struct MmcCmd *Cmd,
-  IN  struct MmcData *Data
+  IN  struct SdCmd *Cmd,
+  IN  struct SdData *Data
   );
 
 VOID
@@ -537,8 +524,8 @@ SdxcGetcd (
   );
 
 EFI_STATUS
-FslSdxcInitialize (
-  IN struct FslSdxcCfg *Cfg
+SdxcInitialize (
+  IN struct SdxcCfg *Cfg
   );
 
 INT32
@@ -546,7 +533,7 @@ SdxcMmcInit (
   );
 
 INT32
-BoardMmcInit (
+BoardInit (
   VOID
   );
 
@@ -571,7 +558,7 @@ DetectMmcPresence (
   );
 
 INT32
-MmcGetcd (
+Getcd (
   VOID
   );
 
@@ -582,7 +569,7 @@ DoMmcInfo (
 
 EFI_STATUS
 MmcSendCommand (
-  IN  struct MmcCmd *Cmd
+  IN  struct SdCmd *Cmd
   );
 
 EFI_STATUS
@@ -592,8 +579,8 @@ MmcRcvResp (
   );
 
 EFI_STATUS
-ReceiveResponse(
-  IN  struct MmcData *Data,
+RecvResp(
+  IN  struct SdData *Data,
   IN  UINT32 RespType,
   OUT UINT32 *Response
   );
@@ -618,7 +605,7 @@ MmcSendReset (
   );
 
 EFI_STATUS
-MmcGoIdle (
+SdxcGoIdle (
   IN  struct Mmc *Mmc
   );
 
@@ -634,7 +621,7 @@ InitMmc (
   );
 
 VOID
-PrintMmcInfo (
+PrintSdxcInfo (
   IN  struct Mmc *Mmc
   );
 

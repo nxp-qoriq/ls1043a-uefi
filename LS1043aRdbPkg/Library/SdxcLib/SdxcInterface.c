@@ -1,5 +1,5 @@
 /** SdxcInterface.C
-  Sdxc Library Containing Functions for Reset Read, Write, Initialize Etc
+  Functions to provide Read, Write, Erase , Initialize etc APIs. 
 
   Copyright (C) 2014, Freescale Ltd. All Rights Reserved.
 
@@ -55,14 +55,14 @@ __Div64_32 (
 }
 
 static struct Mmc *
-InitMmcDevice (
-  IN  BOOLEAN ForceInit
+InitDevice (
+  IN  BOOLEAN FInit
   )
 {
   EFI_STATUS Status;
   struct Mmc *Mmc = gMmc;
 
-  if (ForceInit)
+  if (FInit)
     Mmc->HasInit = 0;
 
   Status = MmcInit(Mmc);
@@ -122,7 +122,7 @@ PrintSizeSdxc (
 }
 
 VOID
-PrintMmcInfo (
+PrintSdxcInfo (
   IN  struct Mmc *Mmc
   )
 {
@@ -144,7 +144,7 @@ PrintMmcInfo (
                                  ((Mmc->Cid[3] >> 8) & 0xf) + 1997));
 
   DEBUG((EFI_D_RELEASE, "Tran Speed: %d\n", Mmc->TranSpeed));
-  DEBUG((EFI_D_RELEASE, "Rd Block Len: %d\n", Mmc->ReadBlLen));
+  DEBUG((EFI_D_RELEASE, "Rd Block Len: %d\n", Mmc->ReadBlkLen));
 
   DEBUG((EFI_D_RELEASE, "%a Version %d.%d\n", IS_SD(Mmc) ? "SD" : "MMC",
 		(Mmc->Version >> 8) & 0xf, Mmc->Version & 0xff));
@@ -166,11 +166,11 @@ DoMmcInfo (
 
   SelectSdxc();
 
-  Mmc = InitMmcDevice(FALSE);
+  Mmc = InitDevice(FALSE);
   if (!Mmc)
     return EFI_NO_MAPPING;
 
-  PrintMmcInfo(Mmc);
+  PrintSdxcInfo(Mmc);
 
   return EFI_SUCCESS;
 }
@@ -182,20 +182,19 @@ DoMmcRead (
   IN  UINT32 Count
   )
 {
-  UINT32 Cnt, n;
+  UINT32 BlocksRead;
 
-  Cnt = Count;
-
-  DEBUG((EFI_D_INFO, "MMC Read: Block # %d, Count %d ...\n", StartBlk, Cnt));
+  DEBUG((EFI_D_INFO, "MMC Read: Block # %d, Count %d ...\n", StartBlk, Count));
 
   SelectSdxc();
 
-  n = gMmc->BlockDev.BlockRead(StartBlk, Cnt, InAddr);
+  BlocksRead = gMmc->BlockDev.BlkRead(StartBlk, Count, InAddr);
   /* Flush Cache After Read */
-  // TODO FlushCache((Ulong)InAddr, Cnt * 512); /* FIXME */
-  DEBUG((EFI_D_INFO, "%d Blocks Read: %a\n", n, (n == Cnt) ? "OK" : "ERROR"));
+  // TODO FlushCache((Ulong)InAddr, Count * 512); /* FIXME */
+  DEBUG((EFI_D_INFO, "%d Blocks Read: %a\n",
+	BlocksRead, (BlocksRead == Count) ? "OK" : "ERROR"));
 
-  return (n == Cnt) ? EFI_SUCCESS : EFI_TIMEOUT;
+  return (BlocksRead == Count) ? EFI_SUCCESS : EFI_TIMEOUT;
 }
 
 EFI_STATUS
@@ -205,11 +204,9 @@ DoMmcWrite (
   IN  UINT32 Count
   )
 {
-  UINT32 Cnt, n;
+  UINT32 BlkWrtn;
 
-  Cnt = Count;
-
-  DEBUG((EFI_D_INFO, "MMC Write: Block # %d, Count %d ... \n", StartBlk, Cnt));
+  DEBUG((EFI_D_INFO, "MMC Write: Block # %d, Count %d ... \n", StartBlk, Count));
 
   SelectSdxc();
 
@@ -217,10 +214,11 @@ DoMmcWrite (
     DEBUG((EFI_D_ERROR, "Error: Card Is Write Protected!\n"));
     return EFI_WRITE_PROTECTED;
   }
-  n = gMmc->BlockDev.BlockWrite(StartBlk, Cnt, InAddr);
-  DEBUG((EFI_D_INFO, "%d Blocks Written: %a\n", n, (n == Cnt) ? "OK" : "ERROR"));
+  BlkWrtn = gMmc->BlockDev.BlkWrite(StartBlk, Count, InAddr);
+  DEBUG((EFI_D_INFO, "%d Blocks Written: %a\n",
+	BlkWrtn, (BlkWrtn == Count) ? "OK" : "ERROR"));
 
-  return (n == Cnt) ? EFI_SUCCESS : EFI_TIMEOUT;
+  return (BlkWrtn == Count) ? EFI_SUCCESS : EFI_TIMEOUT;
 }
 
 EFI_STATUS
@@ -229,11 +227,9 @@ DoMmcErase (
   IN UINT32 Count
   )
 {
-  UINT32 Cnt, n;
+  UINT32 BlkErsd;
 
-  Cnt = Count;
-
-  DEBUG((EFI_D_INFO, "MMC Erase: Block # %d, Count %d\n", StartBlk, Cnt));
+  DEBUG((EFI_D_INFO, "MMC Erase: Block # %d, Count %d\n", StartBlk, Count));
 
   SelectSdxc();
 
@@ -242,8 +238,9 @@ DoMmcErase (
      return EFI_WRITE_PROTECTED;
   }
 
-  n = gMmc->BlockDev.BlockErase(StartBlk, Cnt);
-  DEBUG((EFI_D_INFO, "%d Blocks Erased: %a\n", n, (n == Cnt) ? "OK" : "ERROR"));
+  BlkErsd = gMmc->BlockDev.BlkErase(StartBlk, Count);
+  DEBUG((EFI_D_INFO, "%d Blocks Erased: %a\n",
+	BlkErsd, (BlkErsd == Count) ? "OK" : "ERROR"));
 
-  return (n == Cnt) ? EFI_SUCCESS : EFI_TIMEOUT;
+  return (BlkErsd == Count) ? EFI_SUCCESS : EFI_TIMEOUT;
 }

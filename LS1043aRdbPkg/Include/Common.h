@@ -53,20 +53,6 @@
 
 #define ARCH_DMA_MINALIGN   64
 
-/* Interface types: */
-#define IF_TYPE_UNKNOWN     0
-#define IF_TYPE_IDE         1
-#define IF_TYPE_SCSI        2
-#define IF_TYPE_ATAPI       3
-#define IF_TYPE_USB         4
-#define IF_TYPE_DOC         5
-#define IF_TYPE_MMC         6
-#define IF_TYPE_SD          7
-#define IF_TYPE_SATA        8
-#define IF_TYPE_HOST        9
-#define IF_TYPE_MAX         10     /* Max number of IF_TYPE_* supported */
-
-
 #define offsetof(TYPE, MEMBER) ((UINTN) &((TYPE *)0)->MEMBER)
 
 /**

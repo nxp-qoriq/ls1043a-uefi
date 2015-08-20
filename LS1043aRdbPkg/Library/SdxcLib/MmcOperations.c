@@ -1,5 +1,5 @@
-/** SdxcLib.C
-  Sdxc Library Containing Functions for Reset Read, Write, Initialize Etc
+/** MmcOperations.C
+  File Containing Functions for Erase, Read, Write, Initialize Etc
 
   Copyright (C) 2014, Freescale Ltd. All Rights Reserved.
 
@@ -21,7 +21,7 @@ struct Mmc *gMmc = NULL;
 /* Frequency Bases */
 /* Divided By 10 To Be Nice To Platforms Without Floating Point */
 static CONST INT32
-Fbase[] = {
+FreqBase[] = {
        10000,
        100000,
        1000000,
@@ -32,7 +32,7 @@ Fbase[] = {
  * To Platforms Without Floating Point.
  */
 static CONST INT32
-Multipliers[] = {
+FreqMult[] = {
        0,     /* Reserved */
        10,
        12,
@@ -54,7 +54,10 @@ Multipliers[] = {
 /* Wrapper for DoDiv(). Doesn'T Modify Dividend And Returns
  * The Result, Not Reminder.
  */
-static inline UINT64 LlDiv (UINT64 Dividend, UINT32 Divisor)
+static inline UINT64 LlDiv (
+  IN UINT64 Dividend,
+  IN UINT32 Divisor
+  )
 {
   UINT64 Res = Dividend;
   DoDiv(Res, Divisor);
@@ -63,41 +66,41 @@ static inline UINT64 LlDiv (UINT64 Dividend, UINT32 Divisor)
 
 INT32
 MmcGetwp (
-  IN  struct Mmc *Mmc
+  IN  struct Mmc *Sdxc
   )
 {
-  INT32 Wp;
+  INT32 WriteProt;
 
-  if (Mmc->Cfg->Ops->Getwp)
-    Wp = Mmc->Cfg->Ops->Getwp(Mmc); //TODO return response of CMD30
+  if (Sdxc->Cfg->Ops->SdxcGetwp)
+    WriteProt = Sdxc->Cfg->Ops->SdxcGetwp(Sdxc); //TODO return response of CMD30
   else
-    Wp = 0;
+    WriteProt = 0;
 
-  return Wp;
+  return WriteProt;
 }
 
 INT32
-MmcSendCmd (
+SendCmd (
   IN  struct Mmc *Mmc,
-  IN  struct MmcCmd *Cmd,
-  IN  struct MmcData *Data
+  IN  struct SdCmd *Cmd,
+  IN  struct SdData *Data
   )
 {
   INT32 Ret;
 
-  Ret = Mmc->Cfg->Ops->SendCmd(Mmc, Cmd, Data);
+  Ret = Mmc->Cfg->Ops->SdxcSendCmd(Mmc, Cmd, Data);
   return Ret;
 }
 
 EFI_STATUS
-MmcSendStatus (
+SendStatus (
   IN  struct Mmc *Mmc,
   IN  INT32 Timeout
   )
 {
-  struct MmcCmd Cmd;
+  struct SdCmd Cmd;
   INT32 Retries = 5;
-  EFI_STATUS Err;
+  EFI_STATUS Status;
 
   Cmd.CmdIdx = MMC_CMD_SEND_STATUS;
   Cmd.RespType = MMC_RSP_R1;
@@ -105,8 +108,8 @@ MmcSendStatus (
     Cmd.CmdArg = Mmc->Rca << 16;
 
   do {
-    Err = MmcSendCmd(Mmc, &Cmd, NULL);
-    if (!Err) {
+    Status = SendCmd(Mmc, &Cmd, NULL);
+    if (!Status) {
       if ((Cmd.Response[0] & MMC_STATUS_RDY_FOR_DATA) &&
           ((Cmd.Response[0] & MMC_STATUS_CURR_STATE) !=
            MMC_STATE_PRG))
@@ -116,7 +119,7 @@ MmcSendStatus (
         return EFI_DEVICE_ERROR;
       }
     } else if (--Retries < 0)
-      return Err;
+      return Status;
 
     MicroSecondDelay(1000);
   } while (Timeout--);
@@ -132,15 +135,15 @@ MmcSendStatus (
 }
 
 INT32
-MmcReadBlks (
+ReadBlks (
   IN  struct Mmc *Mmc,
-  OUT VOID *Dst,
+  OUT VOID *Dest,
   IN  UINT64 Start,
   IN  UINT64 Blkcnt
   )
 {
-  struct MmcCmd Cmd;
-  struct MmcData Data;
+  struct SdCmd Cmd;
+  struct SdData Data;
 
   if (Blkcnt > 1)
     Cmd.CmdIdx = MMC_CMD_READ_MULTIPLE_BLOCK;
@@ -150,16 +153,16 @@ MmcReadBlks (
   if (Mmc->HighCapacity)
     Cmd.CmdArg = Start;
   else
-    Cmd.CmdArg = Start * Mmc->ReadBlLen;
+    Cmd.CmdArg = Start * Mmc->ReadBlkLen;
 
   Cmd.RespType = MMC_RSP_R1;
 
-  Data.Dest = Dst;
+  Data.Dest = Dest;
   Data.Blocks = Blkcnt;
-  Data.Blocksize = Mmc->ReadBlLen;
+  Data.Blocksize = Mmc->ReadBlkLen;
   Data.Flags = MMC_DATA_READ;
 
-  if (MmcSendCmd(Mmc, &Cmd, &Data))
+  if (SendCmd(Mmc, &Cmd, &Data))
     return 0;
 
   if (Blkcnt > 1) {
@@ -167,7 +170,7 @@ MmcReadBlks (
     Cmd.CmdArg = 0;
     Cmd.RespType = MMC_RSP_R1b;
 
-    if (MmcSendCmd(Mmc, &Cmd, NULL)) {
+    if (SendCmd(Mmc, &Cmd, NULL)) {
       DEBUG((EFI_D_ERROR, "Mmc Fail To Send Stop Cmd\n"));
       return 0;
     }
@@ -177,38 +180,33 @@ MmcReadBlks (
 }
 
 INT32
-MmcSetBlocklen (
+SetBlocklen (
   IN  struct Mmc *Mmc,
   IN  INT32 Len
   )
 {
-  struct MmcCmd Cmd;
+  struct SdCmd Cmd;
 
   if (Mmc->DdrMode)
     return EFI_SUCCESS;
-
-#if 0
-  if (Mmc->CardCaps & MMC_MODE_DDR_52MHz)
-    return 0;
-#endif
 
   Cmd.CmdIdx = MMC_CMD_SET_BLOCKLEN;
   Cmd.RespType = MMC_RSP_R1;
   Cmd.CmdArg = Len;
 
-  return MmcSendCmd(Mmc, &Cmd, NULL);
+  return SendCmd(Mmc, &Cmd, NULL);
 }
 
 UINT64
-MmcWriteBlks (
+SdxcWriteBlks (
   IN  struct Mmc *Mmc,
   IN  UINT64 Start,
   IN  UINT64 Blkcnt,
   IN  CONST VOID *Src
   )
 {
-  struct MmcCmd Cmd;
-  struct MmcData Data;
+  struct SdCmd Cmd;
+  struct SdData Data;
   INT32 Timeout = 1000;
 
   if ((Start + Blkcnt) > Mmc->BlockDev.Lba) {
@@ -227,16 +225,16 @@ MmcWriteBlks (
   if (Mmc->HighCapacity)
     Cmd.CmdArg = Start;
   else
-    Cmd.CmdArg = Start * Mmc->WriteBlLen;
+    Cmd.CmdArg = Start * Mmc->WriteBlkLen;
 
   Cmd.RespType = MMC_RSP_R1;
 
   Data.Src = Src;
   Data.Blocks = Blkcnt;
-  Data.Blocksize = Mmc->WriteBlLen;
+  Data.Blocksize = Mmc->WriteBlkLen;
   Data.Flags = MMC_DATA_WRITE;
 
-  if (MmcSendCmd(Mmc, &Cmd, &Data)) {
+  if (SendCmd(Mmc, &Cmd, &Data)) {
     DEBUG((EFI_D_ERROR, "Mmc Write Failed\n"));
     return 0;
   }
@@ -248,35 +246,35 @@ MmcWriteBlks (
     Cmd.CmdIdx = MMC_CMD_STOP_TRANSMISSION;
     Cmd.CmdArg = 0;
     Cmd.RespType = MMC_RSP_R1b;
-    if (MmcSendCmd(Mmc, &Cmd, NULL)) {
+    if (SendCmd(Mmc, &Cmd, NULL)) {
       DEBUG((EFI_D_ERROR, "Mmc Fail To Send Stop Cmd\n"));
       return 0;
     }
   }
 
   /* Waiting for The Ready Status */
-  if (MmcSendStatus(Mmc, Timeout))
+  if (SendStatus(Mmc, Timeout))
     return 0;
 
   return Blkcnt;
 }
 
 UINT64
-MmcEraseBlks (
+SdxcEraseBlks (
   IN  struct Mmc *Mmc,
   IN  UINT64 Start,
   IN  UINT64 Blkcnt
   )
 {
-  struct MmcCmd Cmd;
+  struct SdCmd Cmd;
   UINT64 End;
-  INT32 Err, StartCmd, EndCmd;
+  INT32 Status, StartCmd, EndCmd;
 
   if (Mmc->HighCapacity) {
     End = Start + Blkcnt/Mmc->EraseGrpSize - 1;
   } else {
-    End = (Start + Blkcnt/Mmc->EraseGrpSize - 1) * Mmc->WriteBlLen;
-    Start *= Mmc->WriteBlLen;
+    End = (Start + Blkcnt/Mmc->EraseGrpSize - 1) * Mmc->WriteBlkLen;
+    Start *= Mmc->WriteBlkLen;
   }
 
   if (IS_SD(Mmc)) {
@@ -291,40 +289,40 @@ MmcEraseBlks (
   Cmd.CmdArg = Start;
   Cmd.RespType = MMC_RSP_R1;
 
-  Err = MmcSendCmd(Mmc, &Cmd, NULL);
-  if (Err)
+  Status = SendCmd(Mmc, &Cmd, NULL);
+  if (Status)
     goto ErrOut;
 
   Cmd.CmdIdx = EndCmd;
   Cmd.CmdArg = End;
 
-  Err = MmcSendCmd(Mmc, &Cmd, NULL);
-  if (Err)
+  Status = SendCmd(Mmc, &Cmd, NULL);
+  if (Status)
     goto ErrOut;
 
   Cmd.CmdIdx = MMC_CMD_ERASE;
   Cmd.CmdArg = SECURE_ERASE;
   Cmd.RespType = MMC_RSP_R1b;
 
-  Err = MmcSendCmd(Mmc, &Cmd, NULL);
-  if (Err)
+  Status = SendCmd(Mmc, &Cmd, NULL);
+  if (Status)
     goto ErrOut;
 
   return 0;
 
 ErrOut:
   DEBUG((EFI_D_ERROR, "Mmc Erase Failed\n"));
-  return Err;
+  return Status;
 }
 
 UINT32
-MmcBRead (
+SdxcBlkRead (
   IN  UINT32 Start,
   IN  UINT32 Blkcnt,
-  OUT VOID *Dst
+  OUT VOID *Dest
   )
 {
-  UINT32 Cur, BlocksTodo = Blkcnt;
+  UINT32 CurBlk, BlocksTodo = Blkcnt;
 
   if (Blkcnt == 0)
     return 0;
@@ -335,56 +333,56 @@ MmcBRead (
     return 0;
   }
 
-  if (MmcSetBlocklen(gMmc, gMmc->ReadBlLen))
+  if (SetBlocklen(gMmc, gMmc->ReadBlkLen))
     return 0;
 
   do {
-    Cur = (BlocksTodo > gMmc->Cfg->BMax) ?
+    CurBlk = (BlocksTodo > gMmc->Cfg->BMax) ?
            gMmc->Cfg->BMax : BlocksTodo;
-    if (MmcReadBlks(gMmc, Dst, Start, Cur) != Cur)
+    if (ReadBlks(gMmc, Dest, Start, CurBlk) != CurBlk)
       return 0;
 
-    BlocksTodo -= Cur;
-    Start += Cur;
-    Dst += Cur * gMmc->ReadBlLen;
+    BlocksTodo -= CurBlk;
+    Start += CurBlk;
+    Dest += CurBlk * gMmc->ReadBlkLen;
   } while (BlocksTodo > 0);
 
   return Blkcnt;
 }
 
 UINT32
-MmcBWrite (
+SdxcBlkWrite (
   IN  UINT32 Start,
   IN  UINT32 Blkcnt,
   IN  CONST VOID *Src
   )
 {
-  UINT32 Cur, BlocksTodo = Blkcnt;
+  UINT32 CurBlk, BlocksTodo = Blkcnt;
 
-  if (MmcSetBlocklen(gMmc, gMmc->WriteBlLen))
+  if (SetBlocklen(gMmc, gMmc->WriteBlkLen))
     return 0;
 
   do {
-    Cur = (BlocksTodo > gMmc->Cfg->BMax) ?
+    CurBlk = (BlocksTodo > gMmc->Cfg->BMax) ?
            gMmc->Cfg->BMax : BlocksTodo;
-    if (MmcWriteBlks(gMmc, Start, Cur, Src) != Cur)
+    if (SdxcWriteBlks(gMmc, Start, CurBlk, Src) != CurBlk)
       return 0;
 
-    BlocksTodo -= Cur;
-    Start += Cur;
-    Src += Cur * gMmc->WriteBlLen;
+    BlocksTodo -= CurBlk;
+    Start += CurBlk;
+    Src += CurBlk * gMmc->WriteBlkLen;
   } while (BlocksTodo > 0);
 
   return Blkcnt;
 }
 
 UINT32
-MmcBErase (
+SdxcBlkErase (
   IN  UINT32 Start,
   IN  UINT32 Blkcnt
   )
 {
-  INT32 Err = 0;
+  INT32 Status = 0;
   UINT32 Blk = 0, BlkR = 0;
   INT32 Timeout = 1000;
 
@@ -399,14 +397,14 @@ MmcBErase (
     BlkR = ((Blkcnt - Blk) > gMmc->EraseGrpSize) ?
            gMmc->EraseGrpSize : (Blkcnt - Blk);
 
-    Err = MmcEraseBlks(gMmc, Start + Blk, BlkR);
-    if (Err)
+    Status = SdxcEraseBlks(gMmc, Start + Blk, BlkR);
+    if (Status)
       break;
 
     Blk += BlkR;
 
     /* Waiting for The Ready Status */
-    if (MmcSendStatus(gMmc, Timeout))
+    if (SendStatus(gMmc, Timeout))
       return 0;
   }
 
@@ -414,32 +412,32 @@ MmcBErase (
 }
 
 INT32
-MmcGetcd (
+Getcd (
   VOID
   )
 {
-  INT32 Cd;
+  INT32 Found = 0;
 
-  ASSERT(gMmc->Cfg->Ops->Getcd);
-  if (gMmc->Cfg->Ops->Getcd)
-    Cd = gMmc->Cfg->Ops->Getcd(gMmc);
+  ASSERT(gMmc->Cfg->Ops->SdxcGetcd);
+  if (gMmc->Cfg->Ops->SdxcGetcd)
+    Found = gMmc->Cfg->Ops->SdxcGetcd(gMmc);
   else
-    Cd = 1;
+    Found = 1;
 
-  return Cd;
+  return Found;
 }
 
 VOID
-MmcSetIos (
-  IN  struct Mmc *Mmc
+SetIos (
+  IN  struct Mmc *Sdxc
   )
 {
-  if (Mmc->Cfg->Ops->SetIos)
-    Mmc->Cfg->Ops->SetIos(Mmc);
+  if (Sdxc->Cfg->Ops->SdxcSetIos)
+    Sdxc->Cfg->Ops->SdxcSetIos(Sdxc);
 }
 
 VOID
-MmcSetClock (
+SdxcSetClock (
   IN  struct Mmc *Mmc,
   IN  UINT32 Clock
   )
@@ -452,27 +450,27 @@ MmcSetClock (
 
   Mmc->Clock = Clock;
 
-  MmcSetIos(Mmc);
+  SetIos(Mmc);
 }
 
 static VOID
-MmcSetBusWidth (
+SdxcSetBusWidth (
   IN  struct Mmc *Mmc,
-  IN  UINT32 Width
+  IN  UINT32 BWidth
   )
 {
-  Mmc->BusWidth = Width;
+  Mmc->BusWidth = BWidth;
 
-  MmcSetIos(Mmc);
+  SetIos(Mmc);
 }
 
 EFI_STATUS
-MmcGoIdle (
+SdxcGoIdle (
   IN  struct Mmc *Mmc
   )
 {
-  struct MmcCmd Cmd;
-  INT32 Err;
+  struct SdCmd Cmd;
+  INT32 Status;
 
   MicroSecondDelay(1000);
 
@@ -480,10 +478,10 @@ MmcGoIdle (
   Cmd.CmdArg = 0;
   Cmd.RespType = MMC_RSP_NONE;
 
-  Err = MmcSendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(Mmc, &Cmd, NULL);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   MicroSecondDelay(2000);
 
@@ -491,22 +489,22 @@ MmcGoIdle (
 }
 
 static EFI_STATUS
-MmcSendIfCond (
+SdSendIfCond (
   IN  struct Mmc *Mmc
   )
 {
-  struct MmcCmd Cmd;
-  INT32 Err;
+  struct SdCmd Cmd;
+  INT32 Status;
 
   Cmd.CmdIdx = SD_CMD_SEND_IF_COND;
   /* We Set The Bit if The Host Supports Voltages Between 2.7 And 3.6 V */
   Cmd.CmdArg = ((Mmc->Cfg->Voltages & 0xff8000) != 0) << 8 | 0xaa;
   Cmd.RespType = MMC_RSP_R7;
 
-  Err = MmcSendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(Mmc, &Cmd, NULL);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   if ((Cmd.Response[0] & 0xff) != 0xaa)
     return EFI_NO_RESPONSE;
@@ -522,7 +520,7 @@ SendAppCmd (
   IN BOOLEAN Rca
   )
 {
-  struct MmcCmd Cmd;
+  struct SdCmd Cmd;
 
   Cmd.CmdIdx = MMC_CMD_APP_CMD;
   Cmd.RespType = MMC_RSP_R1;
@@ -532,7 +530,7 @@ SendAppCmd (
   else
     Cmd.CmdArg = 0;
 
-  return MmcSendCmd(gMmc, &Cmd, NULL);
+  return SendCmd(gMmc, &Cmd, NULL);
 }
 
 static EFI_STATUS
@@ -541,14 +539,14 @@ SdSendOpCond (
   )
 {
   INT32 Timeout = 1000;
-  EFI_STATUS Err;
-  struct MmcCmd Cmd;
+  EFI_STATUS Status;
+  struct SdCmd Cmd;
 
   do {
-    Err = SendAppCmd(FALSE);
+    Status = SendAppCmd(FALSE);
 
-    if (Err)
-      return Err;
+    if (Status)
+      return Status;
 
     Cmd.CmdIdx = SD_CMD_APP_SEND_OP_COND;
     Cmd.RespType = MMC_RSP_R3;
@@ -566,10 +564,10 @@ SdSendOpCond (
     if (Mmc->Version == SD_VERSION_2)
       Cmd.CmdArg |= OCR_HCS;
 
-    Err = MmcSendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(Mmc, &Cmd, NULL);
 
-    if (Err)
-      return Err;
+    if (Status)
+      return Status;
 
     MicroSecondDelay(1000);
   } while ((!(Cmd.Response[0] & OCR_BUSY)) && Timeout--);
@@ -585,10 +583,10 @@ SdSendOpCond (
     Cmd.RespType = MMC_RSP_R3;
     Cmd.CmdArg = 0;
 
-    Err = MmcSendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(Mmc, &Cmd, NULL);
 
-    if (Err)
-      return Err;
+    if (Status)
+      return Status;
   }
 
   Mmc->Ocr = Cmd.Response[0];
@@ -600,13 +598,13 @@ SdSendOpCond (
 
 /* We Pass In The Cmd Since Otherwise The Init Seems To Fail */
 static INT32
-MmcSendOpCondIter (
+MmcSendOpCondCmdIter (
   IN  struct Mmc *Mmc,
-  IN  struct MmcCmd *Cmd,
+  IN  struct SdCmd *Cmd,
   IN  INT32 UseArg
 )
 {
-  INT32 Err;
+  INT32 Status;
 
   Cmd->CmdIdx = MMC_CMD_SEND_OP_COND;
   Cmd->RespType = MMC_RSP_R3;
@@ -620,33 +618,32 @@ MmcSendOpCondIter (
     if (Mmc->Cfg->HostCaps & MMC_MODE_HC)
       Cmd->CmdArg |= OCR_HCS;
   }
-  Err = MmcSendCmd(Mmc, Cmd, NULL);
+  Status = SendCmd(Mmc, Cmd, NULL);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   Mmc->Ocr = Cmd->Response[0];
   return EFI_SUCCESS;
 }
 
 EFI_STATUS
-MmcSendOpCond (
+MmcSendOpCondCmd (
   IN  struct Mmc *Mmc
   )
 {
-  struct MmcCmd Cmd;
-  EFI_STATUS Err;
+  struct SdCmd Cmd;
+  EFI_STATUS Status;
   INT32 I;
 
   /* Some Cards Seem To Need This */
-  MmcGoIdle(Mmc);
+  SdxcGoIdle(Mmc);
 
   /* Asking To The Card Its Capabilities */
-//  Mmc->OpCondPending = 1;
   for (I = 0; I < 2; I++) {
-    Err = MmcSendOpCondIter(Mmc, &Cmd, I != 0);
-    if (Err)
-      return Err;
+    Status = MmcSendOpCondCmdIter(Mmc, &Cmd, I != 0);
+    if (Status)
+      return Status;
 
     /* Exit if Not Busy (Flag Seems To Be Inverted) */
     if (Mmc->Ocr & OCR_BUSY)
@@ -656,16 +653,16 @@ MmcSendOpCond (
 }
 
 EFI_STATUS
-MmcStartInit (
+SdStartInit (
   VOID
   )
 {
-  struct FslSdxcCfg *Cfg = gMmc->Priv;
-  struct FslSdxc *Regs = (struct FslSdxc *)Cfg->SdxcBase;
-  EFI_STATUS Err;
+  struct SdxcCfg *Cfg = gMmc->Private;
+  struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
+  EFI_STATUS Status;
 
   /* We Pretend There'S No Card When Init Is NULL */
-  if (MmcGetcd() == 0 || gMmc->Cfg->Ops->Init == NULL) {
+  if (Getcd() == 0 || gMmc->Cfg->Ops->SdxcInit == NULL) {
     gMmc->HasInit = 0;
     DEBUG((EFI_D_ERROR, "MMC: No Card Present\n"));
 
@@ -676,60 +673,60 @@ MmcStartInit (
     return EFI_SUCCESS;
 
   /* Made Sure It'S Not NULL Earlier */
-  Err = gMmc->Cfg->Ops->Init(gMmc);
+  Status = gMmc->Cfg->Ops->SdxcInit(gMmc);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   gMmc->DdrMode = 0;
-  MmcSetBusWidth(gMmc, 1);
-  MmcSetClock(gMmc, 1);
+  SdxcSetBusWidth(gMmc, 1);
+  SdxcSetClock(gMmc, 1);
 
   MmioClearBitsBe32((UINTN)&Regs->Proctl, PROCTL_BE);
 
   /* Reset The Card */
-  Err = MmcGoIdle(gMmc);
+  Status = SdxcGoIdle(gMmc);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   /* The Internal Partition Reset To User Partition(0) At Every CMD0*/
   gMmc->PartNum = 0;
 
   /* Check for An MMC Card */
-  Err = MmcSendOpCond(gMmc);
+  Status = MmcSendOpCondCmd(gMmc);
 
-  if (Err && Err != EFI_ALREADY_STARTED) {
+  if (Status && Status != EFI_ALREADY_STARTED) {
     DEBUG((EFI_D_INFO, "Not MMC Card\n"));
 
     /* Test for SD Version 2 */
-    Err = MmcSendIfCond(gMmc);
-    if (Err != EFI_NO_RESPONSE)
+    Status = SdSendIfCond(gMmc);
+    if (Status != EFI_NO_RESPONSE)
       DEBUG((EFI_D_INFO, "Not SD version 2\n"));
 
     /* Now Try To Get The SD Card'S Operating Condition */
-    Err = SdSendOpCond(gMmc);
-    if (Err)
+    Status = SdSendOpCond(gMmc);
+    if (Status)
       DEBUG((EFI_D_ERROR, "Card Did Not Respond To Voltage Select!\n"));
   } else
     gMmc->OpCondPending = 1;
 
-  if (Err == EFI_ALREADY_STARTED)
+  if (Status == EFI_ALREADY_STARTED)
     gMmc->InitInProgress = 1;
 
-  return Err;
+  return Status;
 }
 
 struct Mmc *
-MmcCreate (
+CreateMmcNode (
   IN struct MmcConfig *Cfg,
-  IN VOID *Priv
+  IN VOID *Private
   )
 {
   struct Mmc *Mmc;
 
   /* Quick Validation */
-  if (Cfg == NULL || Cfg->Ops == NULL || Cfg->Ops->SendCmd == NULL ||
+  if (Cfg == NULL || Cfg->Ops == NULL || Cfg->Ops->SdxcSendCmd == NULL ||
                 Cfg->FMin == 0 || Cfg->FMax == 0 || Cfg->BMax == 0)
     return NULL;
 
@@ -747,62 +744,39 @@ MmcCreate (
 
   InternalMemZeroMem(Mmc->Cfg, sizeof(struct MmcConfig));
 
-  Mmc->Signature = EFI_SDXC_SIGNATURE;
   InternalMemCopyMem(Mmc->Cfg, Cfg, sizeof(struct MmcConfig));
-  Mmc->Priv = Priv;
-
-  /* The Following Chunk Was MmcRegister() */
+  Mmc->Private = Private;
 
   /* Setup Dsr Related Values */
   Mmc->DsrImp = 0;
   Mmc->Dsr = 0xffffffff;
   /* Setup The Universal Parts Of The Block Interface Just Once */
-  Mmc->BlockDev.IfType = IF_TYPE_MMC;
-  Mmc->BlockDev.Removable = 1;
-  Mmc->BlockDev.BlockRead = MmcBRead;
-  Mmc->BlockDev.BlockWrite = MmcBWrite;
-  Mmc->BlockDev.BlockErase = MmcBErase;
-
-  /* Setup Initial Part Type */
-  Mmc->BlockDev.PartType = Mmc->Cfg->PartType;
+  Mmc->BlockDev.BlkRead = SdxcBlkRead;
+  Mmc->BlockDev.BlkWrite = SdxcBlkWrite;
+  Mmc->BlockDev.BlkErase = SdxcBlkErase;
 
   return Mmc;
 }
 
 EFI_STATUS
-MmcCompleteOpCond (
+SdxcCompleteOpCond (
   IN  struct Mmc *Mmc
   )
 {
-  struct MmcCmd Cmd;
-//  INT32 Timeout = 1000;
-  EFI_STATUS Err;
-//  UINT32 Start;
+  struct SdCmd Cmd;
+  EFI_STATUS Status;
 
   Mmc->OpCondPending = 0;
-#if 0
-//  Start = GetTimer(0);
-  do {
-         Err = MmcSendOpCondIter(Mmc, &Cmd, 1);
-         if (Err)
-                return Err;
-   //      if (GetTimer(Start) > Timeout)
-   //             return UNUSABLE_ERR;
-  	if(!Timeout--)
-  		return EFI_TIMEOUT;
 
-         MicroSecondDelay(100);
-  } while (!(Mmc->Ocr & OCR_BUSY));
-#endif
   if (MmcHostIsSpi(Mmc)) { /* Read OCR for Spi */
          Cmd.CmdIdx = MMC_CMD_SPI_READ_OCR;
          Cmd.RespType = MMC_RSP_R3;
          Cmd.CmdArg = 0;
 
-         Err = MmcSendCmd(Mmc, &Cmd, NULL);
+         Status = SendCmd(Mmc, &Cmd, NULL);
 
-         if (Err)
-                return Err;
+         if (Status)
+                return Status;
   }
 
   Mmc->Version = MMC_VERSION_UNKNOWN;
@@ -819,23 +793,23 @@ MmcSendExtCsd (
   IN  UINT8 *ExtCsd
   )
 {
-  struct MmcCmd Cmd;
-  struct MmcData Data;
-  INT32 Err;
+  struct SdCmd Cmd;
+  struct SdData Data;
+  INT32 Status;
 
   /* Get The Card Status Register */
   Cmd.CmdIdx = MMC_CMD_SEND_EXT_CSD;
   Cmd.RespType = MMC_RSP_R1;
   Cmd.CmdArg = 0;
 
-  Data.Dest = (CHAR8 *)ExtCsd;
-  Data.Blocks = 1;
   Data.Blocksize = MMC_MAX_BLOCK_LEN;
   Data.Flags = MMC_DATA_READ;
+  Data.Dest = (CHAR8 *)ExtCsd;
+  Data.Blocks = 1;
 
-  Err = MmcSendCmd(Mmc, &Cmd, &Data);
+  Status = SendCmd(Mmc, &Cmd, &Data);
 
-  return Err;
+  return Status;
 }
 
 static INT32
@@ -865,14 +839,14 @@ MmcSetCapacity (
          return -1;
   }
 
-  Mmc->BlockDev.Lba = LlDiv(Mmc->Capacity, Mmc->ReadBlLen);
+  Mmc->BlockDev.Lba = LlDiv(Mmc->Capacity, Mmc->ReadBlkLen);
 
   return 0;
 }
 
 #ifdef GET_SD_REVISION
 static INT32
-SdSwitch (
+SdxcSwitch (
   IN  struct Mmc *Mmc,
   IN  INT32 Mode,
   IN  INT32 Group,
@@ -880,8 +854,8 @@ SdSwitch (
   UINT8 *Resp
   )
 {
-  struct MmcCmd Cmd;
-  struct MmcData Data;
+  struct SdCmd Cmd;
+  struct SdData Data;
 
   /* switch The Frequency */
   Cmd.CmdIdx = SD_CMD_SWITCH_FUNC;
@@ -890,28 +864,24 @@ SdSwitch (
   Cmd.CmdArg &= ~(0xf << (Group * 4));
   Cmd.CmdArg |= Value << (Group * 4);
 
-  Data.Dest = (CHAR8 *)Resp;
-  Data.Blocksize = 64;
   Data.Blocks = 1;
   Data.Flags = MMC_DATA_READ;
+  Data.Dest = (CHAR8 *)Resp;
+  Data.Blocksize = 64;
 
-  return MmcSendCmd(Mmc, &Cmd, &Data);
+  return SendCmd(Mmc, &Cmd, &Data);
 }
 
 static INT32
-SdChangeFreq (
+SdxcChangeFreq (
   IN  struct Mmc *Mmc
   )
 {
-  INT32 Err;
-  struct MmcCmd Cmd;
+  INT32 Status;
+  struct SdCmd Cmd;
   ALLOC_CACHE_ALIGN_BUFFER(UINT32, Scr, 2);
   ALLOC_CACHE_ALIGN_BUFFER(UINT32, SwitchStatus, 16);
-#if 0
-  UINT32 Scr[2];
-  UINT32 SwitchStatus[16];
-#endif
-  struct MmcData Data;
+  struct SdData Data;
   INT32 Timeout;
 
   Mmc->CardCaps = 0;
@@ -920,10 +890,10 @@ SdChangeFreq (
     return 0;
 
   /* Read The SCR To Find Out if This Card Supports Higher Speeds */
-  Err = SendAppCmd(TRUE);
+  Status = SendAppCmd(TRUE);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   Cmd.CmdIdx = SD_CMD_APP_SEND_SCR;
   Cmd.RespType = MMC_RSP_R1;
@@ -932,26 +902,24 @@ SdChangeFreq (
   Timeout = 5;
 
 RetryScr:
-  Data.Dest = (CHAR8 *)Scr;
-  Data.Blocksize = 8;
   Data.Blocks = 1;
   Data.Flags = MMC_DATA_READ;
+  Data.Dest = (CHAR8 *)Scr;
+  Data.Blocksize = 8;
 
-  Err = MmcSendCmd(Mmc, &Cmd, &Data);
+  Status = SendCmd(Mmc, &Cmd, &Data);
 
-  if (Err) {
+  if (Status) {
     if (Timeout--)
       goto RetryScr;
 
-    return Err;
+    return Status;
   }
 
   MicroSecondDelay(100);
-//TODO
-//	Mmc->Scr[0] = _Be32ToCpu(Scr[0]);
-//	Mmc->Scr[1] = _Be32ToCpu(Scr[1]);
-	Mmc->Scr[0] = Scr[0];
-	Mmc->Scr[1] = Scr[1];
+
+  Mmc->Scr[0] = Scr[0];
+  Mmc->Scr[1] = Scr[1];
 
   switch ((Mmc->Scr[0] >> 24) & 0xf) {
     case 0:
@@ -979,20 +947,18 @@ RetryScr:
 
   Timeout = 4;
   while (Timeout--) {
-    Err = SdSwitch(Mmc, SD_SWITCH_CHECK, 0, 1,
+    Status = SdxcSwitch(Mmc, SD_SWITCH_CHECK, 0, 1,
 		(UINT8 *)SwitchStatus);
 
-    if (Err)
-      return Err;
+    if (Status)
+      return Status;
 
     /* The High-Speed Function Is Busy.  Try Again */
-    //TODO if (!(_Be32ToCpu(SwitchStatus[7]) & SD_HIGHSPEED_BUSY))
     if (!(SwitchStatus[7] & SD_HIGHSPEED_BUSY))
       break;
   }
 
   /* if High-Speed Isn'T Supported, We return */
-  // TODO	if (!(_Be32ToCpu(SwitchStatus[3]) & SD_HIGHSPEED_SUPPORTED))
   if (!(SwitchStatus[3] & SD_HIGHSPEED_SUPPORTED))
     return 0;
 
@@ -1006,12 +972,11 @@ RetryScr:
 	(Mmc->Cfg->HostCaps & MMC_MODE_HS)))
     return 0;
 
-  Err = SdSwitch(Mmc, SD_SWITCH_SWITCH, 0, 1, (UINT8 *)SwitchStatus);
+  Status = SdxcSwitch(Mmc, SD_SWITCH_SWITCH, 0, 1, (UINT8 *)SwitchStatus);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
-  //TODO	if ((_Be32ToCpu(SwitchStatus[4]) & 0x0f000000) == 0x01000000)
   if ((SwitchStatus[4] & 0x0f000000) == 0x01000000)
     Mmc->CardCaps |= MMC_MODE_HS;
 
@@ -1027,7 +992,7 @@ MmcSwitch (
   IN UINT8 Value
   )
 {
-  struct MmcCmd Cmd;
+  struct SdCmd Cmd;
   INT32 Timeout = 1000;
   INT32 Ret;
 
@@ -1037,11 +1002,11 @@ MmcSwitch (
 		 (Index << 16) |
   		 (Value << 8);
 
-  Ret = MmcSendCmd(Mmc, &Cmd, NULL);
+  Ret = SendCmd(Mmc, &Cmd, NULL);
 
   /* Waiting for The Ready Status */
   if (!Ret)
-    Ret = MmcSendStatus(Mmc, Timeout);
+    Ret = SendStatus(Mmc, Timeout);
 
   return Ret;
 }
@@ -1053,11 +1018,8 @@ MmcChangeFreq (
   )
 {
   ALLOC_CACHE_ALIGN_BUFFER(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
-#if 0
-  UINT8 ExtCsd[MMC_MAX_BLOCK_LEN];
-#endif
   CHAR8 Cardtype;
-  INT32 Err;
+  INT32 Status;
 
   Mmc->CardCaps = MMC_MODE_4BIT | MMC_MODE_8BIT;
 
@@ -1068,22 +1030,22 @@ MmcChangeFreq (
   if (Mmc->Version < MMC_VERSION_4)
     return 0;
 
-  Err = MmcSendExtCsd(Mmc, ExtCsd);
-  if (Err)
-    return Err;
+  Status = MmcSendExtCsd(Mmc, ExtCsd);
+  if (Status)
+    return Status;
 
   Cardtype = ExtCsd[EXT_CSD_CARD_TYPE] & 0xf;
 
-  Err = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
+  Status = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
 
-  if (Err)
-    return Err == EFI_NO_RESPONSE ? 0 : Err;
+  if (Status)
+    return Status == EFI_NO_RESPONSE ? 0 : Status;
 
   /* Now Check To See That It Worked */
-  Err = MmcSendExtCsd(Mmc, ExtCsd);
+  Status = MmcSendExtCsd(Mmc, ExtCsd);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   /* No High-Speed Support */
   if (!ExtCsd[EXT_CSD_HS_TIMING])
@@ -1103,23 +1065,18 @@ MmcChangeFreq (
 #endif
 
 static INT32
-MmcStartup (
+SdxcStartup (
   IN  struct Mmc *Mmc
   )
 {
-  INT32   Err, I;
+  INT32   Status, I;
   UINT32 Mult, Freq;
-  UINT64 CMult, CSize, Capacity;
-  struct MmcCmd Cmd;
+  UINT64 CsdMult, CsdSize, Capacity;
+  struct SdCmd Cmd;
 
   ALLOC_CACHE_ALIGN_BUFFER(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
   ALLOC_CACHE_ALIGN_BUFFER(UINT8, TestCsd, MMC_MAX_BLOCK_LEN);
-#if 0
-  UINT8 ExtCsd[MMC_MAX_BLOCK_LEN];
-  UINT8 TestCsd[MMC_MAX_BLOCK_LEN];
-#endif
   INT32 Timeout = 10000;
-
 
   /* Put The Card In Identify Mode */
   Cmd.CmdIdx = MmcHostIsSpi(Mmc) ? MMC_CMD_SEND_CID :
@@ -1127,10 +1084,10 @@ MmcStartup (
   Cmd.RespType = MMC_RSP_R2;
   Cmd.CmdArg = 0;
 
-  Err = MmcSendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(Mmc, &Cmd, NULL);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   Mmc->Cid[0] = Cmd.Response[0];
   Mmc->Cid[1] = Cmd.Response[1];
@@ -1152,10 +1109,10 @@ MmcStartup (
       Cmd.RespType = MMC_RSP_R1;
     }
 
-    Err = MmcSendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(Mmc, &Cmd, NULL);
 
-    if (Err)
-      return Err;
+    if (Status)
+      return Status;
 
     if (IS_SD(Mmc))
       Mmc->Rca = (Cmd.Response[0] >> 16) & 0xffff;
@@ -1166,13 +1123,13 @@ MmcStartup (
   Cmd.RespType = MMC_RSP_R2;
   Cmd.CmdArg = Mmc->Rca << 16;
 
-  Err = MmcSendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(Mmc, &Cmd, NULL);
 
   /* Waiting for The Ready Status */
-  MmcSendStatus(Mmc, Timeout);
+  SendStatus(Mmc, Timeout);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 
   Mmc->Csd[0] = Cmd.Response[0];
   Mmc->Csd[1] = Cmd.Response[1];
@@ -1205,47 +1162,47 @@ MmcStartup (
   }
 
   /* Divide Frequency By 10, Since The Mults Are 10x Bigger */
-  Freq = Fbase[(Cmd.Response[0] & 0x7)];
-  Mult = Multipliers[((Cmd.Response[0] >> 3) & 0xf)];
+  Freq = FreqBase[(Cmd.Response[0] & 0x7)];
+  Mult = FreqMult[((Cmd.Response[0] >> 3) & 0xf)];
 
   Mmc->TranSpeed = Freq * Mult;
 
   Mmc->DsrImp = ((Cmd.Response[1] >> 12) & 0x1);
-  Mmc->ReadBlLen = 1 << ((Cmd.Response[1] >> 16) & 0xf);
+  Mmc->ReadBlkLen = 1 << ((Cmd.Response[1] >> 16) & 0xf);
 
   if (IS_SD(Mmc))
-    Mmc->WriteBlLen = Mmc->ReadBlLen;
+    Mmc->WriteBlkLen = Mmc->ReadBlkLen;
   else
-    Mmc->WriteBlLen = 1 << ((Cmd.Response[3] >> 22) & 0xf);
+    Mmc->WriteBlkLen = 1 << ((Cmd.Response[3] >> 22) & 0xf);
 
   if (Mmc->HighCapacity) {
-    CSize = (Mmc->Csd[1] & 0x3f) << 16
+    CsdSize = (Mmc->Csd[1] & 0x3f) << 16
             | (Mmc->Csd[2] & 0xffff0000) >> 16;
-    CMult = 8;
+    CsdMult = 8;
   } else {
-    CSize = (Mmc->Csd[1] & 0x3ff) << 2
+    CsdSize = (Mmc->Csd[1] & 0x3ff) << 2
             | (Mmc->Csd[2] & 0xc0000000) >> 30;
-    CMult = (Mmc->Csd[2] & 0x00038000) >> 15;
+    CsdMult = (Mmc->Csd[2] & 0x00038000) >> 15;
   }
 
-  Mmc->CapacityUser = (CSize + 1) << (CMult + 2);
-  Mmc->CapacityUser *= Mmc->ReadBlLen;
+  Mmc->CapacityUser = (CsdSize + 1) << (CsdMult + 2);
+  Mmc->CapacityUser *= Mmc->ReadBlkLen;
   Mmc->CapacityBoot = 0;
   Mmc->CapacityRpmb = 0;
   for (I = 0; I < 4; I++)
     Mmc->CapacityGp[I] = 0;
 
-  if (Mmc->ReadBlLen > MMC_MAX_BLOCK_LEN)
-    Mmc->ReadBlLen = MMC_MAX_BLOCK_LEN;
+  if (Mmc->ReadBlkLen > MMC_MAX_BLOCK_LEN)
+    Mmc->ReadBlkLen = MMC_MAX_BLOCK_LEN;
 
-  if (Mmc->WriteBlLen > MMC_MAX_BLOCK_LEN)
-    Mmc->WriteBlLen = MMC_MAX_BLOCK_LEN;
+  if (Mmc->WriteBlkLen > MMC_MAX_BLOCK_LEN)
+    Mmc->WriteBlkLen = MMC_MAX_BLOCK_LEN;
 
   if ((Mmc->DsrImp) && (0xffffffff != Mmc->Dsr)) {
     Cmd.CmdIdx = MMC_CMD_SET_DSR;
     Cmd.CmdArg = (Mmc->Dsr & 0xffff) << 16;
     Cmd.RespType = MMC_RSP_NONE;
-    if (MmcSendCmd(Mmc, &Cmd, NULL))
+    if (SendCmd(Mmc, &Cmd, NULL))
       DEBUG((EFI_D_ERROR, "MMC: SET_DSR Failed\n"));
   }
 
@@ -1254,10 +1211,10 @@ MmcStartup (
     Cmd.CmdIdx = MMC_CMD_SELECT_CARD;
     Cmd.RespType = MMC_RSP_R1;
     Cmd.CmdArg = Mmc->Rca << 16;
-    Err = MmcSendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(Mmc, &Cmd, NULL);
 
-    if (Err)
-      return Err;
+    if (Status)
+      return Status;
   }
   /*
    * for SD, Its Erase Group Is Always One Sector
@@ -1266,8 +1223,8 @@ MmcStartup (
   Mmc->PartConfig = MMCPART_NOAVAILABLE;
   if (!IS_SD(Mmc) && (Mmc->Version >= MMC_VERSION_4)) {
     /* Check  ExtCsd Version And Capacity */
-    Err = MmcSendExtCsd(Mmc, ExtCsd);
-    if (!Err && (ExtCsd[EXT_CSD_REV] >= 2)) {
+    Status = MmcSendExtCsd(Mmc, ExtCsd);
+    if (!Status && (ExtCsd[EXT_CSD_REV] >= 2)) {
       /*
        * According To The JEDEC Standard, The Value Of
        * ExtCsd'S Capacity Is Valid if The Value Is More
@@ -1310,11 +1267,11 @@ MmcStartup (
      */
     if ((ExtCsd[EXT_CSD_PARTITIONING_SUPPORT] & PART_SUPPORT) &&
         (ExtCsd[EXT_CSD_PARTITIONS_ATTRIBUTE] & PART_ENH_ATTRIB)) {
-      Err = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL,
+      Status = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL,
                   EXT_CSD_ERASE_GROUP_DEF, 1);
 
-      if (Err)
-        return Err;
+      if (Status)
+        return Status;
       else
         ExtCsd[EXT_CSD_ERASE_GROUP_DEF] = 1;
 
@@ -1365,18 +1322,18 @@ MmcStartup (
     }
   }
 
-  Err = MmcSetCapacity(Mmc, Mmc->PartNum);
-  if (Err)
-    return Err;
+  Status = MmcSetCapacity(Mmc, Mmc->PartNum);
+  if (Status)
+    return Status;
 
 #ifdef GET_SD_REVISION
   if (IS_SD(Mmc))
-    Err = SdChangeFreq(Mmc);
+    Status = SdxcChangeFreq(Mmc);
   else
-    Err = MmcChangeFreq(Mmc);
+    Status = MmcChangeFreq(Mmc);
 
-  if (Err)
-    return Err;
+  if (Status)
+    return Status;
 #endif
 
   /* Restrict Card'S Capabilities By What The Host Can do */
@@ -1384,18 +1341,18 @@ MmcStartup (
 
   if (IS_SD(Mmc)) {
     if (Mmc->CardCaps & MMC_MODE_4BIT) {
-      Err = SendAppCmd(TRUE);
-      if (Err)
-        return Err;
+      Status = SendAppCmd(TRUE);
+      if (Status)
+        return Status;
 
       Cmd.CmdIdx = SD_CMD_APP_SET_BUS_WIDTH;
       Cmd.RespType = MMC_RSP_R1;
       Cmd.CmdArg = 2;
-      Err = MmcSendCmd(Mmc, &Cmd, NULL);
-      if (Err)
-        return Err;
+      Status = SendCmd(Mmc, &Cmd, NULL);
+      if (Status)
+        return Status;
 
-      MmcSetBusWidth(Mmc, 4);
+      SdxcSetBusWidth(Mmc, 4);
     }
 
     if (Mmc->CardCaps & MMC_MODE_HS)
@@ -1443,17 +1400,17 @@ MmcStartup (
       if ((Mmc->CardCaps & Caps) != Caps)
         continue;
 
-      Err = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL,
+      Status = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL,
                     EXT_CSD_BUS_WIDTH, Extw);
 
-      if (Err)
+      if (Status)
         continue;
 
       Mmc->DdrMode = (Caps & MMC_MODE_DDR_52MHz) ? 1 : 0;
-      MmcSetBusWidth(Mmc, Widths[Idx]); //2
+      SdxcSetBusWidth(Mmc, Widths[Idx]);
 
-      Err = MmcSendExtCsd(Mmc, TestCsd);
-      if (Err)
+      Status = MmcSendExtCsd(Mmc, TestCsd);
+      if (Status)
         continue;
 
       if (ExtCsd[EXT_CSD_PARTITIONING_SUPPORT] \
@@ -1469,11 +1426,11 @@ MmcStartup (
 
         break;
       else
-        Err = -1; 
+        Status = -1; 
     }
 
-    if (Err)
-      return Err;
+    if (Status)
+      return Status;
 
     if (Mmc->CardCaps & MMC_MODE_HS) {
       if (Mmc->CardCaps & MMC_MODE_HS_52MHz)
@@ -1483,20 +1440,17 @@ MmcStartup (
     }
   }
 
-  MmcSetClock(Mmc, Mmc->TranSpeed);
+  SdxcSetClock(Mmc, Mmc->TranSpeed);
 
   /* Fix the block length for DDR mode */
   if (Mmc->DdrMode) {
-    Mmc->ReadBlLen = MMC_MAX_BLOCK_LEN;
-    Mmc->WriteBlLen = MMC_MAX_BLOCK_LEN;
+    Mmc->ReadBlkLen = MMC_MAX_BLOCK_LEN;
+    Mmc->WriteBlkLen = MMC_MAX_BLOCK_LEN;
   }
 
   /* Fill In Device Description */
-  Mmc->BlockDev.Lun = 0;
-  Mmc->BlockDev.Type = 0;
-  Mmc->BlockDev.Blksz = Mmc->ReadBlLen;
-  Mmc->BlockDev.Log2blksz = LOG2(Mmc->BlockDev.Blksz);
-  Mmc->BlockDev.Lba = LlDiv(Mmc->Capacity, Mmc->ReadBlLen);
+  Mmc->BlockDev.Blksz = Mmc->ReadBlkLen;
+  Mmc->BlockDev.Lba = LlDiv(Mmc->Capacity, Mmc->ReadBlkLen);
 
   AsciiSPrint(Mmc->BlockDev.Vendor,sizeof(Mmc->BlockDev.Vendor),
          "Man %06x Snr %04x%04x", Mmc->Cid[0] >> 24,
@@ -1512,24 +1466,24 @@ MmcStartup (
 }
 
 static INT32
-MmcCompleteInit (
+SdxcCompleteInit (
   IN  struct Mmc *Mmc
   )
 {
-  INT32 Err = EFI_SUCCESS;
+  INT32 Status = EFI_SUCCESS;
   if (Mmc->OpCondPending)
-    Err = MmcCompleteOpCond(Mmc);
+    Status = SdxcCompleteOpCond(Mmc);
 
-  if (Err == EFI_SUCCESS)
-    Err = MmcStartup(Mmc);
+  if (Status == EFI_SUCCESS)
+    Status = SdxcStartup(Mmc);
 
-  if (Err)
+  if (Status)
     Mmc->HasInit = 0;
   else
     Mmc->HasInit = 1;
 
   Mmc->InitInProgress = 0;
-  return Err;
+  return Status;
 }
 
 EFI_STATUS
@@ -1537,16 +1491,16 @@ MmcInit (
   IN  struct Mmc *Mmc
   )
 {
-  EFI_STATUS Err = EFI_ALREADY_STARTED;
+  EFI_STATUS Status = EFI_ALREADY_STARTED;
 
   if (Mmc->HasInit)
     return EFI_SUCCESS;
 
   if (!Mmc->InitInProgress)
-    Err = MmcStartInit();
+    Status = SdStartInit();
 
-  if (!Err || Err == EFI_ALREADY_STARTED)
-    Err = MmcCompleteInit(Mmc);
+  if (!Status || Status == EFI_ALREADY_STARTED)
+    Status = SdxcCompleteInit(Mmc);
 
-  return Err;
+  return Status;
 }

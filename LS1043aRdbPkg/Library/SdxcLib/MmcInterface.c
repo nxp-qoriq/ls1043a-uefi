@@ -1,3 +1,20 @@
+/** @MmcInterface.c
+
+  Functions for providing Library interface APIs.
+
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+
+  This program and the accompanying materials
+  are licensed and made available under the terms and conditions of the BSD
+  License which accompanies this distribution. The full text of the license
+  may be found at
+  http://opensource.org/licenses/bsd-license.php
+
+  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+
+**/
+
 #include <Library/Sdxc.h>
 
 extern struct Mmc *gMmc;
@@ -7,7 +24,7 @@ DetectMmcPresence (
   OUT UINT8*  Data
   )
 {
-  if (MmcGetcd() == 0) {
+  if (Getcd() == 0) {
     DEBUG((EFI_D_ERROR, "MMC, No Card Present\n"));
     *Data = FALSE;
     return EFI_NO_MEDIA;
@@ -23,16 +40,16 @@ MmcRcvResp (
   OUT  UINT32*  Buffer
   )
 {
-  EFI_STATUS Err;
+  EFI_STATUS Status;
 
-  Err = ReceiveResponse(NULL, RespType, Buffer);
+  Status = RecvResp(NULL, RespType, Buffer);
 
-  return Err;
+  return Status;
 }
 
 EFI_STATUS
 MmcSendCommand (
-  IN  struct MmcCmd *Cmd
+  IN  struct SdCmd *Cmd
   )
 {
   return SdxcSendCmd(gMmc, Cmd, NULL);
@@ -43,7 +60,7 @@ MmcSendReset (
   VOID
   )
 {
-  return MmcGoIdle(gMmc);
+  return SdxcGoIdle(gMmc);
 }
 
 EFI_STATUS
@@ -70,7 +87,7 @@ DestroyMmc (
 {
   if (gMmc) {
     FreePool(gMmc->Cfg);
-    FreePool(gMmc->Priv);
+    FreePool(gMmc->Private);
     FreePool(gMmc);
   }
 }
@@ -116,7 +133,7 @@ MmcInitialize (
 {
   SelectSdxc();
 
-  if (BoardMmcInit() < 0)
+  if (BoardInit() < 0)
     if (SdxcMmcInit() < 0)
       return EFI_DEVICE_ERROR;
 
