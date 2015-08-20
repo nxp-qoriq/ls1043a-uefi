@@ -373,6 +373,10 @@ MmcDxeInitialize (
            );
   ASSERT_EFI_ERROR (Status);
 
+  //
+  //FIXME Recieving card present even if no card is in slot, so events are getting triggered continuously.
+  //
+
   // Use a timer to detect if a card has been plugged in or removed
 #if 0
   Status = gBS->CreateEvent (
