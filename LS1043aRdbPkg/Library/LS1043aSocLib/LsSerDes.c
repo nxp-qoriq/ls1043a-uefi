@@ -1,7 +1,7 @@
-/** @file
+/** LsSerDes.c
  Provides the basic interfaces for SerDes Module
 
- Copyright (c) 2015, Freescale Ltd. All rights reserved.
+ Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
  This program and the accompanying materials
  are licensed and made available under the terms and conditions of the BSD License
@@ -25,61 +25,61 @@
 static UINT16 SerDes1PrtclMap[SERDES_PRCTL_COUNT];
 #endif
 
-static struct SerDesConfig *SerDesCfgTbl[] = {
-	SerDes1CfgTbl
+static struct SerDesConfig *SerDesConfigTbl[] = {
+	SerDes1ConfigTbl
 };
 
 SrdsPrtcl
-SerDesGetPrtcl
+GetSerDesPrtcl
 (
  IN INTN SerDes,
  IN INTN Cfg,
  IN INTN Lane
 )
 {
-  struct SerDesConfig *Ptr;
+  struct SerDesConfig *Config;
 
-  if (SerDes >= ARRAY_SIZE(SerDesCfgTbl))
+  if (SerDes >= ARRAY_SIZE(SerDesConfigTbl))
     return 0;
 
-  Ptr = SerDesCfgTbl[SerDes];
-  while (Ptr->Protocol) {
-    if (Ptr->Protocol == Cfg) {
-      return Ptr->Lanes[Lane];
+  Config = SerDesConfigTbl[SerDes];
+  while (Config->Protocol) {
+    if (Config->Protocol == Cfg) {
+      return Config->SrdsLane[Lane];
     }
-    Ptr++;
+    Config++;
   }
 
   return EFI_SUCCESS;
 }
 
 EFI_STATUS
-IsSerDesPrtclValid
+CheckSerDesPrtclValid
 (
  IN INTN SerDes,
  IN UINT32 Prtcl
 )
 {
   INTN Cnt;
-  struct SerDesConfig *Ptr;
+  struct SerDesConfig *Config;
 
-  if (SerDes >= ARRAY_SIZE(SerDesCfgTbl))
+  if (SerDes >= ARRAY_SIZE(SerDesConfigTbl))
     return 0;
 
-  Ptr = SerDesCfgTbl[SerDes];
-  while (Ptr->Protocol) {
-    if (Ptr->Protocol == Prtcl) {
+  Config = SerDesConfigTbl[SerDes];
+  while (Config->Protocol) {
+    if (Config->Protocol == Prtcl) {
       DEBUG((EFI_D_INFO, "Protocol: %x Matched with the one in Table\n", Prtcl));
       break;
     }
-    Ptr++;
+    Config++;
   }
 
-  if (!Ptr->Protocol)
+  if (!Config->Protocol)
     return 0;
 
   for (Cnt = 0; Cnt < SRDS_MAX_LANES; Cnt++) {
-    if (Ptr->Lanes[Cnt] != NONE)
+    if (Config->SrdsLane[Cnt] != NONE)
       return 1;
   }
 
@@ -103,7 +103,7 @@ IsSerDesConfigured
 }
 
 INTN
-SerDesGetFirstLane
+GetSerDesFirstLane
 (
  IN UINT32 Sd,
  IN SrdsPrtcl Device
@@ -121,7 +121,7 @@ SerDesGetFirstLane
     break;
 #endif
   default:
-    DEBUG((EFI_D_INFO, "Invalid SerDes%d\n", Sd));
+    DEBUG((EFI_D_INFO, "Invalid SerDes%d, Only one SerDes is there.\n", Sd));
     break;
   }
 
@@ -130,7 +130,7 @@ SerDesGetFirstLane
     return EFI_DEVICE_ERROR;
 
   for (Cnt = 0; Cnt < SRDS_MAX_LANES; Cnt++) {
-    if (SerDesGetPrtcl(Sd, Cfg, Cnt) == Device)
+    if (GetSerDesPrtcl(Sd, Cfg, Cnt) == Device)
       return Cnt;
   }
 
@@ -140,30 +140,30 @@ SerDesGetFirstLane
 VOID
 LSSerDesInit
 (
- UINT32 Sd,
- UINT32 SdAddr,
- UINT32 SdPrtclMask,
- UINT32 SdPrtclShift,
+ UINT32 Srds,
+ UINT32 SrdsAddr,
+ UINT32 SrdsPrtclMask,
+ UINT32 SrdsPrtclShift,
  UINT16 SerDesPrtclMap[SERDES_PRCTL_COUNT]
 )
 {
   struct CcsrGur *Gur = (VOID *)(CONFIG_SYS_FSL_GUTS_ADDR);
-  UINT32 Cfg;
+  UINT32 SrdsProt;
   INTN Lane;
   UINT32 Flag = 0;
 
-  Cfg = MmioReadBe32((UINTN)&Gur->rcwsr[4]) & SdPrtclMask;
-  Cfg >>= SdPrtclShift;
+  SrdsProt = MmioReadBe32((UINTN)&Gur->rcwsr[4]) & SrdsPrtclMask;
+  SrdsProt >>= SrdsPrtclShift;
   
-  DEBUG((EFI_D_INFO, "Using SERDES%d Protocol: %d (0x%x)\n", Sd + 1, Cfg, Cfg));
+  DEBUG((EFI_D_INFO, "Using SERDES%d Protocol: %d (0x%x)\n", Srds + 1, SrdsProt, SrdsProt));
 
-  if (!IsSerDesPrtclValid(Sd, Cfg)) {
-    DEBUG((EFI_D_ERROR, "SERDES%d[PRTCL] = 0x%x is not valid\n", Sd + 1, Cfg));
+  if (!CheckSerDesPrtclValid(Srds, SrdsProt)) {
+    DEBUG((EFI_D_ERROR, "SERDES%d[PRTCL] = 0x%x is not valid\n", Srds + 1, SrdsProt));
     Flag++;
   }
 
   for (Lane = 0; Lane < SRDS_MAX_LANES; Lane++) {
-    SrdsPrtcl LanePrtcl = SerDesGetPrtcl(Sd, Cfg, Lane);
+    SrdsPrtcl LanePrtcl = GetSerDesPrtcl(Srds, SrdsProt, Lane);
     if (LanePrtcl >= SERDES_PRCTL_COUNT) {
       DEBUG((EFI_D_ERROR, "Unknown SerDes lane protocol %d\n", LanePrtcl));
       Flag++;
@@ -184,8 +184,7 @@ SerDesInit
  VOID
 )
 {
-  
-  DEBUG((EFI_D_INFO, "SerDesInit:\n"));
+  DEBUG((EFI_D_INFO, "Initializing SerDes....\n"));
 #ifdef CONFIG_SYS_SRDS_1
   LSSerDesInit(FSL_SRDS_1,
 	      CONFIG_SYS_SERDES_ADDR,

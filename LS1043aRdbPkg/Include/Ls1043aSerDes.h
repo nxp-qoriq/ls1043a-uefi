@@ -1,7 +1,7 @@
-/** @file
- The Header file of the SerDes Module 
+/** Ls1043aSerDes.h
+ The Header file of SerDes Module 
 
- Copyright (c) 2015, Freescale Ltd. All rights reserved.
+ Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
  This program and the accompanying materials
  are licensed and made available under the terms and conditions of the BSD License
@@ -50,21 +50,30 @@ enum Srds {
 
 struct SerDesConfig {
 	UINT16 Protocol;
-	UINT8 Lanes[SRDS_MAX_LANES];
+	UINT8 SrdsLane[SRDS_MAX_LANES];
 };
 
-struct SerDesConfig SerDes1CfgTbl[] = {
+struct SerDesConfig SerDes1ConfigTbl[] = {
 	/* SerDes 1 */
 	{0x1555, {XFI1, PCIE1, PCIE2, PCIE3 } },
+	{0x1560, {XFI1, PCIE1, PCIE3, PCIE3 } },
+	{0x1460, {XFI1, QSGMII1, PCIE3, PCIE3 } },
+	{0x1360, {XFI1, SGMII2, PCIE3, PCIE3 } },
 	{0x2555, {SGMII9, PCIE1, PCIE2, PCIE3 } },
 	{0x4555, {QSGMII1, PCIE1, PCIE2, PCIE3 } },
 	{0x4558, {QSGMII1, PCIE1, PCIE2, SATA1 } },
 	{0x1355, {XFI1, SGMII2, PCIE2, PCIE3 } },
+	{0x1335, {XFI1, SGMII2, SGMII5, PCIE3 } },
+	{0x1333, {XFI1, SGMII2, SGMII5, SGMII6 } },
 	{0x2355, {SGMII9, SGMII2, PCIE2, PCIE3 } },
+	{0x2260, {SGMII9, SGMII2, PCIE3, PCIE3 } },
+	{0x2235, {SGMII9, SGMII2, SGMII5, PCIE3 } },
+	{0x2233, {SGMII9, SGMII2, SGMII5, SGMII6 } },
 	{0x3335, {SGMII9, SGMII2, SGMII5, PCIE3 } },
 	{0x3355, {SGMII9, SGMII2, PCIE2, PCIE3 } },
 	{0x3358, {SGMII9, SGMII2, PCIE2, SATA1 } },
-	{0x3558, {SGMII9, PCIE1, PCIE2, SATA1 } },
+	{0x3360, {SGMII9, SGMII2, PCIE3, PCIE3 } },
+	{0x3560, {SGMII9, PCIE1, PCIE3, PCIE3 } },
 	{0x3555, {SGMII9, PCIE1, PCIE2, PCIE3 } },
 	{0x7000, {PCIE1, PCIE1, PCIE1, PCIE1 } },
 	{0x9998, {PCIE1, PCIE2, PCIE3, SATA1 } },
@@ -73,37 +82,8 @@ struct SerDesConfig SerDes1CfgTbl[] = {
 	{0x2455, {SGMII9, QSGMII1, PCIE2, PCIE3 } },
 	{0x2255, {SGMII9, SGMII2, PCIE2, PCIE3 } },
 	{0x3333, {SGMII9, SGMII2, SGMII5, SGMII6 } },
+	{0x3338, {SGMII9, SGMII2, SGMII5, SATA1 } },
 	{}
 };
 
-/*
-EFI_STATUS
-IsSerDesConfigured
-(
- IN enum SrdsPtcl Device
-);
-
-EFI_STATUS
-SerDesGetFirstLane
-(
- IN UINT32 Sd,
- IN enum SrdsPrtcl Device
-);
-
-enum SrdsPrtcl
-SerDesGetPrtcl
-(
- IN INTN Serdes,
- IN INTN Cfg,
- IN INTN Lane
-);
-
-
-EFI_STATUS
-IsSerDesPrtclValid
-(
- IN INTN Serdes,
- IN UINT32 Prtcl
-);
-*/
 #endif /* __LS1043A_SERDES_H */
