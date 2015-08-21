@@ -1,5 +1,8 @@
 /** @file  NorFlashDxe.c
 
+  Based on NorFlash implementation available in NorFlashDxe.c
+
+  Copyright (c) 2011 - 2014, ARM Ltd. All rights reserved.<BR>
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
