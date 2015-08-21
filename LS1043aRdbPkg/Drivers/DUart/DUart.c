@@ -1,6 +1,10 @@
 /** Duart.c
   Duart driver
 
+  Based on Serial I/O Port Implementation available in PL011Uart.c
+
+  Copyright (c) 2008 - 2010, Apple Inc. All rights reserved.<BR>
+  Copyright (c) 2011 - 2013, ARM Ltd. All rights reserved.<BR>
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
@@ -18,7 +22,7 @@
 #include <Library/IoLib.h>
 #include <Library/PcdLib.h>
 
-#include <Drivers/DUart.h>
+#include <DUart.h>
 
 UINT32
 CalculateBaudDivisor (
@@ -52,20 +56,20 @@ DuartInitializePort (
 
 	BaudDivisor = CalculateBaudDivisor(BaudRate);
 
-	while (!(MmioRead8(UartBase + ULSR) & UART_LSR_TEMT))
+	while (!(MmioRead8(UartBase + ULSR) & DUART_LSR_TEMT))
 	;
 
 	MmioWrite8(UartBase + UIER, 0x1);
-	MmioWrite8(UartBase + ULCR, UART_LCR_BKSE | UART_LCRVAL);
+	MmioWrite8(UartBase + ULCR, DUART_LCR_BKSE | DUART_LCRVAL);
 	MmioWrite8(UartBase + UDLB, 0);
 	MmioWrite8(UartBase + UDMB, 0);
-	MmioWrite8(UartBase + ULCR, UART_LCRVAL);
-	MmioWrite8(UartBase + UMCR, UART_MCRVAL);
-	MmioWrite8(UartBase + UFCR, UART_FCRVAL);
-	MmioWrite8(UartBase + ULCR, UART_LCR_BKSE | UART_LCRVAL);
+	MmioWrite8(UartBase + ULCR, DUART_LCRVAL);
+	MmioWrite8(UartBase + UMCR, DUART_MCRVAL);
+	MmioWrite8(UartBase + UFCR, DUART_FCRVAL);
+	MmioWrite8(UartBase + ULCR, DUART_LCR_BKSE | DUART_LCRVAL);
 	MmioWrite8(UartBase + UDLB, BaudDivisor & 0xff);
 	MmioWrite8(UartBase + UDMB, (BaudDivisor >> 8) & 0xff);
-	MmioWrite8(UartBase + ULCR, UART_LCRVAL);
+	MmioWrite8(UartBase + ULCR, DUART_LCRVAL);
 	return RETURN_SUCCESS;
 }
 
@@ -82,15 +86,15 @@ DuartInitializePort (
 UINTN
 EFIAPI
 DuartWrite (
-		IN  UINTN    UartBase,
-		IN UINT8     *Buffer,
-		IN UINTN     NumberOfBytes
-	       )
+  IN  UINTN    UartBase,
+  IN UINT8     *Buffer,
+  IN UINTN     NumberOfBytes
+ )
 {
 	UINT8* CONST Final = &Buffer[NumberOfBytes];
 
 	while (Buffer < Final) {
-		while ((MmioRead8(UartBase + ULSR) & UART_LSR_THRE) == 0)
+		while ((MmioRead8(UartBase + ULSR) & DUART_LSR_THRE) == 0)
 			                ;
 		        MmioWrite8(UartBase + UTHR, *Buffer++);
 	}
@@ -111,10 +115,10 @@ DuartWrite (
 UINTN
 EFIAPI
 DuartRead (
-		IN  UINTN     UartBase,
-		OUT UINT8     *Buffer,
-		IN  UINTN     NumberOfBytes
-	      )
+  IN UINTN UartBase,
+  OUT UINT8 *Buffer,
+  IN UINTN NumberOfBytes
+  )
 {
 	UINTN   Count;
 
@@ -123,7 +127,7 @@ DuartRead (
 		 * Loop while waiting for a new char(s) to arrive in the
 		 * RxFIFO
 		 */
-		while ((MmioRead8(UartBase + ULSR) & UART_LSR_DR) == 0);
+		while ((MmioRead8(UartBase + ULSR) & DUART_LSR_DR) == 0);
 
 		*Buffer = MmioRead8(UartBase + URBR);
 	}
@@ -142,9 +146,9 @@ DuartRead (
 BOOLEAN
 EFIAPI
 DuartPoll (
-		IN  UINTN     UartBase
-	      )
+  IN UINTN UartBase
+  )
 {
-	return ((MmioRead8 (UartBase + ULSR) & UART_LSR_DR) != 0);
+	return ((MmioRead8 (UartBase + ULSR) & DUART_LSR_DR) != 0);
 }
 

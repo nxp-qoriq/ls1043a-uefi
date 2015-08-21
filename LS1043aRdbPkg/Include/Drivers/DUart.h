@@ -1,110 +1,116 @@
+/** DUart.h
+*  Header defining the DDUART constants (Base addresses, sizes, flags)
+*
+*  Based on Serial I/O Port library headers available in PL011Uart.h
+*
+*  Copyright (c) 2011-2012, ARM Limited. All rights reserved.
+*  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+*
+*  This program and the accompanying materials
+*  are licensed and made available under the terms and conditions of the BSD License
+*  which accompanies this distribution.  The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+*
+**/
+
 #ifndef __DUART_H__
 #define __DUART_H__
 
 #include <Uefi.h>
 #include <Protocol/SerialIo.h>
 
+/* Register Definitions */
+
+
+// FIFO Control Register
+#define DUART_FCR_FIFO_EN	0x01 /* Fifo enable */
+#define DUART_FCR_CLEAR_RCVR	0x02 /* Clear the RCVR FIFO */
+#define DUART_FCR_CLEAR_XMIT	0x04 /* Clear the XMIT FIFO */
+#define DUART_FCR_DMA_SELECT	0x08 /* For DMA applications */
+#define DUART_FCR_TRIGGER_MASK	0xC0 /* Mask for the FIFO trigger range */
+#define DUART_FCR_TRIGGER_1	0x00 /* Mask for trigger set at 1 */
+#define DUART_FCR_TRIGGER_4	0x40 /* Mask for trigger set at 4 */
+#define DUART_FCR_TRIGGER_8	0x80 /* Mask for trigger set at 8 */
+#define DUART_FCR_TRIGGER_14	0xC0 /* Mask for trigger set at 14 */
+
+#define DUART_FCR_RXSR		0x02 /* Receiver soft reset */
+#define DUART_FCR_TXSR		0x04 /* Transmitter soft reset */
+
+// Modem Control Register
+#define DUART_MCR_DTR		0x01 /* DTR   */
+#define DUART_MCR_RTS		0x02 /* RTS   */
+#define DUART_MCR_OUT1		0x04 /* Out 1 */
+#define DUART_MCR_OUT2		0x08 /* Out 2 */
+#define DUART_MCR_LOOP		0x10 /* Enable loopback test mode */
+
+#define DUART_MCR_DMA_EN	0x04
+#define DUART_MCR_TX_DFR	0x08
+
+
+// Line Control Register
 /*
-* These are the definitions for the FIFO Control Register
+* Note: if the word length is 5 bits (DUART_LCR_WLEN5), then setting
+* DUART_LCR_STOP will select 1.5 stop bits, not 2 stop bits.
 */
-#define UART_FCR_FIFO_EN	0x01 /* Fifo enable */
-#define UART_FCR_CLEAR_RCVR	0x02 /* Clear the RCVR FIFO */
-#define UART_FCR_CLEAR_XMIT	0x04 /* Clear the XMIT FIFO */
-#define UART_FCR_DMA_SELECT	0x08 /* For DMA applications */
-#define UART_FCR_TRIGGER_MASK	0xC0 /* Mask for the FIFO trigger range */
-#define UART_FCR_TRIGGER_1	0x00 /* Mask for trigger set at 1 */
-#define UART_FCR_TRIGGER_4	0x40 /* Mask for trigger set at 4 */
-#define UART_FCR_TRIGGER_8	0x80 /* Mask for trigger set at 8 */
-#define UART_FCR_TRIGGER_14	0xC0 /* Mask for trigger set at 14 */
+#define DUART_LCR_WLS_MSK	0x03 /* character length select mask */
+#define DUART_LCR_WLS_5		0x00 /* 5 bit character length */
+#define DUART_LCR_WLS_6		0x01 /* 6 bit character length */
+#define DUART_LCR_WLS_7		0x02 /* 7 bit character length */
+#define DUART_LCR_WLS_8		0x03 /* 8 bit character length */
+#define DUART_LCR_STB		0x04 /* # stop Bits, off=1, on=1.5 or 2) */
+#define DUART_LCR_PEN		0x08 /* Parity eneble */
+#define DUART_LCR_EPS		0x10 /* Even Parity Select */
+#define DUART_LCR_STKP		0x20 /* Stick Parity */
+#define DUART_LCR_SBRK		0x40 /* Set Break */
+#define DUART_LCR_BKSE		0x80 /* Bank select enable */
+#define DUART_LCR_DLAB		0x80 /* Divisor latch access bit */
 
-#define UART_FCR_RXSR		0x02 /* Receiver soft reset */
-#define UART_FCR_TXSR		0x04 /* Transmitter soft reset */
+// Line Status Register
+#define DUART_LSR_DR	0x01		/* Data ready */
+#define DUART_LSR_OE	0x02		/* Overrun */
+#define DUART_LSR_PE	0x04		/* Parity error */
+#define DUART_LSR_FE	0x08		/* Framing error */
+#define DUART_LSR_BI	0x10		/* Break */
+#define DUART_LSR_THRE	0x20		/* Xmit holding register empty */
+#define DUART_LSR_TEMT	0x40		/* Xmitter empty */
+#define DUART_LSR_ERR	0x80		/* Error */
 
-/*
-* These are the definitions for the Modem Control Register
-*/
-#define UART_MCR_DTR	0x01		/* DTR   */
-#define UART_MCR_RTS	0x02		/* RTS   */
-#define UART_MCR_OUT1	0x04		/* Out 1 */
-#define UART_MCR_OUT2	0x08		/* Out 2 */
-#define UART_MCR_LOOP	0x10		/* Enable loopback test mode */
+#define DUART_MSR_DCD	0x80		/* Data Carrier Detect */
+#define DUART_MSR_RI	0x40		/* Ring Indicator */
+#define DUART_MSR_DSR	0x20		/* Data Set Ready */
+#define DUART_MSR_CTS	0x10		/* Clear to Send */
+#define DUART_MSR_DDCD	0x08		/* Delta DCD */
+#define DUART_MSR_TERI	0x04		/* Trailing edge ring indicator */
+#define DUART_MSR_DDSR	0x02		/* Delta DSR */
+#define DUART_MSR_DCTS	0x01		/* Delta CTS */
 
-#define UART_MCR_DMA_EN	0x04
-#define UART_MCR_TX_DFR	0x08
+// Interrupt Identification Register
+#define DUART_IIR_NO_INT	0x01	/* No interrupts pending */
+#define DUART_IIR_ID	0x06	/* Mask for the interrupt ID */
 
-/*
-* These are the definitions for the Line Control Register
-*
-* Note: if the word length is 5 bits (UART_LCR_WLEN5), then setting
-* UART_LCR_STOP will select 1.5 stop bits, not 2 stop bits.
-*/
-#define UART_LCR_WLS_MSK 0x03		/* character length select mask */
-#define UART_LCR_WLS_5	0x00		/* 5 bit character length */
-#define UART_LCR_WLS_6	0x01		/* 6 bit character length */
-#define UART_LCR_WLS_7	0x02		/* 7 bit character length */
-#define UART_LCR_WLS_8	0x03		/* 8 bit character length */
-#define UART_LCR_STB	0x04		/* # stop Bits, off=1, on=1.5 or 2) */
-#define UART_LCR_PEN	0x08		/* Parity eneble */
-#define UART_LCR_EPS	0x10		/* Even Parity Select */
-#define UART_LCR_STKP	0x20		/* Stick Parity */
-#define UART_LCR_SBRK	0x40		/* Set Break */
-#define UART_LCR_BKSE	0x80		/* Bank select enable */
-#define UART_LCR_DLAB	0x80		/* Divisor latch access bit */
+#define DUART_IIR_MSI	0x00	/* Modem status interrupt */
+#define DUART_IIR_THRI	0x02	/* Transmitter holding register empty */
+#define DUART_IIR_RDI	0x04	/* Receiver data interrupt */
+#define DUART_IIR_RLSI	0x06	/* Receiver line status interrupt */
 
-/*
-* These are the definitions for the Line Status Register
-*/
-#define UART_LSR_DR	0x01		/* Data ready */
-#define UART_LSR_OE	0x02		/* Overrun */
-#define UART_LSR_PE	0x04		/* Parity error */
-#define UART_LSR_FE	0x08		/* Framing error */
-#define UART_LSR_BI	0x10		/* Break */
-#define UART_LSR_THRE	0x20		/* Xmit holding register empty */
-#define UART_LSR_TEMT	0x40		/* Xmitter empty */
-#define UART_LSR_ERR	0x80		/* Error */
+//  Interrupt Enable Register
+#define DUART_IER_MSI	0x08	/* Enable Modem status interrupt */
+#define DUART_IER_RLSI	0x04	/* Enable receiver line status interrupt */
+#define DUART_IER_THRI	0x02	/* Enable Transmitter holding register int. */
+#define DUART_IER_RDI	0x01	/* Enable receiver data interrupt */
 
-#define UART_MSR_DCD	0x80		/* Data Carrier Detect */
-#define UART_MSR_RI	0x40		/* Ring Indicator */
-#define UART_MSR_DSR	0x20		/* Data Set Ready */
-#define UART_MSR_CTS	0x10		/* Clear to Send */
-#define UART_MSR_DDCD	0x08		/* Delta DCD */
-#define UART_MSR_TERI	0x04		/* Trailing edge ring indicator */
-#define UART_MSR_DDSR	0x02		/* Delta DSR */
-#define UART_MSR_DCTS	0x01		/* Delta CTS */
+// LCR defaults
+#define DUART_LCR_8N1	0x03
 
-/*
-* These are the definitions for the Interrupt Identification Register
-*/
-#define UART_IIR_NO_INT	0x01	/* No interrupts pending */
-#define UART_IIR_ID	0x06	/* Mask for the interrupt ID */
-
-#define UART_IIR_MSI	0x00	/* Modem status interrupt */
-#define UART_IIR_THRI	0x02	/* Transmitter holding register empty */
-#define UART_IIR_RDI	0x04	/* Receiver data interrupt */
-#define UART_IIR_RLSI	0x06	/* Receiver line status interrupt */
-
-/*
-* These are the definitions for the Interrupt Enable Register
-*/
-#define UART_IER_MSI	0x08	/* Enable Modem status interrupt */
-#define UART_IER_RLSI	0x04	/* Enable receiver line status interrupt */
-#define UART_IER_THRI	0x02	/* Enable Transmitter holding register int. */
-#define UART_IER_RDI	0x01	/* Enable receiver data interrupt */
-
-
-#ifdef CONFIG_OMAP1510
-#define OSC_12M_SEL	0x01	/* selects 6.5 * current clk div */
-#endif
-
-/* useful defaults for LCR */
-#define UART_LCR_8N1	0x03
-
-#define UART_LCRVAL UART_LCR_8N1                /* 8 data, 1 stop, no parity */
-#define UART_MCRVAL (UART_MCR_DTR | \
-                     UART_MCR_RTS)              /* RTS/DTR */
-#define UART_FCRVAL (UART_FCR_FIFO_EN | \
-                     UART_FCR_RXSR |    \
-                     UART_FCR_TXSR)             /* Clear & enable FIFOs */
+#define DUART_LCRVAL DUART_LCR_8N1                /* 8 data, 1 stop, no parity */
+#define DUART_MCRVAL (DUART_MCR_DTR | \
+                     DUART_MCR_RTS)              /* RTS/DTR */
+#define DUART_FCRVAL (DUART_FCR_FIFO_EN | \
+                     DUART_FCR_RXSR |    \
+                     DUART_FCR_TXSR)             /* Clear & enable FIFOs */
 
 
 #define URBR		0x0
@@ -189,6 +195,3 @@ DuartPoll (
   );
 
 #endif /* __DUART_H__ */
-
-
-

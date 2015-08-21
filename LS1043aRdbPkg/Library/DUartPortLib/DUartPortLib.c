@@ -1,9 +1,11 @@
-/** DuartPortLib/DuartPortLib.c
-  DUART (NS16550) library functions with no library constructor/destructor
+/** DuartPortLib.c
+  DUART (NS16550) library functions
 
-  Copyright (c) 2013, Freescale Ltd. All rights reserved.
-  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
-  Author: Sakara Arora <sakar.arora@freescale.com>
+  Based on Serial I/O Port library functions available in PL011SerialPortLib.c
+  
+  Copyright (c) 2008 - 2010, Apple Inc. All rights reserved.<BR>
+  Copyright (c) 2012 - 2013, ARM Ltd. All rights reserved.<BR>
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
   
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -22,7 +24,7 @@
 #include <Library/SerialPortLib.h>
 #include <Library/SerialPortExtLib.h>
 
-#include <Drivers/DUart.h>
+#include <DUart.h>
 
 /**
 

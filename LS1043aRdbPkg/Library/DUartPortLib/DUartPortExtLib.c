@@ -1,8 +1,10 @@
 /** LS1043aUartPortExtLib.c
   Serial I/O Port library functions for LS1043a with no library constructor/destructor
 
-  Copyright (c) 2013, Freescale Ltd. All rights reserved.
-  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
+  Based on Serial I/O Port library functions available in PL011SerialPortExtLib.c
+
+  Copyright (c) 2012-2013, ARM Ltd. All rights reserved.<BR>
+  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
   
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
