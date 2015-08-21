@@ -1,6 +1,10 @@
 /** ResetSystemLib.c
   Do a generic Cold Reset for LS1043a
+
+	Based on Reset system library implementation in
+  BeagleBoardPkg/Library/ResetSystemLib/ResetSystemLib.c
   
+  Copyright (c) 2008 - 2010, Apple Inc. All rights reserved.<BR>
 	Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
   
   This program and the accompanying materials
