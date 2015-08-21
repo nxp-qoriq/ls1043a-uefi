@@ -22,7 +22,7 @@
 #include <Library/PcdLib.h>
 #include <Library/SerialPortExtLib.h>
 
-#include <Drivers/DUart.h>
+#include <DUart.h>
 
 /**
   Set new attributes to LS1043a.
