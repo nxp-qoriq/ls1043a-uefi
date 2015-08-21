@@ -3,6 +3,10 @@
 #  Driver for insalling SimpleFileSystem and DiskIo protocol over
 #  BlockIo protocol
 #
+#  Based on DiskIo driver implementation available in
+#  MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIo.c 
+#
+#  Copyright (c) 2006 - 2013, Intel Corporation. All rights reserved.<BR>
 #  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 #
 #  This program and the accompanying materials

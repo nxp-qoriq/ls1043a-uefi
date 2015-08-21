@@ -1,5 +1,9 @@
-/** @file
+/** @LS1043aFileSystem.h
 
+	Based on SimpleFileSystem protocol implementation available in
+	MdePkg/Include/Protocol/SimpleFileSystem.h
+
+  Copyright (c) 2006 - 2014, Intel Corporation. All rights reserved.<BR>
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
