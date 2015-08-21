@@ -36,8 +36,8 @@
 NOR_FLASH_DESCRIPTION mNorFlashDevices[NOR_FLASH_DEVICE_COUNT] = {
   // FIXME: Add RCW, PBI, FMAN images here when available
   { // UEFI
-    IFC_NOR_RESERVED_REGION_BASE, //DeviceBaseAddress
-    IFC_NOR_RESERVED_REGION_BASE, //RegionBaseAddress
+    FSL_IFC_NOR_RESERVED_REGION_BASE, //DeviceBaseAddress
+    FSL_IFC_NOR_RESERVED_REGION_BASE, //RegionBaseAddress
     SIZE_64KB * 128,  //Size
     SIZE_64KB,	      //BlockSize
     { 0x1F15DA3C, 0x37FF, 0x4070, { 0xB4, 0x71, 0xBB, 0x4A, 0xF1, 0x2A, 0x72, 0x4A } }

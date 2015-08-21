@@ -140,18 +140,18 @@ CpldInit (
   VOID
   )
 {
-	MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->cspr_cs[IFC_CS2].cspr_ext, IFC_CPLD_CSPR_EXT);
+	MmioWriteBe32((UINTN) &(FSL_IFC_REGS_BASE)->cspr_cs[FSL_IFC_CS2].cspr_ext, FSL_IFC_CPLD_CSPR_EXT);
 
-	MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS2].ftim[IFC_FTIM0],
-			IFC_CPLD_FTIM0);
-	MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS2].ftim[IFC_FTIM1],
-			IFC_CPLD_FTIM1);
-	MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS2].ftim[IFC_FTIM2],
-			IFC_CPLD_FTIM2);
-	MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->ftim_cs[IFC_CS2].ftim[IFC_FTIM3],
-			IFC_CPLD_FTIM3);
+	MmioWriteBe32((UINTN) &(FSL_IFC_REGS_BASE)->ftim_cs[FSL_IFC_CS2].ftim[FSL_IFC_FTIM0],
+			FSL_IFC_CPLD_FTIM0);
+	MmioWriteBe32((UINTN) &(FSL_IFC_REGS_BASE)->ftim_cs[FSL_IFC_CS2].ftim[FSL_IFC_FTIM1],
+			FSL_IFC_CPLD_FTIM1);
+	MmioWriteBe32((UINTN) &(FSL_IFC_REGS_BASE)->ftim_cs[FSL_IFC_CS2].ftim[FSL_IFC_FTIM2],
+			FSL_IFC_CPLD_FTIM2);
+	MmioWriteBe32((UINTN) &(FSL_IFC_REGS_BASE)->ftim_cs[FSL_IFC_CS2].ftim[FSL_IFC_FTIM3],
+			FSL_IFC_CPLD_FTIM3);
 
-	MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->csor_cs[IFC_CS2].csor, IFC_CPLD_CSOR);
-	MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->amask_cs[IFC_CS2].amask, IFC_CPLD_AMASK);
-	MmioWriteBe32((UINTN) &(IFC_REGS_BASE)->cspr_cs[IFC_CS2].cspr, IFC_CPLD_CSPR);
+	MmioWriteBe32((UINTN) &(FSL_IFC_REGS_BASE)->csor_cs[FSL_IFC_CS2].csor, FSL_IFC_CPLD_CSOR);
+	MmioWriteBe32((UINTN) &(FSL_IFC_REGS_BASE)->amask_cs[FSL_IFC_CS2].amask, FSL_IFC_CPLD_AMASK);
+	MmioWriteBe32((UINTN) &(FSL_IFC_REGS_BASE)->cspr_cs[FSL_IFC_CS2].cspr, FSL_IFC_CPLD_CSPR);
 }

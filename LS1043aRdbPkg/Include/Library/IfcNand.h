@@ -1,5 +1,9 @@
 /** @IfcNand.h
 
+	Based on BlockIo protocol implementation available in
+	MdePkg/Include/Protocol/BlockIo.h
+
+  Copyright (c) 2006 - 2011, Intel Corporation. All rights reserved.<BR>
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials

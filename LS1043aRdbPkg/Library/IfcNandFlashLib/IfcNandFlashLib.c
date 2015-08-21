@@ -43,7 +43,7 @@ INTN IfcRunCmd()
 
 	/* start read/write seq */
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nandseq_strt,
-		IFC_NAND_SEQ_STRT_FIR_STRT);
+		FSL_IFC_NAND_SEQ_STRT_FIR_STRT);
 
 	/* wait for NAND Machine complete flag or timeout */
 
@@ -53,7 +53,7 @@ INTN IfcRunCmd()
 			(UINTN)
 			&gNandFlashInfo->IfcRegs->ifc_nand.nand_evter_stat);
 
-		if (Status & IFC_NAND_EVTER_STAT_OPC)
+		if (Status & FSL_IFC_NAND_EVTER_STAT_OPC)
 			break;
 
 		MicroSecondDelay(100);
@@ -62,13 +62,13 @@ INTN IfcRunCmd()
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_evter_stat,
 			Status);
 
-	if (Status & IFC_NAND_EVTER_STAT_FTOER)
+	if (Status & FSL_IFC_NAND_EVTER_STAT_FTOER)
 		DEBUG ((EFI_D_ERROR, "Flash Time Out Error %x \n", Status));
-	if (Status & IFC_NAND_EVTER_STAT_WPER)
+	if (Status & FSL_IFC_NAND_EVTER_STAT_WPER)
 		DEBUG ((EFI_D_ERROR, "Write Protect Error %x \n", Status));
 
 	/* returns 0 on success otherwise non-zero) */
-	return Status == IFC_NAND_EVTER_STAT_OPC ? EFI_SUCCESS : EFI_DEVICE_ERROR;
+	return Status == FSL_IFC_NAND_EVTER_STAT_OPC ? EFI_SUCCESS : EFI_DEVICE_ERROR;
 }
 
 /*
@@ -91,10 +91,10 @@ EFI_STATUS IfcWait(
 	EFI_STATUS Status;
 
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir0,
-		  (IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
-		  (IFC_FIR_OP_RDSTAT << IFC_NAND_FIR0_OP1_SHIFT));
-	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0, NAND_CMD_STATUS <<
-		  IFC_NAND_FCR0_CMD0_SHIFT);
+		  (FSL_IFC_FIR_OP_CW0 << FSL_IFC_NAND_FIR0_OP0_SHIFT) |
+		  (FSL_IFC_FIR_OP_RDSTAT << FSL_IFC_NAND_FIR0_OP1_SHIFT));
+	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0, IFC_NAND_CMD_STATUS <<
+		  FSL_IFC_NAND_FCR0_CMD0_SHIFT);
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 1);
 	SetAddressRegs(0, 0);
 
@@ -109,19 +109,19 @@ VOID IfcRead(
 {
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir0,
-			(IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
-			(IFC_FIR_OP_CA0 << IFC_NAND_FIR0_OP1_SHIFT) |
-			(IFC_FIR_OP_RA0 << IFC_NAND_FIR0_OP2_SHIFT) |
-			(IFC_FIR_OP_CMD1 << IFC_NAND_FIR0_OP3_SHIFT) |
-			(IFC_FIR_OP_BTRD << IFC_NAND_FIR0_OP4_SHIFT));
+			(FSL_IFC_FIR_OP_CW0 << FSL_IFC_NAND_FIR0_OP0_SHIFT) |
+			(FSL_IFC_FIR_OP_CA0 << FSL_IFC_NAND_FIR0_OP1_SHIFT) |
+			(FSL_IFC_FIR_OP_RA0 << FSL_IFC_NAND_FIR0_OP2_SHIFT) |
+			(FSL_IFC_FIR_OP_CMD1 << FSL_IFC_NAND_FIR0_OP3_SHIFT) |
+			(FSL_IFC_FIR_OP_BTRD << FSL_IFC_NAND_FIR0_OP4_SHIFT));
 		MmioWriteBe32(
 			(UINTN)
 			&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir1, 0x0);
 
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0,
-			(NAND_CMD_READ0 << IFC_NAND_FCR0_CMD0_SHIFT) |
-			(NAND_CMD_READSTART << IFC_NAND_FCR0_CMD1_SHIFT));
+			(IFC_NAND_CMD_READ0 << FSL_IFC_NAND_FCR0_CMD0_SHIFT) |
+			(IFC_NAND_CMD_READSTART << FSL_IFC_NAND_FCR0_CMD1_SHIFT));
 }
 
 /* cmdfunc send commands to the IFC NAND Machine */
@@ -130,7 +130,7 @@ EFI_STATUS IfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 	EFI_STATUS Status;
 	UINT32 NandFcr0;
 	switch (command) {
-	case NAND_CMD_READ0:
+	case IFC_NAND_CMD_READ0:
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 0);
 		SetAddressRegs(0, page_addr);
@@ -138,15 +138,15 @@ EFI_STATUS IfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 		IfcRead();
 		return IfcRunCmd();
 
-	case NAND_CMD_READID:
+	case IFC_NAND_CMD_READID:
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir0,
-			(IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
-			(IFC_FIR_OP_UA << IFC_NAND_FIR0_OP1_SHIFT) |
-			(IFC_FIR_OP_RB << IFC_NAND_FIR0_OP2_SHIFT));
+			(FSL_IFC_FIR_OP_CW0 << FSL_IFC_NAND_FIR0_OP0_SHIFT) |
+			(FSL_IFC_FIR_OP_UA << FSL_IFC_NAND_FIR0_OP1_SHIFT) |
+			(FSL_IFC_FIR_OP_RB << FSL_IFC_NAND_FIR0_OP2_SHIFT));
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0,
-			command << IFC_NAND_FCR0_CMD0_SHIFT);
+			command << FSL_IFC_NAND_FCR0_CMD0_SHIFT);
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.row3, column);
 
@@ -156,66 +156,66 @@ EFI_STATUS IfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 		SetAddressRegs(0, 0);
 		return IfcRunCmd();
 
-	case NAND_CMD_ERASE1:
+	case IFC_NAND_CMD_ERASE1:
 		SetAddressRegs(0, page_addr);
 
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir0,
-			(IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
-			(IFC_FIR_OP_RA0 << IFC_NAND_FIR0_OP1_SHIFT) |
-			(IFC_FIR_OP_CMD1 << IFC_NAND_FIR0_OP2_SHIFT));
+			(FSL_IFC_FIR_OP_CW0 << FSL_IFC_NAND_FIR0_OP0_SHIFT) |
+			(FSL_IFC_FIR_OP_RA0 << FSL_IFC_NAND_FIR0_OP1_SHIFT) |
+			(FSL_IFC_FIR_OP_CMD1 << FSL_IFC_NAND_FIR0_OP2_SHIFT));
 
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0,
-			(NAND_CMD_ERASE1 << IFC_NAND_FCR0_CMD0_SHIFT) |
-			(NAND_CMD_ERASE2 << IFC_NAND_FCR0_CMD1_SHIFT));
+			(IFC_NAND_CMD_ERASE1 << FSL_IFC_NAND_FCR0_CMD0_SHIFT) |
+			(IFC_NAND_CMD_ERASE2 << FSL_IFC_NAND_FCR0_CMD1_SHIFT));
 
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 0);
 		return IfcRunCmd();
 
-	case NAND_CMD_SEQIN: 
+	case IFC_NAND_CMD_SEQIN: 
 
 			NandFcr0 =
-				(NAND_CMD_SEQIN << IFC_NAND_FCR0_CMD0_SHIFT) |
-				(NAND_CMD_STATUS << IFC_NAND_FCR0_CMD1_SHIFT) |
-				(NAND_CMD_PAGEPROG << IFC_NAND_FCR0_CMD2_SHIFT);
+				(IFC_NAND_CMD_SEQIN << FSL_IFC_NAND_FCR0_CMD0_SHIFT) |
+				(IFC_NAND_CMD_STATUS << FSL_IFC_NAND_FCR0_CMD1_SHIFT) |
+				(IFC_NAND_CMD_PAGEPROG << FSL_IFC_NAND_FCR0_CMD2_SHIFT);
 
 			MmioWriteBe32(
 				(UINTN)
 				&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir0,
-				(IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
-				(IFC_FIR_OP_CA0 << IFC_NAND_FIR0_OP1_SHIFT) |
-				(IFC_FIR_OP_RA0 << IFC_NAND_FIR0_OP2_SHIFT) |
-				(IFC_FIR_OP_WBCD <<
-						IFC_NAND_FIR0_OP3_SHIFT) |
-				(IFC_FIR_OP_CMD2 << IFC_NAND_FIR0_OP4_SHIFT));
+				(FSL_IFC_FIR_OP_CW0 << FSL_IFC_NAND_FIR0_OP0_SHIFT) |
+				(FSL_IFC_FIR_OP_CA0 << FSL_IFC_NAND_FIR0_OP1_SHIFT) |
+				(FSL_IFC_FIR_OP_RA0 << FSL_IFC_NAND_FIR0_OP2_SHIFT) |
+				(FSL_IFC_FIR_OP_WBCD <<
+						FSL_IFC_NAND_FIR0_OP3_SHIFT) |
+				(FSL_IFC_FIR_OP_CMD2 << FSL_IFC_NAND_FIR0_OP4_SHIFT));
 			MmioWriteBe32((UINTN)
 				&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir1,
-				(IFC_FIR_OP_CW1 << IFC_NAND_FIR1_OP5_SHIFT) |
-				(IFC_FIR_OP_RDSTAT <<
-					IFC_NAND_FIR1_OP6_SHIFT) |
-				(IFC_FIR_OP_NOP << IFC_NAND_FIR1_OP7_SHIFT));
+				(FSL_IFC_FIR_OP_CW1 << FSL_IFC_NAND_FIR1_OP5_SHIFT) |
+				(FSL_IFC_FIR_OP_RDSTAT <<
+					FSL_IFC_NAND_FIR1_OP6_SHIFT) |
+				(FSL_IFC_FIR_OP_NOP << FSL_IFC_NAND_FIR1_OP7_SHIFT));
 		
 		MmioWriteBe32(
 		(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0, NandFcr0);
 		SetAddressRegs(column, page_addr);
 		return EFI_SUCCESS;
 
-	case NAND_CMD_PAGEPROG:
+	case IFC_NAND_CMD_PAGEPROG:
 		MmioWriteBe32(
 		(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 0);
 
 		return IfcRunCmd();
 
-	case NAND_CMD_STATUS:
+	case IFC_NAND_CMD_STATUS:
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir0,
-			(IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT) |
-			(IFC_FIR_OP_RB << IFC_NAND_FIR0_OP1_SHIFT));
+			(FSL_IFC_FIR_OP_CW0 << FSL_IFC_NAND_FIR0_OP0_SHIFT) |
+			(FSL_IFC_FIR_OP_RB << FSL_IFC_NAND_FIR0_OP1_SHIFT));
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0,
-			NAND_CMD_STATUS << IFC_NAND_FCR0_CMD0_SHIFT);
+			IFC_NAND_CMD_STATUS << FSL_IFC_NAND_FCR0_CMD0_SHIFT);
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fbcr, 1);
 		SetAddressRegs(0, 0);
@@ -228,13 +228,13 @@ EFI_STATUS IfcNandCmdSend(UINTN command, INTN column, INTN page_addr)
 			(UINTN)gNandFlashInfo->BufBase) | NAND_STATUS_WP);
 		return Status;
 
-	case NAND_CMD_RESET:
+	case IFC_NAND_CMD_RESET:
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fir0,
-			IFC_FIR_OP_CW0 << IFC_NAND_FIR0_OP0_SHIFT);
+			FSL_IFC_FIR_OP_CW0 << FSL_IFC_NAND_FIR0_OP0_SHIFT);
 		MmioWriteBe32(
 			(UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_fcr0,
-			NAND_CMD_RESET << IFC_NAND_FCR0_CMD0_SHIFT);
+			IFC_NAND_CMD_RESET << FSL_IFC_NAND_FCR0_CMD0_SHIFT);
 	return	IfcRunCmd();
 
 	default:
@@ -264,7 +264,7 @@ NandDetectPart (
 		EFI_STATUS Status;
 
   //Send READ ID command
-  Status = IfcNandCmdSend(NAND_CMD_READID, 0, 0);
+  Status = IfcNandCmdSend(IFC_NAND_CMD_READID, 0, 0);
 	if(EFI_ERROR(Status))
 		return Status;
 
@@ -288,9 +288,9 @@ NandDetectPart (
 		gNandPartInfoTable[0].BlockAddressStart;
 	gNandFlashInfo->PageAddressStart =
 		gNandPartInfoTable[0].PageAddressStart;
-	gNandFlashInfo->PageSize = PAGE_SIZE_2K;
-	gNandFlashInfo->SparePageSize = SPARE_AREA_SIZE_64B;
-	gNandFlashInfo->BlockSize = BLOCK_SIZE_128K;
+	gNandFlashInfo->PageSize = NAND_PAGE_SIZE_2K;
+	gNandFlashInfo->SparePageSize = NAND_SPARE_AREA_SIZE_64B;
+	gNandFlashInfo->BlockSize = NAND_BLOCK_SIZE_128K;
 	Found = TRUE;
 	break;
     }
@@ -363,7 +363,7 @@ NandReadPage (
   PageAddr = GetActualPageAddress(BlockIndex, PageIndex);
 
   //Send READ command
-  Status = IfcNandCmdSend(NAND_CMD_READ0, 0, PageAddr);
+  Status = IfcNandCmdSend(IFC_NAND_CMD_READ0, 0, PageAddr);
 	if(EFI_ERROR(Status))
 		return Status;
 	SrcAddr = (VOID*)(gNandFlashInfo->BufBase +
@@ -390,7 +390,7 @@ NandWritePage (
   Address = GetActualPageAddress(BlockIndex, PageIndex);
 
   //Send SERIAL DATA INPUT command
-  IfcNandCmdSend(NAND_CMD_SEQIN, 0, Address);
+  IfcNandCmdSend(IFC_NAND_CMD_SEQIN, 0, Address);
 
 	DestAddr = (VOID*)(gNandFlashInfo->BufBase +  
 			(gNandFlashInfo->PageSize << 1) * (PageIndex & 0x3));
@@ -398,7 +398,7 @@ NandWritePage (
   CopyMem(DestAddr, (VOID*) Buffer, gNandFlashInfo->PageSize);
 
 	//Send PROGRAM command
-  return IfcNandCmdSend(NAND_CMD_PAGEPROG, 0, Address);
+  return IfcNandCmdSend(IFC_NAND_CMD_PAGEPROG, 0, Address);
 }
 
 EFI_STATUS
@@ -412,7 +412,7 @@ NandEraseBlock (
   Address = GetActualPageAddress(BlockIndex, 0);
 
   //Send ERASE command
-  return IfcNandCmdSend(NAND_CMD_ERASE1, 0, Address);
+  return IfcNandCmdSend(IFC_NAND_CMD_ERASE1, 0, Address);
 }
 
 EFI_STATUS
@@ -475,7 +475,7 @@ IfcNandFlashReset (
   IN BOOLEAN                        ExtendedVerification
   )
 {
-  return IfcNandCmdSend(NAND_CMD_RESET, 0, 0);
+  return IfcNandCmdSend(IFC_NAND_CMD_RESET, 0, 0);
 }
 
 EFI_STATUS
@@ -499,7 +499,7 @@ IfcNandFlashReadBlocks (
     goto exit;
   }
 
-  if (Lba > LAST_BLOCK) {
+  if (Lba > NAND_LAST_BLOCK) {
     Status = EFI_INVALID_PARAMETER;
     goto exit;
   }
@@ -551,7 +551,7 @@ IfcNandFlashWriteBlocks (
     goto exit;
   }
 
-  if (Lba > LAST_BLOCK) {
+  if (Lba > NAND_LAST_BLOCK) {
     Status = EFI_INVALID_PARAMETER;
     goto exit;
   }
@@ -607,12 +607,12 @@ VOID IfcNandInit(
 )
 {
 	if(PcdGet32(PcdBootMode) == NAND_BOOT)
-		NandCs = IFC_CS0;
+		NandCs = FSL_IFC_CS0;
 	else
-		NandCs = IFC_CS1;
+		NandCs = FSL_IFC_CS1;
   gNandFlashInfo = &NandFlashInfo;
-  gNandFlashInfo->IfcRegs = (FSL_IFC_REGS*) IFC_REG_BASE;
-	gNandFlashInfo->BufBase = (VOID*) IFC_NAND_BUF_BASE;
+  gNandFlashInfo->IfcRegs = (FSL_IFC_REGS*) FSL_IFC_REG_BASE;
+	gNandFlashInfo->BufBase = (VOID*) FSL_IFC_NAND_BUF_BASE;
 
   /* clear event registers */
 
@@ -625,43 +625,43 @@ VOID IfcNandInit(
 
         /* Enable error and event for any detected errors */
   MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.nand_evter_en,
-                  IFC_NAND_EVTER_EN_OPC_EN |
-                  IFC_NAND_EVTER_EN_PGRDCMPL_EN |
-                  IFC_NAND_EVTER_EN_FTOER_EN |
-                  IFC_NAND_EVTER_EN_WPER_EN);
+                  FSL_IFC_NAND_EVTER_EN_OPC_EN |
+                  FSL_IFC_NAND_EVTER_EN_PGRDCMPL_EN |
+                  FSL_IFC_NAND_EVTER_EN_FTOER_EN |
+                  FSL_IFC_NAND_EVTER_EN_WPER_EN);
 	MmioWriteBe32((UINTN)&gNandFlashInfo->IfcRegs->ifc_nand.ncfgr, 0x0);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[IFC_FTIM0],
+		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[FSL_IFC_FTIM0],
 		NAND_FTIM0);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[IFC_FTIM1],
+		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[FSL_IFC_FTIM1],
 		NAND_FTIM1);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[IFC_FTIM2],
+		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[FSL_IFC_FTIM2],
 		NAND_FTIM2);
 
 	MmioWriteBe32((UINTN)
-		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[IFC_FTIM3],
+		&gNandFlashInfo->IfcRegs->ftim_cs[NandCs].ftim[FSL_IFC_FTIM3],
 		NAND_FTIM3);
 
 	MmioWriteBe32((UINTN)
 		&gNandFlashInfo->IfcRegs->cspr_cs[NandCs].cspr,
-		IFC_NAND_CSPR);
+		FSL_IFC_NAND_CSPR);
 
 	MmioWriteBe32((UINTN)
 		&gNandFlashInfo->IfcRegs->cspr_cs[NandCs].cspr_ext,
-		IFC_NAND_CSPR_EXT);
+		FSL_IFC_NAND_CSPR_EXT);
 
 	MmioWriteBe32((UINTN)
 		&gNandFlashInfo->IfcRegs->amask_cs[NandCs].amask,
-		IFC_NAND_AMASK);
+		FSL_IFC_NAND_AMASK);
 
 	MmioWriteBe32((UINTN)
 		&gNandFlashInfo->IfcRegs->csor_cs[NandCs].csor,
-		IFC_NAND_CSOR);
+		FSL_IFC_NAND_CSOR);
 }
 
 EFI_STATUS
@@ -671,12 +671,12 @@ IfcNandFlashInit (
 {
   EFI_STATUS  Status;
 	if(PcdGet32(PcdBootMode) == NAND_BOOT)
-		NandCs = IFC_CS0;
+		NandCs = FSL_IFC_CS0;
 	else
-		NandCs = IFC_CS1;
+		NandCs = FSL_IFC_CS1;
   gNandFlashInfo = &NandFlashInfo;
-	gNandFlashInfo->IfcRegs = (FSL_IFC_REGS*) IFC_REG_BASE;
-	gNandFlashInfo->BufBase = (VOID*) IFC_NAND_BUF_BASE;
+	gNandFlashInfo->IfcRegs = (FSL_IFC_REGS*) FSL_IFC_REG_BASE;
+	gNandFlashInfo->BufBase = (VOID*) FSL_IFC_NAND_BUF_BASE;
 
   //Reset NAND part
   IfcNandFlashReset(NULL, FALSE);
@@ -692,7 +692,7 @@ IfcNandFlashInit (
   //Patch EFI_BLOCK_IO_MEDIA structure.
   if(gNandFlashMedia) {
 	  gNandFlashMedia->BlockSize = gNandFlashInfo->BlockSize;
-	  gNandFlashMedia->LastBlock = LAST_BLOCK;
+	  gNandFlashMedia->LastBlock = NAND_LAST_BLOCK;
   }
   return Status;
 }
