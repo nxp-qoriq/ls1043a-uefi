@@ -1,6 +1,10 @@
 /** LS1043aWatchDog.c
 *
-* Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+*  Based on Watchdog driver implemenation available in
+*  ArmPlatformPkg/Drivers/SP805WatchdogDxe/SP805Watchdog.c
+*
+*  Copyright (c) 2011-2013, ARM Limited. All rights reserved.
+*	 Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 *
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
