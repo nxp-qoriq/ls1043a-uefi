@@ -1,6 +1,9 @@
 /** @file
   Main Header file for the MMC DXE driver
 
+  Based on Mmc implementation available in EmbeddedPkg/Universal/MmcDxe/Mmc.h
+
+  Copyright (c) 2011-2014, ARM Limited. All rights reserved.
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials

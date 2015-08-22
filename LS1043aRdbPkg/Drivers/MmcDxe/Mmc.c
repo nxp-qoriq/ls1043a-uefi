@@ -1,6 +1,9 @@
 /** @Mmc.c
   Main file of the MMC Dxe driver. The driver entrypoint is defined into this file.
 
+  Based on Mmc implementation available in EmbeddedPkg/Universal/MmcDxe/Mmc.c
+
+  Copyright (c) 2011-2013, ARM Limited. All rights reserved.
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials

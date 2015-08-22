@@ -93,8 +93,8 @@
 **/
 #define MMC_MODE_HS         	(1 << 0)
 #define MMC_MODE_HS_52MHz   	(1 << 1)
-#define MMC_MODE_4BIT       	(1 << 2)
-#define MMC_MODE_8BIT       	(1 << 3)
+#define MMC_MODE_4_BIT       	(1 << 2)
+#define MMC_MODE_8_BIT       	(1 << 3)
 #define MMC_MODE_SPI        	(1 << 4)
 #define MMC_MODE_HC         	(1 << 5)
 #define MMC_MODE_DDR_52MHz  	(1 << 6)
@@ -116,28 +116,28 @@
 #define MMC_DATA_READ              1
 #define MMC_DATA_WRITE             2
 
-#define MmcHostIsSpi(Mmc)       	0
+#define IsSpi(Mmc)       	0
 
-#define SD_VERSION_SD       	0x20000
-#define SD_VERSION_3 		(SD_VERSION_SD | 0x300)
-#define SD_VERSION_2 		(SD_VERSION_SD | 0x200)
-#define SD_VERSION_1_0      	(SD_VERSION_SD | 0x100)
-#define SD_VERSION_1_10     	(SD_VERSION_SD | 0x10a)
-#define MMC_VERSION_MMC            0x10000
-#define MMC_VERSION_UNKNOWN 	(MMC_VERSION_MMC)
-#define MMC_VERSION_1_2            (MMC_VERSION_MMC | 0x102)
-#define MMC_VERSION_1_4            (MMC_VERSION_MMC | 0x104)
-#define MMC_VERSION_2_2            (MMC_VERSION_MMC | 0x202)
-#define MMC_VERSION_3              (MMC_VERSION_MMC | 0x300)
-#define MMC_VERSION_4              (MMC_VERSION_MMC | 0x400)
-#define MMC_VERSION_4_1            (MMC_VERSION_MMC | 0x401)
-#define MMC_VERSION_4_2            (MMC_VERSION_MMC | 0x402)
-#define MMC_VERSION_4_3            (MMC_VERSION_MMC | 0x403)
-#define MMC_VERSION_4_41    	(MMC_VERSION_MMC | 0x429)
-#define MMC_VERSION_4_5            (MMC_VERSION_MMC | 0x405)
-#define MMC_VERSION_5_0            (MMC_VERSION_MMC | 0x500)
+#define SD_VER_SD       	0x20000
+#define SD_VER_3 		(SD_VER_SD | 0x300)
+#define SD_VER_2 		(SD_VER_SD | 0x200)
+#define SD_VER_1_0      	(SD_VER_SD | 0x100)
+#define SD_VER_1_10     	(SD_VER_SD | 0x10a)
+#define MMC_VER_MMC            0x10000
+#define MMC_VER_UNKNOWN 	(MMC_VER_MMC)
+#define MMC_VER_1_2            (MMC_VER_MMC | 0x102)
+#define MMC_VER_1_4            (MMC_VER_MMC | 0x104)
+#define MMC_VER_2_2            (MMC_VER_MMC | 0x202)
+#define MMC_VER_3              (MMC_VER_MMC | 0x300)
+#define MMC_VER_4              (MMC_VER_MMC | 0x400)
+#define MMC_VER_4_1            (MMC_VER_MMC | 0x401)
+#define MMC_VER_4_2            (MMC_VER_MMC | 0x402)
+#define MMC_VER_4_3            (MMC_VER_MMC | 0x403)
+#define MMC_VER_4_41    	(MMC_VER_MMC | 0x429)
+#define MMC_VER_4_5            (MMC_VER_MMC | 0x405)
+#define MMC_VER_5_0            (MMC_VER_MMC | 0x500)
 
-#define IS_SD(X) 			(X->Version & SD_VERSION_SD)
+#define IS_SD(X) 			(X->Version & SD_VER_SD)
 
 /**
   Maximum Block Size for MMC
@@ -216,31 +216,31 @@
 /**
   MMC Commands
 **/
-#define MMC_CMD_GO_IDLE_STATE             0
-#define MMC_CMD_SEND_OP_COND              1
-#define MMC_CMD_ALL_SEND_CID              2
-#define MMC_CMD_SET_RELATIVE_ADDR  	3
-#define MMC_CMD_SET_DSR                   4
-#define MMC_CMD_SWITCH                    6
-#define MMC_CMD_SELECT_CARD        	7
-#define MMC_CMD_SEND_EXT_CSD              8
-#define MMC_CMD_SEND_CSD           	9
-#define MMC_CMD_SEND_CID           	10
-#define MMC_CMD_STOP_TRANSMISSION  	12
-#define MMC_CMD_SEND_STATUS        	13
-#define MMC_CMD_SET_BLOCKLEN              16
-#define MMC_CMD_READ_SINGLE_BLOCK  	17
-#define MMC_CMD_READ_MULTIPLE_BLOCK       18
-#define MMC_CMD_SET_BLOCK_COUNT         	23
-#define MMC_CMD_WRITE_SINGLE_BLOCK 	24
-#define MMC_CMD_WRITE_MULTIPLE_BLOCK      25
-#define MMC_CMD_ERASE_GROUP_START  	35
-#define MMC_CMD_ERASE_GROUP_END           36
-#define MMC_CMD_ERASE                     38
-#define MMC_CMD_APP_CMD                   55
-#define MMC_CMD_SPI_READ_OCR              58
-#define MMC_CMD_SPI_CRC_ON_OFF            59
-#define MMC_CMD_RES_MAN                   62
+#define EMMC_CMD_GO_IDLE_STATE             0
+#define EMMC_CMD_SEND_OP_COND              1
+#define EMMC_CMD_ALL_SEND_CID              2
+#define EMMC_CMD_SET_RELATIVE_ADDR  	3
+#define EMMC_CMD_SET_DSR                   4
+#define EMMC_CMD_SWITCH                    6
+#define EMMC_CMD_SELECT_CARD        	7
+#define EMMC_CMD_SEND_EXT_CSD              8
+#define EMMC_CMD_SEND_CSD           	9
+#define EMMC_CMD_SEND_CID           	10
+#define EMMC_CMD_STOP_TRANSMISSION  	12
+#define EMMC_CMD_SEND_STATUS        	13
+#define EMMC_CMD_SET_BLOCKLEN              16
+#define EMMC_CMD_READ_SINGLE_BLOCK  	17
+#define EMMC_CMD_READ_MULTIPLE_BLOCK       18
+#define EMMC_CMD_SET_BLOCK_COUNT         	23
+#define EMMC_CMD_WRITE_SINGLE_BLOCK 	24
+#define EMMC_CMD_WRITE_MULTIPLE_BLOCK      25
+#define EMMC_CMD_ERASE_GROUP_START  	35
+#define EMMC_CMD_ERASE_GROUP_END           36
+#define EMMC_CMD_ERASE                     38
+#define EMMC_CMD_APP_CMD                   55
+#define EMMC_CMD_SPI_READ_OCR              58
+#define EMMC_CMD_SPI_CRC_ON_OFF            59
+#define EMMC_CMD_RES_MAN                   62
 
 #define MMC_RSP_PRESENT 			(1 << 0)
 #define MMC_RSP_136  			(1 << 1)             // 136 Bit Response
@@ -259,12 +259,12 @@
 #define MMC_RSP_R6   		(MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 #define MMC_RSP_R7   		(MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 
-#define WML_RD_WML_MAX      	0x10
-#define WML_WR_WML_MAX      	0x80
-#define WML_RD_WML_MAX_VAL  	0x10
-#define WML_WR_WML_MAX_VAL  	0x80
-#define WML_RD_WML_MASK     	0xff
-#define WML_WR_WML_MASK     	0xff0000
+#define WML_RD_MAX      	0x10
+#define WML_WR_MAX      	0x80
+#define WML_RD_MAX_VAL  	0x10
+#define WML_WR_MAX_VAL  	0x80
+#define WML_RD_MASK     	0xff
+#define WML_WR_MASK     	0xff0000
 
 #define XFERTYPE                    0x0002e00c
 #define XFERTYPE_CMD(X)             ((X & 0x3f) << 24)
@@ -288,67 +288,67 @@
 #define CPU_POLL_TIMEOUT         10000000
 
 #define IRQSTAT             (0x0002e030)
-#define IRQSTAT_DMAE        (0x10000000)
-#define IRQSTAT_AC12E       (0x01000000)
-#define IRQSTAT_DEBE        (0x00400000)
-#define IRQSTAT_DCE         (0x00200000)
-#define IRQSTAT_DTOE        (0x00100000)
-#define IRQSTAT_CIE         (0x00080000)
-#define IRQSTAT_CEBE        (0x00040000)
-#define IRQSTAT_CCE         (0x00020000)
-#define IRQSTAT_CTOE        (0x00010000)
-#define IRQSTAT_CINT        (0x00000100)
-#define IRQSTAT_CRM         (0x00000080)
-#define IRQSTAT_CINS        (0x00000040)
-#define IRQSTAT_BRR         (0x00000020)
-#define IRQSTAT_BWR         (0x00000010)
-#define IRQSTAT_DINT        (0x00000008)
-#define IRQSTAT_BGE         (0x00000004)
-#define IRQSTAT_TC          (0x00000002)
-#define IRQSTAT_CC          (0x00000001)
+#define IRQSTATE_DMAE        (0x10000000)
+#define IRQSTATE_AC12E       (0x01000000)
+#define IRQSTATE_DEBE        (0x00400000)
+#define IRQSTATE_DCE         (0x00200000)
+#define IRQSTATE_DTOE        (0x00100000)
+#define IRQSTATE_CIE         (0x00080000)
+#define IRQSTATE_CEBE        (0x00040000)
+#define IRQSTATE_CCE         (0x00020000)
+#define IRQSTATE_CTOE        (0x00010000)
+#define IRQSTATE_CINT        (0x00000100)
+#define IRQSTATE_CRM         (0x00000080)
+#define IRQSTATE_CINS        (0x00000040)
+#define IRQSTATE_BRR         (0x00000020)
+#define IRQSTATE_BWR         (0x00000010)
+#define IRQSTATE_DINT        (0x00000008)
+#define IRQSTATE_BGE         (0x00000004)
+#define IRQSTATE_TC          (0x00000002)
+#define IRQSTATE_CC          (0x00000001)
 
-#define CMD_ERR             (IRQSTAT_CIE | IRQSTAT_CEBE | IRQSTAT_CCE)
-#define DATA_ERR     	(IRQSTAT_DEBE | IRQSTAT_DCE | IRQSTAT_DTOE | \
-                            IRQSTAT_DMAE)
-#define DATA_COMPLETE       (IRQSTAT_TC | IRQSTAT_DINT)
+#define CMD_ERR             (IRQSTATE_CIE | IRQSTATE_CEBE | IRQSTATE_CCE)
+#define DATA_ERR     	(IRQSTATE_DEBE | IRQSTATE_DCE | IRQSTATE_DTOE | \
+                            IRQSTATE_DMAE)
+#define DATA_COMPLETE       (IRQSTATE_TC | IRQSTATE_DINT)
 
-#define IRQSTATEN           (0x0002e034)
-#define IRQSTATEN_DMAE      (0x10000000)
-#define IRQSTATEN_AC12E     (0x01000000)
-#define IRQSTATEN_DEBE      (0x00400000)
-#define IRQSTATEN_DCE       (0x00200000)
-#define IRQSTATEN_DTOE      (0x00100000)
-#define IRQSTATEN_CIE       (0x00080000)
-#define IRQSTATEN_CEBE      (0x00040000)
-#define IRQSTATEN_CCE       (0x00020000)
-#define IRQSTATEN_CTOE      (0x00010000)
-#define IRQSTATEN_CINT      (0x00000100)
-#define IRQSTATEN_CRM       (0x00000080)
-#define IRQSTATEN_CINS      (0x00000040)
-#define IRQSTATEN_BRR       (0x00000020)
-#define IRQSTATEN_BWR       (0x00000010)
-#define IRQSTATEN_DINT      (0x00000008)
-#define IRQSTATEN_BGE       (0x00000004)
-#define IRQSTATEN_TC        (0x00000002)
-#define IRQSTATEN_CC        (0x00000001)
+#define IRQSTATE_EN           (0x0002e034)
+#define IRQSTATE_EN_DMAE      (0x10000000)
+#define IRQSTATE_EN_AC12E     (0x01000000)
+#define IRQSTATE_EN_DEBE      (0x00400000)
+#define IRQSTATE_EN_DCE       (0x00200000)
+#define IRQSTATE_EN_DTOE      (0x00100000)
+#define IRQSTATE_EN_CIE       (0x00080000)
+#define IRQSTATE_EN_CEBE      (0x00040000)
+#define IRQSTATE_EN_CCE       (0x00020000)
+#define IRQSTATE_EN_CTOE      (0x00010000)
+#define IRQSTATE_EN_CINT      (0x00000100)
+#define IRQSTATE_EN_CRM       (0x00000080)
+#define IRQSTATE_EN_CINS      (0x00000040)
+#define IRQSTATE_EN_BRR       (0x00000020)
+#define IRQSTATE_EN_BWR       (0x00000010)
+#define IRQSTATE_EN_DINT      (0x00000008)
+#define IRQSTATE_EN_BGE       (0x00000004)
+#define IRQSTATE_EN_TC        (0x00000002)
+#define IRQSTATE_EN_CC        (0x00000001)
 
-#define PRSSTAT             (0x0002e024)
-#define PRSSTAT_DAT0        (0x01000000)
-#define PRSSTAT_CLSL        (0x00800000)
-#define PRSSTAT_WPSPL       (0x00080000)
-#define PRSSTAT_CDPL        (0x00040000)
-#define PRSSTAT_CINS        (0x00010000)
-#define PRSSTAT_BREN        (0x00000800)
-#define PRSSTAT_BWEN        (0x00000400)
-#define PRSSTAT_DLA         (0x00000004)
-#define PRSSTAT_CICHB       (0x00000002)
-#define PRSSTAT_CIDHB       (0x00000001)
+#define PRSSTATE             (0x0002e024)
+#define PRSSTATE_DAT0        (0x01000000)
+#define PRSSTATE_CLSL        (0x00800000)
+#define PRSSTATE_WPSPL       (0x00080000)
+#define PRSSTATE_CDPL        (0x00040000)
+#define PRSSTATE_CINS        (0x00010000)
+#define PRSSTATE_BREN        (0x00000800)
+#define PRSSTATE_BWEN        (0x00000400)
+#define PRSSTATE_DLA         (0x00000004)
+#define PRSSTATE_CICHB       (0x00000002)
+#define PRSSTATE_CIDHB       (0x00000001)
 
-#define PROCTL              0x0002e028
-#define PROCTL_INIT         0x00000020
-#define PROCTL_DTW_4        0x00000002
-#define PROCTL_DTW_8        0x00000004
-#define PROCTL_BE           0x00000030
+#define PRCTL              0x0002e028
+#define PRCTL_INIT         0x00000020
+#define PRCTL_DTW_4        0x00000002
+#define PRCTL_DTW_8        0x00000004
+#define PRCTL_BE           0x00000030
 
 #define MMC_STATUS_MASK            (~0x0206BF7F)
 #define MMC_STATUS_SWITCH_ERROR    (1 << 7)

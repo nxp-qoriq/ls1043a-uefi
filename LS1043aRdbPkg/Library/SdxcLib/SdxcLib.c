@@ -62,7 +62,7 @@ SdxcXfertype (
   else if (Cmd->RespType & MMC_RSP_PRESENT)
     Xfertype |= XFERTYPE_RSPTYP_48;
 
-  if (Cmd->CmdIdx == MMC_CMD_STOP_TRANSMISSION)
+  if (Cmd->CmdIdx == EMMC_CMD_STOP_TRANSMISSION)
     Xfertype |= XFERTYPE_CMDTYP_ABORT;
 
   return XFERTYPE_CMD(Cmd->CmdIdx) | Xfertype;
@@ -83,18 +83,18 @@ SdxcSetupData (
   DmaAddr Addr;
 #endif
 #endif
-  UINT32 WmlValue;
+  UINT32 WmlVal;
   UINT32 Dsaddr = 0;;
 
-  WmlValue = Data->Blocksize/4;
+  WmlVal = Data->Blocksize/4;
 
   if (Data->Flags & MMC_DATA_READ) {
     InternalMemCopyMem(&Dsaddr, Data->Dest, sizeof(UINT32));
 
-    if (WmlValue > WML_RD_WML_MAX)
-      WmlValue = WML_RD_WML_MAX_VAL;
+    if (WmlVal > WML_RD_MAX)
+      WmlVal = WML_RD_MAX_VAL;
 
-    MmioClearSetBe32((UINTN)&Regs->Wml, WML_RD_WML_MASK, WmlValue);
+    MmioClearSetBe32((UINTN)&Regs->Wml, WML_RD_MASK, WmlVal);
 #ifndef CONFIG_SYS_FSL_SDXC_USE_PIO
 #ifdef CONFIG_LS1043A
     Addr = VirtToPhys((VOID *)(Data->Dest));
@@ -108,13 +108,13 @@ SdxcSetupData (
 #endif
   } else {
     InternalMemCopyMem(&Dsaddr, Data->Src, sizeof(UINT32));
-    if (WmlValue > WML_WR_WML_MAX)
-      WmlValue = WML_WR_WML_MAX_VAL;
-    if ((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_WPSPL) == 0) {
+    if (WmlVal > WML_WR_MAX)
+      WmlVal = WML_WR_MAX_VAL;
+    if ((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_WPSPL) == 0) {
       DEBUG((EFI_D_ERROR, "The SD Card Is Locked. Can Not Write To A Locked Card.\n"));
       return EFI_TIMEOUT;
     }
-    MmioClearSetBe32((UINTN)&Regs->Wml, WML_WR_WML_MASK, WmlValue << 16);
+    MmioClearSetBe32((UINTN)&Regs->Wml, WML_WR_MASK, WmlVal << 16);
 #ifndef CONFIG_SYS_FSL_SDXC_USE_PIO
 #ifdef CONFIG_LS1043A 
     Addr = VirtToPhys((VOID *)(Data->Src));
@@ -131,20 +131,6 @@ SdxcSetupData (
   MmioWriteBe32((UINTN)&Regs->Blkattr, Data->Blocks << 16 | Data->Blocksize);
 
   /* Calculate The Timeout Period for Data Transactions */
-  /*
-   * 1)Timeout Period = (2^(Timeout+13)) SD Clock Cycles
-   * 2)Timeout Period Should Be Minimum 0.250sec As Per SD Card Spec
-   *  So, Number Of SD Clock Cycles for 0.25sec Should Be Minimum
-   *		(SD Clock/Sec * 0.25 Sec) SD Clock Cycles
-   *		= (Mmc->Clock * 1/4) SD Clock Cycles
-   * As 1) >=  2)
-   * => (2^(Timeout+13)) >= Mmc->Clock * 1/4
-   * Taking Log2 Both The Sides
-   * => Timeout + 13 >= Log2(Mmc->Clock/4)
-   * Rounding Up To Next Power Of 2
-   * => Timeout + 13 = Log2(Mmc->Clock/4) + 1
-   * => Timeout + 13 = Fls(Mmc->Clock/4)
-   */
   Timeout = GenericFls(Mmc->Clock/4);
   Timeout -= 13;
 
@@ -167,7 +153,7 @@ CheckAndInvalidateDcacheRange (
 {
   return;
 //	UINT32 Start = (UINT32 *)Data->Dest;
-//	UINT32 Size = RoundUp(ARCH_DMA_MINALIGN,
+//	UINT32 Size = RoundUp(DMA_MINALIGN,
 //				Data->Blocks*Data->Blocksize);
 //	UINT32 End = Start+Size ;
 //TODO	InvalidateDcacheRange(Start, End);
@@ -226,14 +212,14 @@ SdxcReadWrite (
       TimeOut = CPU_POLL_TIMEOUT;
       Size = Data->Blocksize;
       Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
-      while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_BREN)
+      while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_BREN)
              && --TimeOut);
       if (TimeOut <= 0) {
         DEBUG((EFI_D_ERROR, "Data Read Failed in PIO Mode 0x%x\n",
 		MmioReadBe32((UINTN)&Regs->Prsstat)));
         return EFI_DEVICE_ERROR;
       }
-      while (Size && (!(Irqstat & IRQSTAT_TC))) {
+      while (Size && (!(Irqstat & IRQSTATE_TC))) {
         MicroSecondDelay(100); /* Wait before last byte transfer complete */
         Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
         DataBuf = MmioRead32((UINTN)&Regs->Datport);
@@ -250,14 +236,14 @@ SdxcReadWrite (
       TimeOut = CPU_POLL_TIMEOUT;
       Size = Data->Blocksize;
       Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
-      while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_BWEN)
+      while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_BWEN)
              && --TimeOut);
       if (TimeOut <= 0) {
         DEBUG((EFI_D_ERROR, "Data Write Failed in PIO Mode 0x%x\n",
 		MmioReadBe32((UINTN)&Regs->Prsstat)));
         return EFI_DEVICE_ERROR;
       }
-      while (Size && (!(Irqstat & IRQSTAT_TC))) {
+      while (Size && (!(Irqstat & IRQSTATE_TC))) {
         MicroSecondDelay(100); /* Wait before last byte transfer complete */
         DataBuf = *((UINT32 *)Buffer);
         Buffer += 4;
@@ -291,7 +277,7 @@ RecvResp(
 
     /* Poll On DATA0 Line for Cmd With Busy Signal for 250 Ms */
     while (Timeout > 0 && !(MmioReadBe32((UINTN)&Regs->Prsstat) &
-				PRSSTAT_DAT0)) {
+				PRSSTATE_DAT0)) {
       MicroSecondDelay(100);
       Timeout--;
     }
@@ -329,7 +315,7 @@ RecvResp(
 
       Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
 
-      if (Irqstat & IRQSTAT_DTOE) {
+      if (Irqstat & IRQSTATE_DTOE) {
         ResetCmdFailedData(Data);
         return EFI_TIMEOUT;
       }
@@ -380,8 +366,8 @@ SdxcSendCmd (
   asm("Dmb :");
 
   /* Wait for The Bus To Be Idle */
-  while (((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_CICHB) ||
-		(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_CIDHB))
+  while (((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_CICHB) ||
+		(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_CIDHB))
 		&& Timeout--)
 	;
 
@@ -391,7 +377,7 @@ SdxcSendCmd (
   }
 
   Timeout = 1000;
-  while ((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_DLA) && Timeout--)
+  while ((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_DLA) && Timeout--)
   	;
 
   if (Timeout <= 0) {
@@ -421,7 +407,7 @@ SdxcSendCmd (
 
   /* Wait for The Command To Complete */
   Timeout = 100000;
-  while ((!(MmioReadBe32((UINTN)&Regs->Irqstat) & (IRQSTAT_CC | IRQSTAT_CTOE)))
+  while ((!(MmioReadBe32((UINTN)&Regs->Irqstat) & (IRQSTATE_CC | IRQSTATE_CTOE)))
 		&& Timeout--)
   	;
 
@@ -437,7 +423,7 @@ SdxcSendCmd (
     goto Out;
   }
 
-  if (Irqstat & IRQSTAT_CTOE) {
+  if (Irqstat & IRQSTATE_CTOE) {
     Status = EFI_TIMEOUT;
     goto Out;
   }
@@ -510,12 +496,12 @@ SdxcSetIos (
   SetSysctl(Mmc, Mmc->Clock);
 
   /* Set The Bus Width */
-  MmioClearBitsBe32((UINTN)&Regs->Proctl, PROCTL_DTW_4 | PROCTL_DTW_8);
+  MmioClearBitsBe32((UINTN)&Regs->Proctl, PRCTL_DTW_4 | PRCTL_DTW_8);
 
   if (Mmc->BusWidth == 4)
-    MmioSetBitsBe32((UINTN)&Regs->Proctl, PROCTL_DTW_4);
+    MmioSetBitsBe32((UINTN)&Regs->Proctl, PRCTL_DTW_4);
   else if (Mmc->BusWidth == 8)
-    MmioSetBitsBe32((UINTN)&Regs->Proctl, PROCTL_DTW_8);
+    MmioSetBitsBe32((UINTN)&Regs->Proctl, PRCTL_DTW_8);
 }
 
 INT32
@@ -543,10 +529,10 @@ SdxcInit (
   SdxcSetClock(Mmc, 400000);
 
   /* Disable The BRR And BWR Bits In IRQSTAT */
-  MmioClearBitsBe32((UINTN)&Regs->Irqstaten, IRQSTATEN_BRR | IRQSTATEN_BWR);
+  MmioClearBitsBe32((UINTN)&Regs->Irqstaten, IRQSTATE_EN_BRR | IRQSTATE_EN_BWR);
 
   /* Set Little Endian mode for data Buffer */
-  MmioWriteBe32((UINTN)&Regs->Proctl, PROCTL_INIT);
+  MmioWriteBe32((UINTN)&Regs->Proctl, PRCTL_INIT);
 
   /* Set Timout To The Maximum Value */
   MmioClearSetBe32((UINTN)&Regs->Sysctl, SYSCTL_TIMEOUT_MASK, 14 << 16);
@@ -563,7 +549,7 @@ SdxcGetcd (
   struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
   INT32 Timeout = 1000;
 
-  while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTAT_CINS) && --Timeout)
+  while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_CINS) && --Timeout)
     MicroSecondDelay(1000);
 
   return Timeout > 0;
@@ -628,13 +614,13 @@ SdxcInitialize (
     return EFI_DEVICE_ERROR;
   }
 
-  Cfg->Cfg.HostCaps = MMC_MODE_4BIT | MMC_MODE_8BIT | MMC_MODE_HC;
+  Cfg->Cfg.HostCaps = MMC_MODE_4_BIT | MMC_MODE_8_BIT | MMC_MODE_HC;
 
   if (Cfg->MaxBusWidth > 0) {
     if (Cfg->MaxBusWidth < 8)
-      Cfg->Cfg.HostCaps &= ~MMC_MODE_8BIT;
+      Cfg->Cfg.HostCaps &= ~MMC_MODE_8_BIT;
       if (Cfg->MaxBusWidth < 4)
-        Cfg->Cfg.HostCaps &= ~MMC_MODE_4BIT;
+        Cfg->Cfg.HostCaps &= ~MMC_MODE_4_BIT;
   }
 
   if (Caps & SDXC_HOSTCAPBLT_HSS)

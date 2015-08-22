@@ -102,9 +102,9 @@ SendStatus (
   INT32 Retries = 5;
   EFI_STATUS Status;
 
-  Cmd.CmdIdx = MMC_CMD_SEND_STATUS;
+  Cmd.CmdIdx = EMMC_CMD_SEND_STATUS;
   Cmd.RespType = MMC_RSP_R1;
-  if (!MmcHostIsSpi(Mmc))
+  if (!IsSpi(Mmc))
     Cmd.CmdArg = Mmc->Rca << 16;
 
   do {
@@ -146,9 +146,9 @@ ReadBlks (
   struct SdData Data;
 
   if (Blkcnt > 1)
-    Cmd.CmdIdx = MMC_CMD_READ_MULTIPLE_BLOCK;
+    Cmd.CmdIdx = EMMC_CMD_READ_MULTIPLE_BLOCK;
   else
-    Cmd.CmdIdx = MMC_CMD_READ_SINGLE_BLOCK;
+    Cmd.CmdIdx = EMMC_CMD_READ_SINGLE_BLOCK;
 
   if (Mmc->HighCapacity)
     Cmd.CmdArg = Start;
@@ -166,7 +166,7 @@ ReadBlks (
     return 0;
 
   if (Blkcnt > 1) {
-    Cmd.CmdIdx = MMC_CMD_STOP_TRANSMISSION;
+    Cmd.CmdIdx = EMMC_CMD_STOP_TRANSMISSION;
     Cmd.CmdArg = 0;
     Cmd.RespType = MMC_RSP_R1b;
 
@@ -190,7 +190,7 @@ SetBlocklen (
   if (Mmc->DdrMode)
     return EFI_SUCCESS;
 
-  Cmd.CmdIdx = MMC_CMD_SET_BLOCKLEN;
+  Cmd.CmdIdx = EMMC_CMD_SET_BLOCKLEN;
   Cmd.RespType = MMC_RSP_R1;
   Cmd.CmdArg = Len;
 
@@ -218,9 +218,9 @@ SdxcWriteBlks (
   if (Blkcnt == 0)
     return 0;
   else if (Blkcnt == 1)
-    Cmd.CmdIdx = MMC_CMD_WRITE_SINGLE_BLOCK;
+    Cmd.CmdIdx = EMMC_CMD_WRITE_SINGLE_BLOCK;
   else
-    Cmd.CmdIdx = MMC_CMD_WRITE_MULTIPLE_BLOCK;
+    Cmd.CmdIdx = EMMC_CMD_WRITE_MULTIPLE_BLOCK;
 
   if (Mmc->HighCapacity)
     Cmd.CmdArg = Start;
@@ -242,8 +242,8 @@ SdxcWriteBlks (
   /* SPI Multiblock Writes Terminate Using A Special
    * Token, Not A STOP_TRANSMISSION Request.
    */
-  if (!MmcHostIsSpi(Mmc) && Blkcnt > 1) {
-    Cmd.CmdIdx = MMC_CMD_STOP_TRANSMISSION;
+  if (!IsSpi(Mmc) && Blkcnt > 1) {
+    Cmd.CmdIdx = EMMC_CMD_STOP_TRANSMISSION;
     Cmd.CmdArg = 0;
     Cmd.RespType = MMC_RSP_R1b;
     if (SendCmd(Mmc, &Cmd, NULL)) {
@@ -281,8 +281,8 @@ SdxcEraseBlks (
     StartCmd = SD_CMD_ERASE_WR_BLK_START;
     EndCmd = SD_CMD_ERASE_WR_BLK_END;
   } else {
-    StartCmd = MMC_CMD_ERASE_GROUP_START;
-    EndCmd = MMC_CMD_ERASE_GROUP_END;
+    StartCmd = EMMC_CMD_ERASE_GROUP_START;
+    EndCmd = EMMC_CMD_ERASE_GROUP_END;
   }
 
   Cmd.CmdIdx = StartCmd;
@@ -300,7 +300,7 @@ SdxcEraseBlks (
   if (Status)
     goto ErrOut;
 
-  Cmd.CmdIdx = MMC_CMD_ERASE;
+  Cmd.CmdIdx = EMMC_CMD_ERASE;
   Cmd.CmdArg = SECURE_ERASE;
   Cmd.RespType = MMC_RSP_R1b;
 
@@ -474,7 +474,7 @@ SdxcGoIdle (
 
   MicroSecondDelay(1000);
 
-  Cmd.CmdIdx = MMC_CMD_GO_IDLE_STATE;
+  Cmd.CmdIdx = EMMC_CMD_GO_IDLE_STATE;
   Cmd.CmdArg = 0;
   Cmd.RespType = MMC_RSP_NONE;
 
@@ -509,7 +509,7 @@ SdSendIfCond (
   if ((Cmd.Response[0] & 0xff) != 0xaa)
     return EFI_NO_RESPONSE;
   else
-    Mmc->Version = SD_VERSION_2;
+    Mmc->Version = SD_VER_2;
   //FIXME check for others also
 
   return EFI_SUCCESS;
@@ -522,7 +522,7 @@ SendAppCmd (
 {
   struct SdCmd Cmd;
 
-  Cmd.CmdIdx = MMC_CMD_APP_CMD;
+  Cmd.CmdIdx = EMMC_CMD_APP_CMD;
   Cmd.RespType = MMC_RSP_R1;
 
   if (Rca)
@@ -548,20 +548,14 @@ SdSendOpCond (
     if (Status)
       return Status;
 
-    Cmd.CmdIdx = SD_CMD_APP_SEND_OP_COND;
-    Cmd.RespType = MMC_RSP_R3;
-
     /*
-     * Most Cards do Not Answer if Some Reserved Bits
-     * In The Ocr Are Set. However, Some Controller
-     * Can Set Bit 7 (Reserved for Low Voltages), But
-     * How To Manage Low Voltages SD Card Is Not Yet
-     * Specified.
+     * Most Cards do Not Answer if Reserved Bits in Ocr Are Set.
      */
-    Cmd.CmdArg = MmcHostIsSpi(Mmc) ? 0 :
-           (Mmc->Cfg->Voltages & 0xff8000);
+    Cmd.RespType = MMC_RSP_R3;
+    Cmd.CmdIdx = SD_CMD_APP_SEND_OP_COND;
+    Cmd.CmdArg = IsSpi(Mmc) ? 0 : (Mmc->Cfg->Voltages & 0xff8000);
 
-    if (Mmc->Version == SD_VERSION_2)
+    if (Mmc->Version == SD_VER_2)
       Cmd.CmdArg |= OCR_HCS;
 
     Status = SendCmd(Mmc, &Cmd, NULL);
@@ -570,18 +564,19 @@ SdSendOpCond (
       return Status;
 
     MicroSecondDelay(1000);
-  } while ((!(Cmd.Response[0] & OCR_BUSY)) && Timeout--);
+  } while (Timeout-- && (!(Cmd.Response[0] & OCR_BUSY)));
 
   if (Timeout <= 0)
     return EFI_TIMEOUT;
 
-  if (Mmc->Version != SD_VERSION_2)
-    Mmc->Version = SD_VERSION_1_0;
-
-  if (MmcHostIsSpi(Mmc)) { /* Read OCR for Spi */
-    Cmd.CmdIdx = MMC_CMD_SPI_READ_OCR;
-    Cmd.RespType = MMC_RSP_R3;
+  /* Read OCR for Spi */
+  if (IsSpi(Mmc)) {
     Cmd.CmdArg = 0;
+    Cmd.CmdIdx = EMMC_CMD_SPI_READ_OCR;
+    Cmd.RespType = MMC_RSP_R3;
+
+  if (Mmc->Version != SD_VER_2)
+    Mmc->Version = SD_VER_1_0;
 
     Status = SendCmd(Mmc, &Cmd, NULL);
 
@@ -606,10 +601,10 @@ MmcSendOpCondCmdIter (
 {
   INT32 Status;
 
-  Cmd->CmdIdx = MMC_CMD_SEND_OP_COND;
+  Cmd->CmdIdx = EMMC_CMD_SEND_OP_COND;
   Cmd->RespType = MMC_RSP_R3;
   Cmd->CmdArg = 0;
-  if (UseArg && !MmcHostIsSpi(Mmc)) {
+  if (UseArg && !IsSpi(Mmc)) {
     Cmd->CmdArg =
            (Mmc->Cfg->Voltages &
            (Mmc->Ocr & OCR_VOLTAGE_MASK)) |
@@ -682,7 +677,7 @@ SdStartInit (
   SdxcSetBusWidth(gMmc, 1);
   SdxcSetClock(gMmc, 1);
 
-  MmioClearBitsBe32((UINTN)&Regs->Proctl, PROCTL_BE);
+  MmioClearBitsBe32((UINTN)&Regs->Proctl, PRCTL_BE);
 
   /* Reset The Card */
   Status = SdxcGoIdle(gMmc);
@@ -768,8 +763,8 @@ SdxcCompleteOpCond (
 
   Mmc->OpCondPending = 0;
 
-  if (MmcHostIsSpi(Mmc)) { /* Read OCR for Spi */
-         Cmd.CmdIdx = MMC_CMD_SPI_READ_OCR;
+  if (IsSpi(Mmc)) { /* Read OCR for Spi */
+         Cmd.CmdIdx = EMMC_CMD_SPI_READ_OCR;
          Cmd.RespType = MMC_RSP_R3;
          Cmd.CmdArg = 0;
 
@@ -779,7 +774,7 @@ SdxcCompleteOpCond (
                 return Status;
   }
 
-  Mmc->Version = MMC_VERSION_UNKNOWN;
+  Mmc->Version = MMC_VER_UNKNOWN;
 
   Mmc->HighCapacity = ((Mmc->Ocr & OCR_HCS) == OCR_HCS);
   Mmc->Rca = 2;
@@ -788,7 +783,7 @@ SdxcCompleteOpCond (
 }
 
 static INT32
-MmcSendExtCsd (
+SendExtCsd (
   IN  struct Mmc *Mmc,
   IN  UINT8 *ExtCsd
   )
@@ -798,7 +793,7 @@ MmcSendExtCsd (
   INT32 Status;
 
   /* Get The Card Status Register */
-  Cmd.CmdIdx = MMC_CMD_SEND_EXT_CSD;
+  Cmd.CmdIdx = EMMC_CMD_SEND_EXT_CSD;
   Cmd.RespType = MMC_RSP_R1;
   Cmd.CmdArg = 0;
 
@@ -879,14 +874,14 @@ SdxcChangeFreq (
 {
   INT32 Status;
   struct SdCmd Cmd;
-  ALLOC_CACHE_ALIGN_BUFFER(UINT32, Scr, 2);
-  ALLOC_CACHE_ALIGN_BUFFER(UINT32, SwitchStatus, 16);
+  ALLOC_CACHE_ALIGN_BUF(UINT32, Scr, 2);
+  ALLOC_CACHE_ALIGN_BUF(UINT32, SwitchStatus, 16);
   struct SdData Data;
   INT32 Timeout;
 
   Mmc->CardCaps = 0;
 
-  if (MmcHostIsSpi(Mmc))
+  if (IsSpi(Mmc))
     return 0;
 
   /* Read The SCR To Find Out if This Card Supports Higher Speeds */
@@ -923,50 +918,49 @@ RetryScr:
 
   switch ((Mmc->Scr[0] >> 24) & 0xf) {
     case 0:
-      Mmc->Version = SD_VERSION_1_0;
+      Mmc->Version = SD_VER_1_0;
       break;
     case 1:
-      Mmc->Version = SD_VERSION_1_10;
+      Mmc->Version = SD_VER_1_10;
       break;
     case 2:
-      Mmc->Version = SD_VERSION_2;
+      Mmc->Version = SD_VER_2;
       if ((Mmc->Scr[0] >> 15) & 0x1)
-        Mmc->Version = SD_VERSION_3;
+        Mmc->Version = SD_VER_3;
       break;
     default:
-      Mmc->Version = SD_VERSION_1_0;
+      Mmc->Version = SD_VER_1_0;
       break;
   }
 
-  if (Mmc->Scr[0] & SD_DATA_4BIT)
-    Mmc->CardCaps |= MMC_MODE_4BIT;
+  if (Mmc->Scr[0] & SD_DATA_4_BIT)
+    Mmc->CardCaps |= MMC_MODE_4_BIT;
 
-  /* Version 1.0 Doesn'T Support Switching */
-  if (Mmc->Version == SD_VERSION_1_0)
+  /* Switching not supported in Version 1.0 */
+  if (Mmc->Version == SD_VER_1_0)
     return 0;
 
-  Timeout = 4;
-  while (Timeout--) {
+  Timeout = 3;
+  do {
     Status = SdxcSwitch(Mmc, SD_SWITCH_CHECK, 0, 1,
 		(UINT8 *)SwitchStatus);
 
     if (Status)
       return Status;
 
-    /* The High-Speed Function Is Busy.  Try Again */
+    /* Try again if high-Speed Function Is Busy. */
     if (!(SwitchStatus[7] & SD_HIGHSPEED_BUSY))
       break;
-  }
 
-  /* if High-Speed Isn'T Supported, We return */
+  }while (Timeout--);
+
+  /* Return if High-Speed Isn'T Supported */
   if (!(SwitchStatus[3] & SD_HIGHSPEED_SUPPORTED))
     return 0;
 
   /*
-   * if The Host Doesn'T Support SD_HIGHSPEED, do Not switch Card To
-   * HIGHSPEED Mode Even if The Card Support SD_HIGHSPPED.
-   * This Can Avoid Furthur Problem When The Card Runs In Different
-   * Mode Between The Host.
+   * If card support SD_HIGHSPPED. and Host Doesn'T Support SD_HIGHSPEED,
+   * then do Not switch Card To HIGHSPEED Mode.
    */
   if (!((Mmc->Cfg->HostCaps & MMC_MODE_HS_52MHz) &&
 	(Mmc->Cfg->HostCaps & MMC_MODE_HS)))
@@ -996,7 +990,7 @@ MmcSwitch (
   INT32 Timeout = 1000;
   INT32 Ret;
 
-  Cmd.CmdIdx = MMC_CMD_SWITCH;
+  Cmd.CmdIdx = EMMC_CMD_SWITCH;
   Cmd.RespType = MMC_RSP_R1b;
   Cmd.CmdArg = (MMC_SWITCH_MODE_WRITE_BYTE << 24) |
 		 (Index << 16) |
@@ -1017,20 +1011,20 @@ MmcChangeFreq (
   IN  struct Mmc *Mmc
   )
 {
-  ALLOC_CACHE_ALIGN_BUFFER(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
+  ALLOC_CACHE_ALIGN_BUF(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
   CHAR8 Cardtype;
   INT32 Status;
 
-  Mmc->CardCaps = MMC_MODE_4BIT | MMC_MODE_8BIT;
+  Mmc->CardCaps = MMC_MODE_4_BIT | MMC_MODE_8_BIT;
 
-  if (MmcHostIsSpi(Mmc))
+  if (IsSpi(Mmc))
     return 0;
 
   /* Only Version 4 Supports High-Speed */
-  if (Mmc->Version < MMC_VERSION_4)
+  if (Mmc->Version < MMC_VER_4)
     return 0;
 
-  Status = MmcSendExtCsd(Mmc, ExtCsd);
+  Status = SendExtCsd(Mmc, ExtCsd);
   if (Status)
     return Status;
 
@@ -1042,7 +1036,7 @@ MmcChangeFreq (
     return Status == EFI_NO_RESPONSE ? 0 : Status;
 
   /* Now Check To See That It Worked */
-  Status = MmcSendExtCsd(Mmc, ExtCsd);
+  Status = SendExtCsd(Mmc, ExtCsd);
 
   if (Status)
     return Status;
@@ -1074,15 +1068,15 @@ SdxcStartup (
   UINT64 CsdMult, CsdSize, Capacity;
   struct SdCmd Cmd;
 
-  ALLOC_CACHE_ALIGN_BUFFER(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
-  ALLOC_CACHE_ALIGN_BUFFER(UINT8, TestCsd, MMC_MAX_BLOCK_LEN);
+  ALLOC_CACHE_ALIGN_BUF(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
+  ALLOC_CACHE_ALIGN_BUF(UINT8, TestCsd, MMC_MAX_BLOCK_LEN);
   INT32 Timeout = 10000;
 
   /* Put The Card In Identify Mode */
-  Cmd.CmdIdx = MmcHostIsSpi(Mmc) ? MMC_CMD_SEND_CID :
-         MMC_CMD_ALL_SEND_CID; /* Cmd Not Supported In Spi */
   Cmd.RespType = MMC_RSP_R2;
   Cmd.CmdArg = 0;
+  Cmd.CmdIdx = IsSpi(Mmc) ? EMMC_CMD_SEND_CID :
+         EMMC_CMD_ALL_SEND_CID;
 
   Status = SendCmd(Mmc, &Cmd, NULL);
 
@@ -1094,19 +1088,19 @@ SdxcStartup (
   Mmc->Cid[2] = Cmd.Response[2];
   Mmc->Cid[3] = Cmd.Response[3];
   /*
-   * for MMC Cards, Set The Relative Address.
-   * for SD Cards, Get The Relatvie Address.
-   * This Also Puts The Cards Into Standby State
+   * Set Relative Address for MMC cards
+   * Get Relatvie Address for SD cards
+   * It will put Card Into Standby State
   */
-  if (!MmcHostIsSpi(Mmc)) { /* Cmd Not Supported In Spi */
+  if (!IsSpi(Mmc)) {
     if (IS_SD(Mmc)) {
       Cmd.CmdIdx = SD_CMD_SEND_RELATIVE_ADDR;
-      Cmd.CmdArg = Mmc->Rca << 16;
       Cmd.RespType = MMC_RSP_R6;
+      Cmd.CmdArg = Mmc->Rca << 16;
     } else {
       Cmd.CmdIdx = SD_CMD_SEND_RELATIVE_ADDR;
-      Cmd.CmdArg = Mmc->Rca << 16;
       Cmd.RespType = MMC_RSP_R1;
+      Cmd.CmdArg = Mmc->Rca << 16;
     }
 
     Status = SendCmd(Mmc, &Cmd, NULL);
@@ -1119,13 +1113,13 @@ SdxcStartup (
   }
 
   /* Get The Card-Specific Data */
-  Cmd.CmdIdx = MMC_CMD_SEND_CSD;
+  Cmd.CmdIdx = EMMC_CMD_SEND_CSD;
   Cmd.RespType = MMC_RSP_R2;
   Cmd.CmdArg = Mmc->Rca << 16;
 
   Status = SendCmd(Mmc, &Cmd, NULL);
 
-  /* Waiting for The Ready Status */
+  /* Wait for Ready Status */
   SendStatus(Mmc, Timeout);
 
   if (Status)
@@ -1136,27 +1130,27 @@ SdxcStartup (
   Mmc->Csd[2] = Cmd.Response[2];
   Mmc->Csd[3] = Cmd.Response[3];
 
-  if (Mmc->Version == MMC_VERSION_UNKNOWN) {
+  if (Mmc->Version == MMC_VER_UNKNOWN) {
     INT32 Version = (Cmd.Response[0] >> 26) & 0xf;
 
     switch (Version) {
       case 0:
-        Mmc->Version = MMC_VERSION_1_2;
+        Mmc->Version = MMC_VER_1_2;
         break;
       case 1:
-        Mmc->Version = MMC_VERSION_1_4;
+        Mmc->Version = MMC_VER_1_4;
         break;
       case 2:
-        Mmc->Version = MMC_VERSION_2_2;
+        Mmc->Version = MMC_VER_2_2;
         break;
       case 3:
-        Mmc->Version = MMC_VERSION_3;
+        Mmc->Version = MMC_VER_3;
         break;
       case 4:
-        Mmc->Version = MMC_VERSION_4;
+        Mmc->Version = MMC_VER_4;
         break;
       default:
-        Mmc->Version = MMC_VERSION_1_2;
+        Mmc->Version = MMC_VER_1_2;
         break;
     }
   }
@@ -1199,71 +1193,69 @@ SdxcStartup (
     Mmc->WriteBlkLen = MMC_MAX_BLOCK_LEN;
 
   if ((Mmc->DsrImp) && (0xffffffff != Mmc->Dsr)) {
-    Cmd.CmdIdx = MMC_CMD_SET_DSR;
+    Cmd.CmdIdx = EMMC_CMD_SET_DSR;
     Cmd.CmdArg = (Mmc->Dsr & 0xffff) << 16;
     Cmd.RespType = MMC_RSP_NONE;
     if (SendCmd(Mmc, &Cmd, NULL))
       DEBUG((EFI_D_ERROR, "MMC: SET_DSR Failed\n"));
   }
 
-  /* Select The Card, And Put It Into Transfer Mode */
-  if (!MmcHostIsSpi(Mmc)) { /* Cmd Not Supported In Spi */
-    Cmd.CmdIdx = MMC_CMD_SELECT_CARD;
-    Cmd.RespType = MMC_RSP_R1;
+  /* Select Card And Put Into Transfer Mode */
+  if (!IsSpi(Mmc)) {
     Cmd.CmdArg = Mmc->Rca << 16;
+    Cmd.CmdIdx = EMMC_CMD_SELECT_CARD;
+    Cmd.RespType = MMC_RSP_R1;
+
     Status = SendCmd(Mmc, &Cmd, NULL);
 
     if (Status)
       return Status;
   }
-  /*
-   * for SD, Its Erase Group Is Always One Sector
-   */
-  Mmc->EraseGrpSize = 1;
+
   Mmc->PartConfig = MMCPART_NOAVAILABLE;
-  if (!IS_SD(Mmc) && (Mmc->Version >= MMC_VERSION_4)) {
-    /* Check  ExtCsd Version And Capacity */
-    Status = MmcSendExtCsd(Mmc, ExtCsd);
+
+  /* Erase Group Is Always One Sector for SD cards */
+  Mmc->EraseGrpSize = 1;
+
+  if (!IS_SD(Mmc) && (Mmc->Version >= MMC_VER_4)) {
+    Status = SendExtCsd(Mmc, ExtCsd);
+
+    /* ExtCsd'S Capacity Is Valid if More Than 2GB */
     if (!Status && (ExtCsd[EXT_CSD_REV] >= 2)) {
-      /*
-       * According To The JEDEC Standard, The Value Of
-       * ExtCsd'S Capacity Is Valid if The Value Is More
-       * Than 2GB
-       */
       Capacity = ExtCsd[EXT_CSD_SEC_CNT] << 0
                  | ExtCsd[EXT_CSD_SEC_CNT + 1] << 8
                  | ExtCsd[EXT_CSD_SEC_CNT + 2] << 16
                  | ExtCsd[EXT_CSD_SEC_CNT + 3] << 24;
+
       Capacity *= MMC_MAX_BLOCK_LEN;
+
       if ((Capacity >> 20) > 2 * 1024)
         Mmc->CapacityUser = Capacity;
     }
 
     switch (ExtCsd[EXT_CSD_REV]) {
     case 1:
-      Mmc->Version = MMC_VERSION_4_1;
+      Mmc->Version = MMC_VER_4_1;
       break;
     case 2:
-      Mmc->Version = MMC_VERSION_4_2;
+      Mmc->Version = MMC_VER_4_2;
       break;
     case 3:
-      Mmc->Version = MMC_VERSION_4_3;
+      Mmc->Version = MMC_VER_4_3;
       break;
     case 5:
-      Mmc->Version = MMC_VERSION_4_41;
+      Mmc->Version = MMC_VER_4_41;
       break;
     case 6:
-      Mmc->Version = MMC_VERSION_4_5;
+      Mmc->Version = MMC_VER_4_5;
       break;
     case 7:
-      Mmc->Version = MMC_VERSION_5_0;
+      Mmc->Version = MMC_VER_5_0;
       break;
     }
 
     /*
-     * Host Needs To Enable ERASE_GRP_DEF Bit if Device Is
-     * Partitioned. This Bit Will Be Lost Every Time After A Reset
-     * Or Power Off. This Will Affect Erase Size.
+     * If Device Is Partitioned then Host Needs To Enable ERASE_GRP_DEF Bit.
      */
     if ((ExtCsd[EXT_CSD_PARTITIONING_SUPPORT] & PART_SUPPORT) &&
         (ExtCsd[EXT_CSD_PARTITIONS_ATTRIBUTE] & PART_ENH_ATTRIB)) {
@@ -1280,9 +1272,8 @@ SdxcStartup (
              ExtCsd[EXT_CSD_HC_ERASE_GRP_SIZE] *
                          MMC_MAX_BLOCK_LEN * 1024;
       /*
+       * SEC_COUNT is valid if it is smaller than 2 GiB,
        * if high capacity and partition setting completed
-       * SEC_COUNT is valid even if it is smaller than 2 GiB
-	* JEDEC Standard JESD84-B45, 6.2.4
 	*/
       if (Mmc->HighCapacity &&
 	 (ExtCsd[EXT_CSD_PARTITION_SETTING] &
@@ -1291,35 +1282,37 @@ SdxcStartup (
 		     (ExtCsd[EXT_CSD_SEC_CNT + 1] << 8) |
 		     (ExtCsd[EXT_CSD_SEC_CNT + 2] << 16) |
 		     (ExtCsd[EXT_CSD_SEC_CNT + 3] << 24);
+
 	 Capacity *= MMC_MAX_BLOCK_LEN;
 	 Mmc->CapacityUser = Capacity;
       }
     } else {
       /* Calculate The Group Size From The Csd Value. */
       INT32 EraseGsz, EraseGmul;
-      EraseGsz = (Mmc->Csd[2] & 0x00007c00) >> 10;
       EraseGmul = (Mmc->Csd[2] & 0x000003e0) >> 5;
+      EraseGsz = (Mmc->Csd[2] & 0x00007c00) >> 10;
+
       Mmc->EraseGrpSize = (EraseGsz + 1)
                        * (EraseGmul + 1);
     }
 
-    /* Store The Partition Info Of Emmc */
+    /* Store The Partition Info */
     if ((ExtCsd[EXT_CSD_PARTITIONING_SUPPORT] & PART_SUPPORT) ||
         ExtCsd[EXT_CSD_BOOT_MULT])
       Mmc->PartConfig = ExtCsd[EXT_CSD_PART_CONF];
 
-    Mmc->CapacityBoot = ExtCsd[EXT_CSD_BOOT_MULT] << 17;
-
-    Mmc->CapacityRpmb = ExtCsd[EXT_CSD_RPMB_MULT] << 17;
-
     for (I = 0; I < 4; I++) {
       INT32 Idx = EXT_CSD_GP_SIZE_MULT + I * 3;
+
       Mmc->CapacityGp[I] = (ExtCsd[Idx + 2] << 16) +
              (ExtCsd[Idx + 1] << 8) + ExtCsd[Idx];
       Mmc->CapacityGp[I] *=
              ExtCsd[EXT_CSD_HC_ERASE_GRP_SIZE];
       Mmc->CapacityGp[I] *= ExtCsd[EXT_CSD_HC_WP_GRP_SIZE];
     }
+
+    Mmc->CapacityRpmb = ExtCsd[EXT_CSD_RPMB_MULT] << 17;
+    Mmc->CapacityBoot = ExtCsd[EXT_CSD_BOOT_MULT] << 17;
   }
 
   Status = MmcSetCapacity(Mmc, Mmc->PartNum);
@@ -1340,7 +1333,7 @@ SdxcStartup (
   Mmc->CardCaps &= Mmc->Cfg->HostCaps;
 
   if (IS_SD(Mmc)) {
-    if (Mmc->CardCaps & MMC_MODE_4BIT) {
+    if (Mmc->CardCaps & MMC_MODE_4_BIT) {
       Status = SendAppCmd(TRUE);
       if (Status)
         return Status;
@@ -1373,10 +1366,10 @@ SdxcStartup (
 
     /* An Array To Map CSD Bus Widths To Host Cap Bits */
     static UINT32 ExtToHostcaps[] = {
-           [EXT_CSD_DDR_BUS_WIDTH_4] = MMC_MODE_DDR_52MHz | MMC_MODE_4BIT,
-           [EXT_CSD_DDR_BUS_WIDTH_8] = MMC_MODE_DDR_52MHz | MMC_MODE_8BIT,
-           [EXT_CSD_BUS_WIDTH_4] = MMC_MODE_4BIT,
-           [EXT_CSD_BUS_WIDTH_8] = MMC_MODE_8BIT,
+           [EXT_CSD_DDR_BUS_WIDTH_4] = MMC_MODE_DDR_52MHz | MMC_MODE_4_BIT,
+           [EXT_CSD_DDR_BUS_WIDTH_8] = MMC_MODE_DDR_52MHz | MMC_MODE_8_BIT,
+           [EXT_CSD_BUS_WIDTH_4] = MMC_MODE_4_BIT,
+           [EXT_CSD_BUS_WIDTH_8] = MMC_MODE_8_BIT,
          };
 
     /* An Array To Map Chosen Bus Width To An Integer */
@@ -1409,7 +1402,7 @@ SdxcStartup (
       Mmc->DdrMode = (Caps & MMC_MODE_DDR_52MHz) ? 1 : 0;
       SdxcSetBusWidth(Mmc, Widths[Idx]);
 
-      Status = MmcSendExtCsd(Mmc, TestCsd);
+      Status = SendExtCsd(Mmc, TestCsd);
       if (Status)
         continue;
 

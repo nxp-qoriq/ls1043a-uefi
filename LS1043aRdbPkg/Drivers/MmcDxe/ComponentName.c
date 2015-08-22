@@ -1,6 +1,9 @@
 /** @ComponentName.c
   Component Name Protocol implementation for the MMC DXE driver
 
+  Based on Mmc implementation available in EmbeddedPkg/Universal/MmcDxe/ComponentName.c
+
+  Copyright (c) 2011, ARM Limited. All rights reserved.
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
