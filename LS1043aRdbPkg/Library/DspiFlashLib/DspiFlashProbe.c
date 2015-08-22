@@ -37,48 +37,12 @@ CONST struct DspiFlashParameters DspiFlashTable[] = {
   {(CONST INT8 *)"SST25WF040", 0xbf2504, 0x0,
 	64 * 1024, 8, 0, SECT_4K | SST_WP},
 #endif
-#ifdef CONFIG_SPI_FLASH_SPANSION	/* SPANSION */
-  {(CONST INT8 *)"S25FL008A", 0x010213, 0x0,	64 * 1024,  16, RD_NORM, 0},
-  {(CONST INT8 *)"S25FL016A", 0x010214, 0x0,	64 * 1024,  32, RD_NORM, 0},
-  {(CONST INT8 *)"S25FL032A", 0x010215, 0x0,	64 * 1024,  64, RD_NORM, 0},
-  {(CONST INT8 *)"S25FL064A", 0x010216, 0x0,	64 * 1024, 128, RD_NORM, 0},
-  {(CONST INT8 *)"S25FL116K", 0x014015, 0x0,	64 * 1024, 128, RD_NORM, 0},
-  {(CONST INT8 *)"S25FL164K", 0x014017, 0x0140,	64 * 1024, 128, RD_NORM, 0},
-  {(CONST INT8 *)"S25FL128P_256K", 0x012018, 0x0300, 256 * 1024,  64, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL128P_64K",  0x012018, 0x0301,  64 * 1024, 256, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL032P", 0x010215, 0x4d00, 64 * 1024,  64, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL064P", 0x010216, 0x4d00, 64 * 1024, 128, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL128S_256K", 0x012018, 0x4d00, 256 * 1024,   64, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL128S_64K",  0x012018, 0x4d01,  64 * 1024,  256, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL256S_256K", 0x010219, 0x4d00, 256 * 1024,  128, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL256S_64K",  0x010219, 0x4d01,  64 * 1024,  512, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL512S_256K", 0x010220, 0x4d00, 256 * 1024,  256, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL512S_64K",  0x010220, 0x4d01,  64 * 1024, 1024, RD_FULL, WR_QPP},
-  {(CONST INT8 *)"S25FL512S_512K", 0x010220, 0x4f00, 256 * 1024,  256, RD_FULL, WR_QPP},
+#ifdef CONFIG_RDB
+  {(CONST INT8 *)"N25Q128",  0x20ba18, 0x0,
+	64 * 1024, 256,  RD_FULL, WR_QPP},
+  {(CONST INT8 *)"N25Q128A", 0x20bb18, 0x0,
+	64 * 1024, 256,  RD_FULL, WR_QPP},
 #endif
-  {(CONST INT8 *)"M25P10",   0x202011, 0x0,    32 * 1024, 4,    RD_NORM, 0},
-  {(CONST INT8 *)"M25P20",   0x202012, 0x0,    64 * 1024, 4,    RD_NORM, 0},
-  {(CONST INT8 *)"M25P40",   0x202013, 0x0,    64 * 1024, 8,    RD_NORM, 0},
-  {(CONST INT8 *)"M25P80",   0x202014, 0x0,    64 * 1024, 16,   RD_NORM, 0},
-  {(CONST INT8 *)"M25P16",   0x202015, 0x0,    64 * 1024, 32,   RD_NORM, 0},
-  {(CONST INT8 *)"M25PE16",  0x208015, 0x1000, 64 * 1024, 32,   RD_NORM, 0},
-  {(CONST INT8 *)"M25PX16",  0x207115, 0x1000, 64 * 1024, 32,   RD_EXTN, 0},
-  {(CONST INT8 *)"M25P32",   0x202016, 0x0,    64 * 1024, 64,   RD_NORM, 0},
-  {(CONST INT8 *)"M25P64",   0x202017, 0x0,    64 * 1024, 128,  RD_NORM, 0},
-  {(CONST INT8 *)"M25P128",  0x202018, 0x0,    256 * 1024,64,   RD_NORM, 0},
-  {(CONST INT8 *)"M25PX64",  0x207117, 0x0,    64 * 1024, 128,  RD_NORM, SECT_4K},
-  {(CONST INT8 *)"N25Q32",   0x20ba16, 0x0,    64 * 1024, 64,   RD_FULL, WR_QPP | SECT_4K},
-  {(CONST INT8 *)"N25Q32A",  0x20bb16, 0x0,    64 * 1024, 64,   RD_FULL, WR_QPP | SECT_4K},
-  {(CONST INT8 *)"N25Q64",   0x20ba17, 0x0,    64 * 1024, 128,  RD_FULL, WR_QPP | SECT_4K},
-  {(CONST INT8 *)"N25Q64A",  0x20bb17, 0x0,    64 * 1024, 128,  RD_FULL, WR_QPP | SECT_4K},
-  {(CONST INT8 *)"N25Q128",  0x20ba18, 0x0,    64 * 1024, 256,  RD_FULL, WR_QPP},
-  {(CONST INT8 *)"N25Q128A", 0x20bb18, 0x0,    64 * 1024, 256,  RD_FULL, WR_QPP},
-  {(CONST INT8 *)"N25Q256",  0x20ba19, 0x0,    64 * 1024, 512,  RD_FULL, WR_QPP | SECT_4K},
-  {(CONST INT8 *)"N25Q256A", 0x20bb19, 0x0,    64 * 1024, 512,  RD_FULL, WR_QPP | SECT_4K},
-  {(CONST INT8 *)"N25Q512",  0x20ba20, 0x0,    64 * 1024, 1024, RD_FULL, WR_QPP | E_FSR | SECT_4K},
-  {(CONST INT8 *)"N25Q512A", 0x20bb20, 0x0,    64 * 1024, 1024, RD_FULL, WR_QPP | E_FSR | SECT_4K},
-  {(CONST INT8 *)"N25Q1024", 0x20ba21, 0x0,    64 * 1024, 2048, RD_FULL, WR_QPP | E_FSR | SECT_4K},
-  {(CONST INT8 *)"N25Q1024A",0x20bb21, 0x0,    64 * 1024, 2048, RD_FULL, WR_QPP | E_FSR | SECT_4K},
 };
 
 struct DspiFlash *
@@ -178,7 +142,7 @@ ValidateParameters (
   }
 
   /* Not Require To Look for Fastest Only Two Write Cmds Yet */
-  if (Parameters->Flags & WR_QPP && Flash->Dspi->Slave.OpModeTx & SPI_OPM_TX_QPP)
+  if (Parameters->Flags & WR_QPP && Flash->Dspi->Slave.OpModeTx & SPI_COMMON_OPM_TX_QPP)
     Flash->WriteCmd = CMD_QUAD_PAGE_PROGRAM;
   else
     /* Go for default Supported Write Cmd */
@@ -212,7 +176,7 @@ ValidateParameters (
 
 
   /* Configure the BAR - discover bank cmds and read current bank */
-  if (Flash->Size > SPI_FLASH_16MB_BOUN) {
+  if (Flash->Size > SPI_COMMON_FLASH_16MB_BOUN) {
     INT32 Ret;
 
     Flash->BankReadCmd = (Id[0] == 0x01) ?
@@ -306,11 +270,11 @@ DspiProbeDevice (
     DEBUG((EFI_D_INFO, ", Mapped At %p\n", Flash->MemoryMap));
 
   if (((Flash->DualFlash == SF_SINGLE_FLASH) &&
-       (Flash->Size > SPI_FLASH_16MB_BOUN)) ||
+       (Flash->Size > SPI_COMMON_FLASH_16MB_BOUN)) ||
        ((Flash->DualFlash > SF_SINGLE_FLASH) &&
-       (Flash->Size > SPI_FLASH_16MB_BOUN << 1))) {
+       (Flash->Size > SPI_COMMON_FLASH_16MB_BOUN << 1))) {
     DEBUG((EFI_D_WARN, "Warning - Only Lower 16MiB Accessible, "\
-  		"Full Access #define CONFIG_SPI_FLASH_BAR\n"));
+  		"Full Access #define CONFIG_DSPI_FLASH_BAR\n"));
   }
 
   if (DspiEnableWritePin(Flash) != EFI_SUCCESS)

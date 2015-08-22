@@ -61,7 +61,7 @@ void DumpDspiRegs(struct DspiSlave *Dspi)
   DEBUG((EFI_D_INFO,"Rfdr[15]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[15])));
 }
 
-#ifdef CONFIG_SPI_FLASH_BAR
+#ifdef CONFIG_DSPI_FLASH_BAR
 EFI_STATUS
 DspiCmdBankAddrWrite (
   IN  struct DspiFlash *Flash,
@@ -97,7 +97,7 @@ DspiWriteBankAddr (
   UINT8 BankSel;
   INT32 Ret;
 
-  BankSel = Offset / (SPI_FLASH_16MB_BOUN << Flash->Shift);
+  BankSel = Offset / (SPI_COMMON_FLASH_16MB_BOUN << Flash->Shift);
 
   Ret = DspiCmdBankAddrWrite(Flash, BankSel);
   if (Ret) {
@@ -127,7 +127,7 @@ DspiCreateSlave (
 
   Ptr->Slave.Bus = Bus;
   Ptr->Slave.Cs = Cs;
-  Ptr->Slave.Wordlen = SPI_DEFAULT_WORDLEN;
+  Ptr->Slave.Wordlen = SPI_COMMON_DEFAULT_WORDLEN;
 
   return Ptr;
 }
@@ -138,7 +138,7 @@ IsDataflash (
   IN  UINT32 Cs
   )
 {
-  if (Bus == SPI_BUS_FSL_DSPI1 && Cs == 0)
+  if (Bus == BUS_DSPI1 && Cs == 0)
     return 1;
   else
     return 0;
@@ -287,10 +287,10 @@ DspiSetQeb (
   )
 {
   switch (Idcode0) {
-  case SPI_FLASH_CFI_MFR_SPANSION:
-  case SPI_FLASH_CFI_MFR_WINBOND:
+  case SPI_COMMON_FLASH_CFI_MFR_SPANSION:
+  case SPI_COMMON_FLASH_CFI_MFR_WINBOND:
     return DspiSetQebWinspan(Flash);
-  case SPI_FLASH_CFI_MFR_STMICRO:
+  case SPI_COMMON_FLASH_CFI_MFR_STMICRO:
     DEBUG((EFI_D_INFO,"QEB is volatile for %02x flash\n", Idcode0));
     return EFI_SUCCESS;
   default:
@@ -357,7 +357,7 @@ DspiXfer (
   static UINT32 Ctrl = 0;
   UINT32 Len = Bitlen >> 3;
 
-  if ((Flags & SPI_XFER_BEGIN) == SPI_XFER_BEGIN)
+  if ((Flags & SPI_COMMON_XFER_BEGIN) == SPI_COMMON_XFER_BEGIN)
     Ctrl |= DSPI_TFR_CONT;
 
   Ctrl &= ~DSPI_PUSHR_CTAS_MASK;
@@ -391,7 +391,7 @@ DspiXfer (
       }
 
       if (InData != NULL) {
-	 Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
+	 Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_COMMON_IDLE_VAL);
         if (Status != EFI_SUCCESS)
 	   return Status;
 
@@ -408,7 +408,7 @@ DspiXfer (
     Len = 1;	/* Remaining Byte */
   }
 
-  if ((Flags & SPI_XFER_END) == SPI_XFER_END)
+  if ((Flags & SPI_COMMON_XFER_END) == SPI_COMMON_XFER_END)
     Ctrl &= ~DSPI_TFR_CONT;
 
   if (Len) {
@@ -427,7 +427,7 @@ DspiXfer (
     }
 
     if (InData != NULL) {
-      Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
+      Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_COMMON_IDLE_VAL);
        
       if (Status != EFI_SUCCESS)
 	 return Status;
@@ -443,7 +443,7 @@ DspiXfer (
     }
   } else {
     /* Dummy Read */
-    Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_IDLE_VAL);
+    Status = DspiTx(DspiSlave, Ctrl, CONFIG_SPI_COMMON_IDLE_VAL);
     if (Status != EFI_SUCCESS)
       return Status;
 
@@ -474,7 +474,7 @@ DspiSetupSlave (
    *     19 - 16: PCS To SCK Delay Scaler
    *     15 - 12: After SCK Delay Scaler
    *     11 -  8: Delay After Transfer Scaler
-   *      7 -  0: SPI_CPHA, SPI_CPOL, SPI_LSB_FIRST
+   *      7 -  0: SPI_COMMON_CPHA, SPI_COMMON_CPOL, SPI_COMMON_LSB_FIRST
    */
   struct DspiSlave *Dspislave;
   INT32 Prescaler[] = { 2, 3, 5, 7 };
@@ -499,13 +499,13 @@ DspiSetupSlave (
   Dspislave->Regs = (VOID *)CONFIG_SYS_FSL_DSPI_ADDR;
 
   MmioWriteBe32((UINTN)&Dspislave->Regs->Mcr,
-    DSPI_MCR_MSTR | DSPI_MCR_CSIS7 | DSPI_MCR_CSIS6 |
-    DSPI_MCR_CSIS5 | DSPI_MCR_CSIS4 | DSPI_MCR_CSIS3 |
-    DSPI_MCR_CSIS2 | DSPI_MCR_CSIS1 | DSPI_MCR_CSIS0 |
-    DSPI_MCR_CRXF | DSPI_MCR_CTXF);
+    DSPI_MC_MSTR | DSPI_MC_CSIS7 | DSPI_MC_CSIS6 |
+    DSPI_MC_CSIS5 | DSPI_MC_CSIS4 | DSPI_MC_CSIS3 |
+    DSPI_MC_CSIS2 | DSPI_MC_CSIS1 | DSPI_MC_CSIS0 |
+    DSPI_MC_CRXF | DSPI_MC_CTXF);
 
   /* default Setting In Platform Configuration */
-  MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], CONFIG_SYS_DSPI_CTAR0);
+  MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], CONFIG_SYS_DSPI_CTR0);
 
   GetSysInfo(&SocSysInfo);
   BusClk = (UINT32)SocSysInfo.FreqSystemBus;
@@ -521,22 +521,22 @@ DspiSetupSlave (
   }
 
   /* Activate Double Baud When It Exceed 1/4 The Bus Clk */
-  if ((CONFIG_SYS_DSPI_CTAR0 & DSPI_CTAR_DBR) ||
+  if ((CONFIG_SYS_DSPI_CTR0 & DSPI_CTR_DBR) ||
     (Dspislave->Baudrate > (BusClk / (Prescaler[0] * Scaler[0])))) {
-    BusSetup |= DSPI_CTAR_DBR;
+    BusSetup |= DSPI_CTR_DBR;
     Dbr = 1;
   }
 
-  if (Mode & SPI_CPOL)
-    BusSetup |= DSPI_CTAR_CPOL;
-  if (Mode & SPI_CPHA)
-    BusSetup |= DSPI_CTAR_CPHA;
-  if (Mode & SPI_LSB_FIRST)
-    BusSetup |= DSPI_CTAR_LSBFE;
+  if (Mode & SPI_COMMON_CPOL)
+    BusSetup |= DSPI_CTR_CPOL;
+  if (Mode & SPI_COMMON_CPHA)
+    BusSetup |= DSPI_CTR_CPHA;
+  if (Mode & SPI_COMMON_LSB_FIRST)
+    BusSetup |= DSPI_CTR_LSBFE;
 
   /* Overwrite default Value Set In Platform Configuration File */
   Ret = MmioReadBe32((UINTN)&Dspislave->Regs->Ctar[0]);
-  if (Mode & SPI_MODE_MOD) {
+  if (Mode & SPI_COMMON_MODE_MOD) {
     if ((Mode & 0xF0000000) == 0) {
       BusSetup |= Ret & 0x78000000;	/* 0x0000 002F */
     } else
@@ -546,8 +546,8 @@ DspiSetupSlave (
      * Check To See if It Is Enabled By default In Platform
      * Config, Or Manual Setting Passed By Mode Parameter
      **/
-    if (Mode & SPI_DBLRATE) {
-      BusSetup |= DSPI_CTAR_DBR;
+    if (Mode & SPI_COMMON_DBLRATE) {
+      BusSetup |= DSPI_CTR_DBR;
       Dbr = 1;
     }
 
@@ -580,7 +580,7 @@ DspiSetupSlave (
     }
   }
 
-  BusSetup |= (DSPI_CTAR_PREBR(BestI) | DSPI_CTAR_BR(BestJ));
+  BusSetup |= (DSPI_CTR_PREBR(BestI) | DSPI_CTR_BR(BestJ));
   MmioWriteBe32((UINTN)&Dspislave->Regs->Ctar[0], BusSetup);
 
   return Dspislave;
@@ -620,11 +620,11 @@ DspiReadWrite (
   IN  UINT64 DataLen
   )
 {
-  UINT64 Flags = SPI_XFER_BEGIN;
+  UINT64 Flags = SPI_COMMON_XFER_BEGIN;
   INT32 Ret;
 
   if (DataLen == 0)
-    Flags |= SPI_XFER_END;
+    Flags |= SPI_COMMON_XFER_END;
 
   Ret = DspiXfer(Dspi, CmdLen * 8, Cmd, NULL, Flags);
   if (Ret != EFI_SUCCESS) {
@@ -632,7 +632,7 @@ DspiReadWrite (
 			CmdLen, Ret));
     return Ret;
   } else if (DataLen != 0) {
-    Ret = DspiXfer(Dspi, DataLen * 8, DataOut, DataIn, SPI_XFER_END);
+    Ret = DspiXfer(Dspi, DataLen * 8, DataOut, DataIn, SPI_COMMON_XFER_END);
     if (Ret != EFI_SUCCESS) {
       DEBUG((EFI_D_ERROR, "DSPI: Failed To Transfer %zu Bytes Of Data: %d\n",
 			DataLen, Ret));
@@ -651,7 +651,7 @@ DspiWaitReady (
 {
   struct DspiSlave *Dspi = Flash->Dspi;
   UINT64 Timebase;
-  UINT64 Flags = SPI_XFER_BEGIN;
+  UINT64 Flags = SPI_COMMON_XFER_BEGIN;
   EFI_STATUS Ret = EFI_SUCCESS;
   UINT8 Status = 0;
   UINT8 CheckStatus = 0x0;
@@ -676,7 +676,7 @@ DspiWaitReady (
 
     Ret = DspiXfer(Dspi, 8, NULL, &Status, 0);
     if (Ret != EFI_SUCCESS) {
-      DspiXfer(Dspi, 0, NULL, NULL, SPI_XFER_END);
+      DspiXfer(Dspi, 0, NULL, NULL, SPI_COMMON_XFER_END);
       return Ret;
     }
 
@@ -686,7 +686,7 @@ DspiWaitReady (
 
   } while (++Timebase < Timeout);
 
-  DspiXfer(Dspi, 0, NULL, NULL, SPI_XFER_END);
+  DspiXfer(Dspi, 0, NULL, NULL, SPI_COMMON_XFER_END);
   if ((Status & PollBit) == CheckStatus)
     return EFI_SUCCESS;
 
@@ -707,12 +707,12 @@ DspiCommonWrite (
   )
 {
   struct DspiSlave *Dspi = Flash->Dspi;
-  UINT64 Timeout = SPI_FLASH_PROG_TIMEOUT;
+  UINT64 Timeout = SPI_COMMON_FLASH_PROG_TIMEOUT;
   INT32 Ret;
   UINT8 Wcmd = 0;
 
   if (Buf == NULL)
-    Timeout = SPI_FLASH_PAGE_ERASE_TIMEOUT;
+    Timeout = SPI_COMMON_FLASH_PAGE_ERASE_TIMEOUT;
 
   Ret = DspiClaimBus(Flash->Dspi);
   if (Ret != EFI_SUCCESS) {
@@ -737,7 +737,7 @@ DspiCommonWrite (
   Ret = DspiWaitReady(Flash, Timeout);
   if (Ret != EFI_SUCCESS) {
     DEBUG((EFI_D_ERROR, "DSPI Write %s Failed\n",
-          Timeout == SPI_FLASH_PROG_TIMEOUT ?
+          Timeout == SPI_COMMON_FLASH_PROG_TIMEOUT ?
            "Program" : "Page Erase"));
     return Ret;
   }
@@ -808,14 +808,14 @@ DspiReadOps (
       DEBUG((EFI_D_ERROR, "Unable To Claim DSPI Bus\n"));
       return Ret;
     }
-    DspiXfer(Flash->Dspi, 0, NULL, NULL, SPI_XFER_MMAP);
+    DspiXfer(Flash->Dspi, 0, NULL, NULL, SPI_COMMON_XFER_MMAP);
     InternalMemCopyMem(Data, Flash->MemoryMap + Offset, Len);
-    DspiXfer(Flash->Dspi, 0, NULL, NULL, SPI_XFER_MMAP_END);
+    DspiXfer(Flash->Dspi, 0, NULL, NULL, SPI_COMMON_XFER_MMAP_END);
     DspiReleaseBus(Flash->Dspi);
     return EFI_SUCCESS;
   }
 
-  CmdSz = SPI_FLASH_CMD_LEN + Flash->DummyByte;
+  CmdSz = SPI_COMMON_FLASH_CMD_LEN + Flash->DummyByte;
 
   Cmd = (UINT8 *)AllocatePool(CmdSz);
   if (!Cmd) {
@@ -827,12 +827,12 @@ DspiReadOps (
   while (Len) {
     ReadAddr = Offset;
 
-#ifdef CONFIG_SPI_FLASH_BAR
+#ifdef CONFIG_DSPI_FLASH_BAR
   BankSel = DspiWriteBankAddr(Flash, ReadAddr);
   if (BankSel < 0)
     return Ret;
 #endif
-    RemainLen = ((SPI_FLASH_16MB_BOUN << Flash->Shift) *
+    RemainLen = ((SPI_COMMON_FLASH_16MB_BOUN << Flash->Shift) *
                  (BankSel + 1)) - Offset;
     if (Len < RemainLen)
       ReadLen = Len;
@@ -863,7 +863,7 @@ DspiEraseOps (
   )
 {
   UINT32 EraseSize, EraseAddr;
-  UINT8 Cmd[SPI_FLASH_CMD_LEN];
+  UINT8 Cmd[SPI_COMMON_FLASH_CMD_LEN];
   INT32 Ret = -1;
 
   EraseSize = Flash->EraseSize;
@@ -878,7 +878,7 @@ DspiEraseOps (
   while (Len) {
     EraseAddr = Offset;
 
-#ifdef CONFIG_SPI_FLASH_BAR
+#ifdef CONFIG_DSPI_FLASH_BAR
   Ret = DspiWriteBankAddr(Flash, EraseAddr);
   if (Ret < 0)
     return Ret;
@@ -909,7 +909,7 @@ DspiWriteOps (
   UINT64 ByteAddr, PageSize;
   UINT32 WriteAddr;
   UINT64 ChunkLen = 1, Actual;
-  UINT8 Cmd[SPI_FLASH_CMD_LEN];
+  UINT8 Cmd[SPI_COMMON_FLASH_CMD_LEN];
   INT32 Ret = -1;
 
   PageSize = Flash->PageSize;
@@ -918,7 +918,7 @@ DspiWriteOps (
   for (Actual = 0; Actual < Len; Actual += ChunkLen) {
     WriteAddr = Offset;
 
-#ifdef CONFIG_SPI_FLASH_BAR
+#ifdef CONFIG_DSPI_FLASH_BAR
     Ret = DspiWriteBankAddr(Flash, WriteAddr);
     if (Ret < 0)
       return Ret;

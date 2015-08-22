@@ -14,57 +14,57 @@
 
 **/
 
-#ifndef __SPI_H__
-#define __SPI_H__
+#ifndef __SPI_COMMON_H__
+#define __SPI_COMMON_H__
 
 /* SPI Mode Flags */
-#define SPI_CPHA			0x01	/* Clock Phase */
-#define SPI_CPOL			0x02	/* Clock Polarity */
-#define SPI_MODE_0			(0|0)	/* (Original MicroWire) */
-#define SPI_MODE_1			(0|SPI_CPHA)
-#define SPI_MODE_2			(SPI_CPOL|0)
-#define SPI_MODE_3			(SPI_CPOL|SPI_CPHA)
-#define SPI_CS_HIGH			0x04	/* CS Active High */
-#define SPI_LSB_FIRST		0x08	/* Per-Word Bits-On-Wire */
-#define SPI_3WIRE			0x10	/* SI/SO Signals Shared */
-#define SPI_LOOP			0x20	/* Loopback Mode */
-#define SPI_SLAVE			0x40	/* Slave Mode */
-#define SPI_PREAMBLE			0x80	/* Skip Preamble Bytes */
+#define SPI_COMMON_CPHA			0x01	/* Clock Phase */
+#define SPI_COMMON_CPOL			0x02	/* Clock Polarity */
+#define SPI_COMMON_MODE_0			(0|0)	/* (Original MicroWire) */
+#define SPI_COMMON_MODE_1			(0|SPI_COMMON_CPHA)
+#define SPI_COMMON_MODE_2			(SPI_COMMON_CPOL|0)
+#define SPI_COMMON_MODE_3			(SPI_COMMON_CPOL|SPI_COMMON_CPHA)
+#define SPI_COMMON_CS_HIGH			0x04	/* CS Active High */
+#define SPI_COMMON_LSB_FIRST		0x08	/* Per-Word Bits-On-Wire */
+#define SPI_COMMON_3WIRE			0x10	/* SI/SO Signals Shared */
+#define SPI_COMMON_LOOP			0x20	/* Loopback Mode */
+#define SPI_COMMON_SLAVE			0x40	/* Slave Mode */
+#define SPI_COMMON_PREAMBLE			0x80	/* Skip Preamble Bytes */
 
 /* SPI Transfer Flags */
-#define SPI_XFER_BEGIN 		0x01	/* Assert CS Before Transfer */
-#define SPI_XFER_END 		0x02 	/* Deassert CS After Transfer */
-#define SPI_XFER_MMAP 		0x08 	/* Memory Mapped Start */
-#define SPI_XFER_MMAP_END 		0x10 	/* Memory Mapped End */
-#define SPI_XFER_ONCE 		(SPI_XFER_BEGIN | SPI_XFER_END)
-#define SPI_XFER_U_PAGE 		(1 << 5)
+#define SPI_COMMON_XFER_BEGIN 		0x01	/* Assert CS Before Transfer */
+#define SPI_COMMON_XFER_END 		0x02 	/* Deassert CS After Transfer */
+#define SPI_COMMON_XFER_MMAP 		0x08 	/* Memory Mapped Start */
+#define SPI_COMMON_XFER_MMAP_END 		0x10 	/* Memory Mapped End */
+#define SPI_COMMON_XFER_ONCE 		(SPI_COMMON_XFER_BEGIN | SPI_COMMON_XFER_END)
+#define SPI_COMMON_XFER_U_PAGE 		(1 << 5)
 
-#define CONFIG_SPI_IDLE_VAL 	0x0
+#define CONFIG_SPI_COMMON_IDLE_VAL 	0x0
 
-#define SPI_FLASH_3B_ADDR_LEN 	3
-#define SPI_FLASH_CMD_LEN		(1 + SPI_FLASH_3B_ADDR_LEN)
-#define SPI_FLASH_16MB_BOUN		0x1000000
+#define SPI_COMMON_FLASH_3B_ADDR_LEN 	3
+#define SPI_COMMON_FLASH_CMD_LEN		(1 + SPI_COMMON_FLASH_3B_ADDR_LEN)
+#define SPI_COMMON_FLASH_16MB_BOUN		0x1000000
 
-#define SPI_DEFAULT_WORDLEN 	8
+#define SPI_COMMON_DEFAULT_WORDLEN 	8
 
 /* Spi Specific Mode */
-#define SPI_MODE_MOD 		0x00200000
-#define SPI_DBLRATE			0x00100000
+#define SPI_COMMON_MODE_MOD 		0x00200000
+#define SPI_COMMON_DBLRATE			0x00100000
 
 /* Flash Timeout Values */
 #define CONFIG_SYS_HZ 			1000
-#define SPI_FLASH_PROG_TIMEOUT		(2 * CONFIG_SYS_HZ)
-#define SPI_FLASH_PAGE_ERASE_TIMEOUT 	(5 * CONFIG_SYS_HZ)
-#define SPI_FLASH_SECTOR_ERASE_TIMEOUT	(10 * CONFIG_SYS_HZ)
+#define SPI_COMMON_FLASH_PROG_TIMEOUT		(2 * CONFIG_SYS_HZ)
+#define SPI_COMMON_FLASH_PAGE_ERASE_TIMEOUT 	(5 * CONFIG_SYS_HZ)
+#define SPI_COMMON_FLASH_SECTOR_ERASE_TIMEOUT	(10 * CONFIG_SYS_HZ)
 
 /* CFI Manufacture ID'S */
-#define SPI_FLASH_CFI_MFR_SPANSION 	0x01
-#define SPI_FLASH_CFI_MFR_STMICRO 		0x20
-#define SPI_FLASH_CFI_MFR_MACRONIX 	0xc2
-#define SPI_FLASH_CFI_MFR_WINBOND 		0xef
+#define SPI_COMMON_FLASH_CFI_MFR_SPANSION 	0x01
+#define SPI_COMMON_FLASH_CFI_MFR_STMICRO 		0x20
+#define SPI_COMMON_FLASH_CFI_MFR_MACRONIX 	0xc2
+#define SPI_COMMON_FLASH_CFI_MFR_WINBOND 		0xef
 
 /* SPI TX Operation Modes */
-#define SPI_OPM_TX_QPP 			(1 << 0)
+#define SPI_COMMON_OPM_TX_QPP 			(1 << 0)
 
 /* Enum list - Full read commands */
 enum SpiReadCmds {

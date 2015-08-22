@@ -2,6 +2,9 @@
   Header Defining The Dspi Flash Controller Constants (Base Addresses, Sizes,
   Flags), Function Prototype, Structures etc
 
+  Based on BlockIo Protocol available in MdePkg/Include/Protocol/BlockIo.h
+
+  Copyright (c) 2006 - 2011, Intel Corporation. All rights reserved.
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This Program And The Accompanying Materials
@@ -36,11 +39,11 @@
 #include <Library/TimerLib.h>
 
 
-#define SPI_BUS_FSL_DSPI1	 	1
-#define CONFIG_SPI_FLASH_BAR
+#define BUS_DSPI1	 	1
+#define CONFIG_DSPI_FLASH_BAR
 
 #define CONFIG_SF_DEFAULT_SPEED 	10000000
-#define CONFIG_SF_DEFAULT_MODE 	SPI_MODE_0
+#define CONFIG_SF_DEFAULT_MODE 	SPI_COMMON_MODE_0
 #define CONFIG_SF_DEFAULT_CS 	0
 #define CONFIG_SF_DEFAULT_BUS 	1
 
@@ -76,59 +79,59 @@
 #define DSPI_TFR_CS0		(0x00010000)
 
 /* Module Configuration */
-#define DSPI_MCR_MSTR		(0x80000000)
-#define DSPI_MCR_CSCK		(0x40000000)
-#define DSPI_MCR_DCONF(X)		(((X)&0x03)<<28)
-#define DSPI_MCR_FRZ 		(0x08000000)
-#define DSPI_MCR_MTFE 		(0x04000000)
-#define DSPI_MCR_PCSSE		(0x02000000)
-#define DSPI_MCR_ROOE 		(0x01000000)
-#define DSPI_MCR_CSIS7		(0x00800000)
-#define DSPI_MCR_CSIS6		(0x00400000)
-#define DSPI_MCR_CSIS5		(0x00200000)
-#define DSPI_MCR_CSIS4		(0x00100000)
-#define DSPI_MCR_CSIS3		(0x00080000)
-#define DSPI_MCR_CSIS2		(0x00040000)
-#define DSPI_MCR_CSIS1		(0x00020000)
-#define DSPI_MCR_CSIS0		(0x00010000)
-#define DSPI_MCR_MDIS 		(0x00004000)
-#define DSPI_MCR_DTXF 		(0x00002000)
-#define DSPI_MCR_DRXF 		(0x00001000)
-#define DSPI_MCR_CTXF 		(0x00000800)
-#define DSPI_MCR_CRXF 		(0x00000400)
-#define DSPI_MCR_SMPL_PT(X) 	(((X)&0x03)<<8)
-#define DSPI_MCR_HALT		(0x00000001)
+#define DSPI_MC_MSTR		(0x80000000)
+#define DSPI_MC_CSCK		(0x40000000)
+#define DSPI_MC_DCONF(X)		(((X)&0x03)<<28)
+#define DSPI_MC_FRZ 		(0x08000000)
+#define DSPI_MC_MTFE 		(0x04000000)
+#define DSPI_MC_PCSSE		(0x02000000)
+#define DSPI_MC_ROOE 		(0x01000000)
+#define DSPI_MC_CSIS7		(0x00800000)
+#define DSPI_MC_CSIS6		(0x00400000)
+#define DSPI_MC_CSIS5		(0x00200000)
+#define DSPI_MC_CSIS4		(0x00100000)
+#define DSPI_MC_CSIS3		(0x00080000)
+#define DSPI_MC_CSIS2		(0x00040000)
+#define DSPI_MC_CSIS1		(0x00020000)
+#define DSPI_MC_CSIS0		(0x00010000)
+#define DSPI_MC_MDIS 		(0x00004000)
+#define DSPI_MC_DTXF 		(0x00002000)
+#define DSPI_MC_DRXF 		(0x00001000)
+#define DSPI_MC_CTXF 		(0x00000800)
+#define DSPI_MC_CRXF 		(0x00000400)
+#define DSPI_MC_SMPL_PT(X) 	(((X)&0x03)<<8)
+#define DSPI_MC_HALT		(0x00000001)
 
 /* Clock And Transfer Attributes */
-#define DSPI_CTAR_DBR 		(0x80000000)
-#define DSPI_CTAR_TRSZ(X)		(((X)&0x0F)<<27)
-#define DSPI_CTAR_CPOL		(0x04000000)
-#define DSPI_CTAR_CPHA 		(0x02000000)
-#define DSPI_CTAR_LSBFE		(0x01000000)
-#define DSPI_CTAR_PCSSCK(X) 	(((X)&0x03)<<22)
-#define DSPI_CTAR_PCSSCK_7CLK 	(0x00A00000)
-#define DSPI_CTAR_PCSSCK_5CLK 	(0x00800000)
-#define DSPI_CTAR_PCSSCK_3CLK 	(0x00400000)
-#define DSPI_CTAR_PCSSCK_1CLK 	(0x00000000)
-#define DSPI_CTAR_PASC(X) 		(((X)&0x03)<<20)
-#define DSPI_CTAR_PASC_7CL		(0x00300000)
-#define DSPI_CTAR_PASC_5CL		(0x00200000)
-#define DSPI_CTAR_PASC_3CL		(0x00100000)
-#define DSPI_CTAR_PASC_1CL		(0x00000000)
-#define DSPI_CTAR_PDT(X) 		(((X)&0x03)<<18)
-#define DSPI_CTAR_PDT_7CLK		(0x000A0000)
-#define DSPI_CTAR_PDT_5CLK		(0x00080000)
-#define DSPI_CTAR_PDT_3CLK		(0x00040000)
-#define DSPI_CTAR_PDT_1CLK		(0x00000000)
-#define DSPI_CTAR_PREBR(X) 		(((X)&0x03)<<16)
-#define DSPI_CTAR_PREBR_7CLK		(0x00030000)
-#define DSPI_CTAR_PREBR_5CLK		(0x00020000)
-#define DSPI_CTAR_PREBR_3CLK		(0x00010000)
-#define DSPI_CTAR_PREBR_1CLK		(0x00000000)
-#define DSPI_CTAR_CSSCK(X)		(((X)&0x0F)<<12)
-#define DSPI_CTAR_ASC(X)		(((X)&0x0F)<<8)
-#define DSPI_CTAR_DT(X)		(((X)&0x0F)<<4)
-#define DSPI_CTAR_BR(X)		(((X)&0x0F))
+#define DSPI_CTR_DBR 		(0x80000000)
+#define DSPI_CTR_TRSZ(X)		(((X)&0x0F)<<27)
+#define DSPI_CTR_CPOL		(0x04000000)
+#define DSPI_CTR_CPHA 		(0x02000000)
+#define DSPI_CTR_LSBFE		(0x01000000)
+#define DSPI_CTR_PCSSCK(X) 	(((X)&0x03)<<22)
+#define DSPI_CTR_PCSSCK_7CLK 	(0x00A00000)
+#define DSPI_CTR_PCSSCK_5CLK 	(0x00800000)
+#define DSPI_CTR_PCSSCK_3CLK 	(0x00400000)
+#define DSPI_CTR_PCSSCK_1CLK 	(0x00000000)
+#define DSPI_CTR_PASC(X) 		(((X)&0x03)<<20)
+#define DSPI_CTR_PASC_7CL		(0x00300000)
+#define DSPI_CTR_PASC_5CL		(0x00200000)
+#define DSPI_CTR_PASC_3CL		(0x00100000)
+#define DSPI_CTR_PASC_1CL		(0x00000000)
+#define DSPI_CTR_PDT(X) 		(((X)&0x03)<<18)
+#define DSPI_CTR_PDT_7CLK		(0x000A0000)
+#define DSPI_CTR_PDT_5CLK		(0x00080000)
+#define DSPI_CTR_PDT_3CLK		(0x00040000)
+#define DSPI_CTR_PDT_1CLK		(0x00000000)
+#define DSPI_CTR_PREBR(X) 		(((X)&0x03)<<16)
+#define DSPI_CTR_PREBR_7CLK		(0x00030000)
+#define DSPI_CTR_PREBR_5CLK		(0x00020000)
+#define DSPI_CTR_PREBR_3CLK		(0x00010000)
+#define DSPI_CTR_PREBR_1CLK		(0x00000000)
+#define DSPI_CTR_CSSCK(X)		(((X)&0x0F)<<12)
+#define DSPI_CTR_ASC(X)		(((X)&0x0F)<<8)
+#define DSPI_CTR_DT(X)		(((X)&0x0F)<<4)
+#define DSPI_CTR_BR(X)		(((X)&0x0F))
 
 /* Write Commands */
 #define CMD_WRITE_STATUS		0x01
@@ -177,17 +180,17 @@ enum {
 };
 
 /* Bank addr access commands */
-#ifdef CONFIG_SPI_FLASH_BAR
+#ifdef CONFIG_DSPI_FLASH_BAR
 # define CMD_BANKADDR_BRWR         0x17
 # define CMD_BANKADDR_BRRD         0x16
 # define CMD_EXTNADDR_WREAR        0xC5
 # define CMD_EXTNADDR_RDEAR        0xC8
 #endif
 
-#define CONFIG_SYS_DSPI_CTAR0 	(DSPI_CTAR_TRSZ(7) | DSPI_CTAR_PCSSCK_1CLK |\
-					DSPI_CTAR_PASC(0) | DSPI_CTAR_PDT(0) | \
-					DSPI_CTAR_CSSCK(0) | DSPI_CTAR_ASC(0) | \
-					DSPI_CTAR_DT(0))
+#define CONFIG_SYS_DSPI_CTR0 	(DSPI_CTR_TRSZ(7) | DSPI_CTR_PCSSCK_1CLK |\
+					DSPI_CTR_PASC(0) | DSPI_CTR_PDT(0) | \
+					DSPI_CTR_CSSCK(0) | DSPI_CTR_ASC(0) | \
+					DSPI_CTR_DT(0))
 
 /* SST Specific */
 # define SST_WP			0x01 /* Supports AAI Word Program */

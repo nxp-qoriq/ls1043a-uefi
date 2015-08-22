@@ -2,6 +2,9 @@
 
   Driver for installing BlockIo protocol over DSPI
 
+  Based on i2c implementation available in MdeModulePkg/Bus/I2c/I2cDxe/I2cBus.c
+
+  Copyright (c) 2013 - 2014, Intel Corporation. All rights reserved.
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
   This program and the accompanying materials
