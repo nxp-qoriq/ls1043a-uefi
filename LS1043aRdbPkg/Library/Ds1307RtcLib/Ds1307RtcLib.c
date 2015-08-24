@@ -1,7 +1,7 @@
 /** @Ds1307RtcLib.c
   Implement EFI RealTimeClock with runtime services via RTC Lib for DS1307 RTC.
 
-	Based on RTC implementation available in
+  Based on RTC implementation available in
   EmbeddedPkg/Library/TemplateRealTimeClockLib/RealTimeClockLib.c
 
   Copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
