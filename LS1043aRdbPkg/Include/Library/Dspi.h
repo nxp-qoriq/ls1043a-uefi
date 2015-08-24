@@ -59,10 +59,10 @@
 #define STATUS_ERASE			(1 << 5)
 
 /* ATMEL Dataflash Commands*/
-#define CMD_ATMEL_PAGE_PROGRAM	0x82
-#define CMD_ATMEL_READ_STATUS	0xd7
-#define CMD_ATMEL_FLAG_STATUS	0xd7
-#define CMD_ATMEL_ERASE_32K		0x7c
+#define DSPI_CMD_ATMEL_PAGE_PROGRAM	0x82
+#define DSPI_CMD_ATMEL_READ_STATUS	0xd7
+#define DSPI_CMD_ATMEL_FLAG_STATUS	0xd7
+#define DSPI_CMD_ATMEL_ERASE_32K		0x7c
 
 /* Transfer Control - 32-Bit Access */
 #define DSPI_TFR_CONT 	(0x80000000)
@@ -134,33 +134,33 @@
 #define DSPI_CTR_BR(X)		(((X)&0x0F))
 
 /* Write Commands */
-#define CMD_WRITE_STATUS		0x01
-#define CMD_BYTE_PROGRAM		0x02
-#define CMD_AAI_PROGRAM		0xad
-#define CMD_WRITE_DISABLE		0x04
-#define CMD_READ_STATUS		0x05
-#define CMD_QUAD_PAGE_PROGRAM	0x32
-#define CMD_READ_STATUS1		0x35
-#define CMD_WRITE_ENABLE		0x06
-#define CMD_READ_CONFIG		0x35
-#define CMD_FLAG_STATUS		0x70
-#define CMD_CLEAR_FLAG_STATUS	0x50
+#define DSPI_CMD_WRITE_STATUS		0x01
+#define DSPI_CMD_BYTE_PROGRAM		0x02
+#define DSPI_CMD_AAI_PROGRAM		0xad
+#define DSPI_CMD_WRITE_DISABLE		0x04
+#define DSPI_CMD_READ_STATUS		0x05
+#define DSPI_CMD_QUAD_PAGE_PROGRAM	0x32
+#define DSPI_CMD_READ_STATUS1		0x35
+#define DSPI_CMD_WRITE_ENABLE		0x06
+#define DSPI_CMD_READ_CONFIG		0x35
+#define DSPI_CMD_FLAG_STATUS		0x70
+#define DSPI_CMD_CLEAR_FLAG_STATUS	0x50
 
 /* Read Commands */
-#define CMD_READ_ARRAY_SLOW		0x03
-#define CMD_READ_ARRAY_FAST		0x0b
-#define CMD_READ_DUAL_OUTPUT_FAST	0x3b
-#define CMD_READ_DUAL_IO_FAST	0xbb
-#define CMD_READ_QUAD_OUTPUT_FAST	0x6b
-#define CMD_READ_QUAD_IO_FAST	0xeb
-#define CMD_READ_JEDEC_ID		0x9f
+#define DSPI_CMD_READ_ARRAY_SLOW		0x03
+#define DSPI_CMD_READ_ARRAY_FAST		0x0b
+#define DSPI_CMD_READ_DUAL_OUTPUT_FAST	0x3b
+#define DSPI_CMD_READ_DUAL_IO_FAST	0xbb
+#define DSPI_CMD_READ_QUAD_OUTPUT_FAST	0x6b
+#define DSPI_CMD_READ_QUAD_IO_FAST	0xeb
+#define DSPI_CMD_READ_JEDEC_ID		0x9f
 
 /* Erase Commands */
-#define CMD_ERASE_STATUS		0x50
-#define CMD_ERASE_4K			0x20
-#define CMD_ERASE_32K		0x52
-#define CMD_ERASE_CHIP		0xc7
-#define CMD_ERASE_64K		0xd8
+#define DSPI_CMD_ERASE_STATUS		0x50
+#define DSPI_CMD_ERASE_4K			0x20
+#define DSPI_CMD_ERASE_32K		0x52
+#define DSPI_CMD_ERASE_CHIP		0xc7
+#define DSPI_CMD_ERASE_64K		0xd8
 
 #define DSPI_PUSHR_CTAS_MASK     (UINT32)(0x70000000)
 #define DSPI_PUSHR_PCS_MASK      (UINT32)(0x003f0000)
@@ -181,10 +181,10 @@ enum {
 
 /* Bank addr access commands */
 #ifdef CONFIG_DSPI_FLASH_BAR
-# define CMD_BANKADDR_BRWR         0x17
-# define CMD_BANKADDR_BRRD         0x16
-# define CMD_EXTNADDR_WREAR        0xC5
-# define CMD_EXTNADDR_RDEAR        0xC8
+# define DSPI_CMD_BANKADDR_BRWR         0x17
+# define DSPI_CMD_BANKADDR_BRRD         0x16
+# define DSPI_CMD_EXTNADDR_WREAR        0xC5
+# define DSPI_CMD_EXTNADDR_RDEAR        0xC8
 #endif
 
 #define CONFIG_SYS_DSPI_CTR0 	(DSPI_CTR_TRSZ(7) | DSPI_CTR_PCSSCK_1CLK |\
@@ -194,8 +194,8 @@ enum {
 
 /* SST Specific */
 # define SST_WP			0x01 /* Supports AAI Word Program */
-# define CMD_SST_BP			0x02 /* Byte Program */
-# define CMD_SST_AAI_WP		0xAD /* Auto Address Incr Word Program */
+# define DSPI_CMD_SST_BP			0x02 /* Byte Program */
+# define DSPI_CMD_SST_AAI_WP		0xAD /* Auto Address Incr Word Program */
 
 /* LAST BLOCK */
 #define BLOCK_COUNT             	1024	/* For SST25WF040 
