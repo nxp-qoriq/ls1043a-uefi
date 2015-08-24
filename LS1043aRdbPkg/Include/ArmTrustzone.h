@@ -1,7 +1,10 @@
 /** @file
 *
+*  Borrowed from ArmPlatformPkg/Include/Drivers/ArmTrustzone.h
 *  Copyright (c) 2011-2012, ARM Limited. All rights reserved.
-*
+
+*  TODO: Can this be merged back into ArmPlatformPkg/Include/Drivers/ArmTrustzone.h
+*  
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
 *  which accompanies this distribution.  The full text of the license may be found at
