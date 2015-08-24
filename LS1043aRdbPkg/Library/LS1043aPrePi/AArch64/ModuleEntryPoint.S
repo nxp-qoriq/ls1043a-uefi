@@ -1,4 +1,6 @@
 //
+//  Borrowed from ArmPlatformPkg/PrePi/AArch64/ModuleEntryPoint.S
+//
 //  Copyright (c) 2011-2013, ARM Limited. All rights reserved.
 //
 //  This program and the accompanying materials

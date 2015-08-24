@@ -1,5 +1,7 @@
 /** @file
 *
+*  Borrowed from ArmPlatformPkg/Library/PrePi.h
+*  
 *  Copyright (c) 2011-2012, ARM Limited. All rights reserved.
 *
 *  This program and the accompanying materials
