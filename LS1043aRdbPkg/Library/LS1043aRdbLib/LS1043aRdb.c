@@ -3,6 +3,9 @@
 *  RDB specific Library for LS1043A SoC, containing functions to initialize
 *  RDB boards.
 *
+*  Based on BeagleBoardPkg/Library/BeagleBoardLib/BeagleBoard.c 
+*
+*  Copyright (c) 2011-2012, ARM Limited. All rights reserved.
 *  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 *
 *  This program and the accompanying materials
