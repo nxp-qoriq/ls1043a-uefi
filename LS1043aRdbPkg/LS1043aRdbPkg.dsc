@@ -261,7 +261,7 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdConOutGopSupport|FALSE
 
 [PcdsFixedAtBuild.common]
-  gArmPlatformTokenSpaceGuid.PcdFirmwareVendor|"LS1043a Simulator"
+  gArmPlatformTokenSpaceGuid.PcdFirmwareVendor|"LS1043a RDB board"
   gEmbeddedTokenSpaceGuid.PcdEmbeddedPrompt|"LS1043a"
 
   gArmPlatformTokenSpaceGuid.PcdCoreCount|1 # Only one core
