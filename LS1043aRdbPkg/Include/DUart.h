@@ -1,5 +1,5 @@
 /** DUart.h
-*  Header defining the DDUART constants (Base addresses, sizes, flags)
+*  Header defining the DUART constants (Base addresses, sizes, flags)
 *
 *  Based on Serial I/O Port library headers available in PL011Uart.h
 *
