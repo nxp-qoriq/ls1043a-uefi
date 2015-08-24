@@ -1,7 +1,9 @@
 /** LS1043aRdb.c
 *
-*  Copyright (c) 2013, Freescale Ltd. All rights reserved.
-*  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
+*  RDB specific Library for LS1043A SoC, containing functions to initialize
+*  RDB boards.
+*
+*  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 *
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License

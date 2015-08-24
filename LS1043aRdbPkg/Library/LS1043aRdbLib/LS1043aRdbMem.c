@@ -1,8 +1,12 @@
 /** LS1043aRdbMem.c
 *
-*  Copyright (c) 2013, Freescale Ltd. All rights reserved.
-*  Author: Bhupesh Sharma <bhupesh.sharma@freescale.com>
-
+*  RDB memory specific Library for LS1043A SoC.
+*
+*  Based on BeagleBoardPkg/Library/BeagleBoardLib/BeagleBoardMem.c 
+*
+*  Copyright (c) 2011, ARM Limited. All rights reserved.
+*  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+*
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
 *  which accompanies this distribution. The full text of the license may be found at
