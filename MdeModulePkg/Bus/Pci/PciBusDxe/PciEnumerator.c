@@ -348,6 +348,7 @@ ProcessOptionRom (
       //
       // Load and process the option rom
       //
+      DEBUG ((EFI_D_INFO, "PciBus: LOAD OP ROM $$$$$$$$$$$$$: %llx \n", RomBase));
       LoadOpRomImage (Temp, RomBase);
     }
 
@@ -1369,10 +1370,12 @@ GetResourceBase (
         //
         // Check to see the granularity
         //
+	    DEBUG ((EFI_D_INFO, "####### In case 0 \n"));
         if (Ptr->AddrSpaceGranularity == 32) {
           if ((Ptr->SpecificFlag & 0x06) != 0) {
             *PMem32Base = Ptr->AddrRangeMin;
           } else {
+	    DEBUG ((EFI_D_INFO, "####### Mem32Base \n"));
             *Mem32Base = Ptr->AddrRangeMin;
           }
         }
@@ -1552,7 +1555,8 @@ PciBridgeResourceAllocator (
     Mem64Bridge,
     PMem64Bridge
     );
-
+DEBUG((EFI_D_INFO, "\n\n ######### \n\n"));
+DEBUG((EFI_D_INFO, "\nPciHostBridgeResourceAllocator: creating resources ######### \n"));
   Status = GetResourceBaseFromBridge (
              Bridge,
              &IoBase,

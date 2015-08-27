@@ -37,6 +37,13 @@
   HiiLib|MdeModulePkg/Library/UefiHiiLib/UefiHiiLib.inf
   UefiHiiServicesLib|MdeModulePkg/Library/UefiHiiServicesLib/UefiHiiServicesLib.inf
 
+# Networking Requirements
+  NetLib|MdeModulePkg/Library/DxeNetLib/DxeNetLib.inf
+  DpcLib|MdeModulePkg/Library/DxeDpcLib/DxeDpcLib.inf
+  UdpIoLib|MdeModulePkg/Library/DxeUdpIoLib/DxeUdpIoLib.inf
+  IpIoLib|MdeModulePkg/Library/DxeIpIoLib/DxeIpIoLib.inf
+
+
   # ARM PL310 L2 Cache Driver
   L2X0CacheLib|ArmPlatformPkg/Drivers/PL310L2Cache/PL310L2CacheSec.inf
   # ARM PL301 Axi Driver
@@ -72,6 +79,8 @@
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
 
   EfiFileLib|EmbeddedPkg/Library/EfiFileLib/EfiFileLib.inf
+ 
+  PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
 
   PeCoffGetEntryPointLib|MdePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
 
@@ -106,6 +115,7 @@
   NandFlashLib|LS1043aRdbPkg/Library/IfcNandFlashLib/IfcNandFlashLib.inf
   FileSystemLib|LS1043aRdbPkg/Library/LS1043aFileSystemLib/LS1043aFileSystemLib.inf
   DspiFlashLib|LS1043aRdbPkg/Library/DspiFlashLib/DspiFlashLib.inf
+  PciHostBridgeLib|LS1043aRdbPkg/Library/PciHostBridgeLib/PciHostBridgeLib.inf
   SdxcLib|LS1043aRdbPkg/Library/SdxcLib/SdxcLib.inf
 
 #
@@ -336,6 +346,23 @@
   gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiLoaderCode|10
   gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiLoaderData|0
 
+ # PCI PCDs
+ #
+  gArmPlatformTokenSpaceGuid.PcdKludgeMapPciMmioAsCached|FALSE
+  gArmPlatformTokenSpaceGuid.PcdPciBusMin|0
+  gArmPlatformTokenSpaceGuid.PcdPciBusMax|255
+  gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x5000010000
+  gArmPlatformTokenSpaceGuid.PcdPciIoSize|0x00010000      # 64k
+  gArmPlatformTokenSpaceGuid.PcdPciIoTranslation|0x00010000
+  gArmPlatformTokenSpaceGuid.PcdPciMmio32Base|0x0
+  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x0      # 128M
+  gArmPlatformTokenSpaceGuid.PcdPciMmio64Base|0x5040000000
+  gArmPlatformTokenSpaceGuid.PcdPciMmio64Size|0x40000000
+  gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x5000000000
+  gEfiMdePkgTokenSpaceGuid.PcdPci2ExpressBaseAddress|0x4800000000
+  gEfiMdePkgTokenSpaceGuid.PcdPci3ExpressBaseAddress|0x5000000000
+
+
   #
   # ARM Primecells
   #
@@ -465,6 +492,8 @@
   MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
   EmbeddedPkg/SerialDxe/SerialDxe.inf
 
+  MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
+
   EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
   EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
   EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
@@ -514,6 +543,11 @@
   #
   LS1043aRdbPkg/Drivers/I2c/I2cDxe.inf
 
+  # PCI Dxe Driver
+  #
+  MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
+  LS1043aRdbPkg/Drivers/PciHostBridgeDxe/PciHostBridgeDxe.inf
+
   #
   # Bds
   #
@@ -526,6 +560,8 @@
   #
   MdeModulePkg/Application/HelloWorld/HelloWorld.inf
 
+  #ShellBinPkg/UefiShell/UefiShell.inf
+
   ShellPkg/Application/Shell/Shell.inf {
     <LibraryClasses>
       NULL|ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
@@ -535,12 +571,12 @@
       NULL|ShellPkg/Library/UefiShellDriver1CommandsLib/UefiShellDriver1CommandsLib.inf
       NULL|ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
       NULL|ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
-      #NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
 !ifdef $(INCLUDE_DP)
       NULL|ShellPkg/Library/UefiDpLib/UefiDpLib.inf
 !endif #$(INCLUDE_DP)
 !endif #$(NO_SHELL_PROFILES)
-	}
+	} 
  
 
 
