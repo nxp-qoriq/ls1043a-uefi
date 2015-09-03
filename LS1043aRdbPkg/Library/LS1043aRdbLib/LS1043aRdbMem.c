@@ -131,19 +131,19 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_PCI_EXP1_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_PCI_EXP1_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_PCI_EXP1_BASE_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
 
   // PCIe2
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_PCI_EXP2_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_PCI_EXP2_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_PCI_EXP2_BASE_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
 
   // PCIe3
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_PCI_EXP3_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_PCI_EXP3_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_PCI_EXP3_BASE_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
 
   // DRAM3
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_DRAM3_BASE_ADDR;
