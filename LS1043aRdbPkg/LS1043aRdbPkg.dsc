@@ -549,6 +549,38 @@
   LS1043aRdbPkg/Drivers/PciHostBridgeDxe/PciHostBridgeDxe.inf
 
   #
+  # Networking stack
+  #
+  MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
+  MdeModulePkg/Universal/Network/DpcDxe/DpcDxe.inf
+  MdeModulePkg/Universal/Network/MnpDxe/MnpDxe.inf
+  MdeModulePkg/Universal/Network/VlanConfigDxe/VlanConfigDxe.inf
+  MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
+  MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
+  MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
+  MdeModulePkg/Universal/Network/Ip4ConfigDxe/Ip4ConfigDxe.inf
+  MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
+  MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
+#  MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
+  MdeModulePkg/Universal/Network/UefiPxeBcDxe/UefiPxeBcDxe.inf
+  MdeModulePkg/Universal/Network/IScsiDxe/IScsiDxe.inf
+  MdeModulePkg/Bus/Pci/UhciDxe/UhciDxe.inf
+!if $(NETWORK_IP6_ENABLE) == TRUE
+  NetworkPkg/Ip6Dxe/Ip6Dxe.inf
+  NetworkPkg/TcpDxe/TcpDxe.inf
+  NetworkPkg/Udp6Dxe/Udp6Dxe.inf
+  NetworkPkg/Dhcp6Dxe/Dhcp6Dxe.inf
+  NetworkPkg/Mtftp6Dxe/Mtftp6Dxe.inf
+  NetworkPkg/UefiPxeBcDxe/UefiPxeBcDxe.inf
+!else
+  MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
+!endif
+
+  #
+  # Intel E1000 driver
+  LS1043aRdbPkg/Drivers/LanIntelE1000Dxe/LanIntelE1000Dxe.inf
+
+  #
   # Bds
   #
   MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
