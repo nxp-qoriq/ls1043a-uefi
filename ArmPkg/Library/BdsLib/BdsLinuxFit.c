@@ -1,7 +1,6 @@
 #include <libfdt.h>
 
 #include "BdsInternal.h"
-#include "BdsLinuxLoader.h"
 #include <Library/BdsLinuxFit.h>
 
 EFI_STATUS
@@ -37,7 +36,7 @@ FitGetConfNode (
 {
 	INT32 noffset, confs_noffset;
   INT32 len;
-	CHAR8*	ConfigName;
+	char*	ConfigName;
 
 	confs_noffset = fdt_path_offset((VOID*)FitImage, FIT_CONFS_PATH);
   if (confs_noffset < 0) {
@@ -46,7 +45,7 @@ FitGetConfNode (
 		return EFI_UNSUPPORTED;
   }
 
-	ConfigName = (CHAR8*)ConfigPtr;
+	ConfigName = (char*)ConfigPtr;
 
 	if(ConfigName && *ConfigName == '\0')
 		ConfigName = NULL;

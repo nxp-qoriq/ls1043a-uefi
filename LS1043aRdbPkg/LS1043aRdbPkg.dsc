@@ -50,7 +50,7 @@
   PL301AxiLib|ArmPlatformPkg/Drivers/PL301Axi/PL301Axi.inf
   # ARM GIC400 General Interrupt Driver
   ArmGicLib|ArmPkg/Drivers/ArmGic/ArmGicLib.inf
-
+  ArmGicArchLib|ArmPkg/Library/ArmGicArchLib/ArmGicArchLib.inf
 
 !if $(TARGET) == RELEASE
   DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
@@ -138,14 +138,14 @@
 
   ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
   ShellCommandLib|ShellPkg/Library/UefiShellCommandLib/UefiShellCommandLib.inf
-  FileHandleLib|ShellPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+  FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
   ShellCEntryLib|ShellPkg/Library/UefiShellCEntryLib/UefiShellCEntryLib.inf
-  SortLib|ShellPkg/Library/UefiSortLib/UefiSortLib.inf
+  SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
+
+  NetLib|MdeModulePkg/Library/DxeNetLib/DxeNetLib.inf
   HandleParsingLib|ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
 
-  PathLib|ShellPkg/Library/BasePathLib/BasePathLib.inf
   BcfgCommandLib|ShellPkg/Library/UefiShellBcfgCommandLib/UefiShellBcfgCommandLib.inf
-
 
 [LibraryClasses.common.SEC]
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64Lib.inf
@@ -428,20 +428,24 @@
   #gEmbeddedTokenSpaceGuid.PcdEmbeddedPerformanceCounterPeriodInNanoseconds|77
   #gEmbeddedTokenSpaceGuid.PcdEmbeddedPerformanceCounterFrequencyInHz|13000000
 
+  # We want to use the Shell Libraries but don't want it to initialise
+  # automatically. We initialise the libraries when the command is called by the
+  # Shell.
+  gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
+
   #
   # ARM Pcds
   #
   gArmTokenSpaceGuid.PcdArmUncachedMemoryMask|0x0000000040000000
 
   gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Linux FIT from NOR"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x63000000)"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x62000000)/Image"
+  gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x63000000,0x638FFFFF)/fsl-ls1043a-uefi-rdb.dtb"
+
   gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|"console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,0x21c0500,115200"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootType|3 # Linux Kernel with FDT support
-  gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|10 #0 means no timeout
-  gArmPlatformTokenSpaceGuid.PcdDefaultFitConfiguration|"config@1"
 
   # PPA
-  gArmPlatformTokenSpaceGuid.PcdPpaFitConfiguration|"firmware@1"
+  gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration|"config@1"
 
   # Use the serial console for both ConIn & ConOut
   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)/VenPcAnsi();"
@@ -485,6 +489,9 @@
   MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
   MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
   EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
+
+  # FDT installation
+  EmbeddedPkg/Drivers/FdtPlatformDxe/FdtPlatformDxe.inf
 
   MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
 #  MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
@@ -558,7 +565,6 @@
   MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
   MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
   MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
-  MdeModulePkg/Universal/Network/Ip4ConfigDxe/Ip4ConfigDxe.inf
   MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
   MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
 #  MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
@@ -586,30 +592,24 @@
   MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
   MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
   ArmPlatformPkg/Bds/Bds.inf
+  # Legacy Linux Loader
+  ArmPkg/Application/LinuxLoader/LinuxLoader.inf
 
   #
   # Example Application
   #
   MdeModulePkg/Application/HelloWorld/HelloWorld.inf
 
-  #ShellBinPkg/UefiShell/UefiShell.inf
+  ShellPkg/Library/UefiShellLib/UefiShellLib.inf
+  ShellPkg/Library/UefiShellCommandLib/UefiShellCommandLib.inf
+  ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
+  ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
 
-  ShellPkg/Application/Shell/Shell.inf {
+  ShellPkg/Library/UefiDpLib/UefiDpLib.inf {
     <LibraryClasses>
-      NULL|ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
-      NULL|ShellPkg/Library/UefiShellLevel1CommandsLib/UefiShellLevel1CommandsLib.inf
-      NULL|ShellPkg/Library/UefiShellLevel3CommandsLib/UefiShellLevel3CommandsLib.inf
-!ifndef $(NO_SHELL_PROFILES)
-      NULL|ShellPkg/Library/UefiShellDriver1CommandsLib/UefiShellDriver1CommandsLib.inf
-      NULL|ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
-      NULL|ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
-      NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
-!ifdef $(INCLUDE_DP)
-      NULL|ShellPkg/Library/UefiDpLib/UefiDpLib.inf
-!endif #$(INCLUDE_DP)
-!endif #$(NO_SHELL_PROFILES)
-	} 
- 
+      TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
+      PerformanceLib|MdePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull.inf
+      DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
+  }
 
-
-##
+ ##

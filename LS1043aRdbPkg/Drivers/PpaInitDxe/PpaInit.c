@@ -27,8 +27,7 @@
 #include <Library/IfcNand.h>
 
 extern EFI_STATUS PpaInit(UINT64);
-extern VOID El2SwitchSetup(VOID);
-extern VOID InitMmu(VOID);
+extern VOID InitMmu(ARM_MEMORY_REGION_DESCRIPTOR*);
 
 
 EFI_STATUS GetPpaFromNand(
@@ -97,7 +96,7 @@ GetPpaImagefromFlash (
 		goto EXIT_FREE_FIT;
 	}
 
-	Status = FitGetConfNode(FitImage, (void *)(PcdGetPtr(PcdDefaultFitConfiguration/*PcdPpaFitConfiguration*/)), &CfgNodeOffset);
+	Status = FitGetConfNode(FitImage, (void *)(PcdGetPtr(PcdPpaFitConfiguration/*PcdPpaFitConfiguration*/)), &CfgNodeOffset);
 	if (EFI_ERROR (Status)) {
 		DEBUG((EFI_D_ERROR, "Did not find configuration node in FIT header (0x%x).\n", Status));
 		goto EXIT_FREE_FIT;
@@ -134,10 +133,12 @@ PpaInitialize (
 {
 	EFI_STATUS Status;
 	UINTN PpaRamAddr;
+  ARM_MEMORY_REGION_DESCRIPTOR *MemoryTable;
 
 	PpaRamAddr = GetPpaImagefromFlash();
 
 	Status = PpaInit(PpaRamAddr);
-	InitMmu();
+  ArmPlatformGetVirtualMemoryMap (&MemoryTable);
+	InitMmu(MemoryTable);
 	return Status;
 }

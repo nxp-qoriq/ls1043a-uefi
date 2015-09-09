@@ -50,6 +50,6 @@ VOID CEntryPoint(
 
 	CopyImage((VOID*)UefiMemoryBase, (VOID*)UefiNorBase, UefiMemorySize);
 	
-	PrePiStart = (VOID (*)())((UINT64)PcdGet32(PcdFvBaseAddress));
+	PrePiStart = (VOID (*)())((UINT64)PcdGet64(PcdFvBaseAddress));
   PrePiStart();
 }

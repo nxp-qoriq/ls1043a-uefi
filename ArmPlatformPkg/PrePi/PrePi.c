@@ -209,10 +209,7 @@ CEntryPoint (
 {
   UINT64   StartTimeStamp;
 
-// FIXME : Correct this handling later
-#if 0
   ASSERT(!ArmIsMpCore() || (PcdGet32 (PcdCoreCount) > 1));
-#endif
 
   // Initialize the platform specific controllers
   ArmPlatformInitialize (MpId);

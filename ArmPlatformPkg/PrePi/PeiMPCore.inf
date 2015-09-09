@@ -86,7 +86,6 @@
   gArmTokenSpaceGuid.PcdFvBaseAddress
   gArmTokenSpaceGuid.PcdFvSize
 
-  gArmTokenSpaceGuid.PcdArmPrimaryCore
   gArmPlatformTokenSpaceGuid.PcdCPUCorePrimaryStackSize
   gArmPlatformTokenSpaceGuid.PcdCPUCoreSecondaryStackSize
 

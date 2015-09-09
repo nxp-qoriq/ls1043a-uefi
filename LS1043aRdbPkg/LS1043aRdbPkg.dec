@@ -131,13 +131,13 @@
   gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x0|UINT32|0x00000030
   gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x0|UINT32|0x00000031
   
-  gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE|BOOLEAN|0x00000039
+  #gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE|BOOLEAN|0x00000039
   #
   # PPA specific PCDs
   #
   gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x0|UINT64|0x00000032
   gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr|0x0|UINT64|0x00000033 # calculated from top of DDR
-  gArmPlatformTokenSpaceGuid.PcdPpaFitConfiguration|""|VOID*|0x00000034
+  gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration|""|VOID*|0x00000034
 
   gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x0|UINT64|0x00000035
   gLS1043aRdbTokenSpaceGuid.PcdFvNorBaseAddress|0x0|UINT64|0x00000036
