@@ -25,7 +25,6 @@ BuildMemoryTypeInformationHob (
   VOID
   );
 
-STATIC
 VOID
 InitMmu (
   IN ARM_MEMORY_REGION_DESCRIPTOR  *MemoryTable
