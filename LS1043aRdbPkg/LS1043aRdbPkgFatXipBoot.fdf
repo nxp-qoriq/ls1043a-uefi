@@ -28,10 +28,10 @@
 
 [FD.LS1043aRdb_EFI]
 BaseAddress   = 0xE0000000|gArmTokenSpaceGuid.PcdFdBaseAddress  #The base address of the FLASH Device.
-Size          = 0x000B8000|gArmTokenSpaceGuid.PcdFdSize         #The size in bytes of the FLASH Device
+Size          = 0x000D0000|gArmTokenSpaceGuid.PcdFdSize         #The size in bytes of the FLASH Device
 ErasePolarity = 1
 BlockSize     = 0x1
-NumBlocks     = 0xB8000
+NumBlocks     = 0xD0000
 
 ################################################################################
 #
@@ -52,7 +52,7 @@ NumBlocks     = 0xB8000
 gLS1043aRdbTokenSpaceGuid.PcdFvNorBaseAddress|gLS1043aRdbTokenSpaceGuid.PcdFvNorSize
 FV = FVNOR_COMPACT
 
-0x00008000|0x000B0000
+0x00008000|0x000C8000
 gArmTokenSpaceGuid.PcdFvBaseAddress|gArmTokenSpaceGuid.PcdFvSize
 FV = FVMAIN_COMPACT
 
@@ -123,7 +123,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # Semi-hosting filesystem
   #
-  # INF ArmPkg/Filesystem/SemihostFs/SemihostFs.inf
+  #INF ArmPkg/Filesystem/SemihostFs/SemihostFs.inf
 !endif
 
   #
@@ -136,10 +136,48 @@ READ_LOCK_STATUS   = TRUE
   
   #
   # Dspi Flash
-  # INF LS1043aRdbPkg/Drivers/DspiDxe/DspiDxe.inf
+  INF LS1043aRdbPkg/Drivers/DspiDxe/DspiDxe.inf
   
   #
   # FileSystem
+
+
+  # PCI support
+  #
+  INF MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
+  INF LS1043aRdbPkg/Drivers/PciHostBridgeDxe/PciHostBridgeDxe.inf
+
+  #
+  # Intel E1000 driver
+  #
+  INF LS1043aRdbPkg/Drivers/LanIntelE1000Dxe/LanIntelE1000Dxe.inf
+
+  #
+  # Network modules
+  #
+  INF  MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
+  INF  MdeModulePkg/Universal/Network/DpcDxe/DpcDxe.inf
+  INF  MdeModulePkg/Universal/Network/MnpDxe/MnpDxe.inf
+  INF  MdeModulePkg/Universal/Network/VlanConfigDxe/VlanConfigDxe.inf
+  INF  MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
+  INF  MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
+  INF  MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
+  INF  MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
+  INF  MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
+#  INF  MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
+  INF  MdeModulePkg/Universal/Network/UefiPxeBcDxe/UefiPxeBcDxe.inf
+  INF  MdeModulePkg/Universal/Network/IScsiDxe/IScsiDxe.inf
+  INF  MdeModulePkg/Bus/Pci/UhciDxe/UhciDxe.inf
+!if $(NETWORK_IP6_ENABLE) == TRUE
+  INF  NetworkPkg/Ip6Dxe/Ip6Dxe.inf
+  INF  NetworkPkg/TcpDxe/TcpDxe.inf
+  INF  NetworkPkg/Udp6Dxe/Udp6Dxe.inf
+  INF  NetworkPkg/Dhcp6Dxe/Dhcp6Dxe.inf
+  INF  NetworkPkg/Mtftp6Dxe/Mtftp6Dxe.inf
+  INF  NetworkPkg/UefiPxeBcDxe/UefiPxeBcDxe.inf
+!else
+  INF  MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
+!endif
 
   #
   # MMC/SD
@@ -168,8 +206,9 @@ READ_LOCK_STATUS   = TRUE
   #
   # UEFI application (Shell Embedded Boot Loader)
   #
-  INF ShellPkg/Application/Shell/Shell.inf
-  #INF ShellBinPkg/UefiShell/UefiShell.inf
+  #INF ShellPkg/Application/Shell/Shell.inf
+  INF ShellBinPkg/UefiShell/UefiShell.inf
+  INF ArmPkg/Application/LinuxLoader/LinuxLoader.inf
 
   #
   # Bds

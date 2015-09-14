@@ -136,7 +136,7 @@ READ_LOCK_STATUS   = TRUE
   
   #
   # Dspi Flash
-   INF LS1043aRdbPkg/Drivers/DspiDxe/DspiDxe.inf
+  INF LS1043aRdbPkg/Drivers/DspiDxe/DspiDxe.inf
   
   #
   # FileSystem
@@ -178,7 +178,6 @@ READ_LOCK_STATUS   = TRUE
 !else
   INF  MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
 !endif
-
 
   #
   # MMC/SD

@@ -438,7 +438,7 @@
   #
   gArmTokenSpaceGuid.PcdArmUncachedMemoryMask|0x0000000040000000
 
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Linux FIT from NOR"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"EFI Linux from NOR flash"
   gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x62000000)/Image"
   gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x63000000,0x638FFFFF)/fsl-ls1043a-uefi-rdb.dtb"
 
@@ -612,4 +612,4 @@
       DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
   }
 
- ##
+  ##
