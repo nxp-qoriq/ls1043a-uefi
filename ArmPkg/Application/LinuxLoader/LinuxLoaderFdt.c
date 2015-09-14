@@ -16,8 +16,6 @@
 #include <Library/ArmLib.h>
 #include <Library/HobLib.h>
 
-#include <LS1043aSocLib.h>
-
 #include <Guid/ArmMpCoreInfo.h>
 
 #include "LinuxLoader.h"
@@ -312,9 +310,6 @@ PrepareFdt (
       MemoryMapPtr = (EFI_MEMORY_DESCRIPTOR*)((UINTN)MemoryMapPtr + DescriptorSize);
     }
   }
-
-  /* fdt fixup for LS1043A */
-  FdtCpuSetup((VOID *)fdt);
 
   //
   // Setup Arm Mpcore Info if it is a multi-core or multi-cluster platforms.

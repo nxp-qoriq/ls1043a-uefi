@@ -17,6 +17,7 @@
 #include <Library/PcdLib.h>
 #include <Library/DevicePathLib.h>
 #include <Library/BdsLib.h>
+#include <LS1043aSocLib.h>
 
 #include <Protocol/DevicePath.h>
 
@@ -104,6 +105,9 @@ InstallFdt (
     Status = EFI_LOAD_ERROR;
     goto Error;
   }
+  
+  /* fdt fixup for LS1043A */
+  FdtCpuSetup((VOID *)FdtBlobBase);
 
   //
   // Store the FDT as Runtime Service Data to prevent the Kernel from
