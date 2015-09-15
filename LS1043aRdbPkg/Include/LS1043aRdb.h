@@ -127,6 +127,10 @@
 #define CONFIG_SYS_FSL_SDXC_USE_PIO
 #define CONFIG_RDB
 
+#define NOR_BOOT	0x0
+#define NAND_BOOT	0x1
+#define SD_BOOT	0x2
+
 /* PCI controllers addresses */
 #define CONFIG_SYS_PCIE1_PHYS_BASE              0x5000000000ULL
 #define CONFIG_SYS_PCIE2_PHYS_BASE              0x4800000000ULL

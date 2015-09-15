@@ -219,22 +219,22 @@
 #define EMMC_CMD_GO_IDLE_STATE             0
 #define EMMC_CMD_SEND_OP_COND              1
 #define EMMC_CMD_ALL_SEND_CID              2
-#define EMMC_CMD_SET_RELATIVE_ADDR  	3
+#define EMMC_CMD_SET_RELATIVE_ADDR  	 3
 #define EMMC_CMD_SET_DSR                   4
 #define EMMC_CMD_SWITCH                    6
-#define EMMC_CMD_SELECT_CARD        	7
+#define EMMC_CMD_SELECT_CARD        	 7
 #define EMMC_CMD_SEND_EXT_CSD              8
-#define EMMC_CMD_SEND_CSD           	9
-#define EMMC_CMD_SEND_CID           	10
-#define EMMC_CMD_STOP_TRANSMISSION  	12
-#define EMMC_CMD_SEND_STATUS        	13
+#define EMMC_CMD_SEND_CSD           	 9
+#define EMMC_CMD_SEND_CID           	 10
+#define EMMC_CMD_STOP_TRANSMISSION  	 12
+#define EMMC_CMD_SEND_STATUS        	 13
 #define EMMC_CMD_SET_BLOCKLEN              16
-#define EMMC_CMD_READ_SINGLE_BLOCK  	17
+#define EMMC_CMD_READ_SINGLE_BLOCK  	 17
 #define EMMC_CMD_READ_MULTIPLE_BLOCK       18
-#define EMMC_CMD_SET_BLOCK_COUNT         	23
-#define EMMC_CMD_WRITE_SINGLE_BLOCK 	24
+#define EMMC_CMD_SET_BLOCK_COUNT         	 23
+#define EMMC_CMD_WRITE_SINGLE_BLOCK 	 24
 #define EMMC_CMD_WRITE_MULTIPLE_BLOCK      25
-#define EMMC_CMD_ERASE_GROUP_START  	35
+#define EMMC_CMD_ERASE_GROUP_START  	 35
 #define EMMC_CMD_ERASE_GROUP_END           36
 #define EMMC_CMD_ERASE                     38
 #define EMMC_CMD_APP_CMD                   55
@@ -261,7 +261,7 @@
 
 #define WML_RD_MAX      	0x10
 #define WML_WR_MAX      	0x80
-#define WML_RD_MAX_VAL  	0x10
+#define WML_RD_MAX_VAL  	0x00
 #define WML_WR_MAX_VAL  	0x80
 #define WML_RD_MASK     	0xff
 #define WML_WR_MASK     	0xff0000
@@ -357,6 +357,7 @@
 #define MMC_STATUS_ERROR    	(1 << 19)
 #define MMC_STATE_PRG              (7 << 9)
 
+#define LBA			7744512
 /* Dma addresses are 32-bits wide.  */
 typedef UINT32 DmaAddr;
 
@@ -464,7 +465,7 @@ struct Mmc {
 };
 
 struct SdxcOperations {
-       EFI_STATUS (*SdxcSendCmd)(struct Mmc *Mmc,
+       EFI_STATUS (*SdxcSendCmd)(struct SdxcRegs *Regs, UINT32 Clock,
                      struct SdCmd *Cmd, struct SdData *Data);
        VOID (*SdxcSetIos)(struct Mmc *Mmc);
        INT32 (*SdxcInit)(struct Mmc *Mmc);
@@ -489,6 +490,30 @@ struct SdxcCfg {
        struct MmcConfig Cfg;
 };
 
+struct SdxcBoot {
+       struct SdxcRegs	*SdxcBase;
+       UINT32	SdxcClk;
+       UINT32 HostCaps;
+       UINT32 Voltages;
+       UINT32 FMin;
+       UINT32 FMax;
+       UINT32 BMax;
+       UINT32 Dsr;
+       UINT32 DsrImp;
+       UINT32 Clock;
+       UINT32 BusWidth;
+	UINT16 Rca;
+	UINT32 HighCapacity;
+       UINT32 CardCaps;
+	UINT32 Ocr;
+       UINT32 Csd[4];
+       UINT32 Cid[4];
+	UINT32 Version;
+	UINT32 ReadBlkLen;
+	UINT32 TranSpeed;
+       UINT64 Lba;          // Number Of Blocks
+};
+
 struct Mmc *
 CreateMmcNode (
   IN struct MmcConfig *Cfg,
@@ -503,7 +528,8 @@ SdxcSetClock (
 
 EFI_STATUS
 SdxcSendCmd (
-  IN  struct Mmc *Mmc,
+  IN  struct SdxcRegs *Regs,
+  IN  UINT32 Clock,
   IN  struct SdCmd *Cmd,
   IN  struct SdData *Data
   );
@@ -580,6 +606,7 @@ MmcRcvResp (
 
 EFI_STATUS
 RecvResp(
+  IN  struct SdxcRegs *Regs,
   IN  struct SdData *Data,
   IN  UINT32 RespType,
   OUT UINT32 *Response
@@ -632,6 +659,49 @@ DestroyMmc (
 
 VOID
 SelectSdxc (
+  IN VOID
+  );
+
+EFI_STATUS
+SdxcBootRead (
+  OUT  VOID * InAddr,
+  IN  UINT64 StartBlk,
+  IN  UINT64 Size
+  );
+
+EFI_STATUS
+DoMmcInfo (
+  VOID
+  );
+
+INT32
+SdxcMmcInit (
+  IN VOID
+  );
+
+VOID
+SdxcReset (
+  IN struct SdxcRegs *Regs
+  );
+
+INT32
+SendCmd (
+  IN  struct SdCmd *Cmd,
+  IN  struct SdData *Data
+  );
+
+EFI_STATUS
+SdxcBootInit (
+  IN  BOOLEAN Init
+  );
+
+VOID
+CreateBootStruct (
+  IN struct SdxcBoot*
+  );
+
+VOID
+UpdateBootStruct (
   IN VOID
   );
 

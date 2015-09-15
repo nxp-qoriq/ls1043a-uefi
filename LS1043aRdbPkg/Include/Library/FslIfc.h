@@ -26,6 +26,7 @@
 #include <Library/PcdLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/IoLib.h>
+#include <LS1043aRdb.h>
 
 #include <Protocol/BlockIo.h>
 #include <Protocol/Cpu.h>
@@ -716,8 +717,5 @@ VOID IfcNandInit(VOID);
 
 #define FSL_IFC_REGS_BASE \
 	((FSL_IFC_REGS *)FSL_IFC_REG_BASE)
-
-#define NAND_BOOT 0x1
-#define NOR_BOOT 0x0
 
 #endif //__FLASH_H__

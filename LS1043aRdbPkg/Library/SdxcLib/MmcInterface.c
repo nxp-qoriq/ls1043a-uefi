@@ -41,8 +41,10 @@ MmcRcvResp (
   )
 {
   EFI_STATUS Status;
+  struct SdxcCfg *Cfg = gMmc->Private;
+  struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
 
-  Status = RecvResp(NULL, RespType, Buffer);
+  Status = RecvResp(Regs, NULL, RespType, Buffer);
 
   return Status;
 }
@@ -52,7 +54,7 @@ MmcSendCommand (
   IN  struct SdCmd *Cmd
   )
 {
-  return SdxcSendCmd(gMmc, Cmd, NULL);
+  return SendCmd(Cmd, NULL);
 }
 
 EFI_STATUS

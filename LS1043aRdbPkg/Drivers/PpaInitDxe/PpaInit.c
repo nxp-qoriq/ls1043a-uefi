@@ -25,27 +25,55 @@
 #include <Library/BaseMemoryLib/MemLibInternals.h>
 #include <Library/FslIfc.h>
 #include <Library/IfcNand.h>
+#include <Library/Sdxc.h>
+#include <LS1043aRdb.h>
 
 extern EFI_STATUS PpaInit(UINT64);
 extern VOID InitMmu(ARM_MEMORY_REGION_DESCRIPTOR*);
 
 
+EFI_STATUS GetPpaFromSd (
+	OUT  EFI_PHYSICAL_ADDRESS   *FitImage
+)
+{
+	EFI_STATUS Status;
+	
+	Status = SdxcMmcInit();
+	if (Status != EFI_SUCCESS) {
+		DEBUG((EFI_D_ERROR,"Failed to init SD\n"));
+		return Status;
+	}
+
+	Status = DoMmcInfo();
+	if (Status != EFI_SUCCESS) {
+		DEBUG((EFI_D_ERROR,"Failed to initialize SD\n"));
+		return Status;
+	}
+
+	*FitImage = (EFI_PHYSICAL_ADDRESS)AllocateRuntimePages(EFI_SIZE_TO_PAGES(PcdGet32(PcdPpaImageSize)));
+	if(*FitImage == 0x0)
+		return EFI_OUT_OF_RESOURCES;
+
+	UpdateBootStruct();
+
+	//Copy from SD to DDR
+	return SdxcBootRead((VOID*)*FitImage, PcdGet32(PcdPpaSdxcLba), PcdGet32(PcdPpaImageSize));
+}
+
 EFI_STATUS GetPpaFromNand(
-		UINT32								PpaLba, 
 		EFI_PHYSICAL_ADDRESS *FitImage)
 {
 	EFI_STATUS Status;
-	UINTN PpaMaxSize = 128 * 1024;
 	Status = IfcNandFlashInit(NULL);
 	if (Status!=EFI_SUCCESS)
 		return Status;
 
-	*FitImage = (EFI_PHYSICAL_ADDRESS)AllocateRuntimePages(EFI_SIZE_TO_PAGES(PpaMaxSize));
+	*FitImage = (EFI_PHYSICAL_ADDRESS)AllocateRuntimePages(EFI_SIZE_TO_PAGES(PcdGet32(PcdPpaImageSize)));
 	if(*FitImage == 0x0)
 		return EFI_OUT_OF_RESOURCES;
 
 //Copy from Nand to DDR
-	return IfcNandFlashReadBlocks(NULL, 0, PpaLba, PpaMaxSize, (VOID*)*FitImage);  	
+	return IfcNandFlashReadBlocks(NULL, 0, PcdGet32(PcdPpaNandLba), PcdGet32(PcdPpaImageSize), (VOID*)*FitImage);
 }
 
 
@@ -79,7 +107,11 @@ GetPpaImagefromFlash (
 	// Assuming that the PPA FW is present on NOR flash
 	// FIXME: Add support for other flash devices.
 	if(PcdGet32(PcdBootMode) == NAND_BOOT) {
-		Status = GetPpaFromNand(PcdGet32(PcdPpaNandLba), &FitImage);
+		Status = GetPpaFromNand(&FitImage);
+		ASSERT(Status == EFI_SUCCESS);
+	}
+	else if(PcdGet32(PcdBootMode) == SD_BOOT) {
+		Status = GetPpaFromSd(&FitImage);
 		ASSERT(Status == EFI_SUCCESS);
 	}
 	else

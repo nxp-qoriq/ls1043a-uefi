@@ -1,4 +1,4 @@
-#/** @LS1043aPrePiOcram.inf
+#/** @LS1043aPrePiNand.inf
 #
 #  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 #
@@ -21,6 +21,7 @@
 
 [Sources]
 	LS1043aPrePiOcram.c
+	LS1043aPrePiNand.c
 
 [Sources.AArch64]
   AArch64/ModuleEntryPoint.S
@@ -35,14 +36,12 @@
 	ArmLib
 	PcdLib
 	NandFlashLib
-	SdxcLib
 	ArmPlatformLib
 	DdrLib
 
 [FixedPcd]
   gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase
   gLS1043aRdbTokenSpaceGuid.PcdFdNandLba
-  gLS1043aRdbTokenSpaceGuid.PcdFdSdxcLba
   gArmTokenSpaceGuid.PcdFdBaseAddress
   gArmTokenSpaceGuid.PcdFdSize
   gArmTokenSpaceGuid.PcdSystemMemoryBase

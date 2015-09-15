@@ -20,7 +20,7 @@ struct Mmc *gMmc = NULL;
 
 /* Frequency Bases */
 /* Divided By 10 To Be Nice To Platforms Without Floating Point */
-static CONST INT32
+CONST INT32
 FreqBase[] = {
        10000,
        100000,
@@ -31,7 +31,7 @@ FreqBase[] = {
 /* Multiplier Values for TRAN_SPEED.  Multiplied By 10 To Be Nice
  * To Platforms Without Floating Point.
  */
-static CONST INT32
+CONST INT32
 FreqMult[] = {
        0,     /* Reserved */
        10,
@@ -81,14 +81,15 @@ MmcGetwp (
 
 INT32
 SendCmd (
-  IN  struct Mmc *Mmc,
   IN  struct SdCmd *Cmd,
   IN  struct SdData *Data
   )
 {
   INT32 Ret;
+  struct SdxcCfg *Cfg = gMmc->Private;
+  struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
 
-  Ret = Mmc->Cfg->Ops->SdxcSendCmd(Mmc, Cmd, Data);
+  Ret = gMmc->Cfg->Ops->SdxcSendCmd(Regs, gMmc->Clock, Cmd, Data);
   return Ret;
 }
 
@@ -108,7 +109,7 @@ SendStatus (
     Cmd.CmdArg = Mmc->Rca << 16;
 
   do {
-    Status = SendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(&Cmd, NULL);
     if (!Status) {
       if ((Cmd.Response[0] & MMC_STATUS_RDY_FOR_DATA) &&
           ((Cmd.Response[0] & MMC_STATUS_CURR_STATE) !=
@@ -135,7 +136,7 @@ SendStatus (
 }
 
 INT32
-ReadBlks (
+SdxcReadBlks (
   IN  struct Mmc *Mmc,
   OUT VOID *Dest,
   IN  UINT64 Start,
@@ -162,7 +163,7 @@ ReadBlks (
   Data.Blocksize = Mmc->ReadBlkLen;
   Data.Flags = MMC_DATA_READ;
 
-  if (SendCmd(Mmc, &Cmd, &Data))
+  if (SendCmd(&Cmd, &Data))
     return 0;
 
   if (Blkcnt > 1) {
@@ -170,7 +171,7 @@ ReadBlks (
     Cmd.CmdArg = 0;
     Cmd.RespType = MMC_RSP_R1b;
 
-    if (SendCmd(Mmc, &Cmd, NULL)) {
+    if (SendCmd(&Cmd, NULL)) {
       DEBUG((EFI_D_ERROR, "Mmc Fail To Send Stop Cmd\n"));
       return 0;
     }
@@ -194,7 +195,7 @@ SetBlocklen (
   Cmd.RespType = MMC_RSP_R1;
   Cmd.CmdArg = Len;
 
-  return SendCmd(Mmc, &Cmd, NULL);
+  return SendCmd(&Cmd, NULL);
 }
 
 UINT64
@@ -234,7 +235,7 @@ SdxcWriteBlks (
   Data.Blocksize = Mmc->WriteBlkLen;
   Data.Flags = MMC_DATA_WRITE;
 
-  if (SendCmd(Mmc, &Cmd, &Data)) {
+  if (SendCmd(&Cmd, &Data)) {
     DEBUG((EFI_D_ERROR, "Mmc Write Failed\n"));
     return 0;
   }
@@ -246,7 +247,7 @@ SdxcWriteBlks (
     Cmd.CmdIdx = EMMC_CMD_STOP_TRANSMISSION;
     Cmd.CmdArg = 0;
     Cmd.RespType = MMC_RSP_R1b;
-    if (SendCmd(Mmc, &Cmd, NULL)) {
+    if (SendCmd(&Cmd, NULL)) {
       DEBUG((EFI_D_ERROR, "Mmc Fail To Send Stop Cmd\n"));
       return 0;
     }
@@ -289,14 +290,14 @@ SdxcEraseBlks (
   Cmd.CmdArg = Start;
   Cmd.RespType = MMC_RSP_R1;
 
-  Status = SendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(&Cmd, NULL);
   if (Status)
     goto ErrOut;
 
   Cmd.CmdIdx = EndCmd;
   Cmd.CmdArg = End;
 
-  Status = SendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(&Cmd, NULL);
   if (Status)
     goto ErrOut;
 
@@ -304,7 +305,7 @@ SdxcEraseBlks (
   Cmd.CmdArg = SECURE_ERASE;
   Cmd.RespType = MMC_RSP_R1b;
 
-  Status = SendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(&Cmd, NULL);
   if (Status)
     goto ErrOut;
 
@@ -339,7 +340,7 @@ SdxcBlkRead (
   do {
     CurBlk = (BlocksTodo > gMmc->Cfg->BMax) ?
            gMmc->Cfg->BMax : BlocksTodo;
-    if (ReadBlks(gMmc, Dest, Start, CurBlk) != CurBlk)
+    if (SdxcReadBlks(gMmc, Dest, Start, CurBlk) != CurBlk)
       return 0;
 
     BlocksTodo -= CurBlk;
@@ -478,7 +479,7 @@ SdxcGoIdle (
   Cmd.CmdArg = 0;
   Cmd.RespType = MMC_RSP_NONE;
 
-  Status = SendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(&Cmd, NULL);
 
   if (Status)
     return Status;
@@ -501,7 +502,7 @@ SdSendIfCond (
   Cmd.CmdArg = ((Mmc->Cfg->Voltages & 0xff8000) != 0) << 8 | 0xaa;
   Cmd.RespType = MMC_RSP_R7;
 
-  Status = SendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(&Cmd, NULL);
 
   if (Status)
     return Status;
@@ -530,12 +531,12 @@ SendAppCmd (
   else
     Cmd.CmdArg = 0;
 
-  return SendCmd(gMmc, &Cmd, NULL);
+  return SendCmd(&Cmd, NULL);
 }
 
 static EFI_STATUS
 SdSendOpCond (
-  IN  struct Mmc *Mmc
+  VOID
   )
 {
   INT32 Timeout = 1000;
@@ -553,12 +554,12 @@ SdSendOpCond (
      */
     Cmd.RespType = MMC_RSP_R3;
     Cmd.CmdIdx = SD_CMD_APP_SEND_OP_COND;
-    Cmd.CmdArg = IsSpi(Mmc) ? 0 : (Mmc->Cfg->Voltages & 0xff8000);
+    Cmd.CmdArg = IsSpi(gMmc) ? 0 : (gMmc->Cfg->Voltages & 0xff8000);
 
-    if (Mmc->Version == SD_VER_2)
+    if (gMmc->Version == SD_VER_2)
       Cmd.CmdArg |= OCR_HCS;
 
-    Status = SendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(&Cmd, NULL);
 
     if (Status)
       return Status;
@@ -570,25 +571,25 @@ SdSendOpCond (
     return EFI_TIMEOUT;
 
   /* Read OCR for Spi */
-  if (IsSpi(Mmc)) {
+  if (IsSpi(gMmc)) {
     Cmd.CmdArg = 0;
     Cmd.CmdIdx = EMMC_CMD_SPI_READ_OCR;
     Cmd.RespType = MMC_RSP_R3;
 
-  if (Mmc->Version != SD_VER_2)
-    Mmc->Version = SD_VER_1_0;
+  if (gMmc->Version != SD_VER_2)
+    gMmc->Version = SD_VER_1_0;
 
-    Status = SendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(&Cmd, NULL);
 
     if (Status)
       return Status;
   }
 
-  Mmc->Ocr = Cmd.Response[0];
-  Mmc->HighCapacity = ((Mmc->Ocr & OCR_HCS) == OCR_HCS);
-  Mmc->Rca = 0;
+  gMmc->Ocr = Cmd.Response[0];
+  gMmc->HighCapacity = ((gMmc->Ocr & OCR_HCS) == OCR_HCS);
+  gMmc->Rca = 0;
 
-  return 0;
+  return EFI_SUCCESS;
 }
 
 /* We Pass In The Cmd Since Otherwise The Init Seems To Fail */
@@ -613,7 +614,7 @@ MmcSendOpCondCmdIter (
     if (Mmc->Cfg->HostCaps & MMC_MODE_HC)
       Cmd->CmdArg |= OCR_HCS;
   }
-  Status = SendCmd(Mmc, Cmd, NULL);
+  Status = SendCmd(Cmd, NULL);
 
   if (Status)
     return Status;
@@ -692,7 +693,7 @@ SdStartInit (
   Status = MmcSendOpCondCmd(gMmc);
 
   if (Status && Status != EFI_ALREADY_STARTED) {
-    DEBUG((EFI_D_INFO, "Not MMC Card\n"));
+    /* Not MMC Card */
 
     /* Test for SD Version 2 */
     Status = SdSendIfCond(gMmc);
@@ -700,7 +701,7 @@ SdStartInit (
       DEBUG((EFI_D_INFO, "Not SD version 2\n"));
 
     /* Now Try To Get The SD Card'S Operating Condition */
-    Status = SdSendOpCond(gMmc);
+    Status = SdSendOpCond();
     if (Status)
       DEBUG((EFI_D_ERROR, "Card Did Not Respond To Voltage Select!\n"));
   } else
@@ -768,7 +769,7 @@ SdxcCompleteOpCond (
          Cmd.RespType = MMC_RSP_R3;
          Cmd.CmdArg = 0;
 
-         Status = SendCmd(Mmc, &Cmd, NULL);
+         Status = SendCmd(&Cmd, NULL);
 
          if (Status)
                 return Status;
@@ -802,7 +803,7 @@ SendExtCsd (
   Data.Dest = (CHAR8 *)ExtCsd;
   Data.Blocks = 1;
 
-  Status = SendCmd(Mmc, &Cmd, &Data);
+  Status = SendCmd(&Cmd, &Data);
 
   return Status;
 }
@@ -864,7 +865,7 @@ SdxcSwitch (
   Data.Dest = (CHAR8 *)Resp;
   Data.Blocksize = 64;
 
-  return SendCmd(Mmc, &Cmd, &Data);
+  return SendCmd(&Cmd, &Data);
 }
 
 static INT32
@@ -902,7 +903,7 @@ RetryScr:
   Data.Dest = (CHAR8 *)Scr;
   Data.Blocksize = 8;
 
-  Status = SendCmd(Mmc, &Cmd, &Data);
+  Status = SendCmd(&Cmd, &Data);
 
   if (Status) {
     if (Timeout--)
@@ -996,7 +997,7 @@ MmcSwitch (
 		 (Index << 16) |
   		 (Value << 8);
 
-  Ret = SendCmd(Mmc, &Cmd, NULL);
+  Ret = SendCmd(&Cmd, NULL);
 
   /* Waiting for The Ready Status */
   if (!Ret)
@@ -1078,7 +1079,7 @@ SdxcStartup (
   Cmd.CmdIdx = IsSpi(Mmc) ? EMMC_CMD_SEND_CID :
          EMMC_CMD_ALL_SEND_CID;
 
-  Status = SendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(&Cmd, NULL);
 
   if (Status)
     return Status;
@@ -1103,7 +1104,7 @@ SdxcStartup (
       Cmd.CmdArg = Mmc->Rca << 16;
     }
 
-    Status = SendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(&Cmd, NULL);
 
     if (Status)
       return Status;
@@ -1117,7 +1118,7 @@ SdxcStartup (
   Cmd.RespType = MMC_RSP_R2;
   Cmd.CmdArg = Mmc->Rca << 16;
 
-  Status = SendCmd(Mmc, &Cmd, NULL);
+  Status = SendCmd(&Cmd, NULL);
 
   /* Wait for Ready Status */
   SendStatus(Mmc, Timeout);
@@ -1196,7 +1197,7 @@ SdxcStartup (
     Cmd.CmdIdx = EMMC_CMD_SET_DSR;
     Cmd.CmdArg = (Mmc->Dsr & 0xffff) << 16;
     Cmd.RespType = MMC_RSP_NONE;
-    if (SendCmd(Mmc, &Cmd, NULL))
+    if (SendCmd(&Cmd, NULL))
       DEBUG((EFI_D_ERROR, "MMC: SET_DSR Failed\n"));
   }
 
@@ -1206,7 +1207,7 @@ SdxcStartup (
     Cmd.CmdIdx = EMMC_CMD_SELECT_CARD;
     Cmd.RespType = MMC_RSP_R1;
 
-    Status = SendCmd(Mmc, &Cmd, NULL);
+    Status = SendCmd(&Cmd, NULL);
 
     if (Status)
       return Status;
@@ -1341,7 +1342,7 @@ SdxcStartup (
       Cmd.CmdIdx = SD_CMD_APP_SET_BUS_WIDTH;
       Cmd.RespType = MMC_RSP_R1;
       Cmd.CmdArg = 2;
-      Status = SendCmd(Mmc, &Cmd, NULL);
+      Status = SendCmd(&Cmd, NULL);
       if (Status)
         return Status;
 
@@ -1455,7 +1456,7 @@ SdxcStartup (
   AsciiSPrint(Mmc->BlockDev.Revision, sizeof(Mmc->BlockDev.Revision),
          "%d.%d", (Mmc->Cid[2] >> 20) & 0xf, (Mmc->Cid[2] >> 16) & 0xf);
 
-  return 0;
+  return EFI_SUCCESS;
 }
 
 static INT32

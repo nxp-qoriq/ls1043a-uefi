@@ -27,6 +27,7 @@
   MmcOperations.c
   SdxcInterface.c
   MmcInterface.c
+  SdxcBoot.c
 
 [LibraryClasses]
   ArmLib

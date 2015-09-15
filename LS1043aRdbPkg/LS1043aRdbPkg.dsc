@@ -17,6 +17,14 @@
 # Defines Section - statements that will be processed to create a Makefile.
 #
 ################################################################################
+[Defines]
+  #
+  # Defines for default states.  These can be changed on the command line.
+  # -D FLAG=VALUE
+  #
+  DEFINE SD_BOOT_ENABLE      = TRUE
+  DEFINE NAND_BOOT_ENABLE    = FALSE
+
 [LibraryClasses.common.SEC]
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64LibSec.inf
 
@@ -401,6 +409,7 @@
   #
   gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x60500000
   gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr|0x8000000 # (128MB) calculated from top of DDR
+  gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000
 
 !if $(TARGET) == DEBUG
   gArmTokenSpaceGuid.PcdDdrInitialize|FALSE

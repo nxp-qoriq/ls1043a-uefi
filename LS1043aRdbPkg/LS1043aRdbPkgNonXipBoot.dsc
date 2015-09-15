@@ -32,8 +32,21 @@
 !include LS1043aRdbPkg.dsc
 
 [Components.common]
-  LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043aPrePiOcram.inf
+!if $(SD_BOOT_ENABLE) == TRUE
+  LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043aPrePiSd.inf
+!endif
+!if $(NAND_BOOT_ENABLE) == TRUE
+  LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043aPrePiNand.inf
+!endif
 [PcdsFixedAtBuild.common]
-	gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x1	
+
+!if $(SD_BOOT_ENABLE) == TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdFdSdxcLba|0x108
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x2
+  gLS1043aRdbTokenSpaceGuid.PcdPpaSdxcLba|0x1108
+!endif
+!if $(NAND_BOOT_ENABLE) == TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x1
   gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x1
   gLS1043aRdbTokenSpaceGuid.PcdPpaNandLba|0x10
+!endif

@@ -1,6 +1,4 @@
-#/** PpaInitDxe.inf 
-#
-#  Component description file for Ppa Initialization driver
+#/** @LS1043aPrePiSd.inf
 #
 #  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 #
@@ -12,54 +10,41 @@
 #  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 #  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #
-#
 #**/
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = PpaInit
-  FILE_GUID                      = 4d00ef14-c4e0-426b-81b7-30a00a14abb6
-  MODULE_TYPE                    = DXE_DRIVER
+  BASE_NAME                      = LS1043aPrePiOcram
+  FILE_GUID                      = d959e387-7b91-452c-90e1-a1dbac10ddb8
+  MODULE_TYPE                    = SEC
   VERSION_STRING                 = 1.0
 
-  ENTRY_POINT                    = PpaInitialize
+[Sources]
+  LS1043aPrePiOcram.c
+  LS1043aPrePiSd.c
 
-[Sources.common]
-  PpaInit.c
-  PpaInitHelper.S
+[Sources.AArch64]
+  AArch64/ModuleEntryPoint.S
 
 [Packages]
   MdePkg/MdePkg.dec
-  LS1043aRdbPkg/LS1043aRdbPkg.dec
   ArmPkg/ArmPkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec
+  LS1043aRdbPkg/LS1043aRdbPkg.dec
 
 [LibraryClasses]
-  BaseLib
-  UefiLib
-  UefiDriverEntryPoint
-  MemoryInitPeiLib
   ArmLib
-  BdsLib
+  PcdLib
   SdxcLib
-
-[Guids]
-
-[Protocols]
-
-[Pcd]
-  gArmTokenSpaceGuid.PcdSystemMemoryBase
-  gArmTokenSpaceGuid.PcdSystemMemorySize
-  gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr
-  gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr
-  gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration
-  gLS1043aRdbTokenSpaceGuid.PcdBootMode
-  gLS1043aRdbTokenSpaceGuid.PcdPpaNandLba
-  gLS1043aRdbTokenSpaceGuid.PcdPpaSdxcLba
-  gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize
+  ArmPlatformLib
+  DdrLib
 
 [FixedPcd]
-
-
-[depex]
-  TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase
+  gLS1043aRdbTokenSpaceGuid.PcdFdSdxcLba
+  gArmTokenSpaceGuid.PcdFdBaseAddress
+  gArmTokenSpaceGuid.PcdFdSize
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+  gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode

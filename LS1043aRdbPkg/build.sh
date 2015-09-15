@@ -52,9 +52,9 @@ if [[ $1 != "RELEASE" ]]; then
 	fi
 fi
 
-if [[ $2 == "NONXIP" ]]; then
+if [[ $2 == "NAND" || $2 == "SD" ]]; then
 	BootSuffix="NonXipBoot.dsc"
-	echo "Compiling for NON-XIP boot"
+	echo "Compiling for $1 boot"
 	if [[ $3 == "" ]]; then
 		echo "Error ! Incorrect 3rd argument to build script."
 		print_usage_banner
@@ -90,7 +90,7 @@ else
 		# Do nothing as argument 3 is optional.
 		echo " "
 	else
-		if [[ $2 != "NONXIP" ]]; then
+		if [[ $2 != "NAND" && $2 != "SD" ]]; then
 			echo "Error ! Incorrect 3rd argument to build script."
 			print_usage_banner
 			exit
@@ -118,7 +118,10 @@ TARGET_TOOLS=GCC48
 
 # Actual build command
 build -p "$WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg$BootSuffix" -a $ARCH -t $TARGET_TOOLS -b $1
-if [[ $2 == "NONXIP" ]]; then
-$3/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_nand.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_EFI.pbl
-echo "PBL image created at $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_EFI.pbl"
+if [[ $2 == "NAND" ]]; then
+$3/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_nand.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_NAND_EFI.pbl
+echo "PBL image created at $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_NAND_EFI.pbl"
+elif [[ $2 == "SD" ]]; then
+$3/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_sd.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_SD_EFI.pbl
+echo "PBL image created at $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_SD_EFI.pbl"
 fi

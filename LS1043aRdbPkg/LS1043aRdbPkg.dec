@@ -166,3 +166,7 @@
 
   gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x0|UINT32|0x00000038
   gLS1043aRdbTokenSpaceGuid.PcdPpaNandLba|0x10|UINT32|0x00000039
+
+  gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000|UINT32|0x00000040
+  gLS1043aRdbTokenSpaceGuid.PcdPpaSdxcLba|0x10|UINT32|0x00000041
+  gLS1043aRdbTokenSpaceGuid.PcdFdSdxcLba|0x0|UINT32|0x00000042

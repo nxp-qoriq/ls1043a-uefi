@@ -244,3 +244,19 @@ DoMmcErase (
 
   return (BlkErsd == Count) ? EFI_SUCCESS : EFI_TIMEOUT;
 }
+
+VOID
+CreateBootStruct (
+  IN struct SdxcBoot *Boot
+  )
+{
+  struct SdxcCfg *Cfg = gMmc->Private;
+
+  Boot->SdxcBase = (struct SdxcRegs *)Cfg->SdxcBase ;
+  Boot->BMax = gMmc->Cfg->BMax ;
+  Boot->Lba = gMmc->BlockDev.Lba ;
+  Boot->Clock = gMmc->Clock ;
+  Boot->Rca = gMmc->Rca ;
+  Boot->HighCapacity = gMmc->HighCapacity ;
+  Boot->ReadBlkLen = gMmc->ReadBlkLen ;
+}

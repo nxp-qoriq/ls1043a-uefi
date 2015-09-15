@@ -70,13 +70,12 @@ SdxcXfertype (
 
 EFI_STATUS
 SdxcSetupData (
-  IN  struct Mmc *Mmc,
+  struct SdxcRegs *Regs,
+  IN  UINT32 Clk,
   IN  struct SdData *Data
   )
 {
   INT32 Timeout;
-  struct SdxcCfg *Cfg = Mmc->Private;
-  struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
 
 #ifndef CONFIG_SYS_FSL_SDXC_USE_PIO
 #ifdef CONFIG_LS1043A
@@ -131,7 +130,7 @@ SdxcSetupData (
   MmioWriteBe32((UINTN)&Regs->Blkattr, Data->Blocks << 16 | Data->Blocksize);
 
   /* Calculate The Timeout Period for Data Transactions */
-  Timeout = GenericFls(Mmc->Clock/4);
+  Timeout = GenericFls(Clk/4);
   Timeout -= 13;
 
   if (Timeout > 14)
@@ -161,11 +160,10 @@ CheckAndInvalidateDcacheRange (
 
 VOID
 ResetCmdFailedData (
+  IN  struct SdxcRegs *Regs,
   IN  struct SdData *Data
   )
 {
-  struct SdxcCfg *Cfg = gMmc->Private;
-  volatile struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
   INT32 Timeout = 10000;
 
   /* Reset CMD And DATA Portions On Error */
@@ -193,11 +191,10 @@ ResetCmdFailedData (
 #ifdef CONFIG_SYS_FSL_SDXC_USE_PIO
 static EFI_STATUS
 SdxcReadWrite (
- OUT struct SdData *Data
+  IN  struct SdxcRegs *Regs,
+  OUT struct SdData *Data
   )
 {
-  struct SdxcCfg *Cfg = gMmc->Private;
-  struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
   UINT32 Blocks;
   CHAR8 *Buffer;
   UINT32 DataBuf;
@@ -261,13 +258,12 @@ SdxcReadWrite (
 
 EFI_STATUS
 RecvResp(
+  IN  struct SdxcRegs *Regs,
   IN  struct SdData *Data,
   IN  UINT32 RespType,
   OUT UINT32 *Response
   )
 {
-  struct SdxcCfg *Cfg = gMmc->Private;
-  volatile struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
   INT32 Timeout = 0;
   EFI_STATUS Status = 0;
 
@@ -284,7 +280,7 @@ RecvResp(
 
     if (Timeout <= 0) {
       DEBUG((EFI_D_ERROR, "Timeout Waiting for DAT0 To Go High!\n"));
-      ResetCmdFailedData(Data);
+      ResetCmdFailedData(Regs, Data);
       return EFI_TIMEOUT;
     }
   }
@@ -307,7 +303,7 @@ RecvResp(
   /* Wait Until All Of The Blocks Are Transferred */
   if (Data) {
 #ifdef CONFIG_SYS_FSL_SDXC_USE_PIO
-    Status = SdxcReadWrite(Data);
+    Status = SdxcReadWrite(Regs, Data);
 #else
     UINT32	Irqstat;
     Timeout = 10000000;
@@ -316,19 +312,19 @@ RecvResp(
       Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
 
       if (Irqstat & IRQSTATE_DTOE) {
-        ResetCmdFailedData(Data);
+        ResetCmdFailedData(Regs, Data);
         return EFI_TIMEOUT;
       }
 
       if (Irqstat & DATA_ERR) {
-        ResetCmdFailedData(Data);
+        ResetCmdFailedData(Regs, Data);
         return EFI_DEVICE_ERROR;
       }
 
     } while ((!(Irqstat & DATA_COMPLETE)) && Timeout--);
     if (Timeout <= 0) {
       DEBUG((EFI_D_ERROR, "Timeout Waiting for DATA_COMPLETE to set\n"));
-      ResetCmdFailedData(Data);
+      ResetCmdFailedData(Regs, Data);
       return EFI_TIMEOUT;
     }
 
@@ -349,7 +345,8 @@ RecvResp(
  */
 EFI_STATUS
 SdxcSendCmd (
-  IN  struct Mmc *Mmc,
+  IN  struct SdxcRegs *Regs,
+  IN  UINT32 Clk,
   IN  struct SdCmd *Cmd,
   IN  struct SdData *Data
   )
@@ -358,8 +355,6 @@ SdxcSendCmd (
   UINT32	Xfertype;
   UINT32	Irqstat;
   INT32	Timeout = 100000;
-  struct SdxcCfg *Cfg = Mmc->Private;
-  volatile struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
 
   MmioWriteBe32((UINTN)&Regs->Irqstat, -1);
 
@@ -381,7 +376,7 @@ SdxcSendCmd (
   	;
 
   if (Timeout <= 0) {
-    DEBUG((EFI_D_ERROR, "Data line is active\n"));
+    DEBUG((EFI_D_ERROR, "Data line is active %d\n", Cmd->CmdIdx));
     return EFI_TIMEOUT;
   }
 
@@ -390,7 +385,7 @@ SdxcSendCmd (
 
   /* Set Up for A Data Transfer if We Have One */
   if (Data) {
-    Status = SdxcSetupData(Mmc, Data);
+    Status = SdxcSetupData(Regs, Clk, Data);
     if (Status)
       return Status;
   }
@@ -412,7 +407,7 @@ SdxcSendCmd (
   	;
 
   if (Timeout <= 0) {
-    DEBUG((EFI_D_ERROR, "Command not completed\n"));
+    DEBUG((EFI_D_ERROR, "Command not completed %d\n", Cmd->CmdIdx));
     return EFI_TIMEOUT;
   }
 
@@ -429,14 +424,14 @@ SdxcSendCmd (
   }
 
   if (Cmd->RespType != 0xFF) {
-    Status = RecvResp(Data, Cmd->RespType, Cmd->Response);
+    Status = RecvResp(Regs, Data, Cmd->RespType, Cmd->Response);
     return Status;
   }
 
 Out:
-  if (Status)
-    ResetCmdFailedData(Data);
-  else
+  if (Status) {
+    ResetCmdFailedData(Regs, Data);
+  } else
     MmioWriteBe32((UINTN)&Regs->Irqstat, -1);
 
   return Status;
@@ -629,7 +624,6 @@ SdxcInitialize (
   GetSysInfo(&SocSysInfo);
   Cfg->Cfg.FMin = 400000;
   Cfg->Cfg.FMax = Min((UINT32)SocSysInfo.FreqSdhc, 52000000);
-
   Cfg->Cfg.BMax = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 
   if (gMmc) {
