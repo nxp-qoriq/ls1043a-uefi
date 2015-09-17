@@ -621,4 +621,23 @@
       DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
   }
 
+ShellPkg/Application/Shell/Shell.inf {
+    <LibraryClasses>
+      NULL|ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellLevel1CommandsLib/UefiShellLevel1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellLevel3CommandsLib/UefiShellLevel3CommandsLib.inf
+!ifndef $(NO_SHELL_PROFILES)
+      NULL|ShellPkg/Library/UefiShellDriver1CommandsLib/UefiShellDriver1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+!ifdef $(INCLUDE_DP)
+      NULL|ShellPkg/Library/UefiDpLib/UefiDpLib.inf
+!endif #$(INCLUDE_DP)
+!ifdef $(INCLUDE_TFTP_COMMAND)
+      NULL|ShellPkg/Library/UefiShellTftpCommandLib/UefiShellTftpCommandLib.inf
+!endif #$(INCLUDE_TFTP_COMMAND)
+!endif #$(NO_SHELL_PROFILES)
+      }
+
   ##

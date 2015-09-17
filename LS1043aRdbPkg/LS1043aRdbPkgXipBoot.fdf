@@ -140,7 +140,7 @@ READ_LOCK_STATUS   = TRUE
   
   #
   # FileSystem
-  INF LS1043aRdbPkg/Drivers/LS1043aFileSystemDxe/LS1043aFileSystemDxe.inf
+  #INF LS1043aRdbPkg/Drivers/LS1043aFileSystemDxe/LS1043aFileSystemDxe.inf
 
   # PCI support
   #
@@ -202,8 +202,8 @@ READ_LOCK_STATUS   = TRUE
   #
   # UEFI application (Shell Embedded Boot Loader)
   #
-  #INF ShellPkg/Application/Shell/Shell.inf
-  INF ShellBinPkg/UefiShell/UefiShell.inf
+  INF ShellPkg/Application/Shell/Shell.inf
+  #INF ShellBinPkg/UefiShell/UefiShell.inf
   INF ArmPkg/Application/LinuxLoader/LinuxLoader.inf
 
   #
