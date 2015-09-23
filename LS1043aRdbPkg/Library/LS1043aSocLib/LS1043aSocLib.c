@@ -544,6 +544,24 @@ PrintRCW (
 	SerialPortWrite ((UINT8 *) Buffer, CharCount);
 }
 
+VOID
+SmmuInit (
+  VOID
+  )
+{
+	UINT32 Value;
+
+	/* set pagesize as 64K and ssmu-500 in bypass mode */
+	Value = (MmioRead32((UINTN)SMMU_REG_SACR) | SACR_PAGESIZE_MASK);
+	MmioWrite32((UINTN)SMMU_REG_SACR, Value);
+
+	Value = (MmioRead32((UINTN)SMMU_REG_SCR0) | SCR0_CLIENTPD_MASK) & ~(SCR0_USFCFG_MASK);
+	MmioWrite32((UINTN)SMMU_REG_SCR0, Value);
+
+	Value = (MmioRead32((UINTN)SMMU_REG_NSCR0) | SCR0_CLIENTPD_MASK) & ~(SCR0_USFCFG_MASK);
+	MmioWrite32((UINTN)SMMU_REG_NSCR0, Value);
+}
+
 /**
   Function to initialize SoC specific constructs
   // CSU
@@ -579,6 +597,7 @@ SocInit (
   if (PcdGetBool(PcdClockInitialize))
 	  ClockInit();
 
+  SmmuInit();
   TimerInit();
 
   // Initialize the Serial Port
@@ -744,3 +763,4 @@ VOID FdtCpuSetup(VOID *blob)
 	FixupByCompatibleField32(blob, "fsl,qman",
 			"clock-frequency", SocSysInfo.FreqQman, 1);
 }
+
