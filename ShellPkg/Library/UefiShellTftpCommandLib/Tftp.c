@@ -2,7 +2,6 @@
   The implementation for the 'tftp' Shell command.
 
   Copyright (c) 2015, ARM Ltd. All rights reserved.<BR>
-  Copyright (c) 2015, Intel Corporation. All rights reserved. <BR>
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -14,8 +13,6 @@
 **/
 
 #include "UefiShellTftpCommandLib.h"
-
-#define EFI_IP4_CONFIG2_INTERFACE_INFO_NAME_LENGTH 32
 
 /*
    Constant strings and definitions related to the message indicating the amount of
@@ -263,7 +260,7 @@ ShellCommandRunTftp (
   EFI_HANDLE              *Handles;
   UINTN                   HandleCount;
   UINTN                   NicNumber;
-  CHAR16                  NicName[EFI_IP4_CONFIG2_INTERFACE_INFO_NAME_LENGTH];
+  CHAR16                  NicName[IP4_NIC_NAME_LENGTH];
   EFI_HANDLE              ControllerHandle;
   EFI_HANDLE              Mtftp4ChildHandle;
   EFI_MTFTP4_PROTOCOL     *Mtftp4;
@@ -578,7 +575,7 @@ StringToUint16 (
     return FALSE;
   }
 
-  *Value = (UINT16)Val;
+  *Value = Val;
   return TRUE;
 }
 
@@ -631,7 +628,7 @@ GetNicName (
 
   UnicodeSPrint (
     NicName,
-    EFI_IP4_CONFIG2_INTERFACE_INFO_NAME_LENGTH,
+    IP4_NIC_NAME_LENGTH,
     SnpMode.IfType == NET_IFTYPE_ETHERNET ?
     L"eth%d" :
     L"unk%d" ,
@@ -953,8 +950,8 @@ CheckPacket (
   CHAR16            Progress[TFTP_PROGRESS_MESSAGE_SIZE];
   UINTN             NbOfKb;
   UINTN             Index;
-  UINT64            LastStep;
-  UINT64            Step;
+  UINTN             LastStep;
+  UINTN             Step;
 
   if ((NTOHS (Packet->OpCode)) != EFI_MTFTP4_OPCODE_DATA) {
     return EFI_SUCCESS;
