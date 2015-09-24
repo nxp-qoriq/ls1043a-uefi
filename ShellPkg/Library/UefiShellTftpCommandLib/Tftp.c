@@ -2,6 +2,8 @@
   The implementation for the 'tftp' Shell command.
 
   Copyright (c) 2015, ARM Ltd. All rights reserved.<BR>
+  Copyright (c) 2015, Intel Corporation. All rights reserved. <BR>
+  (C) Copyright 2015 Hewlett Packard Enterprise Development LP<BR>
 
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
@@ -13,6 +15,8 @@
 **/
 
 #include "UefiShellTftpCommandLib.h"
+
+#define IP4_CONFIG2_INTERFACE_INFO_NAME_LENGTH 32
 
 /*
    Constant strings and definitions related to the message indicating the amount of
@@ -260,7 +264,7 @@ ShellCommandRunTftp (
   EFI_HANDLE              *Handles;
   UINTN                   HandleCount;
   UINTN                   NicNumber;
-  CHAR16                  NicName[IP4_NIC_NAME_LENGTH];
+  CHAR16                  NicName[IP4_CONFIG2_INTERFACE_INFO_NAME_LENGTH];
   EFI_HANDLE              ControllerHandle;
   EFI_HANDLE              Mtftp4ChildHandle;
   EFI_MTFTP4_PROTOCOL     *Mtftp4;
@@ -575,7 +579,7 @@ StringToUint16 (
     return FALSE;
   }
 
-  *Value = Val;
+  *Value = (UINT16)Val;
   return TRUE;
 }
 
@@ -628,7 +632,7 @@ GetNicName (
 
   UnicodeSPrint (
     NicName,
-    IP4_NIC_NAME_LENGTH,
+    IP4_CONFIG2_INTERFACE_INFO_NAME_LENGTH,
     SnpMode.IfType == NET_IFTYPE_ETHERNET ?
     L"eth%d" :
     L"unk%d" ,
