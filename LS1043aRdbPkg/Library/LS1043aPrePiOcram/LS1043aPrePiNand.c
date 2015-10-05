@@ -34,8 +34,12 @@ EFI_STATUS UefiFdNandToDdr(
 	IfcNandInit();
 
 	Status = IfcNandFlashInit(NULL);
-	if (Status!=EFI_SUCCESS)
-		return Status;
+	if (Status!=EFI_SUCCESS) {
+    DEBUG((EFI_D_ERROR, "NAND Flash init failed!!!"));
+    return Status;
+  }
+
+	IfcNandAlign2BlkSize(&FdSize);
 
 //Copy from NAnd to DDR
 	return IfcNandFlashReadBlocks(NULL, 0, Lba, FdSize, (VOID*)DdrDestAddress);  	
@@ -46,11 +50,15 @@ LoadImageToDdr(
   IN   UINTN  UefiMemoryBase
   )
 { 
-  //ARM_MEMORY_REGION_DESCRIPTOR  MemoryTable[5];
   VOID	(*PrePiStart)(VOID);
+	EFI_STATUS Status;
 
   DEBUG((EFI_D_RELEASE, "Loading secondary firmware from NAND.....\n"));
-  UefiFdNandToDdr(FixedPcdGet32(PcdFdNandLba), FixedPcdGet32(PcdFdSize), UefiMemoryBase);
+  Status = UefiFdNandToDdr(FixedPcdGet32(PcdFdNandLba), FixedPcdGet32(PcdFdSize), UefiMemoryBase);
+  if(EFI_ERROR(Status)) {
+    DEBUG((EFI_D_ERROR, "NAND Flash init failed!!!"));
+    ASSERT(0);
+  }
 
   DEBUG((EFI_D_RELEASE, "Starting secondary boot firmware....\n"));
   PrePiStart = (VOID (*)())UefiMemoryBase;

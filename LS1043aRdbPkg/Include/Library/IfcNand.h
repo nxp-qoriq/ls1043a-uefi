@@ -21,6 +21,14 @@
 #include <Library/FslIfc.h>
 
 /**
+ * Align Size to NAND block size
+**/
+
+VOID IfcNandAlign2BlkSize(
+		UINTN *Size
+);
+
+/**
   Initialize IFC Nand Flash interface
 **/
 

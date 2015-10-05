@@ -33,6 +33,16 @@ NAND_FLASH_INFO *gNandFlashInfo = NULL;
 UINT8           *gEccCode;
 UINTN           gNum512BytesChunks = 0;
 
+VOID IfcNandAlign2BlkSize(
+		UINTN *Size
+		)
+{
+	if(gNandFlashInfo) {
+		if(*Size % gNandFlashInfo->BlockSize)
+			*Size += (gNandFlashInfo->BlockSize - (*Size % gNandFlashInfo->BlockSize));
+	}
+}
+
 /*
  * execute IFC NAND command and wait for it to complete
  */
