@@ -53,8 +53,14 @@ if [[ $1 != "RELEASE" ]]; then
 fi
 
 if [[ $2 == "NAND" || $2 == "SD" ]]; then
-	BootSuffix="NonXipBoot.dsc"
-	echo "Compiling for $1 boot"
+	if [[ $2 == "NAND" ]]; then 
+		BootSuffix="NandBoot.dsc"
+		echo "Compiling for $2 boot"
+	fi
+	if [[ $2 == "SD" ]]; then 
+		BootSuffix="SdBoot.dsc"
+		echo "Compiling for $2 boot"
+	fi
 	if [[ $3 == "" ]]; then
 		echo "Error ! Incorrect 3rd argument to build script."
 		print_usage_banner

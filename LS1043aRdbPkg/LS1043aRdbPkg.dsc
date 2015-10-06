@@ -22,8 +22,6 @@
   # Defines for default states.  These can be changed on the command line.
   # -D FLAG=VALUE
   #
-  DEFINE SD_BOOT_ENABLE      = TRUE
-  DEFINE NAND_BOOT_ENABLE    = FALSE
 
 [LibraryClasses.common.SEC]
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64LibSec.inf
