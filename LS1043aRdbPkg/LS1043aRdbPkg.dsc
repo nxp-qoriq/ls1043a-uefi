@@ -629,6 +629,7 @@ ShellPkg/Application/Shell/Shell.inf {
       NULL|ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
       NULL|ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
       NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+      NULL|ShellPkg/Library/UefiShellTftpCommandLib/UefiShellTftpCommandLib.inf
 !ifdef $(INCLUDE_DP)
       NULL|ShellPkg/Library/UefiDpLib/UefiDpLib.inf
 !endif #$(INCLUDE_DP)
