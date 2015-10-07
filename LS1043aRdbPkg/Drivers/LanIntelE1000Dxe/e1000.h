@@ -63,6 +63,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
+#include <Library/CacheMaintenanceLib.h>
 #include <Library/DevicePathLib.h>
 #include <Library/HiiLib.h>
 #include <Library/MemoryAllocationLib.h>
