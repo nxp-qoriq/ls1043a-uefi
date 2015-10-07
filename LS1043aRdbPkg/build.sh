@@ -53,14 +53,8 @@ if [[ $1 != "RELEASE" ]]; then
 fi
 
 if [[ $2 == "NAND" || $2 == "SD" ]]; then
-	if [[ $2 == "NAND" ]]; then 
-		BootSuffix="NandBoot.dsc"
-		echo "Compiling for $2 boot"
-	fi
-	if [[ $2 == "SD" ]]; then 
-		BootSuffix="SdBoot.dsc"
-		echo "Compiling for $2 boot"
-	fi
+	BootSuffix="NonXipBoot.dsc"
+	echo "Compiling for $1 boot"
 	if [[ $3 == "" ]]; then
 		echo "Error ! Incorrect 3rd argument to build script."
 		print_usage_banner
@@ -123,7 +117,14 @@ ARCH=AARCH64
 TARGET_TOOLS=GCC48
 
 # Actual build command
+if [[ $2 == "NAND" ]]; then
+build -p "$WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg$BootSuffix" -a $ARCH -t $TARGET_TOOLS -b $1 -DNAND_BOOT_ENABLE=TRUE
+elif [[ $2 == "SD" ]]; then
+build -p "$WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg$BootSuffix" -a $ARCH -t $TARGET_TOOLS -b $1 -DSD_BOOT_ENABLE=TRUE
+else
 build -p "$WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg$BootSuffix" -a $ARCH -t $TARGET_TOOLS -b $1
+fi
+
 if [[ $2 == "NAND" ]]; then
 $3/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_nand.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_NAND_EFI.pbl
 echo "PBL image created at $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_NAND_EFI.pbl"
