@@ -1324,8 +1324,6 @@ RootBridgeIoMap (
   EFI_PHYSICAL_ADDRESS  PhysicalAddress;
   MAP_INFO              *MapInfo;
 
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoMap function.\n"));
-
   if (HostAddress == NULL || NumberOfBytes == NULL || DeviceAddress == NULL || Mapping == NULL) {
     return EFI_INVALID_PARAMETER;
   }
@@ -1459,8 +1457,6 @@ RootBridgeIoUnmap (
 {
   MAP_INFO    *MapInfo;
 
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoUnmap function.\n"));
-
   //
   // See if the Map() operation associated with this Unmap() required a mapping buffer.
   // If a mapping buffer was not required, then this function simply returns EFI_SUCCESS.
@@ -1529,8 +1525,6 @@ RootBridgeIoAllocateBuffer (
   EFI_STATUS            Status;
   EFI_PHYSICAL_ADDRESS  PhysicalAddress;
 
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoAllocateBuffer function.\n"));
-
   //
   // Validate Attributes
   //
@@ -1589,7 +1583,6 @@ RootBridgeIoFreeBuffer (
   OUT VOID                             *HostAddress
   )
 {
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoFreeBuffer.\n"));
 
   return gBS->FreePages ((EFI_PHYSICAL_ADDRESS) (UINTN) HostAddress, Pages);
 }
@@ -1622,7 +1615,6 @@ RootBridgeIoFlush (
   //
   // not supported yet
   //
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoFlush function is not implemented yet.\n"));
   return EFI_SUCCESS;
 }
 
@@ -1657,8 +1649,6 @@ RootBridgeIoGetAttributes (
   PCI_ROOT_BRIDGE_INSTANCE *PrivateData;
 
   PrivateData = DRIVER_INSTANCE_FROM_PCI_ROOT_BRIDGE_IO_THIS(This);
-
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoGetAttributes function.\n"));
 
   if (Attributes == NULL && Supported == NULL) {
     return EFI_INVALID_PARAMETER;
@@ -1720,8 +1710,6 @@ RootBridgeIoSetAttributes (
   PCI_ROOT_BRIDGE_INSTANCE            *PrivateData;
 
   PrivateData = DRIVER_INSTANCE_FROM_PCI_ROOT_BRIDGE_IO_THIS(This);
-
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoSetAttributes function.\n"));
 
   if (Attributes != 0) {
     if ((Attributes & (~(PrivateData->Supports))) != 0) {

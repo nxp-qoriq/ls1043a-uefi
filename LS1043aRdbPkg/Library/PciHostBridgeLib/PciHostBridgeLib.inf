@@ -41,3 +41,6 @@
   DebugLib
   IoLib
   PcdLib
+
+[FixedPcd]
+  gArmPlatformTokenSpaceGuid.PcdPciMemTranslation

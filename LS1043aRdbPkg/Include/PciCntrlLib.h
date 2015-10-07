@@ -47,6 +47,7 @@
 #define PCIE_ATU_REGION_INDEX1          (0x1 << 0)
 #define PCIE_ATU_REGION_INDEX2          (0x2 << 0)
 #define PCIE_ATU_REGION_INDEX3          (0x3 << 0)
+#define PCIE_ATU_REGION_INDEX4          (0x4 << 0)
 #define PCIE_ATU_CR1                    0x904
 #define PCIE_ATU_TYPE_MEM               (0x0 << 0)
 #define PCIE_ATU_TYPE_IO                (0x2 << 0)
