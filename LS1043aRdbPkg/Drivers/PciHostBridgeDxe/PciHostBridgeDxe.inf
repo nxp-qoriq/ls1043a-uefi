@@ -54,6 +54,7 @@
   gArmPlatformTokenSpaceGuid.PcdPciIoBase
   gArmPlatformTokenSpaceGuid.PcdPciIoSize 
   gArmPlatformTokenSpaceGuid.PcdPciIoTranslation
+  gArmPlatformTokenSpaceGuid.PcdPciMemTranslation
   gArmPlatformTokenSpaceGuid.PcdPciMmio32Base
   gArmPlatformTokenSpaceGuid.PcdPciMmio32Size 
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Base

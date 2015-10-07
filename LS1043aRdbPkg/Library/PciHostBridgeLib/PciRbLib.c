@@ -109,6 +109,7 @@ RootBridgeIoMemRW (
     return Status;
   }
 
+  Address = FixedPcdGet64 (PcdPciMemTranslation) + Address;
   InStride = mInStride[Width];
   OutStride = mOutStride[Width];
   OperationWidth = (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_WIDTH) (Width & 0x03);

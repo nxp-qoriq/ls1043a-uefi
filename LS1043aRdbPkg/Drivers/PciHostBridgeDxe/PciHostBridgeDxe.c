@@ -33,7 +33,6 @@ UINTN RootBridgeNumber[3] = { 1, 1, 1 };
 
 UINT64 RootBridgeAttribute[1][1] = { {EFI_PCI_HOST_BRIDGE_MEM64_DECODE | EFI_PCI_HOST_BRIDGE_COMBINE_MEM_PMEM} };
 
-
 EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath1 = {
   {
         { ACPI_DEVICE_PATH,
@@ -155,11 +154,8 @@ PciHostBridgeEntryPoint (
   UINTN                       Loop1;
   UINTN                       Loop2;
 
-
   DEBUG ((EFI_D_INFO, "PCI HostBridgeInit Entry\n"));
 
-  mPciDriverImageHandle = ImageHandle;
-  
   //
   // Create Host Bridge Device Handle
   //
@@ -188,7 +184,8 @@ PciHostBridgeEntryPoint (
     } else {
       DEBUG ((EFI_D_INFO, "%a: Succeed to install resource alloc\n", __FUNCTION__));
     }   
-     
+    
+    HostBridge[Loop1]->ImageHandle = ImageHandle; 
     //
     // Create Root Bridge Device Handle in this Host Bridge
     //
@@ -200,13 +197,12 @@ PciHostBridgeEntryPoint (
       }
 
       PrivateData[Loop1]->Signature = PCI_ROOT_BRIDGE_SIGNATURE;
-      if (Loop1 == 0)
-        PrivateData[Loop1]->DevicePath = (EFI_DEVICE_PATH_PROTOCOL *)&mEfiPciRootBridgeDevicePath1;
-      if (Loop1 == 1)
-        PrivateData[Loop1]->DevicePath = (EFI_DEVICE_PATH_PROTOCOL *)&mEfiPciRootBridgeDevicePath2;
-      if (Loop1 == 2)
-        PrivateData[Loop1]->DevicePath = (EFI_DEVICE_PATH_PROTOCOL *)&mEfiPciRootBridgeDevicePath3;
-
+      if (Loop1 == 0) {
+        CopyMem (&(PrivateData[Loop1]->DevicePath), &mEfiPciRootBridgeDevicePath1, sizeof (EFI_PCI_ROOT_BRIDGE_DEVICE_PATH));
+        // Set Device Path for this Root Bridge
+        PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 0;
+      }  
+ 
       PrivateData[Loop1]->Info = AllocateZeroPool (sizeof(struct LsPcieInfo));
       PrivateData[Loop1]->Pcie = AllocateZeroPool (sizeof(struct LsPcie));
       
@@ -255,7 +251,7 @@ PciHostBridgeEntryPoint (
       DEBUG ((EFI_D_INFO, "Going to Install MultipleProtocolInterfaces\n")); 
       Status = gBS->InstallMultipleProtocolInterfaces(
                       &PrivateData[Loop1]->Handle,              
-                      &gEfiDevicePathProtocolGuid,      PrivateData[Loop1]->DevicePath,
+                      &gEfiDevicePathProtocolGuid,      &PrivateData[Loop1]->DevicePath,
                       &gEfiPciRootBridgeIoProtocolGuid, &PrivateData[Loop1]->Io,
                       NULL
                       );
@@ -404,7 +400,7 @@ PciNotifyPhase (
       AddrLen = RootBridgeInstance->ResAlloc[ResTypePMem32].Length;
 
       // Top of the 32bit PCI Memory space
-      BaseAddress = FixedPcdGet64 (PcdPciMmio32Base) + FixedPcdGet64 (PcdPciMmio32Size);
+      BaseAddress = FixedPcdGet32 (PcdPciMmio32Base) + FixedPcdGet64 (PcdPciMmio32Size);
 
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,

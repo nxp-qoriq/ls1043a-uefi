@@ -81,6 +81,7 @@
 
 [LibraryClasses]
   BaseMemoryLib
+  CacheMaintenanceLib
   DebugLib
   DevicePathLib
   HiiLib

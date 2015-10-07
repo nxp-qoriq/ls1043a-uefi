@@ -36,6 +36,8 @@
   gShellDebug1HiiGuid             = {0x25f200aa, 0xd3cb, 0x470a, {0xbf, 0x51, 0xe7, 0xd1, 0x62, 0xd2, 0x2e, 0x6f}}
   gShellNetwork1HiiGuid           = {0xf3d301bb, 0xf4a5, 0x45a8, {0xb0, 0xb7, 0xfa, 0x99, 0x9c, 0x62, 0x37, 0xae}}
   gEfiDpcProtocolGuid            = {0x480f8ae9, 0xc46, 0x4aa9,  { 0xbc, 0x89, 0xdb, 0x9f, 0xba, 0x61, 0x98, 0x6 }}
+  gShellTftpHiiGuid               = {0x738a9314, 0x82c1, 0x4592, {0x8f, 0xf7, 0xc1, 0xbd, 0xf1, 0xb2, 0x0e, 0xd4}}
+
 
   ## Include/Protocol/SimpleNetwork.h
   gEfiSimpleNetworkProtocolGuid  = { 0xA19832B9, 0xAC25, 0x11D3, { 0x9A, 0x2D, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }}
@@ -152,10 +154,11 @@
   gArmPlatformTokenSpaceGuid.PcdKludgeMapPciMmioAsCached|FALSE|BOOLEAN|0x00000006
   gArmPlatformTokenSpaceGuid.PcdPciBusMin|0|UINT64|0x00000042
   gArmPlatformTokenSpaceGuid.PcdPciBusMax|255|UINT64|0x00000043
-  gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x5000010000|UINT64|0x00000044
+  gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x00010000|UINT64|0x00000044
   gArmPlatformTokenSpaceGuid.PcdPciIoSize|0x00010000|UINT64|0x00000045
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Base|0x0|UINT32|0x00000046
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x0|UINT32|0x00000047
+  gArmPlatformTokenSpaceGuid.PcdPciMmio32Base|0x40000000|UINT32|0x00000046
+  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x40000000|UINT32|0x00000047
+  gArmPlatformTokenSpaceGuid.PcdPciMemTranslation|0x5000000000|UINT64|0x00000055
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Base|0x5040000000|UINT64|0x00000048
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Size|0x0040000000|UINT64|0x00000049
   gArmPlatformTokenSpaceGuid.PcdPciIoTranslation|0x00010000|UINT64|0x00000050

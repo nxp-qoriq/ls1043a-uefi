@@ -645,6 +645,10 @@ Returns:
   // Turn on the blocking function so we don't get swapped out
   // Then move the Tail pointer so the HW knows to start processing the TX we just setup.
   //
+  // Dump the packet as well as descriptor into RAM so that E1000 can pick the clean copy
+  // for this clean and invalidate cache, so that all the contents are actually written into RAM
+  WriteBackInvalidateDataCacheRange((VOID *)(UINTN)TransmitDescriptor->buffer_addr, (UINTN)(TxBuffer->DataLen + TxBuffer->MediaheaderLen));
+  WriteBackInvalidateDataCacheRange((VOID *)(UINTN)TransmitDescriptor, (UINTN)(sizeof(*TransmitDescriptor)));
   DEBUGWAIT(E1000);
   e1000_BlockIt (GigAdapter, TRUE);
   E1000_WRITE_REG (&GigAdapter->hw, E1000_TDT(0), GigAdapter->cur_tx_ind);
@@ -653,10 +657,11 @@ Returns:
   //
   // If the opflags tells us to wait for the packet to hit the wire, we will wait.
   //
-  if ((opflags & PXE_OPFLAGS_TRANSMIT_BLOCK) != 0) {
     WaitMsec = 1000;
 
     while ((TransmitDescriptor->upper.fields.status & E1000_TXD_STAT_DD) == 0) {
+      // Invalidate cache always to ensure that descriptor is picked from RAM only by E1000
+      InvalidateDataCacheRange((VOID *)(UINTN)TransmitDescriptor, (UINTN)(sizeof(*TransmitDescriptor)));
       DelayInMilliseconds (10);
       WaitMsec -= 10;
       if (WaitMsec <= 0) {
@@ -673,7 +678,6 @@ Returns:
     } else {
       DEBUGPRINT(E1000, ("Transmit success\n"));
     }
-  }
 
   return PXE_STATCODE_SUCCESS;
 };
@@ -723,7 +727,6 @@ Returns:
   PacketType  = PXE_FRAME_TYPE_NONE;
   StatCode    = PXE_STATCODE_NO_DATA;
 
-
   //
   // acknowledge the interrupts
   //
@@ -756,9 +759,15 @@ Returns:
   CpbReceive  = (PXE_CPB_RECEIVE *) (UINTN) cpb;
   DbReceive   = (PXE_DB_RECEIVE *) (UINTN) db;
 
+  // Invalidate cache, so that all the contents are actually picked up from RAM
+  InvalidateDataCacheRange((VOID *)(UINTN)CpbReceive->BufferAddr, (UINTN)CpbReceive->BufferLen);
+  InvalidateDataCacheRange((VOID *)(UINTN)CpbReceive, (UINTN)(sizeof(*CpbReceive)));
+  InvalidateDataCacheRange((VOID *)(UINTN)DbReceive, (UINTN)(sizeof(*DbReceive)));
   //
   // Get a pointer to the buffer that should have a rx in it, IF one is really there.
   //
+  // Invalidate cache, load receive descriptor from RAM
+  InvalidateDataCacheRange((VOID *)(UINTN)&GigAdapter->rx_ring[GigAdapter->cur_rx_ind], (UINTN)(sizeof(E1000_RECEIVE_DESCRIPTOR)));
   ReceiveDescriptor = &GigAdapter->rx_ring[GigAdapter->cur_rx_ind];
 
 #if (DBG_LVL&CRITICAL)
@@ -796,6 +805,9 @@ Returns:
       //
       // Copy the packet from our list to the EFI buffer.
       //
+      // Invalidate cache, To get the packet and receive descriptor from RAM only
+      InvalidateDataCacheRange((VOID *)(UINTN)ReceiveDescriptor, (UINTN)(sizeof(*ReceiveDescriptor)));
+      InvalidateDataCacheRange((VOID *)(UINTN)ReceiveDescriptor->buffer_addr, TempLen);
       e1000_MemCopy ((UINT8 *) (UINTN) CpbReceive->BufferAddr, (UINT8 *) (UINTN) ReceiveDescriptor->buffer_addr, TempLen);
 
 #if (DBG_LVL & RX)
@@ -856,6 +868,7 @@ Returns:
     //
     // Clean up the packet
     //
+    TempLen = ReceiveDescriptor->length;
     ReceiveDescriptor->status = 0;
     ReceiveDescriptor->length = 0;
 
@@ -863,6 +876,8 @@ Returns:
     // Move the current cleaned buffer pointer, being careful to wrap it as needed.  Then update the hardware,
     // so it knows that an additional buffer can be used.
     //
+    InvalidateDataCacheRange((VOID *)(UINTN)ReceiveDescriptor->buffer_addr, TempLen);
+    WriteBackInvalidateDataCacheRange((VOID *)(UINTN)ReceiveDescriptor, (UINTN)(sizeof(*ReceiveDescriptor)));
     E1000_WRITE_REG (&GigAdapter->hw, E1000_RDT(0), GigAdapter->cur_rx_ind);
     GigAdapter->cur_rx_ind++;
     if (GigAdapter->cur_rx_ind == DEFAULT_RX_DESCRIPTORS) {
@@ -1231,7 +1246,7 @@ Returns:
   UINT16            i;
 
   DEBUGPRINT(E1000, ("e1000_FirstTimeInit\n"));
-  DEBUG ((EFI_D_INFO, "######## e1000_FirstTimeInit \n"));
+  DEBUG ((EFI_D_INFO, " e1000_FirstTimeInit \n"));
 
   GigAdapter->DriverBusy = FALSE;
 
@@ -1299,6 +1314,16 @@ Returns:
   DEBUGPRINT(INIT, ("PCI Bus = %X\n", GigAdapter->Bus));
   DEBUGPRINT(INIT, ("PCI Device = %X\n", GigAdapter->Device));
   DEBUGPRINT(INIT, ("PCI Function = %X\n", GigAdapter->Function));
+  DEBUG (( EFI_D_INFO, "PCI Command Register = %X\n", PciConfigHeader->Command));
+  DEBUG (( EFI_D_INFO, "PCI Status Register = %X\n", PciConfigHeader->Status));
+  DEBUG (( EFI_D_INFO, "PCI VendorID = %X\n", PciConfigHeader->VendorID));
+  DEBUG (( EFI_D_INFO, "PCI DeviceID = %X\n", PciConfigHeader->DeviceID));
+  DEBUG (( EFI_D_INFO, "PCI SubVendorID = %X\n", PciConfigHeader->SubVendorID));
+  DEBUG (( EFI_D_INFO, "PCI SubSystemID = %X\n", PciConfigHeader->SubSystemID));
+  DEBUG (( EFI_D_INFO, "PCI Segment = %X\n", GigAdapter->Segment));
+  DEBUG (( EFI_D_INFO, "PCI Bus = %X\n", GigAdapter->Bus));
+  DEBUG (( EFI_D_INFO, "PCI Device = %X\n", GigAdapter->Device));
+  DEBUG (( EFI_D_INFO, "PCI Function = %X\n", GigAdapter->Function));
 
   ZeroMem (GigAdapter->BroadcastNodeAddress, PXE_MAC_LENGTH);
   SetMem (GigAdapter->BroadcastNodeAddress, PXE_HWADDR_LEN_ETHER, 0xFF);
@@ -1338,11 +1363,13 @@ Returns:
 
   if (e1000_set_mac_type (&GigAdapter->hw) != E1000_SUCCESS) {
     DEBUGPRINT(CRITICAL, ("Unsupported MAC type!\n"));
+    DEBUG (( EFI_D_INFO, "Unsupported MAC type!\n"));
     return EFI_UNSUPPORTED;
   }
 
   if (e1000_setup_init_funcs (&GigAdapter->hw, TRUE) != E1000_SUCCESS) {
     DEBUGPRINT(CRITICAL, ("e1000_setup_init_funcs failed!\n"));
+    DEBUG (( EFI_D_INFO, "e1000_setup_init_funcs failed!\n"));
     return EFI_UNSUPPORTED;
   }
 
@@ -1361,14 +1388,18 @@ Returns:
   DEBUGPRINT(E1000, ("Calling e1000_read_mac_addr\n"));
   if (e1000_read_mac_addr (&GigAdapter->hw) != E1000_SUCCESS) {
     DEBUGPRINT(CRITICAL, ("Could not read MAC address\n"));
+    DEBUG((EFI_D_INFO, "Could not read MAC address\n"));
     return EFI_UNSUPPORTED;
   }
 
   DEBUGPRINT(INIT, ("MAC Address: "));
+  DEBUG((EFI_D_INFO, "MAC Address: "));
   for (i = 0; i < 6; i++) {
     DEBUGPRINT(INIT, ("%2x ", GigAdapter->hw.mac.perm_addr[i]));
+    DEBUG((EFI_D_INFO, "%2x ", GigAdapter->hw.mac.perm_addr[i]));
   }
   DEBUGPRINT(INIT, ("\n"));
+  DEBUG((EFI_D_INFO, "\n"));
 
 
   ScStatus = e1000_reset_hw (&GigAdapter->hw);
@@ -1592,6 +1623,8 @@ Returns:
   GigAdapter->xmit_done_head = GigAdapter->cur_tx_ind;
 
   GigAdapter->cur_rx_ind = (UINT16) E1000_READ_REG(&GigAdapter->hw, E1000_RDH(0));
+  InvalidateDataCacheRange((VOID *)(UINTN)GigAdapter->rx_ring[GigAdapter->cur_rx_ind].buffer_addr, 4096);
+  WriteBackInvalidateDataCacheRange((VOID *)(UINTN)&GigAdapter->rx_ring[GigAdapter->cur_rx_ind], (UINTN)(sizeof(E1000_RECEIVE_DESCRIPTOR)));
   E1000_WRITE_REG (&GigAdapter->hw, E1000_RDT(0), GigAdapter->cur_rx_ind);
 
   if (GigAdapter->hw.mac.type != e1000_82575 &&
@@ -1630,6 +1663,7 @@ Returns:
     //
     // Set the software tail pointer just behind head to give hardware the entire ring
     //
+    WriteBackInvalidateDataCacheRange((VOID *)(UINTN)&GigAdapter->rx_ring, (UINTN)(sizeof(E1000_RECEIVE_DESCRIPTOR) * DEFAULT_RX_DESCRIPTORS));
     if (GigAdapter->cur_rx_ind == 0) {
       E1000_WRITE_REG (&GigAdapter->hw, E1000_RDT(0), DEFAULT_RX_DESCRIPTORS - 1);
     } else {
@@ -1678,6 +1712,7 @@ Returns:
   TempReg = (TempReg | E1000_TCTL_EN | E1000_TCTL_PSP);
   E1000_WRITE_REG (&GigAdapter->hw, E1000_TCTL, TempReg);
 
+  WriteBackInvalidateDataCache();
   e1000_PciFlush(&GigAdapter->hw);
 }
 
