@@ -25,7 +25,6 @@
 #include <Protocol/Metronome.h>
 #include <Protocol/DevicePath.h>
 
-
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
 #include <Library/BaseMemoryLib.h>
@@ -59,11 +58,6 @@
 // // nor EFI_PCI_HOST_BRIDGE_MEM64_DECODE
 #define PCI_MEMORY_ALLOCATION_ATTRIBUTES    0
 
-/*#define PCI_MEM32_BASE      PcdGet64 (PcdPciMmio32Base)
-#define PCI_MEM32_SIZE      PcdGet64 (PcdPciMmio32Size)
-#define PCI_MEM64_BASE      PcdGet64 (PcdPciMmio64Base)
-#define PCI_MEM64_SIZE      PcdGet64 (PcdPciMmio64Size)*/
-
 typedef enum {
   IoOperation,
   MemOperation,
@@ -80,17 +74,15 @@ typedef struct PCI_HOST_BRIDGE_INSTANCE_ST {
   LIST_ENTRY                                        Head;
   BOOLEAN                                           ResourceSubmited;  
   BOOLEAN                                           CanRestarted;
- // EFI_METRONOME_ARCH_PROTOCOL                      *Metronome;
   EFI_PCI_HOST_BRIDGE_RESOURCE_ALLOCATION_PROTOCOL  ResAlloc;
 } PCI_HOST_BRIDGE_INSTANCE;
 
 #define INSTANCE_FROM_RESOURCE_ALLOCATION_THIS(a) \
   CR(a, PCI_HOST_BRIDGE_INSTANCE, ResAlloc, PCI_HOST_BRIDGE_SIGNATURE)
-  
+
 //
 //  HostBridge Resource Allocation interface
 //
-
 /**
    These are the notifications from the PCI bus driver that it is about to enter a certain
    phase of the PCI enumeration process.
@@ -396,7 +388,6 @@ PciPreprocessController (
 #define EFI_RESOURCE_NONEXISTENT   0xFFFFFFFFFFFFFFFFULL
 #define EFI_RESOURCE_LESS          0xFFFFFFFFFFFFFFFEULL
 
-
 //
 // Driver Instance Data Prototypes
 //
@@ -408,16 +399,6 @@ typedef struct {
   EFI_PHYSICAL_ADDRESS                       HostAddress;
   EFI_PHYSICAL_ADDRESS                       MappedHostAddress;
 } MAP_INFO;
-
-typedef struct {
-  PCI_DEVICE_PATH			PciDevicePath;
-  EFI_DEVICE_PATH_PROTOCOL		EndDevicePath;
-} PCI_ROOT_BRIDGE_DEVICE_PATH;
-
-typedef struct {
-  ACPI_HID_DEVICE_PATH 		        Acpi;
-  EFI_DEVICE_PATH_PROTOCOL		EndDevicePath;
-} EFI_PCI_ROOT_BRIDGE_DEVICE_PATH;
 
 typedef enum {
   ResNone = 0,

@@ -17,6 +17,7 @@
 #define _PCI_LS_H_
 
 #include <Library/IoLib.h>
+#include <PciHostBridge.h>
 #include <Protocol/PciRootBridgeIo.h>
 #include <Protocol/DevicePath.h>
 
@@ -80,6 +81,11 @@ struct PciConfigTable {
 #define EFI_RESOURCE_NONEXISTENT        0xFFFFFFFFFFFFFFFFULL
 #define EFI_RESOURCE_LESS               0xFFFFFFFFFFFFFFFEULL
 
+typedef struct {
+  ACPI_HID_DEVICE_PATH          AcpiDevicePath;
+  EFI_DEVICE_PATH_PROTOCOL      End;
+} EFI_PCI_ROOT_BRIDGE_DEVICE_PATH;
+
 typedef enum {
 	ResTypeIo = 0,
 	ResTypeMem32,
@@ -104,17 +110,14 @@ typedef struct {
   UINT64                 RootBridgeAttrib;
   UINT64                 Attributes;
   UINT64                 Supports;
-
-  UINTN                            BusStart;
-  UINTN                            BusLength;
-  UINT64                           MemAllocAttributes;
-  PCI_RESOURCE_ALLOC               ResAlloc[ResTypeMax];
-
-  UINT64		IoTranslation;
+  UINTN                  BusStart;
+  UINTN                  BusLength;
+  UINT64                 MemAllocAttributes;
+  PCI_RESOURCE_ALLOC     ResAlloc[ResTypeMax];
+  UINT64	  	IoTranslation;
   struct LsPcieInfo	*Info;
   struct LsPcie		*Pcie;
   struct PCI_ROOT_BRIDGE_INSTANCE *Next;
-//  PCI_HOST_BRIDGE_INSTANCE        *HostBridge;
   INTN			FirstBusno;
   INTN			LastBusno;
   INTN			CurrentBusno;
@@ -125,10 +128,9 @@ typedef struct {
   INTN			RegionCnt;
   struct PciConfigTable	*ConfigTable;
 
-  /* Used by auto config */
   struct PciRegion *PciMem, *PciIo, *PciPrefetch;
 
-  EFI_DEVICE_PATH_PROTOCOL                *DevicePath;
+  EFI_PCI_ROOT_BRIDGE_DEVICE_PATH         DevicePath;
   EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL         Io;
 
 } PCI_ROOT_BRIDGE_INSTANCE;

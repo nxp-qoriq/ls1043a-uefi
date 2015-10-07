@@ -357,11 +357,12 @@
   gArmPlatformTokenSpaceGuid.PcdKludgeMapPciMmioAsCached|FALSE
   gArmPlatformTokenSpaceGuid.PcdPciBusMin|0
   gArmPlatformTokenSpaceGuid.PcdPciBusMax|255
-  gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x5000010000
+  gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x00010000
   gArmPlatformTokenSpaceGuid.PcdPciIoSize|0x00010000      # 64k
   gArmPlatformTokenSpaceGuid.PcdPciIoTranslation|0x00010000
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Base|0x0
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x0      # 128M
+  gArmPlatformTokenSpaceGuid.PcdPciMmio32Base|0x40000000
+  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x40000000      # 128M
+  gArmPlatformTokenSpaceGuid.PcdPciMemTranslation|0x5000000000
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Base|0x5040000000
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Size|0x40000000
   gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x5000000000
