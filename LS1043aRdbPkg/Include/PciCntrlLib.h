@@ -1,6 +1,10 @@
 /** PciCntrlLib.c
  The Header file of the Pci Controller Driver 
 
+ Some part of code is inspired from EDK II, file:
+ MdePkg/Include/Library/PciLib.h
+
+ Copyright (c) 2006 - 2012, Intel Corporation. All rights reserved
  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
  This program and the accompanying materials

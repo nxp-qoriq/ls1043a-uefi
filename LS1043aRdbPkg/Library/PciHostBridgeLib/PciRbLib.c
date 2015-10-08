@@ -1,10 +1,10 @@
 /** PciRbLib.c
  Functions supporting PCI Root Bridge Io Protocol 
 
- Based on PCI RootBridge implementation in
- ArmPlatformPkg/ArmJunoPkg/Drivers/PciHostBridgeDxe/PciRootBridge.c
+ Some part of code is inspired from EDK II, file:
+ PcAtChipsetPkg/PciHostBridgeDxe/PciRootBridgeIo.c
 
- Copyright (c) 2011-2015, ARM Ltd. All rights reserved.
+ Copyright (c) 2008 - 2012, Intel Corporation. All rights reserved.
  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
  This program and the accompanying materials

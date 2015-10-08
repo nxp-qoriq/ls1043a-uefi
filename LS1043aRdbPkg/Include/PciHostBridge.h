@@ -1,6 +1,10 @@
 /** PciHostBridge.h
  The Header file of the Pci Host Bridge Driver 
 
+ Some part of code is inspired from EDK II, File:
+ PcAtChipsetPkg/PciHostBridgeDxe/PciHostBridge.h
+
+ Copyright (c) 2008 - 2010, Intel Corporation. All rights reserved. <BR>
  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
 
  This program and the accompanying materials
