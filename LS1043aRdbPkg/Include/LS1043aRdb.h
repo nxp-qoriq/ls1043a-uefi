@@ -158,33 +158,33 @@
 #define CONFIG_SYS_PCIE3_ADDR                  0x03600000
 
 /* PCIe */
-#define CONFIG_PCI              /* Enable PCI/PCIE */
-#define CONFIG_PCIE1            /* PCIE controler 1 */
-#define CONFIG_PCIE2            /* PCIE controler 2 */
-#define CONFIG_PCIE3            /* PCIE controler 2 */
-#define CONFIG_PCIE_LAYERSCAPE  /* Use common FSL Layerscape PCIe code */
+#define CONFIG_LS_PCI              /* Enable PCI/PCIE */
+#define CONFIG_LS_PCIE1            /* PCIE controler 1 */
+#define CONFIG_LS_PCIE2            /* PCIE controler 2 */
+#define CONFIG_LS_PCIE3            /* PCIE controler 2 */
+#define CONFIG_LS_PCIE_LAYERSCAPE  /* Use common FSL Layerscape PCIe code */
 
-#define CONFIG_SYS_PCI_64BIT
+#define CONFIG_SYS_LS_PCI_64BIT
 
-#define CONFIG_SYS_PCIE_CFG0_PHYS_OFF   0x00000000
-#define CONFIG_SYS_PCIE_CFG0_SIZE       0x00001000      /* 4k */
-#define CONFIG_SYS_PCIE_CFG1_PHYS_OFF   0x00001000
-#define CONFIG_SYS_PCIE_CFG1_SIZE       0x00001000      /* 4k */
+#define CONFIG_SYS_LS_PCIE_CFG0_PHYS_OFF   0x00000000
+#define CONFIG_SYS_LS_PCIE_CFG0_SIZE       0x00001000      /* 4k */
+#define CONFIG_SYS_LS_PCIE_CFG1_PHYS_OFF   0x00001000
+#define CONFIG_SYS_LS_PCIE_CFG1_SIZE       0x00001000      /* 4k */
 
-#define CONFIG_SYS_PCIE_IO_BUS          0x00000000
-#define CONFIG_SYS_PCIE_IO_PHYS_OFF     0x00010000
-#define CONFIG_SYS_PCIE_IO_SIZE         0x00010000      /* 64k */
+#define CONFIG_SYS_LS_PCIE_IO_BUS          0x00000000
+#define CONFIG_SYS_LS_PCIE_IO_PHYS_OFF     0x00010000
+#define CONFIG_SYS_LS_PCIE_IO_SIZE         0x00010000      /* 64k */
 
-#define CONFIG_SYS_PCIE_MEM_BUS         0x40000000
-#define CONFIG_SYS_PCIE_MEM_PHYS_OFF    0x40000000
-#define CONFIG_SYS_PCIE_MEM_SIZE        0x40000000      /* 1 GB */
+#define CONFIG_SYS_LS_PCIE_MEM_BUS         0x40000000
+#define CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF    0x40000000
+#define CONFIG_SYS_LS_PCIE_MEM_SIZE        0x40000000      /* 1 GB */
 
-#ifdef CONFIG_PCI
+#ifdef CONFIG_LS_PCI
 #define CONFIG_NET_MULTI
-#define CONFIG_PCI_PNP
+#define CONFIG_LS_PCI_PNP
 #define CONFIG_E1000
-#define CONFIG_PCI_SCAN_SHOW
-#define CONFIG_CMD_PCI
+#define CONFIG_LS_PCI_SCAN_SHOW
+#define CONFIG_CMD_LS_PCI
 #define CONFIG_CMD_NET
 #endif
 

@@ -22,52 +22,47 @@
 
 #define CONFIG_SYS_SDRAM_BASE       0x80000000
 
-#ifndef CONFIG_SYS_PCI_MEMORY_BUS
-#define CONFIG_SYS_PCI_MEMORY_BUS CONFIG_SYS_SDRAM_BASE
+#ifndef CONFIG_SYS_LS_PCI_MEMORY_BUS
+#define CONFIG_SYS_LS_PCI_MEMORY_BUS CONFIG_SYS_SDRAM_BASE
 #endif
 
-#ifndef CONFIG_SYS_PCI_MEMORY_PHYS
-#define CONFIG_SYS_PCI_MEMORY_PHYS CONFIG_SYS_SDRAM_BASE
+#ifndef CONFIG_SYS_LS_PCI_MEMORY_PHYS
+#define CONFIG_SYS_LS_PCI_MEMORY_PHYS CONFIG_SYS_SDRAM_BASE
 #endif
 
-#ifndef CONFIG_SYS_PCI_MEMORY_SIZE
-#define CONFIG_SYS_PCI_MEMORY_SIZE (2 * 1024 * 1024 * 1024UL) /* 2G */
+#ifndef CONFIG_SYS_LS_PCI_MEMORY_SIZE
+#define CONFIG_SYS_LS_PCI_MEMORY_SIZE (2 * 1024 * 1024 * 1024UL)
 #endif
-
-#define CONFIG_SYS_IMMR                         0x01000000
-#define CONFIG_SYS_DCSRBAR                      0x20000000
-
-#define CONFIG_SYS_FSL_SCFG_ADDR                (CONFIG_SYS_IMMR + 0x00570000)
 
 /* iATU registers */
-#define PCIE_ATU_VIEWPORT               0x900
-#define PCIE_ATU_REGION_INBOUND         (0x1 << 31)
-#define PCIE_ATU_REGION_OUTBOUND        (0x0 << 31)
-#define PCIE_ATU_REGION_INDEX0          (0x0 << 0)
-#define PCIE_ATU_REGION_INDEX1          (0x1 << 0)
-#define PCIE_ATU_REGION_INDEX2          (0x2 << 0)
-#define PCIE_ATU_REGION_INDEX3          (0x3 << 0)
-#define PCIE_ATU_REGION_INDEX4          (0x4 << 0)
-#define PCIE_ATU_CR1                    0x904
-#define PCIE_ATU_TYPE_MEM               (0x0 << 0)
-#define PCIE_ATU_TYPE_IO                (0x2 << 0)
-#define PCIE_ATU_TYPE_CFG0              (0x4 << 0)
-#define PCIE_ATU_TYPE_CFG1              (0x5 << 0)
-#define PCIE_ATU_CR2                    0x908
-#define PCIE_ATU_ENABLE                 (0x1 << 31)
-#define PCIE_ATU_BAR_MODE_ENABLE        (0x1 << 30)
-#define PCIE_ATU_LOWER_BASE             0x90C
-#define PCIE_ATU_UPPER_BASE             0x910
-#define PCIE_ATU_LIMIT                  0x914
-#define PCIE_ATU_LOWER_TARGET           0x918
-#define PCIE_ATU_BUS(x)                 (((x) & 0xff) << 24)
-#define PCIE_ATU_DEV(x)                 (((x) & 0x1f) << 19)
-#define PCIE_ATU_FUNC(x)                (((x) & 0x7) << 16)
-#define PCIE_ATU_UPPER_TARGET           0x91C
+#define LS_PCIE_ATU_VIEWPORT               0x900
+#define LS_PCIE_ATU_REGION_INBOUND         (0x1 << 31)
+#define LS_PCIE_ATU_REGION_OUTBOUND        (0x0 << 31)
+#define LS_PCIE_ATU_REGION_INDEX0          (0x0 << 0)
+#define LS_PCIE_ATU_REGION_INDEX1          (0x1 << 0)
+#define LS_PCIE_ATU_REGION_INDEX2          (0x2 << 0)
+#define LS_PCIE_ATU_REGION_INDEX3          (0x3 << 0)
+#define LS_PCIE_ATU_REGION_INDEX4          (0x4 << 0)
+#define LS_PCIE_ATU_CR1                    0x904
+#define LS_PCIE_ATU_TYPE_MEM               (0x0 << 0)
+#define LS_PCIE_ATU_TYPE_IO                (0x2 << 0)
+#define LS_PCIE_ATU_TYPE_CFG0              (0x4 << 0)
+#define LS_PCIE_ATU_TYPE_CFG1              (0x5 << 0)
+#define LS_PCIE_ATU_CR2                    0x908
+#define LS_PCIE_ATU_ENABLE                 (0x1 << 31)
+#define LS_PCIE_ATU_BAR_MODE_ENABLE        (0x1 << 30)
+#define LS_PCIE_ATU_LOWER_BASE             0x90C
+#define LS_PCIE_ATU_UPPER_BASE             0x910
+#define LS_PCIE_ATU_LIMIT                  0x914
+#define LS_PCIE_ATU_LOWER_TARGET           0x918
+#define LS_PCIE_ATU_BUS(x)                 (((x) & 0xff) << 24)
+#define LS_PCIE_ATU_DEV(x)                 (((x) & 0x1f) << 19)
+#define LS_PCIE_ATU_FUNC(x)                (((x) & 0x7) << 16)
+#define LS_PCIE_ATU_UPPER_TARGET           0x91C
 
 /* LUT registers */
-#define PCIE_LUT_BASE           0x80000
-#define PCIE_LUT_DBG            0x7FC
+#define LS_PCIE_LUT_BASE           0x80000
+#define LS_PCIE_LUT_DBG            0x7FC
 
 /* DBI Read-Only Write Enable Register: Pg 1518 RM rev B*/
 /* Set bit 0 of this register as 1.
@@ -75,16 +70,16 @@
  * When you set this field to "1", then some RO and HwInit bits are writable
  * from the local application through the DBI.
  */
-#define PCIE_DBI_RO_WR_EN       0x8bc
+#define LS_PCIE_DBI_RO_WR_EN       0x8bc
 
-#define PCIE_LINK_CAP           0x7c
-#define PCIE_LINK_SPEED_MASK    0xf
-#define PCIE_LINK_STA           0x82
+#define LS_PCIE_LINK_CAP           0x7c
+#define LS_PCIE_LINK_SPEED_MASK    0xf
+#define LS_PCIE_LINK_STA           0x82
 
-#define LTSSM_STATE_MASK        0x3f
-#define LTSSM_PCIE_L0           0x11 /* L0 state */
+#define LS_LTSSM_STATE_MASK        0x3f
+#define LS_LTSSM_PCIE_L0           0x11 /* L0 state */
 
-#define PCIE_DBI_SIZE           0x100000 /* 1M */
+#define LS_PCIE_DBI_SIZE           0x100000 /* 1M */
 
 #define PCI_CLASS_REVISION	0x08	/* High 24 bits are class, low 8
 					   revision */
@@ -232,12 +227,6 @@ PcieSetupAtu (
 	IN struct LsPcieInfo *Info
 );
 
-/*
-VOID
-PciAddRootBridge (
-  IN PCI_ROOT_BRIDGE_INSTANCE      *PrivateData
-);
-*/
 VOID
 PcieSetupCntrl (
 	IN PCI_ROOT_BRIDGE_INSTANCE      *PrivateData,

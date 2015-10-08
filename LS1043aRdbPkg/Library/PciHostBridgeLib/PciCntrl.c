@@ -48,54 +48,54 @@ SetLSPcieInfo (
 {
 	if (Num == 1) {
 	PcieInfo->Regs = CONFIG_SYS_PCIE1_ADDR;
-	PcieInfo->Cfg0Phys = CONFIG_SYS_PCIE_CFG0_PHYS_OFF +
+	PcieInfo->Cfg0Phys = CONFIG_SYS_LS_PCIE_CFG0_PHYS_OFF +
 		      CONFIG_SYS_PCIE1_PHYS_ADDR;
-	PcieInfo->Cfg0Size = CONFIG_SYS_PCIE_CFG0_SIZE;
-	PcieInfo->Cfg1Phys = CONFIG_SYS_PCIE_CFG1_PHYS_OFF +
+	PcieInfo->Cfg0Size = CONFIG_SYS_LS_PCIE_CFG0_SIZE;
+	PcieInfo->Cfg1Phys = CONFIG_SYS_LS_PCIE_CFG1_PHYS_OFF +
 		      CONFIG_SYS_PCIE1_PHYS_ADDR;
-	PcieInfo->Cfg1Size = CONFIG_SYS_PCIE_CFG1_SIZE;
-	PcieInfo->MemBus = CONFIG_SYS_PCIE_MEM_BUS;
-	PcieInfo->MemPhys = CONFIG_SYS_PCIE_MEM_PHYS_OFF +
+	PcieInfo->Cfg1Size = CONFIG_SYS_LS_PCIE_CFG1_SIZE;
+	PcieInfo->MemBus = CONFIG_SYS_LS_PCIE_MEM_BUS;
+	PcieInfo->MemPhys = CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF +
 		     CONFIG_SYS_PCIE1_PHYS_ADDR;
-	PcieInfo->MemSize = CONFIG_SYS_PCIE_MEM_SIZE;
-	PcieInfo->IoBus = CONFIG_SYS_PCIE_IO_BUS;
-	PcieInfo->IoPhys = CONFIG_SYS_PCIE_IO_PHYS_OFF +
+	PcieInfo->MemSize = CONFIG_SYS_LS_PCIE_MEM_SIZE;
+	PcieInfo->IoBus = CONFIG_SYS_LS_PCIE_IO_BUS;
+	PcieInfo->IoPhys = CONFIG_SYS_LS_PCIE_IO_PHYS_OFF +
 		    CONFIG_SYS_PCIE1_PHYS_ADDR;
-	PcieInfo->IoSize = CONFIG_SYS_PCIE_IO_SIZE;
+	PcieInfo->IoSize = CONFIG_SYS_LS_PCIE_IO_SIZE;
 	PcieInfo->PciNum = Num;
 	} else if (Num == 2) {
 	PcieInfo->Regs = CONFIG_SYS_PCIE2_ADDR;
-	PcieInfo->Cfg0Phys = CONFIG_SYS_PCIE_CFG0_PHYS_OFF +
+	PcieInfo->Cfg0Phys = CONFIG_SYS_LS_PCIE_CFG0_PHYS_OFF +
 		      CONFIG_SYS_PCIE2_PHYS_ADDR;
-	PcieInfo->Cfg0Size = CONFIG_SYS_PCIE_CFG0_SIZE;
-	PcieInfo->Cfg1Phys = CONFIG_SYS_PCIE_CFG1_PHYS_OFF +
+	PcieInfo->Cfg0Size = CONFIG_SYS_LS_PCIE_CFG0_SIZE;
+	PcieInfo->Cfg1Phys = CONFIG_SYS_LS_PCIE_CFG1_PHYS_OFF +
 		      CONFIG_SYS_PCIE2_PHYS_ADDR;
-	PcieInfo->Cfg1Size = CONFIG_SYS_PCIE_CFG1_SIZE;
-	PcieInfo->MemBus = CONFIG_SYS_PCIE_MEM_BUS;
-	PcieInfo->MemPhys = CONFIG_SYS_PCIE_MEM_PHYS_OFF +
+	PcieInfo->Cfg1Size = CONFIG_SYS_LS_PCIE_CFG1_SIZE;
+	PcieInfo->MemBus = CONFIG_SYS_LS_PCIE_MEM_BUS;
+	PcieInfo->MemPhys = CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF +
 		     CONFIG_SYS_PCIE2_PHYS_ADDR;
-	PcieInfo->MemSize = CONFIG_SYS_PCIE_MEM_SIZE;
-	PcieInfo->IoBus = CONFIG_SYS_PCIE_IO_BUS;
-	PcieInfo->IoPhys = CONFIG_SYS_PCIE_IO_PHYS_OFF +
+	PcieInfo->MemSize = CONFIG_SYS_LS_PCIE_MEM_SIZE;
+	PcieInfo->IoBus = CONFIG_SYS_LS_PCIE_IO_BUS;
+	PcieInfo->IoPhys = CONFIG_SYS_LS_PCIE_IO_PHYS_OFF +
 		    CONFIG_SYS_PCIE2_PHYS_ADDR;
-	PcieInfo->IoSize = CONFIG_SYS_PCIE_IO_SIZE;
+	PcieInfo->IoSize = CONFIG_SYS_LS_PCIE_IO_SIZE;
 	PcieInfo->PciNum = Num;
 	} else if (Num == 3) {
 	PcieInfo->Regs = CONFIG_SYS_PCIE3_ADDR;
-	PcieInfo->Cfg0Phys = CONFIG_SYS_PCIE_CFG0_PHYS_OFF +
+	PcieInfo->Cfg0Phys = CONFIG_SYS_LS_PCIE_CFG0_PHYS_OFF +
 		      CONFIG_SYS_PCIE3_PHYS_ADDR;
-	PcieInfo->Cfg0Size = CONFIG_SYS_PCIE_CFG0_SIZE;
-	PcieInfo->Cfg1Phys = CONFIG_SYS_PCIE_CFG1_PHYS_OFF +
+	PcieInfo->Cfg0Size = CONFIG_SYS_LS_PCIE_CFG0_SIZE;
+	PcieInfo->Cfg1Phys = CONFIG_SYS_LS_PCIE_CFG1_PHYS_OFF +
 		      CONFIG_SYS_PCIE3_PHYS_ADDR;
-	PcieInfo->Cfg1Size = CONFIG_SYS_PCIE_CFG1_SIZE;
-	PcieInfo->MemBus = CONFIG_SYS_PCIE_MEM_BUS;
-	PcieInfo->MemPhys = CONFIG_SYS_PCIE_MEM_PHYS_OFF +
+	PcieInfo->Cfg1Size = CONFIG_SYS_LS_PCIE_CFG1_SIZE;
+	PcieInfo->MemBus = CONFIG_SYS_LS_PCIE_MEM_BUS;
+	PcieInfo->MemPhys = CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF +
 		     CONFIG_SYS_PCIE3_PHYS_ADDR;
-	PcieInfo->MemSize = CONFIG_SYS_PCIE_MEM_SIZE;
-	PcieInfo->IoBus = CONFIG_SYS_PCIE_IO_BUS;
-	PcieInfo->IoPhys = CONFIG_SYS_PCIE_IO_PHYS_OFF +
+	PcieInfo->MemSize = CONFIG_SYS_LS_PCIE_MEM_SIZE;
+	PcieInfo->IoBus = CONFIG_SYS_LS_PCIE_IO_BUS;
+	PcieInfo->IoPhys = CONFIG_SYS_LS_PCIE_IO_PHYS_OFF +
 		    CONFIG_SYS_PCIE3_PHYS_ADDR;
-	PcieInfo->IoSize = CONFIG_SYS_PCIE_IO_SIZE;
+	PcieInfo->IoSize = CONFIG_SYS_LS_PCIE_IO_SIZE;
 	PcieInfo->PciNum = Num;
 	}
 
@@ -127,9 +127,9 @@ PcieLinkState (
 )
 {
 	UINT32 State;
-	State = MmioRead32(((UINTN)(Pcie->Dbi) + PCIE_LUT_BASE + PCIE_LUT_DBG) &
-		LTSSM_STATE_MASK);
-	if (State < LTSSM_PCIE_L0) {
+	State = MmioRead32(((UINTN)(Pcie->Dbi) + LS_PCIE_LUT_BASE + LS_PCIE_LUT_DBG) &
+		LS_LTSSM_STATE_MASK);
+	if (State < LS_LTSSM_PCIE_L0) {
 		DEBUG((EFI_D_ERROR," Pcie Link error. LTSSM=0x%2x\n",
 		       State));
 		return 0;
@@ -150,13 +150,13 @@ PcieLinkUp (
 		return State;
 
 	/* Try to download speed to gen1 */
-	Cap = MmioRead32((UINTN)(Pcie->Dbi) + PCIE_LINK_CAP);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_LINK_CAP, (UINT32)(Cap & (~PCIE_LINK_SPEED_MASK)) | 1);
+	Cap = MmioRead32((UINTN)(Pcie->Dbi) + LS_PCIE_LINK_CAP);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_LINK_CAP, (UINT32)(Cap & (~LS_PCIE_LINK_SPEED_MASK)) | 1);
 	State = PcieLinkState(Pcie);
 	if (State)
 		return State;
 
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_LINK_CAP, Cap);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_LINK_CAP, Cap);
 
 	return 0;
 }
@@ -167,9 +167,9 @@ PcieCfg0SetBusdev (
 	IN UINT32 BusDev
 )
 {
-	MmioWrite32((UINTN)(Pcie->Dbi + PCIE_ATU_VIEWPORT), 
-		    PCIE_ATU_REGION_OUTBOUND | PCIE_ATU_REGION_INDEX0);
-	MmioWrite32((UINTN)(Pcie->Dbi + PCIE_ATU_LOWER_TARGET), BusDev);
+	MmioWrite32((UINTN)(Pcie->Dbi + LS_PCIE_ATU_VIEWPORT), 
+		    LS_PCIE_ATU_REGION_OUTBOUND | LS_PCIE_ATU_REGION_INDEX0);
+	MmioWrite32((UINTN)(Pcie->Dbi + LS_PCIE_ATU_LOWER_TARGET), BusDev);
 }
 
 VOID
@@ -178,9 +178,9 @@ PcieCfg1SetBusdev (
 	IN UINT32 BusDev
 )
 {
-	MmioWrite32((UINTN)(Pcie->Dbi + PCIE_ATU_VIEWPORT), 
-		    PCIE_ATU_REGION_OUTBOUND | PCIE_ATU_REGION_INDEX1);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_TARGET, BusDev);
+	MmioWrite32((UINTN)(Pcie->Dbi + LS_PCIE_ATU_VIEWPORT), 
+		    LS_PCIE_ATU_REGION_OUTBOUND | LS_PCIE_ATU_REGION_INDEX1);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LOWER_TARGET, BusDev);
 }
 
 VOID
@@ -191,26 +191,15 @@ PcieIatuInboundSet (
 	IN UINT64 Phys
 )
 {
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_VIEWPORT, (UINT32)(PCIE_ATU_REGION_INBOUND | Idx));
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_VIEWPORT, (UINT32)(LS_PCIE_ATU_REGION_INBOUND | Idx));
 	
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_BASE, Phys);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_UPPER_BASE, (UINT32)(Phys >> 32));
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_TARGET, (UINT32)Phys);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_UPPER_TARGET, (UINT32)(Phys >> 32));
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LOWER_BASE, Phys);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_UPPER_BASE, (UINT32)(Phys >> 32));
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LOWER_TARGET, (UINT32)Phys);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_UPPER_TARGET, (UINT32)(Phys >> 32));
 	
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_CR1, PCIE_ATU_TYPE_MEM);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_CR2, PCIE_ATU_ENABLE);
-	DEBUG((EFI_D_INFO, "Setup Inboud Window, Index: %d\n", Idx));
-	DEBUG((EFI_D_ERROR,"iATU%d VIEWPORT REG:%08lx\n", Idx,
-		       MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_VIEWPORT)));
-	DEBUG((EFI_D_ERROR,"\tLOWER PHYS 0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_BASE)));
-	DEBUG((EFI_D_ERROR,"\tUPPER PHYS 0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_UPPER_BASE)));
-	DEBUG((EFI_D_ERROR,"\tLOWER Target  0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_TARGET)));
-	DEBUG((EFI_D_ERROR,"\tUPPER Target  0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_UPPER_TARGET)));
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_CR1, LS_PCIE_ATU_TYPE_MEM);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_CR2, LS_PCIE_ATU_ENABLE);
 }
 
 
@@ -224,14 +213,14 @@ PcieIatuOutboundSet (
 	IN UINT64 Size
 )
 {
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_VIEWPORT, (UINT32)(PCIE_ATU_REGION_OUTBOUND | Idx));
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_BASE, Phys);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_UPPER_BASE, (UINT32)(Phys >> 32));
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_LIMIT, (UINT32)(Phys + Size -1));
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_TARGET, (UINT32)BusAddr);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_UPPER_TARGET, (UINT32)(BusAddr >> 32));
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_CR1, (UINT32)Type);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_CR2, PCIE_ATU_ENABLE);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_VIEWPORT, (UINT32)(LS_PCIE_ATU_REGION_OUTBOUND | Idx));
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LOWER_BASE, Phys);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_UPPER_BASE, (UINT32)(Phys >> 32));
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LIMIT, (UINT32)(Phys + Size -1));
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LOWER_TARGET, (UINT32)BusAddr);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_UPPER_TARGET, (UINT32)(BusAddr >> 32));
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_CR1, (UINT32)Type);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_CR2, LS_PCIE_ATU_ENABLE);
 }
 
 EFI_STATUS
@@ -439,7 +428,7 @@ PcieSetupAtuInbound (
 	*ValIn = MmioRead32((UINTN)Addr);
 	DEBUG((EFI_D_INFO, "Value Read: %08lx from Address: %llx\n", *ValIn, Addr));
 	/* ATU 2 : OUTBOUND : MEM */
-	PcieIatuInboundSet(Pcie, PCIE_ATU_REGION_INDEX2,
+	PcieIatuInboundSet(Pcie, LS_PCIE_ATU_REGION_INDEX2,
 				  1,
 				  0x80080000);
 
@@ -465,55 +454,55 @@ PcieSetupAtu (
 	 UINTN AddrTemp;
 	
 	 /* ATU 0 : OUTBOUND : CFG0 */
-	PcieIatuOutboundSet(Pcie, PCIE_ATU_REGION_INDEX0,
-				  PCIE_ATU_TYPE_CFG0,
+	PcieIatuOutboundSet(Pcie, LS_PCIE_ATU_REGION_INDEX0,
+				  LS_PCIE_ATU_TYPE_CFG0,
 				  Info->Cfg0Phys,
 				  0,
 				  Info->Cfg0Size);
 
 	/* ATU 1 : OUTBOUND : CFG1 */
-	PcieIatuOutboundSet(Pcie, PCIE_ATU_REGION_INDEX1,
-				  PCIE_ATU_TYPE_CFG1,
+	PcieIatuOutboundSet(Pcie, LS_PCIE_ATU_REGION_INDEX1,
+				  LS_PCIE_ATU_TYPE_CFG1,
 				  Info->Cfg1Phys,
 				  0,
 				  Info->Cfg1Size);
 	/* ATU 2 : OUTBOUND : MEM */
-	PcieIatuOutboundSet(Pcie, PCIE_ATU_REGION_INDEX2,
-				  PCIE_ATU_TYPE_MEM,
+	PcieIatuOutboundSet(Pcie, LS_PCIE_ATU_REGION_INDEX2,
+				  LS_PCIE_ATU_TYPE_MEM,
 				  Info->MemPhys,
 				  Info->MemBus,
 				  //0x10000000,
 				  Info->MemSize);
 	/* ATU 3 : OUTBOUND : IO */
-	PcieIatuOutboundSet(Pcie, PCIE_ATU_REGION_INDEX3,
-				  PCIE_ATU_TYPE_IO,
+	PcieIatuOutboundSet(Pcie, LS_PCIE_ATU_REGION_INDEX3,
+				  LS_PCIE_ATU_TYPE_IO,
 				  Info->IoPhys,
 				  Info->IoBus,
 				  Info->IoSize);
 
-	for (Cnt = 0; Cnt <= PCIE_ATU_REGION_INDEX3; Cnt++) {
-		MmioWrite32((UINTN)Pcie->Dbi + PCIE_ATU_VIEWPORT,
-			    (UINT32)(PCIE_ATU_REGION_OUTBOUND | Cnt));
-		DEBUG((EFI_D_ERROR,"iATU%d:\n", Cnt));
-		AddrTemp = (UINTN)((UINTN)Pcie->Dbi + PCIE_ATU_VIEWPORT);
-		DEBUG((EFI_D_ERROR,"iATU%d VIEWPORT REG Addr:%08lx Val:%08lx\n",
+	for (Cnt = 0; Cnt <= LS_PCIE_ATU_REGION_INDEX3; Cnt++) {
+		MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_VIEWPORT,
+			    (UINT32)(LS_PCIE_ATU_REGION_OUTBOUND | Cnt));
+		DEBUG((EFI_D_INFO,"iATU%d:\n", Cnt));
+		AddrTemp = (UINTN)((UINTN)Pcie->Dbi + LS_PCIE_ATU_VIEWPORT);
+		DEBUG((EFI_D_INFO,"iATU%d VIEWPORT REG Addr:%08lx Val:%08lx\n",
 		       Cnt, AddrTemp, MmioRead32(AddrTemp)));
-		DEBUG((EFI_D_ERROR,"iATU%d VIEWPORT REG:%08lx\n", Cnt,
-		       MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_VIEWPORT)));
-		DEBUG((EFI_D_ERROR,"\tLOWER PHYS 0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_BASE)));
-		DEBUG((EFI_D_ERROR,"\tUPPER PHYS 0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_UPPER_BASE)));
-		DEBUG((EFI_D_ERROR,"\tLOWER BUS  0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_LOWER_TARGET)));
-		DEBUG((EFI_D_ERROR,"\tUPPER BUS  0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_UPPER_TARGET)));
-		DEBUG((EFI_D_ERROR,"\tLIMIT      0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_LIMIT)));
-		DEBUG((EFI_D_ERROR,"\tCR1        0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_CR1)));
-		DEBUG((EFI_D_ERROR,"\tCR2        0x%08x\n",
-		      MmioRead32((UINTN)Pcie->Dbi + PCIE_ATU_CR2)));
+		DEBUG((EFI_D_INFO,"iATU%d VIEWPORT REG:%08lx\n", Cnt,
+		       MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_VIEWPORT)));
+		DEBUG((EFI_D_INFO,"\tLOWER PHYS 0x%08x\n",
+		      MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LOWER_BASE)));
+		DEBUG((EFI_D_INFO,"\tUPPER PHYS 0x%08x\n",
+		      MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_UPPER_BASE)));
+		DEBUG((EFI_D_INFO,"\tLOWER BUS  0x%08x\n",
+		      MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LOWER_TARGET)));
+		DEBUG((EFI_D_INFO,"\tUPPER BUS  0x%08x\n",
+		      MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_UPPER_TARGET)));
+		DEBUG((EFI_D_INFO,"\tLIMIT      0x%08x\n",
+		      MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_LIMIT)));
+		DEBUG((EFI_D_INFO,"\tCR1        0x%08x\n",
+		      MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_CR1)));
+		DEBUG((EFI_D_INFO,"\tCR2        0x%08x\n",
+		      MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_CR2)));
 	}
 }
 
@@ -541,11 +530,11 @@ PcieSetupCntrl (
 	
 	DEBUG((EFI_D_INFO, "Back after SetUp IATU\n\n"));
 
-	PcieWriteConfig(PrivateData, Dev, PCI_BASE_ADDRESS_0, 0);
+	PcieWriteConfig(PrivateData, Dev, LS_PCI_BASE_ADDRESS_0, 0);
 
 	/* program correct class for RC */
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_DBI_RO_WR_EN, (UINT32)1);
-	PcieWriteConfigWord(PrivateData, Dev, PCI_CLASS_DEVICE,
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_DBI_RO_WR_EN, (UINT32)1);
+	PcieWriteConfigWord(PrivateData, Dev, LS_PCI_CLASS_DEVICE,
 			    PCI_CLASS_BRIDGE_PCI);
-	MmioWrite32((UINTN)Pcie->Dbi + PCIE_DBI_RO_WR_EN, (UINT32)0);
+	MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_DBI_RO_WR_EN, (UINT32)0);
 }

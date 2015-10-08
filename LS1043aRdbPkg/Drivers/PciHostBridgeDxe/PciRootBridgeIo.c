@@ -633,21 +633,21 @@ PciRbInitialize (
        (PciSizeT)Info->MemBus,
        (PhysSizeT)Info->MemPhys,
        (PciSizeT)Info->MemSize,
-       PCI_REGION_MEM);
+       LS_PCI_REGION_MEM);
 
   /* outbound io */
   PciSetRegion(&PrivateData->Regions[1],
        (PciSizeT)Info->IoBus,
        (PhysSizeT)Info->IoPhys,
        (PciSizeT)Info->IoSize,
-       PCI_REGION_IO);
+       LS_PCI_REGION_IO);
 
   /* System memory space */
   PciSetRegion(&PrivateData->Regions[2],
-       CONFIG_SYS_PCI_MEMORY_BUS,
-       CONFIG_SYS_PCI_MEMORY_PHYS,
-       CONFIG_SYS_PCI_MEMORY_SIZE,
-       PCI_REGION_SYS_MEMORY);
+       CONFIG_SYS_LS_PCI_MEMORY_BUS,
+       CONFIG_SYS_LS_PCI_MEMORY_PHYS,
+       CONFIG_SYS_LS_PCI_MEMORY_SIZE,
+       LS_PCI_REGION_SYS_MEMORY);
 
 
   PrivateData->RegionCnt = 3;
@@ -660,13 +660,13 @@ PciRbInitialize (
 	   PrivateData->Regions[Cntr].Flags));
 
 
-  PcieReadConfigWord(PrivateData, Pdev, PCI_VENDOR_ID, (UINT16 *)&VendorID16);
+  PcieReadConfigWord(PrivateData, Pdev, LS_PCI_VENDOR_ID, (UINT16 *)&VendorID16);
   DEBUG((EFI_D_INFO,"PCIe:VendorID: %04lx\n", VendorID16)); 
-  PcieReadConfigWord(PrivateData, Pdev, PCI_DEVICE_ID, (UINT16 *)&DeviceID16);
+  PcieReadConfigWord(PrivateData, Pdev, LS_PCI_DEVICE_ID, (UINT16 *)&DeviceID16);
   DEBUG((EFI_D_INFO,"PCIe Device ID: %04lx\n", DeviceID16));
-  PcieReadConfigByte(PrivateData, Pdev, PCI_HEADER_TYPE, (UINT8 *)&HeaderType);
+  PcieReadConfigByte(PrivateData, Pdev, LS_PCI_HEADER_TYPE, (UINT8 *)&HeaderType);
   DEBUG((EFI_D_INFO,"PCIe Header Type: %02lx\n", HeaderType));
-  EpMode = (HeaderType & 0x7f) == PCI_HEADER_TYPE_NORMAL;
+  EpMode = (HeaderType & 0x7f) == LS_PCI_HEADER_TYPE_NORMAL;
   DEBUG((EFI_D_INFO,"EpMode: %d\n", EpMode));
   DEBUG((EFI_D_INFO,"PCIe%d: %a\n", (UINT64)Info->PciNum, EpMode ? "Endpoint" : "Root Complex"));
 
@@ -681,7 +681,7 @@ PciRbInitialize (
 
   DEBUG((EFI_D_INFO, "Passed Linkup Phase\n\n"));
   /* Print the negotiated PCIe link width */
-  PcieReadConfigWord(PrivateData, Pdev, PCIE_LINK_STA, (UINT16 *)&Temp16);
+  PcieReadConfigWord(PrivateData, Pdev, LS_PCIE_LINK_STA, (UINT16 *)&Temp16);
   DEBUG((EFI_D_INFO,"PCIe Link Status: %04lx\n", Temp16));
   DEBUG((EFI_D_INFO,"x%d gen%d, regs @ 0x%lx\n", (Temp16 & 0x3f0) >> 4,
 	 (Temp16 & 0xf), Info->Regs));
