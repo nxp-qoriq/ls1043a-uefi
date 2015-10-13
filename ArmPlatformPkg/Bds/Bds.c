@@ -279,9 +279,11 @@ VOID LS1043aTestCode
   /*FIXME A tempory solution, will be provided by UEFI shell command*/
   DdrRegDump();
 
+#ifdef BLOCKIO
   Status = LS1043aTestBlockIoDevice();
   if (EFI_ERROR(Status))
     DEBUG((EFI_D_ERROR, "BlockIoDevice Test FAILED, Error:'%r'\n", Status));
+#endif
 }
 
 STATIC
