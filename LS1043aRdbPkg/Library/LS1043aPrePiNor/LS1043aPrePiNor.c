@@ -30,9 +30,8 @@ VOID CopyImage(UINT8* Dest, UINT8* Src, UINTN Size)
 
 VOID CEntryPoint(
 		UINTN	UefiMemoryBase,
-		UINTN	UefiNorBase,
-		UINTN	UefiMemorySize,
-		UINTN	DramInitAddr
+		UINTN UefiNorBase,
+		UINTN	UefiMemorySize
 		)
 { 
 	VOID	(*PrePiStart)(VOID);
@@ -46,7 +45,7 @@ VOID CEntryPoint(
   // Enable Instruction Caches on all cores.
   ArmEnableInstructionCache ();
 
-	((VOID (*)())DramInitAddr)();
+	DramInit();
 
 	CopyImage((VOID*)UefiMemoryBase, (VOID*)UefiNorBase, UefiMemorySize);
 	
