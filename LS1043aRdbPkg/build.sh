@@ -125,7 +125,11 @@ else
 build -p "$WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg$BootSuffix" -a $ARCH -t $TARGET_TOOLS -b $1
 fi
 
+<<<<<<< HEAD
+if [[ $2 == "XIP" || $2 == "FATXIP" ]]; then
+=======
 if [[ $2 == "XIP" ]]; then
+>>>>>>> 4faf1fd0aee20008f08a5c1975a676f2df1a758c
  	cat $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDB_EFI.fd >> $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd 
  	mv $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDB_EFI.fd 
 fi
