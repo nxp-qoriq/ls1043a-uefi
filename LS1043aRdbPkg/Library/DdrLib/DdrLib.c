@@ -25,15 +25,6 @@
         (((X) & 0x000000ff) << 24))
 #define DDRMC_DELAY 10000
 
-UINT32 DdrcWrite(
-		IN		UINTN Address,
-		IN		UINT32 Value
-		)
-{
-  *(volatile UINT32*)Address = Uswap32(Value);
-  return Value;
-}
-
 /**
   Function to dump DDRC registers
 
@@ -153,46 +144,46 @@ DramInit (
 	UINT32 Count, Delay = DDRMC_DELAY;
   Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
 
-  DdrcWrite((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG);
+  MmioWriteBe32((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG);
 
-  DdrcWrite((UINTN)&Ddr->Cs0Bnds, CONFIG_CS0_BNDS);
-  DdrcWrite((UINTN)&Ddr->Cs0Config, CONFIG_CS0_CONFIG);
+  MmioWriteBe32((UINTN)&Ddr->Cs0Bnds, CONFIG_CS0_BNDS);
+  MmioWriteBe32((UINTN)&Ddr->Cs0Config, CONFIG_CS0_CONFIG);
 
-  DdrcWrite((UINTN)&Ddr->TimingCfg0, CONFIG_TIMING_CFG_0);
-  DdrcWrite((UINTN)&Ddr->TimingCfg1, CONFIG_TIMING_CFG_1);
-  DdrcWrite((UINTN)&Ddr->TimingCfg2, CONFIG_TIMING_CFG_2);
-  DdrcWrite((UINTN)&Ddr->TimingCfg3, CONFIG_TIMING_CFG_3);
-  DdrcWrite((UINTN)&Ddr->TimingCfg4, CONFIG_TIMING_CFG_4);
-  DdrcWrite((UINTN)&Ddr->TimingCfg5, CONFIG_TIMING_CFG_5);
-  DdrcWrite((UINTN)&Ddr->TimingCfg7, CONFIG_TIMING_CFG_7);
-  DdrcWrite((UINTN)&Ddr->TimingCfg8, CONFIG_TIMING_CFG_8);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg0, CONFIG_TIMING_CFG_0);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg1, CONFIG_TIMING_CFG_1);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg2, CONFIG_TIMING_CFG_2);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg3, CONFIG_TIMING_CFG_3);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg4, CONFIG_TIMING_CFG_4);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg5, CONFIG_TIMING_CFG_5);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg7, CONFIG_TIMING_CFG_7);
+  MmioWriteBe32((UINTN)&Ddr->TimingCfg8, CONFIG_TIMING_CFG_8);
 
-  DdrcWrite((UINTN)&Ddr->SdramCfg2, CONFIG_DDR_SDRAM_CFG_2);
+  MmioWriteBe32((UINTN)&Ddr->SdramCfg2, CONFIG_DDR_SDRAM_CFG_2);
 
-  DdrcWrite((UINTN)&Ddr->SdramMode, CONFIG_DDR_SDRAM_MODE);
-  DdrcWrite((UINTN)&Ddr->SdramMode2, 0);
-  DdrcWrite((UINTN)&Ddr->SdramInterval, CONFIG_DDR_SDRAM_INTERVAL);
+  MmioWriteBe32((UINTN)&Ddr->SdramMode, CONFIG_DDR_SDRAM_MODE);
+  MmioWriteBe32((UINTN)&Ddr->SdramMode2, 0);
+  MmioWriteBe32((UINTN)&Ddr->SdramInterval, CONFIG_DDR_SDRAM_INTERVAL);
 
-  DdrcWrite((UINTN)&Ddr->DdrWrlvlCntl, CONFIG_DDR_WRLVL_CNTL);
-  DdrcWrite((UINTN)&Ddr->DdrWrlvlCntl2, CONFIG_DDR_WRLVL_CNTL_2);
-  DdrcWrite((UINTN)&Ddr->DdrWrlvlCntl3, 0);
+  MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl, CONFIG_DDR_WRLVL_CNTL);
+  MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl2, CONFIG_DDR_WRLVL_CNTL_2);
+  MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl3, 0);
 
-  DdrcWrite((UINTN)&Ddr->DdrCdr1, CONFIG_DDRCDR_1);
-  DdrcWrite((UINTN)&Ddr->DdrCdr2, CONFIG_DDRCDR_2);
+  MmioWriteBe32((UINTN)&Ddr->DdrCdr1, CONFIG_DDRCDR_1);
+  MmioWriteBe32((UINTN)&Ddr->DdrCdr2, CONFIG_DDRCDR_2);
 
-  DdrcWrite((UINTN)&Ddr->SdramClkCntl, CONFIG_DDR_SDRAM_CLK_CNTL);
+  MmioWriteBe32((UINTN)&Ddr->SdramClkCntl, CONFIG_DDR_SDRAM_CLK_CNTL);
 
-  DdrcWrite((UINTN)&Ddr->DdrZqCntl, CONFIG_DDR_ZQ_CNTL);
+  MmioWriteBe32((UINTN)&Ddr->DdrZqCntl, CONFIG_DDR_ZQ_CNTL);
 
-  DdrcWrite((UINTN)&Ddr->SdramMode9, CONFIG_DDR_SDRAM_MODE_9);
-  DdrcWrite((UINTN)&Ddr->SdramMode10, CONFIG_DDR_SDRAM_MODE_10);
+  MmioWriteBe32((UINTN)&Ddr->SdramMode9, CONFIG_DDR_SDRAM_MODE_9);
+  MmioWriteBe32((UINTN)&Ddr->SdramMode10, CONFIG_DDR_SDRAM_MODE_10);
 
-  DdrcWrite((UINTN)&Ddr->Cs0Config2, 0);
+  MmioWriteBe32((UINTN)&Ddr->Cs0Config2, 0);
 
   for(Count = 0; Count < Delay; Count++)
 		;
 
-  DdrcWrite((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG
+  MmioWriteBe32((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG
                      | CONFIG_DDR_SDRAM_CFG_MEM_EN);
 
   return;

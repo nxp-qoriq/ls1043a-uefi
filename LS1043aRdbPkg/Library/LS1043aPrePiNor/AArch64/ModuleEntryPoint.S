@@ -29,11 +29,9 @@ ASM_PFX(_ModuleEntryPoint):
 	mov sp, x0
 	LoadConstantToReg (FixedPcdGet64(PcdFdBaseAddress), x0)
 	LoadConstantToReg (FixedPcdGet32(PcdFdNorBaseAddress), x1)
+	LoadConstantToReg (FixedPcdGet32(PcdPiFdSize), x5)
+	add x1, x1, x5
 	LoadConstantToReg (FixedPcdGet32(PcdFdSize), x2)
-	sub x5, x0, x1
 	ldr x4, StartupAddr
-	sub x4, x4, x5
-	ldr x3, DramInitAddr
-	sub x3, x3, x5
 	blr x4
   

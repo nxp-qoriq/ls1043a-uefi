@@ -41,6 +41,7 @@
 [FixedPcd]
 	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase
 	gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress
+	gLS1043aRdbTokenSpaceGuid.PcdPiFdSize
   gArmTokenSpaceGuid.PcdFdBaseAddress
   gArmTokenSpaceGuid.PcdFdSize
   gArmTokenSpaceGuid.PcdSystemMemoryBase
