@@ -511,7 +511,6 @@ SdSendIfCond (
     return EFI_NO_RESPONSE;
   else
     Mmc->Version = SD_VER_2;
-  //FIXME check for others also
 
   return EFI_SUCCESS;
 }

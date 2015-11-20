@@ -73,7 +73,6 @@ GetStatus (
            MMC_STATE_PRG))
         break;
       else if (Cmd.Response[0] & MMC_STATUS_MASK) {
-        DEBUG((EFI_D_ERROR, "Status Error: 0x%08X\n", Cmd.Response[0]));
         return EFI_DEVICE_ERROR;
       }
     } else if (--Retries < 0)
@@ -86,8 +85,35 @@ GetStatus (
     DEBUG((EFI_D_ERROR, "Timeout Waiting Card Ready\n"));
     return EFI_TIMEOUT;
   }
+
   if (Cmd.Response[0] & MMC_STATUS_SWITCH_ERROR)
     return EFI_NO_RESPONSE;
+
+  return EFI_SUCCESS;
+}
+
+static EFI_STATUS
+SendIfCond  (
+  VOID
+  )
+{
+  struct SdCmd Cmd;
+  EFI_STATUS Status;
+
+  Cmd.CmdIdx = SD_CMD_SEND_IF_COND;
+  /* We Set The Bit if The Host Supports Voltages Between 2.7 And 3.6 V */
+  Cmd.CmdArg = ((gBoot.Voltages & 0xff8000) != 0) << 8 | 0xaa;
+  Cmd.RespType = MMC_RSP_R7;
+
+  Status = SdxcSendCmd(gBoot.SdxcBase, gBoot.Clock, &Cmd, NULL);
+
+  if (Status)
+    return Status;
+
+  if ((Cmd.Response[0] & 0xff) != 0xaa)
+    return EFI_NO_RESPONSE;
+  else
+    gBoot.Version = SD_VER_2;
 
   return EFI_SUCCESS;
 }
@@ -443,9 +469,16 @@ SdxcBootInit (
   if (Status)
     return Status;
 
+  /* Test for SD Version 2 */
+  Status = SendIfCond();
+  if (Status != EFI_NO_RESPONSE)
+    DEBUG((EFI_D_INFO, "Not SD version 2\n"));
+
   Status = OpCond();
-  if (Status)
+  if (Status) {
+    DEBUG((EFI_D_ERROR, "Card Did Not Respond To Voltage Select!\n"));
     return Status;
+  }
 
   Status = CompleteInit();
   if (Status)

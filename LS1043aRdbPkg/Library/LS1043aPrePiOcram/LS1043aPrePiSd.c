@@ -31,7 +31,7 @@ EFI_STATUS UefiFdSdToDdr(
   EFI_STATUS Status;
 
   Status = SdxcBootInit(FALSE);
-  if (Status < 0) {
+  if (Status != 0) {
     DEBUG((EFI_D_ERROR,"Failed to init SD\n"));
     return Status;
   }
