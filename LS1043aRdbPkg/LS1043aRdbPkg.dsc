@@ -447,10 +447,10 @@
   gArmTokenSpaceGuid.PcdArmUncachedMemoryMask|0x0000000040000000
 
   gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"EFI Linux from NOR flash"
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x61120480)"
-  gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x63000000,0x638FFFFF)/fsl-ls1043a-uefi-rdb.dtb"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x6111FFFF)"
+  gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x61B00000,0x61BFFFFF)/fsl-ls1043a-uefi-rdb.dtb"
 
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|L"MemoryMapped(0x0,0x61130000,0x62000000) -d \"MemoryMapped(0x0,0x63000000,0x638FFFFF)\" -f \"MemoryMapped(0x0,0x61A00000,0x62AFFFFF)\" -c \"console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,0x21c0500,115200\""
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|L"MemoryMapped(0x0,0x61120000,0x61AFFFFF) -d \"MemoryMapped(0x0,0x61B00000,0x61BFFFFF)\" -f \"MemoryMapped(0x0,0x61C00000,0x638FFFFF)\" -c \"console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,0x21c0500,115200\""
 
   # PPA
   gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration|"config@1"
