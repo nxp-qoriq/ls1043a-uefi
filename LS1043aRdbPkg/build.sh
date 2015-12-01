@@ -18,11 +18,11 @@ print_usage_banner()
 	echo "This shell script expects:"
 	echo "	Arg 1 (mandatory): Build candidate (can be RELEASE or DEBUG). By
 		default we build the RELEASE candidate."
-	echo "	Arg 2 (mandatory): Boot source type (can be XIP, FATXIP or NONXIP. By default 
+	echo "	Arg 2 (mandatory): Boot source type (can be XIP, FATXIP, SD or NAND. By default 
 		we build the XIP candidate. FATXIP is used for FAT
-		filesystem based XIP boot case, while NONXIP is used for
-		NAND boot currently"
-	echo "	Arg 3 (mandatory for NONXIP boot): absolute path of mkimage utility."
+		filesystem based XIP boot case, while SD and NAND is used for
+		NONXIP boot sources like SD and NAND boot currently"
+	echo "	Arg 3 (mandatory for SD or NAND boot): absolute path of mkimage utility."
 	echo "	Arg 3 (optional): clean - To do a 'make clean' operation."
 }
 
