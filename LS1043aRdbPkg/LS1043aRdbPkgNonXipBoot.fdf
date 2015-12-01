@@ -337,8 +337,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # UEFI application (Shell Embedded Boot Loader)
   #
-  #INF ShellPkg/Application/Shell/Shell.inf
-  INF ShellBinPkg/UefiShell/UefiShell.inf
+  INF ShellPkg/Application/Shell/Shell.inf
   INF ArmPkg/Application/LinuxLoader/LinuxLoader.inf
 
   #
