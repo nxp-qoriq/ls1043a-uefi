@@ -659,13 +659,12 @@ PciRbInitialize (
 	   (UINT64)PrivateData->Regions[Cntr].Size,
 	   PrivateData->Regions[Cntr].Flags));
 
-
   PcieReadConfigWord(PrivateData, Pdev, LS_PCI_VENDOR_ID, (UINT16 *)&VendorID16);
-  DEBUG((EFI_D_INFO,"PCIe:VendorID: %04lx\n", VendorID16)); 
+  DEBUG((EFI_D_RELEASE,"PCIe:VendorID: %04lx\n", VendorID16));
   PcieReadConfigWord(PrivateData, Pdev, LS_PCI_DEVICE_ID, (UINT16 *)&DeviceID16);
-  DEBUG((EFI_D_INFO,"PCIe Device ID: %04lx\n", DeviceID16));
+  DEBUG((EFI_D_RELEASE,"PCIe Device ID: %04lx\n", DeviceID16));
   PcieReadConfigByte(PrivateData, Pdev, LS_PCI_HEADER_TYPE, (UINT8 *)&HeaderType);
-  DEBUG((EFI_D_INFO,"PCIe Header Type: %02lx\n", HeaderType));
+  DEBUG((EFI_D_RELEASE,"PCIe Header Type: %02lx\n", HeaderType));
   EpMode = (HeaderType & 0x7f) == LS_PCI_HEADER_TYPE_NORMAL;
   DEBUG((EFI_D_INFO,"EpMode: %d\n", EpMode));
   DEBUG((EFI_D_INFO,"PCIe%d: %a\n", (UINT64)Info->PciNum, EpMode ? "Endpoint" : "Root Complex"));
@@ -683,7 +682,7 @@ PciRbInitialize (
   /* Print the negotiated PCIe link width */
   PcieReadConfigWord(PrivateData, Pdev, LS_PCIE_LINK_STA, (UINT16 *)&Temp16);
   DEBUG((EFI_D_INFO,"PCIe Link Status: %04lx\n", Temp16));
-  DEBUG((EFI_D_INFO,"x%d gen%d, regs @ 0x%lx\n", (Temp16 & 0x3f0) >> 4,
+  DEBUG((EFI_D_RELEASE,"x%d gen%d, regs @ 0x%lx\n", (Temp16 & 0x3f0) >> 4,
 	 (Temp16 & 0xf), Info->Regs));
 
   if (EpMode) {
@@ -691,7 +690,7 @@ PciRbInitialize (
     return Busno;
   }
 
-  DEBUG((EFI_D_INFO, "PCI RootComplex Mode\n"));
+  DEBUG((EFI_D_RELEASE, "PCI RootComplex Mode\n"));
   if (HostNo == 1) {
     if (PcdGet64 (PcdPci1ExpressBaseAddress) == 0) {
       DEBUG ((EFI_D_INFO, "%a: PCI 1 host bridge not present\n", __FUNCTION__));
@@ -699,7 +698,6 @@ PciRbInitialize (
     }
 
     DEBUG ((EFI_D_INFO, "%a: PCI 1 host bridge present\n", __FUNCTION__));
-    
     DEBUG((EFI_D_INFO, "Going to SetUp Controller 1\n\n"));
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
   } else if (HostNo == 2 ) { 

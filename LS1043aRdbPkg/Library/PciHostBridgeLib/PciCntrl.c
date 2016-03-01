@@ -513,23 +513,11 @@ PcieSetupCntrl (
   IN struct LsPcieInfo 		*Info
 )	
 {
-	 UINT32 *ValIn = NULL;
-	 UINT32  ValOut;
-	 UINT32 *Addr;
-	*ValIn = 0x00000000;
-
 	UINTN Dev = ((PrivateData->FirstBusno) << 16 | (0) << 11 | (0) << 8);
-	
-	ValOut = 0x28282828;
-        Addr = (UINT32 *)0x80080000;	
-	MmioWrite32((UINTN)Addr, (UINT32)ValOut);
-	DEBUG((EFI_D_INFO,"\nValue: %08lx written on Addr: %08lx\n", ValOut, Addr));
 	
 	DEBUG((EFI_D_INFO, "Going to SetUp IATU\n\n"));
 	PcieSetupAtu(Pcie, Info);
 	
-	DEBUG((EFI_D_INFO, "Back after SetUp IATU\n\n"));
-
 	PcieWriteConfig(PrivateData, Dev, LS_PCI_BASE_ADDRESS_0, 0);
 
 	/* program correct class for RC */
