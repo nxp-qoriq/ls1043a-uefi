@@ -450,7 +450,7 @@
   gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x6111FFFF)"
   gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x61B00000,0x61BFFFFF)/fsl-ls1043a-uefi-rdb.dtb"
 
-  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|L"MemoryMapped(0x0,0x61120000,0x61AFFFFF) -d \"MemoryMapped(0x0,0x61B00000,0x61BFFFFF)\" -f \"MemoryMapped(0x0,0x61C00000,0x638FFFFF)\" -c \"console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,0x21c0500,115200\""
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|L"MemoryMapped(0x0,0x61120000,0x61AFFFFF) -f \"MemoryMapped(0x0,0x61C00000,0x638FFFFF)\" -c \"console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,0x21c0500\""
 
   # PPA
   gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration|"config@1"
