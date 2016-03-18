@@ -22,6 +22,7 @@
 GCC_ASM_EXPORT(_ModuleEntryPoint)
 
 StartupAddr:        .8byte ASM_PFX(CEntryPoint)
+RelocAddr:          .8byte FixedPcdGet64(PcdFdBaseAddress)
 ASM_PFX(_ModuleEntryPoint):
   LoadConstantToReg (FixedPcdGet32(PcdOcramStackBase), x0)
 	mov sp, x0
