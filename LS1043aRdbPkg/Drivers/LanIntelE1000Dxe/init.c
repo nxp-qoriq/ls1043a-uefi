@@ -214,8 +214,6 @@ Returns:
   EFI_LOADED_IMAGE_PROTOCOL *LoadedImageInterface;
   EFI_STATUS                Status;
 
-  DEBUG ((EFI_D_INFO, "\n\n###################################\n"));
-  DEBUG ((EFI_D_INFO, "InitializeGigUNDIDriver Entered\n"));
   Status = EfiLibInstallDriverBinding (ImageHandle, SystemTable, &mGigUndiDriverBinding, ImageHandle);
   if (EFI_ERROR (Status)) {
     return Status;
@@ -242,7 +240,6 @@ Returns:
     DEBUGPRINT (CRITICAL, ("InstallMultipleProtocolInterfaces returns %x\n", Status));
     return Status;
   }
-  DEBUG ((EFI_D_INFO, "\n\n E1000: InstallMultipleProtocolInterfaces passed \n"));
   if (SystemTable->Hdr.Revision >= EFI_2_10_SYSTEM_TABLE_REVISION) {
     DEBUGPRINT (INIT, ("Installing UEFI 2.1 Supported EFI Version Protocol.\n"));
     Status = gBS->InstallMultipleProtocolInterfaces (
@@ -256,7 +253,6 @@ Returns:
     DEBUGPRINT (CRITICAL, ("InstallMultipleProtocolInterfaces returns %x\n", Status));
     return Status;
   }
-  DEBUG ((EFI_D_INFO, "\n\n E1000: InstallMultipleProtocolInterfaces passed 2\n"));
 
   //
   // This protocol does not need to be closed because it uses the GET_PROTOCOL attribute
@@ -567,7 +563,6 @@ Returns:
     return Status;
   }
 
-  DEBUG ((EFI_D_INFO, "\n\n E1000: Opened EfiPciIoProtocolGuid \n"));
   Status = PciIo->Pci.Read (
                         PciIo,
                         EfiPciIoWidthUint8,
@@ -655,13 +650,11 @@ Returns:
           Pci.Hdr.DeviceId == E1000_DEV_ID_82580_QUAD_FIBER ||
           Pci.Hdr.DeviceId == 0xDEAD
           ) {
-        DEBUG ((EFI_D_INFO, "\n\n E1000: DeviceId Read Success \n"));
         Status = EFI_SUCCESS;
       }
     }
   }
 
-  DEBUG ((EFI_D_INFO, "\n\n E1000: Close EfiPciIoProtocolGuid \n"));
   gBS->CloseProtocol (
         Controller,
         &gEfiPciIoProtocolGuid,
@@ -707,9 +700,8 @@ Returns:
   DEBUGPRINT(INIT, ("GigUndiDriverStart\n"));
   DEBUGWAIT(INIT);
 
-  DEBUG ((EFI_D_INFO, "\n\n $$$$$$$$$$$$$$$$$$$$$$$$$$$$ \n\n"));
-  DEBUG ((EFI_D_INFO, "\n\n E1000: START Driver \n"));
-  DEBUG ((EFI_D_INFO, "\n\n $$$$$$$$$$$$$$$$$$$$$$$$$$$$ \n\n"));
+  DEBUG ((EFI_D_RELEASE, "\n E1000: START Driver \n"));
+  DEBUG ((EFI_D_RELEASE, "\n ======================\n"));
   Status = gBS->AllocatePool (
                   EfiBootServicesData,
                   sizeof (GIG_UNDI_PRIVATE_DATA),

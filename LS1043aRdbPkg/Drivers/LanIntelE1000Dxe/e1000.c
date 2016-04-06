@@ -1246,7 +1246,6 @@ Returns:
   UINT16            i;
 
   DEBUGPRINT(E1000, ("e1000_FirstTimeInit\n"));
-  DEBUG ((EFI_D_INFO, " e1000_FirstTimeInit \n"));
 
   GigAdapter->DriverBusy = FALSE;
 
@@ -1314,16 +1313,16 @@ Returns:
   DEBUGPRINT(INIT, ("PCI Bus = %X\n", GigAdapter->Bus));
   DEBUGPRINT(INIT, ("PCI Device = %X\n", GigAdapter->Device));
   DEBUGPRINT(INIT, ("PCI Function = %X\n", GigAdapter->Function));
-  DEBUG (( EFI_D_INFO, "PCI Command Register = %X\n", PciConfigHeader->Command));
-  DEBUG (( EFI_D_INFO, "PCI Status Register = %X\n", PciConfigHeader->Status));
-  DEBUG (( EFI_D_INFO, "PCI VendorID = %X\n", PciConfigHeader->VendorID));
-  DEBUG (( EFI_D_INFO, "PCI DeviceID = %X\n", PciConfigHeader->DeviceID));
-  DEBUG (( EFI_D_INFO, "PCI SubVendorID = %X\n", PciConfigHeader->SubVendorID));
-  DEBUG (( EFI_D_INFO, "PCI SubSystemID = %X\n", PciConfigHeader->SubSystemID));
-  DEBUG (( EFI_D_INFO, "PCI Segment = %X\n", GigAdapter->Segment));
-  DEBUG (( EFI_D_INFO, "PCI Bus = %X\n", GigAdapter->Bus));
-  DEBUG (( EFI_D_INFO, "PCI Device = %X\n", GigAdapter->Device));
-  DEBUG (( EFI_D_INFO, "PCI Function = %X\n", GigAdapter->Function));
+  DEBUG (( EFI_D_RELEASE, "PCI Command Register = %X\n", PciConfigHeader->Command));
+  DEBUG (( EFI_D_RELEASE, "PCI Status Register = %X\n", PciConfigHeader->Status));
+  DEBUG (( EFI_D_RELEASE, "PCI VendorID = %X\n", PciConfigHeader->VendorID));
+  DEBUG (( EFI_D_RELEASE, "PCI DeviceID = %X\n", PciConfigHeader->DeviceID));
+  DEBUG (( EFI_D_RELEASE, "PCI SubVendorID = %X\n", PciConfigHeader->SubVendorID));
+  DEBUG (( EFI_D_RELEASE, "PCI SubSystemID = %X\n", PciConfigHeader->SubSystemID));
+  DEBUG (( EFI_D_RELEASE, "PCI Segment = %X\n", GigAdapter->Segment));
+  DEBUG (( EFI_D_RELEASE, "PCI Bus = %X\n", GigAdapter->Bus));
+  DEBUG (( EFI_D_RELEASE, "PCI Device = %X\n", GigAdapter->Device));
+  DEBUG (( EFI_D_RELEASE, "PCI Function = %X\n", GigAdapter->Function));
 
   ZeroMem (GigAdapter->BroadcastNodeAddress, PXE_MAC_LENGTH);
   SetMem (GigAdapter->BroadcastNodeAddress, PXE_HWADDR_LEN_ETHER, 0xFF);
@@ -1363,13 +1362,13 @@ Returns:
 
   if (e1000_set_mac_type (&GigAdapter->hw) != E1000_SUCCESS) {
     DEBUGPRINT(CRITICAL, ("Unsupported MAC type!\n"));
-    DEBUG (( EFI_D_INFO, "Unsupported MAC type!\n"));
+    DEBUG (( EFI_D_ERROR, "Unsupported MAC type!\n"));
     return EFI_UNSUPPORTED;
   }
 
   if (e1000_setup_init_funcs (&GigAdapter->hw, TRUE) != E1000_SUCCESS) {
     DEBUGPRINT(CRITICAL, ("e1000_setup_init_funcs failed!\n"));
-    DEBUG (( EFI_D_INFO, "e1000_setup_init_funcs failed!\n"));
+    DEBUG (( EFI_D_ERROR, "e1000_setup_init_funcs failed!\n"));
     return EFI_UNSUPPORTED;
   }
 
@@ -1388,7 +1387,7 @@ Returns:
   DEBUGPRINT(E1000, ("Calling e1000_read_mac_addr\n"));
   if (e1000_read_mac_addr (&GigAdapter->hw) != E1000_SUCCESS) {
     DEBUGPRINT(CRITICAL, ("Could not read MAC address\n"));
-    DEBUG((EFI_D_INFO, "Could not read MAC address\n"));
+    DEBUG((EFI_D_ERROR, "Could not read MAC address\n"));
     return EFI_UNSUPPORTED;
   }
 
