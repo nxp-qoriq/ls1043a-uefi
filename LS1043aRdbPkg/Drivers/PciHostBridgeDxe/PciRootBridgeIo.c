@@ -610,8 +610,6 @@ PciRbInitialize (
   )
 {
   EFI_STATUS                        Status;
- // PCI_RESOURCE_TYPE                 Index;
-  UINTN				    Cntr;
   struct LsPcie *Pcie;
   PciDevT Pdev = ((Busno) << 16 | (0) << 11 | (0) << 8);
   INTN LinkUp, EpMode;
@@ -620,7 +618,6 @@ PciRbInitialize (
   UINT16 VendorID16;
   UINT16 DeviceID16;
 
-  DEBUG((EFI_D_INFO, "Entered PciRbInitialize\n\n"));
   Pcie = PrivateData->Pcie;
 
   PrivateData->FirstBusno = Busno;
@@ -649,15 +646,7 @@ PciRbInitialize (
        CONFIG_SYS_LS_PCI_MEMORY_SIZE,
        LS_PCI_REGION_SYS_MEMORY);
 
-
   PrivateData->RegionCnt = 3;
-  for (Cntr = 0; Cntr < PrivateData->RegionCnt; Cntr++)
-    DEBUG((EFI_D_INFO, "PCI reg:%d %016llx:%016llx %016llx %08lx\n",
-	   Cntr,
-	   (UINT64)PrivateData->Regions[Cntr].PhysStart,
-	   (UINT64)PrivateData->Regions[Cntr].BusStart,
-	   (UINT64)PrivateData->Regions[Cntr].Size,
-	   PrivateData->Regions[Cntr].Flags));
 
   PcieReadConfigWord(PrivateData, Pdev, LS_PCI_VENDOR_ID, (UINT16 *)&VendorID16);
   DEBUG((EFI_D_RELEASE,"PCIe:VendorID: %04lx\n", VendorID16));
@@ -667,7 +656,7 @@ PciRbInitialize (
   DEBUG((EFI_D_RELEASE,"PCIe Header Type: %02lx\n", HeaderType));
   EpMode = (HeaderType & 0x7f) == LS_PCI_HEADER_TYPE_NORMAL;
   DEBUG((EFI_D_INFO,"EpMode: %d\n", EpMode));
-  DEBUG((EFI_D_INFO,"PCIe%d: %a\n", (UINT64)Info->PciNum, EpMode ? "Endpoint" : "Root Complex"));
+  DEBUG((EFI_D_RELEASE,"PCIe%d: %a\n", (UINT64)Info->PciNum, EpMode ? "Endpoint" : "Root Complex"));
 
   LinkUp = PcieLinkUp(Pcie);
 
@@ -678,66 +667,48 @@ PciRbInitialize (
     return Busno;
   }
 
-  DEBUG((EFI_D_INFO, "Passed Linkup Phase\n\n"));
+  DEBUG((EFI_D_INFO, "Passed Linkup Phase\n"));
   /* Print the negotiated PCIe link width */
   PcieReadConfigWord(PrivateData, Pdev, LS_PCIE_LINK_STA, (UINT16 *)&Temp16);
-  DEBUG((EFI_D_INFO,"PCIe Link Status: %04lx\n", Temp16));
+  DEBUG((EFI_D_RELEASE,"PCIe Link Status: %04lx\n", Temp16));
   DEBUG((EFI_D_RELEASE,"x%d gen%d, regs @ 0x%lx\n", (Temp16 & 0x3f0) >> 4,
 	 (Temp16 & 0xf), Info->Regs));
 
   if (EpMode) {
-    DEBUG((EFI_D_INFO, "EpMode: %d\n", Busno));
+    DEBUG((EFI_D_RELEASE, "EpMode: %d\n", Busno));
     return Busno;
   }
 
-  DEBUG((EFI_D_RELEASE, "PCI RootComplex Mode\n"));
   if (HostNo == 1) {
     if (PcdGet64 (PcdPci1ExpressBaseAddress) == 0) {
-      DEBUG ((EFI_D_INFO, "%a: PCI 1 host bridge not present\n", __FUNCTION__));
+      DEBUG ((EFI_D_ERROR, "%a: PCI 1 host bridge not present\n", __FUNCTION__));
       return EFI_ABORTED;
     }
 
-    DEBUG ((EFI_D_INFO, "%a: PCI 1 host bridge present\n", __FUNCTION__));
-    DEBUG((EFI_D_INFO, "Going to SetUp Controller 1\n\n"));
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
   } else if (HostNo == 2 ) { 
     if (PcdGet64 (PcdPci2ExpressBaseAddress) == 0) {
-      DEBUG ((EFI_D_INFO, "%a: PCI 2 host bridge not present\n", __FUNCTION__));
+      DEBUG ((EFI_D_ERROR, "%a: PCI 2 host bridge not present\n", __FUNCTION__));
       return EFI_ABORTED;
     }
 
-    DEBUG ((EFI_D_INFO, "%a: PCI 2 host bridge present\n", __FUNCTION__));
-
-    DEBUG((EFI_D_INFO, "Going to SetUp Controller 2\n\n"));
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
   } else if (HostNo == 3 ) { 
     if (PcdGet64 (PcdPci3ExpressBaseAddress) == 0) {
-      DEBUG ((EFI_D_INFO, "%a: PCI 3 host bridge not present\n", __FUNCTION__));
+      DEBUG ((EFI_D_ERROR, "%a: PCI 3 host bridge not present\n", __FUNCTION__));
       return EFI_ABORTED;
     }
 
-    DEBUG ((EFI_D_INFO, "%a: PCI 3 host bridge present\n", __FUNCTION__));
-
-    DEBUG((EFI_D_INFO, "Going to SetUp Controller 3\n\n"));
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
   }
-  
+
   PrivateData->IoTranslation = PcdGet64 (PcdPciIoTranslation);
 
   PrivateData->BusStart  = FixedPcdGet32 (PcdPciBusMin);
   PrivateData->BusLength = FixedPcdGet32 (PcdPciBusMax) - FixedPcdGet32 (PcdPciBusMin) + 1;
-  //
-  // Specific for this chipset
-  //
-/*  for (Index = TypeIo; Index < TypeMax; Index++) {
-    PrivateData->ResAllocNode[Index].Type      = Index;
-    PrivateData->ResAllocNode[Index].Base      = 0;
-    PrivateData->ResAllocNode[Index].Length    = 0;
-    PrivateData->ResAllocNode[Index].Status    = ResNone;
-  }
- */ 
-  PrivateData->RootBridgeAttrib = Attri;
   
+  PrivateData->RootBridgeAttrib = Attri;
+
   PrivateData->Supports    = EFI_PCI_ATTRIBUTE_IDE_PRIMARY_IO | EFI_PCI_ATTRIBUTE_IDE_SECONDARY_IO | \
                              EFI_PCI_ATTRIBUTE_ISA_IO_16 | EFI_PCI_ATTRIBUTE_ISA_MOTHERBOARD_IO | \
                              EFI_PCI_ATTRIBUTE_VGA_MEMORY | \
@@ -745,7 +716,7 @@ PciRbInitialize (
   PrivateData->Attributes  = PrivateData->Supports;
 
   Protocol->ParentHandle   = HostBridgeHandle;
-  
+
   Protocol->PollMem        = RootBridgeIoPollMem;
   Protocol->PollIo         = RootBridgeIoPollIo;
 
@@ -778,7 +749,7 @@ PciRbInitialize (
   Status = gBS->LocateProtocol (&gEfiMetronomeArchProtocolGuid, NULL, (VOID **)&mMetronome);
   DEBUG ((EFI_D_INFO, "PCI : Locate MetronomeArch protocol\n"));
   ASSERT_EFI_ERROR (Status);
- 
+
   return EFI_SUCCESS;
 }
 
@@ -827,8 +798,6 @@ RootBridgeIoPollMem (
   EFI_STATUS                      Status;
   UINT64                          NumberOfTicks;
   UINT32                          Remainder;
-
-  DEBUG((EFI_D_INFO, "PCI Root Bridge Io Poll Mem function.\n"));
 
   if (Result == NULL) {
     return EFI_INVALID_PARAMETER;
@@ -919,8 +888,6 @@ RootBridgeIoPollIo (
   EFI_STATUS                      Status;
   UINT64                          NumberOfTicks;
   UINT32                          Remainder;
-
-  DEBUG((EFI_D_INFO, "PCI Root Bridge Io Poll Io function is not implemented yet.\n"));
 
   if (Result == NULL) {
     return EFI_INVALID_PARAMETER;
@@ -1156,8 +1123,6 @@ RootBridgeIoCopyMem (
   UINTN       Stride;
   UINTN       Index;
   UINT64      Result;
-
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoCopyMem function\n"));
 
   if (Width > EfiPciWidthUint64) {
     return EFI_INVALID_PARAMETER;
@@ -1760,8 +1725,6 @@ RootBridgeIoConfiguration (
 {
   PCI_ROOT_BRIDGE_INSTANCE              *RootBridge;
   UINTN                                 Index;
-
-  DEBUG((EFI_D_INFO, "PCI Root Bridge IoConfiguration function.\n"));
 
   RootBridge = DRIVER_INSTANCE_FROM_PCI_ROOT_BRIDGE_IO_THIS(This);
 

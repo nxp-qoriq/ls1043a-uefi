@@ -154,21 +154,23 @@ PciHostBridgeEntryPoint (
   UINTN                       Loop1;
   UINTN                       Loop2;
 
-  DEBUG ((EFI_D_INFO, "PCI HostBridgeInit Entry\n"));
-
   //
   // Create Host Bridge Device Handle
   //
-  DEBUG ((EFI_D_INFO, "PCI : Going to Install Host Bridges\n"));
   for (Loop1 = 0; Loop1 < HOST_BRIDGE_NUMBER; Loop1++) {
-    DEBUG ((EFI_D_INFO, "PCI : Allocate Host Bridge Num: %d\n", (Loop1 + 1)));
+    if (Loop1 == 0 || Loop1 == 1) {
+      DEBUG ((EFI_D_ERROR, "PCIE%d is disabled\n", (Loop1 + 1)));
+      continue;
+    }
+
+    DEBUG ((EFI_D_RELEASE, "PCIE%d is Enabled\n", (Loop1 + 1)));
+
     HostBridge[Loop1] = AllocateCopyPool (sizeof(PCI_HOST_BRIDGE_INSTANCE), &gPciHostBridgeInstanceTemplate);
     if (HostBridge[Loop1] == NULL) {
       return EFI_OUT_OF_RESOURCES;
     }
   
     HostBridge[Loop1]->RootBridgeNumber[Loop1] = RootBridgeNumber[Loop1];
-    DEBUG ((EFI_D_INFO, "PCI : Allocated Pool for HostBridge: %d,RootBridge:%d\n", Loop1, RootBridgeNumber[Loop1]));
     InitializeListHead (&HostBridge[Loop1]->Head);
     DEBUG ((EFI_D_INFO, "PCI : Install Protocol for HostBridge: %d\n", Loop1));
 
@@ -182,7 +184,7 @@ PciHostBridgeEntryPoint (
       FreePool (HostBridge[Loop1]);
       return EFI_DEVICE_ERROR;
     } else {
-      DEBUG ((EFI_D_INFO, "%a: Succeed to install resource alloc\n", __FUNCTION__));
+      DEBUG ((EFI_D_INFO, "%a: Succeed to install resource allocation protocol\n", __FUNCTION__));
     }   
     
     HostBridge[Loop1]->ImageHandle = ImageHandle; 
@@ -190,53 +192,25 @@ PciHostBridgeEntryPoint (
     // Create Root Bridge Device Handle in this Host Bridge
     //
     for (Loop2 = 0; Loop2 < HostBridge[Loop1]->RootBridgeNumber[Loop1]; Loop2++) {
-      DEBUG ((EFI_D_INFO, "PCI : Going to Allocate Root Bridge No: %d\n", RootBridgeNumber[Loop1]));
       PrivateData[Loop1] = AllocateZeroPool (sizeof(PCI_ROOT_BRIDGE_INSTANCE));
       if (PrivateData[Loop1] == NULL) {
         return EFI_OUT_OF_RESOURCES;
       }
 
       PrivateData[Loop1]->Signature = PCI_ROOT_BRIDGE_SIGNATURE;
-      if (Loop1 == 0) {
-        CopyMem (&(PrivateData[Loop1]->DevicePath), &mEfiPciRootBridgeDevicePath1, sizeof (EFI_PCI_ROOT_BRIDGE_DEVICE_PATH));
+      CopyMem (&(PrivateData[Loop1]->DevicePath), &mEfiPciRootBridgeDevicePath3, sizeof (EFI_PCI_ROOT_BRIDGE_DEVICE_PATH));
         // Set Device Path for this Root Bridge
-        PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 0;
-      }  
+      PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 0;
  
       PrivateData[Loop1]->Info = AllocateZeroPool (sizeof(struct LsPcieInfo));
       PrivateData[Loop1]->Pcie = AllocateZeroPool (sizeof(struct LsPcie));
       
       SetLSPcieInfo(PrivateData[Loop1]->Info, (Loop1+1));
 
-      DEBUG ((EFI_D_INFO, "PCI : LsPcieInfo\n"));
-      DEBUG ((EFI_D_INFO, "PCI : LsPcieInfo:PCIE1: %016llx, 2: %016llx, 3: %016llx\n",
-	      CONFIG_SYS_PCIE1_PHYS_ADDR,
-	      CONFIG_SYS_PCIE2_PHYS_ADDR,
-	      CONFIG_SYS_PCIE3_PHYS_ADDR));
-      DEBUG((EFI_D_INFO, "Loop1:%d PciNum:%d Info CFG Values: %016llx %016llx:%016llx %016llx %016llx\n",
-             Loop1,			     
-	     (UINT64)PrivateData[Loop1]->Info->PciNum,
-	     (UINT64)PrivateData[Loop1]->Info->Regs,
-	     (UINT64)PrivateData[Loop1]->Info->Cfg0Phys,
-	     (UINT64)PrivateData[Loop1]->Info->Cfg0Size,
-	     (UINT64)PrivateData[Loop1]->Info->Cfg1Phys,
-	     (UINT64)PrivateData[Loop1]->Info->Cfg1Size));
-      DEBUG((EFI_D_INFO, "Loop1:%d Info Mem Values: %016llx:%016llx %016llx\n",
-	     Loop1,
-	     (UINT64)PrivateData[Loop1]->Info->MemBus,
-	     (UINT64)PrivateData[Loop1]->Info->MemPhys,
-	     (UINT64)PrivateData[Loop1]->Info->MemSize));
-      DEBUG((EFI_D_INFO, "Loop1:%d Info IO Values: %016llx:%016llx %016llx\n",
-	     Loop1,
-	     (UINT64)PrivateData[Loop1]->Info->IoBus,
-	     (UINT64)PrivateData[Loop1]->Info->IoPhys,
-	     (UINT64)PrivateData[Loop1]->Info->IoSize));
-
-      DEBUG ((EFI_D_INFO, "Sending PciNum: %d\n", PrivateData[Loop1]->Info->PciNum));
-      DEBUG ((EFI_D_INFO, "Sending Regs: %016lx\n", PrivateData[Loop1]->Info->Regs));
       HostBridge[Loop1]->RootBridge = PrivateData[Loop1];
 
-      DEBUG ((EFI_D_INFO, "Installed Host Bridges successfully\n"));
+      if (FeaturePcdGet(PcdPciDebug) == TRUE)
+        DEBUG ((EFI_D_INFO, "Installed Host Bridges successfully\n"));
 
       PciRbInitialize(
         PrivateData[Loop1], 
@@ -248,7 +222,6 @@ PciHostBridgeEntryPoint (
 	0
         );
    
-      DEBUG ((EFI_D_INFO, "Going to Install MultipleProtocolInterfaces\n")); 
       Status = gBS->InstallMultipleProtocolInterfaces(
                       &PrivateData[Loop1]->Handle,              
                       &gEfiDevicePathProtocolGuid,      &PrivateData[Loop1]->DevicePath,
@@ -311,8 +284,6 @@ PciNotifyPhase (
 
   HostBridgeInstance = INSTANCE_FROM_RESOURCE_ALLOCATION_THIS (This);
 
-  DEBUG((EFI_D_INFO, "Entered HB PCI NotifyPhase()\n"));
-
   // Check RootBridge Signature
   ASSERT (HostBridgeInstance->RootBridge->Signature == PCI_ROOT_BRIDGE_SIGNATURE);
   
@@ -327,28 +298,23 @@ PciNotifyPhase (
 
   switch (Phase) {
   case EfiPciHostBridgeBeginEnumeration:
-    DEBUG((EFI_D_INFO, "PciNotifyPhase(EfiPciHostBridgeBeginEnumeration)\n"));
     RootBridgeInstance = HostBridgeInstance->RootBridge;
     break;
 
   case EfiPciHostBridgeBeginBusAllocation:
-    DEBUG((EFI_D_INFO, "PciHbRaNotifyPhase(EfiPciHostBridgeBeginBusAllocation)\n"));
     // The bus allocation phase is about to begin
     break;
 
   case EfiPciHostBridgeEndBusAllocation:
-    DEBUG((EFI_D_INFO, "PciHbRaNotifyPhase(EfiPciHostBridgeEndBusAllocation)\n"));
     // The bus allocation and bus programming phase is complete. All the PCI-to-PCI bridges have been given and written back
     // a bus number range into their configuration
     break;
 
   case EfiPciHostBridgeBeginResourceAllocation:
-    DEBUG((EFI_D_INFO, "PciHbRaNotifyPhase(EfiPciHostBridgeBeginResourceAllocation)\n"));
     // The resource allocation phase is about to begin.
     break;
 
   case EfiPciHostBridgeAllocateResources:
-    DEBUG((EFI_D_INFO, "PciHbRaNotifyPhase(EfiPciHostBridgeAllocateResources)\n"));
     // Allocates resources per previously submitted requests for all the PCI root bridges. The resources have been submitted to
     // PciHbRaSubmitResources() before.
 
@@ -464,23 +430,19 @@ PciNotifyPhase (
     break;
 
   case EfiPciHostBridgeSetResources:
-    DEBUG((EFI_D_INFO, "PciHbRaNotifyPhase(EfiPciHostBridgeSetResources)\n"));
     // Programs the host bridge hardware to decode previously allocated resources (proposed resources)
     // for all the PCI root bridges. The PCI bus driver will now program the resources
     break;
 
   case EfiPciHostBridgeFreeResources:
-    DEBUG((EFI_D_INFO, "PciHbRaNotifyPhase(EfiPciHostBridgeFreeResources)\n"));
     // Deallocates resources that were previously allocated for all the PCI root bridges and resets the
     // I/O and memory apertures to their initial state.*/
     break;
 
   case EfiPciHostBridgeEndResourceAllocation:
-    DEBUG((EFI_D_INFO, "PciHbRaNotifyPhase(EfiPciHostBridgeEndResourceAllocation)\n"));
     break;
 
   case EfiPciHostBridgeEndEnumeration:
-    DEBUG((EFI_D_INFO, "PciHbRaNotifyPhase(EfiPciHostBridgeEndEnumeration)\n"));
     break;
 
   default:
@@ -504,8 +466,6 @@ PciGetNextRootBridge (
   )
 {
   PCI_HOST_BRIDGE_INSTANCE              *HostBridgeInstance;
-
-  DEBUG((EFI_D_INFO, "PciHbRaGetNextRootBridge()\n"));
 
   HostBridgeInstance = INSTANCE_FROM_RESOURCE_ALLOCATION_THIS (This);
   ASSERT (HostBridgeInstance->RootBridge != NULL);
@@ -537,8 +497,6 @@ PciGetAllocAttributes (
 {
   PCI_HOST_BRIDGE_INSTANCE    *HostBridgeInstance;
 
-  DEBUG((EFI_D_INFO, "PciHbRaGetAllocAttributes()\n"));
-
   HostBridgeInstance = INSTANCE_FROM_RESOURCE_ALLOCATION_THIS (This);
 
   // Check if the RootBridgeHandle is the one managed by this PCI Host Bridge
@@ -568,7 +526,6 @@ PciStartBusEnumeration (
 
   // Fill an ACPI descriptor table with the Bus Number Range. This information will be used by the PCI Bus driver
   // to set bus numbers to PCI-to-PCI bridge.
-  DEBUG((EFI_D_INFO, "Pci Host Bridge StartBusEnumeration()\n"));
 
   HostBridgeInstance = INSTANCE_FROM_RESOURCE_ALLOCATION_THIS (This);
 
@@ -611,8 +568,6 @@ PciSetBusNumbers (
   UINTN                       BusStart;
   UINTN                       BusEnd;
   UINTN                       BusLen;
-
-  DEBUG((EFI_D_INFO,"PciHbRaSetBusNumbers()\n"));
 
   Ptr = Configuration;
   if (*Ptr != ACPI_ADDRESS_SPACE_DESCRIPTOR) {
@@ -666,11 +621,10 @@ PciSubmitResources (
   EFI_ACPI_ADDRESS_SPACE_DESCRIPTOR   *Desc;
   PCI_RESOURCE_TYPE                   ResType;
  
-  DEBUG((EFI_D_INFO, "PciHbRaSubmitResources()\n"));
   HostBridgeInstance = INSTANCE_FROM_RESOURCE_ALLOCATION_THIS (This);
  
   if (Configuration == NULL) {
-    DEBUG((EFI_D_INFO, "PciHbRaSubmitResources(): NULL COnf\n"));
+    DEBUG((EFI_D_ERROR, "PciHbRaSubmitResources(): NULL COnf\n"));
     return EFI_INVALID_PARAMETER;
   }
 
@@ -680,7 +634,7 @@ PciSubmitResources (
     Ptr += sizeof (EFI_ACPI_ADDRESS_SPACE_DESCRIPTOR) ;
   }
   if (*Ptr != ACPI_END_TAG_DESCRIPTOR) { // End tag
-    DEBUG((EFI_D_INFO, "PciHbRaSubmitResources(): END tag issue\n"));
+    DEBUG((EFI_D_ERROR, "PciHbRaSubmitResources(): END tag issue\n"));
     return EFI_INVALID_PARAMETER;
   }
 
@@ -688,7 +642,7 @@ PciSubmitResources (
   RootBridgeInstance = HostBridgeInstance->RootBridge;
   ASSERT (RootBridgeInstance != NULL);
   if (RootBridgeHandle != HostBridgeInstance->RootBridge->Handle) {
-    DEBUG((EFI_D_INFO, "PciHbRaSubmitResources(): HB/RB dont match\n"));
+    DEBUG((EFI_D_ERROR, "PciHbRaSubmitResources(): HB/RB dont match\n"));
     return EFI_INVALID_PARAMETER;
   }
 
@@ -698,12 +652,12 @@ PciSubmitResources (
 
     // Check if the description is valid
     if (Desc->AddrLen > 0xffffffff) {
-      DEBUG((EFI_D_INFO, "PciHbRaSubmitResources(): Invalid addr length\n"));
+      DEBUG((EFI_D_ERROR, "PciHbRaSubmitResources(): Invalid addr length\n"));
       return EFI_INVALID_PARAMETER;
     }
 
     if ((Desc->AddrRangeMax >= 0xffffffff) || (Desc->AddrRangeMax != (GetPowerOfTwo64 (Desc->AddrRangeMax + 1) - 1))) {
-      DEBUG((EFI_D_INFO, "PciHbRaSubmitResources(): Invalid addr range\n"));
+      DEBUG((EFI_D_ERROR, "PciHbRaSubmitResources(): Invalid addr range\n"));
       return EFI_INVALID_PARAMETER;
     }
 
@@ -711,13 +665,13 @@ PciSubmitResources (
     case ACPI_ADDRESS_SPACE_TYPE_MEM:
       // Check invalid Address Space Granularity
       if ((Desc->AddrSpaceGranularity != 32) && (Desc->AddrSpaceGranularity != 64)) {
-        DEBUG((EFI_D_INFO, "PciHbRaSubmitResources(): Invalid addr space granul\n"));
+        DEBUG((EFI_D_ERROR, "PciHbRaSubmitResources(): Invalid addr space granul\n"));
         return EFI_INVALID_PARAMETER;
       }
 
       // check the memory resource request is supported by PCI root bridge
       if (RootBridgeInstance->MemAllocAttributes == EFI_PCI_HOST_BRIDGE_COMBINE_MEM_PMEM && Desc->SpecificFlag == 0x06) {
-        DEBUG((EFI_D_INFO, "PciHbRaSubmitResources(): Invalid memalloc attri \n"));
+        DEBUG((EFI_D_ERROR, "PciHbRaSubmitResources(): Invalid memalloc attri \n"));
         return EFI_INVALID_PARAMETER;
       }
 
@@ -774,7 +728,6 @@ PciGetProposedResources (
   UINT8                               *Ptr;
   EFI_ACPI_ADDRESS_SPACE_DESCRIPTOR   *Desc;
 
-  DEBUG((EFI_D_INFO, "PciHbRaGetProposedResources()\n"));
   HostBridgeInstance = INSTANCE_FROM_RESOURCE_ALLOCATION_THIS (This);
 
   // Check the RootBridgeHandle
@@ -801,7 +754,6 @@ PciGetProposedResources (
 
   Ptr = Buffer;
   for (i = 0; i < ResTypeMax; i++) {
-    DEBUG((EFI_D_INFO, "GetProposedResources:%d\n", ResTypeMax));
     if (RootBridgeInstance->ResAlloc[i].Length != 0) {    // Base != 0 if the resource has been allocated
       Desc = (EFI_ACPI_ADDRESS_SPACE_DESCRIPTOR *)Ptr;
 
@@ -894,8 +846,6 @@ PciPreprocessController (
   UINT32                      CapabilityEntry;
   UINT16                      CapabilityID;
   UINT32                      DeviceCapability;
-
-  DEBUG((EFI_D_INFO, "PciHbRaPreprocessController()\n"));
 
   if (FeaturePcdGet (PcdPciMaxPayloadFixup)) {
     // Do Max payload fixup for every devices

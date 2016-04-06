@@ -64,6 +64,7 @@
   gEfiMdePkgTokenSpaceGuid.PcdPci3ExpressBaseAddress
   gArmPlatformTokenSpaceGuid.PcdKludgeMapPciMmioAsCached
   gArmPlatformTokenSpaceGuid.PcdPciMaxPayloadFixup
+  gArmPlatformTokenSpaceGuid.PcdPciDebug
 
 [Protocols]
   gEfiPciHostBridgeResourceAllocationProtocolGuid       ## PRODUCES

@@ -44,3 +44,4 @@
 
 [FixedPcd]
   gArmPlatformTokenSpaceGuid.PcdPciMemTranslation
+  gArmPlatformTokenSpaceGuid.PcdPciDebug

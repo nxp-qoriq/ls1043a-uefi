@@ -99,6 +99,7 @@ SetLSPcieInfo (
 	PcieInfo->PciNum = Num;
 	}
 
+     if (FeaturePcdGet(PcdPciDebug) == TRUE) {
       DEBUG ((EFI_D_INFO, "In SET_PCIE_INFO: %d\n", Num));
       DEBUG((EFI_D_INFO, "PciNum:%d Info CFG Values: %016llx %016llx:%016llx %016llx %016llx\n",
 	     (UINT64)PcieInfo->PciNum,
@@ -115,7 +116,7 @@ SetLSPcieInfo (
 	     (UINT64)PcieInfo->IoBus,
 	     (UINT64)PcieInfo->IoPhys,
 	     (UINT64)PcieInfo->IoSize));
-
+     }
 }
 
 /* PEX1/2 Misc Ports Status Register */
@@ -450,9 +451,6 @@ PcieSetupAtu (
 	IN struct LsPcieInfo *Info
 )
 {
-	 INTN Cnt;
-	 UINTN AddrTemp;
-	
 	 /* ATU 0 : OUTBOUND : CFG0 */
 	PcieIatuOutboundSet(Pcie, LS_PCIE_ATU_REGION_INDEX0,
 				  LS_PCIE_ATU_TYPE_CFG0,
@@ -480,7 +478,10 @@ PcieSetupAtu (
 				  Info->IoBus,
 				  Info->IoSize);
 
-	for (Cnt = 0; Cnt <= LS_PCIE_ATU_REGION_INDEX3; Cnt++) {
+       if (FeaturePcdGet(PcdPciDebug) == TRUE) {
+          INTN Cnt;
+          UINTN AddrTemp;
+ 	  for (Cnt = 0; Cnt <= LS_PCIE_ATU_REGION_INDEX3; Cnt++) {
 		MmioWrite32((UINTN)Pcie->Dbi + LS_PCIE_ATU_VIEWPORT,
 			    (UINT32)(LS_PCIE_ATU_REGION_OUTBOUND | Cnt));
 		DEBUG((EFI_D_INFO,"iATU%d:\n", Cnt));
@@ -504,6 +505,7 @@ PcieSetupAtu (
 		DEBUG((EFI_D_INFO,"\tCR2        0x%08x\n",
 		      MmioRead32((UINTN)Pcie->Dbi + LS_PCIE_ATU_CR2)));
 	}
+      }
 }
 
 VOID
@@ -511,13 +513,14 @@ PcieSetupCntrl (
   IN PCI_ROOT_BRIDGE_INSTANCE      *PrivateData,
   IN struct LsPcie 		*Pcie,
   IN struct LsPcieInfo 		*Info
-)	
+)
 {
 	UINTN Dev = ((PrivateData->FirstBusno) << 16 | (0) << 11 | (0) << 8);
-	
-	DEBUG((EFI_D_INFO, "Going to SetUp IATU\n\n"));
+
+        if (FeaturePcdGet(PcdPciDebug) == TRUE)
+	  DEBUG((EFI_D_INFO, "Going to SetUp IATU\n\n"));
 	PcieSetupAtu(Pcie, Info);
-	
+
 	PcieWriteConfig(PrivateData, Dev, LS_PCI_BASE_ADDRESS_0, 0);
 
 	/* program correct class for RC */

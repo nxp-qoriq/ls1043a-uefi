@@ -145,15 +145,15 @@
 #define SD_BOOT	0x2
 
 /* PCI controllers addresses */
-#define CONFIG_SYS_PCIE1_PHYS_BASE              0x5000000000ULL
+#define CONFIG_SYS_PCIE1_PHYS_BASE              0x4000000000ULL
 #define CONFIG_SYS_PCIE2_PHYS_BASE              0x4800000000ULL
 #define CONFIG_SYS_PCIE3_PHYS_BASE              0x5000000000ULL
 
-#define CONFIG_SYS_PCIE1_PHYS_ADDR              0x5000000000ULL
+#define CONFIG_SYS_PCIE1_PHYS_ADDR              0x4000000000ULL
 #define CONFIG_SYS_PCIE2_PHYS_ADDR              0x4800000000ULL
 #define CONFIG_SYS_PCIE3_PHYS_ADDR              0x5000000000ULL
 
-#define CONFIG_SYS_PCIE1_ADDR                  0x03600000
+#define CONFIG_SYS_PCIE1_ADDR                  0x03400000
 #define CONFIG_SYS_PCIE2_ADDR                  0x03500000
 #define CONFIG_SYS_PCIE3_ADDR                  0x03600000
 

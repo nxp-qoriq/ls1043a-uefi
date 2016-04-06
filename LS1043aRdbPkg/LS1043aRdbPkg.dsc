@@ -365,10 +365,10 @@
   gArmPlatformTokenSpaceGuid.PcdPciMemTranslation|0x5000000000
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Base|0x5040000000
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Size|0x40000000
-  gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x5000000000
+  gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x4000000000
   gEfiMdePkgTokenSpaceGuid.PcdPci2ExpressBaseAddress|0x4800000000
   gEfiMdePkgTokenSpaceGuid.PcdPci3ExpressBaseAddress|0x5000000000
-
+  gArmPlatformTokenSpaceGuid.PcdPciDebug|FALSE
 
   #
   # ARM Primecells
