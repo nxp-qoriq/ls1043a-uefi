@@ -45,6 +45,7 @@
 #define DUART_MCR_OUT1		0x04 /* Out 1 */
 #define DUART_MCR_OUT2		0x08 /* Out 2 */
 #define DUART_MCR_LOOP		0x10 /* Enable loopback test mode */
+#define DUART_MCR_AFE		0x20 /* AFE (Auto Flow Control) */
 
 #define DUART_MCR_DMA_EN	0x04
 #define DUART_MCR_TX_DFR	0x08
@@ -78,14 +79,21 @@
 #define DUART_LSR_TEMT	0x40		/* Xmitter empty */
 #define DUART_LSR_ERR	0x80		/* Error */
 
-#define DUART_MSR_DCD	0x80		/* Data Carrier Detect */
-#define DUART_MSR_RI	0x40		/* Ring Indicator */
-#define DUART_MSR_DSR	0x20		/* Data Set Ready */
-#define DUART_MSR_CTS	0x10		/* Clear to Send */
-#define DUART_MSR_DDCD	0x08		/* Delta DCD */
-#define DUART_MSR_TERI	0x04		/* Trailing edge ring indicator */
-#define DUART_MSR_DDSR	0x02		/* Delta DSR */
+//#define DUART_MSR_DCD	0x80		/* Data Carrier Detect */
+//#define DUART_MSR_RI	0x40		/* Ring Indicator */
+//#define DUART_MSR_DSR	0x20		/* Data Set Ready */
+//#define DUART_MSR_CTS	0x10		/* Clear to Send */
+//#define DUART_MSR_DDCD	0x08		/* Delta DCD */
+//#define DUART_MSR_TERI	0x04		/* Trailing edge ring indicator */
+//#define DUART_MSR_DDSR	0x02		/* Delta DSR */
 #define DUART_MSR_DCTS	0x01		/* Delta CTS */
+#define DUART_MSR_DDSR	0x02		/* Reserved */
+#define DUART_MSR_TERI	0x04		/* Reserved */
+#define DUART_MSR_DDCD	0x08		/* Reserved */
+#define DUART_MSR_CTS	0x10		/* Clear to Send */
+#define DUART_MSR_DSR	0x20		/* Reserved */
+#define DUART_MSR_RI	0x40		/* Reserved */
+#define DUART_MSR_DCD	0x80		/* Reserved */
 
 // Interrupt Identification Register
 #define DUART_IIR_NO_INT	0x01	/* No interrupts pending */
@@ -192,6 +200,79 @@ BOOLEAN
 EFIAPI
 DuartPoll (
   IN  UINTN       UartBase
+  );
+
+/**
+  Assert or deassert the control signals on a serial port.
+  The following control signals are set according their bit settings :
+  . Request to Send
+  . Data Terminal Ready
+
+  @param[in]  UartBase  UART registers base address
+  @param[in]  Control   The following bits are taken into account :
+                        . EFI_SERIAL_REQUEST_TO_SEND : assert/deassert the
+                          "Request To Send" control signal if this bit is
+                          equal to one/zero.
+                        . EFI_SERIAL_DATA_TERMINAL_READY : assert/deassert
+                          the "Data Terminal Ready" control signal if this
+                          bit is equal to one/zero.
+                        . EFI_SERIAL_HARDWARE_LOOPBACK_ENABLE : enable/disable
+                          the hardware loopback if this bit is equal to
+                          one/zero.
+                        . EFI_SERIAL_SOFTWARE_LOOPBACK_ENABLE : not supported.
+                        . EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE : enable/
+                          disable the hardware flow control based on CTS (Clear
+                          To Send) and RTS (Ready To Send) control signals.
+
+  @retval  RETURN_SUCCESS      The new control bits were set on the device.
+  @retval  RETURN_UNSUPPORTED  The device does not support this operation.
+
+**/
+RETURN_STATUS
+EFIAPI
+DuartSetControl (
+    IN UINTN   UartBase,
+    IN UINT32  Control
+  );
+
+/**
+
+  Retrieve the status of the control bits on a serial device.
+
+  @param[in]   UartBase  UART registers base address
+  @param[out]  Control   Status of the control bits on a serial device :
+
+                         . EFI_SERIAL_DATA_CLEAR_TO_SEND,
+                           EFI_SERIAL_DATA_SET_READY,
+                           EFI_SERIAL_RING_INDICATE,
+                           EFI_SERIAL_CARRIER_DETECT,
+                           EFI_SERIAL_REQUEST_TO_SEND,
+                           EFI_SERIAL_DATA_TERMINAL_READY
+                           are all related to the DTE (Data Terminal Equipment)
+                           and DCE (Data Communication Equipment) modes of
+                           operation of the serial device.
+                         . EFI_SERIAL_INPUT_BUFFER_EMPTY : equal to one if the
+                           receive buffer is empty, 0 otherwise.
+                         . EFI_SERIAL_OUTPUT_BUFFER_EMPTY : equal to one if the
+                           transmit buffer is empty, 0 otherwise.
+                         . EFI_SERIAL_HARDWARE_LOOPBACK_ENABLE : equal to one if
+                           the hardware loopback is enabled (the ouput feeds the
+                           receive buffer), 0 otherwise.
+                         . EFI_SERIAL_SOFTWARE_LOOPBACK_ENABLE : equal to one if
+                           a loopback is accomplished by software, 0 otherwise.
+                         . EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE : equal to
+                           one if the hardware flow control based on CTS (Clear
+                           To Send) and RTS (Ready To Send) control signals is
+                           enabled, 0 otherwise.
+
+  @retval RETURN_SUCCESS  The control bits were read from the serial device.
+
+**/
+RETURN_STATUS
+EFIAPI
+DuartGetControl (
+    IN UINTN     UartBase,
+    OUT UINT32  *Control
   );
 
 #endif /* __DUART_H__ */

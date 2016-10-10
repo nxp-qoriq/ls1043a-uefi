@@ -24,6 +24,13 @@
 
 #include <DUart.h>
 
+//
+// EFI_SERIAL_SOFTWARE_LOOPBACK_ENABLE and
+// EFI_SERIAL_DATA_TERMINAL_READY are the only control bits
+// that is not supported.
+STATIC CONST UINT32 mInvalidControlBits = (EFI_SERIAL_SOFTWARE_LOOPBACK_ENABLE | \
+					   EFI_SERIAL_DATA_TERMINAL_READY);
+
 UINT32
 CalculateBaudDivisor (
   OUT UINT64 *BaudRate
@@ -150,5 +157,143 @@ DuartPoll (
   )
 {
 	return ((MmioRead8 (UartBase + ULSR) & DUART_LSR_DR) != 0);
+}
+
+/**
+
+  Assert or deassert the control signals on a serial port.
+  The following control signals are set according their bit settings :
+  . Request to Send
+  . Data Terminal Ready
+
+  @param[in]  UartBase  UART registers base address
+  @param[in]  Control   The following bits are taken into account :
+                        . EFI_SERIAL_REQUEST_TO_SEND : assert/deassert the
+                          "Request To Send" control signal if this bit is
+                          equal to one/zero.
+                        . EFI_SERIAL_DATA_TERMINAL_READY : assert/deassert
+                          the "Data Terminal Ready" control signal if this
+                          bit is equal to one/zero.
+                        . EFI_SERIAL_HARDWARE_LOOPBACK_ENABLE : enable/disable
+                          the hardware loopback if this bit is equal to
+                          one/zero.
+                        . EFI_SERIAL_SOFTWARE_LOOPBACK_ENABLE : not supported.
+                        . EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE : enable/
+                          disable the hardware flow control based on CTS (Clear
+                          To Send) and RTS (Ready To Send) control signals.
+
+  @retval  RETURN_SUCCESS      The new control bits were set on the device.
+  @retval  RETURN_UNSUPPORTED  The device does not support this operation.
+
+**/
+RETURN_STATUS
+EFIAPI
+DuartSetControl (
+    IN UINTN   UartBase,
+    IN UINT32  Control
+  )
+{
+  UINT32  McrBits;
+
+  if (Control & (mInvalidControlBits)) {
+    return RETURN_UNSUPPORTED;
+  }
+
+  McrBits = MmioRead8 (UartBase + UMCR);
+
+  if (Control & EFI_SERIAL_REQUEST_TO_SEND) {
+    McrBits |= DUART_MCR_RTS;
+  } else {
+    McrBits &= ~DUART_MCR_RTS;
+  }
+
+  if (Control & EFI_SERIAL_HARDWARE_LOOPBACK_ENABLE) {
+    McrBits |= DUART_MCR_LOOP;
+  } else {
+    McrBits &= ~DUART_MCR_LOOP;
+  }
+
+  if (Control & EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE) {
+    McrBits |= DUART_MCR_AFE;
+  } else {
+    McrBits &= ~DUART_MCR_AFE;
+  }
+
+  MmioWrite32 (UartBase + UMCR, McrBits);
+
+  return RETURN_SUCCESS;
+}
+
+/**
+
+  Retrieve the status of the control bits on a serial device.
+
+  @param[in]   UartBase  UART registers base address
+  @param[out]  Control   Status of the control bits on a serial device :
+
+                         . EFI_SERIAL_DATA_CLEAR_TO_SEND,
+                           EFI_SERIAL_DATA_SET_READY,
+                           EFI_SERIAL_RING_INDICATE,
+                           EFI_SERIAL_CARRIER_DETECT,
+                           EFI_SERIAL_REQUEST_TO_SEND,
+                           EFI_SERIAL_DATA_TERMINAL_READY
+                           are all related to the DTE (Data Terminal Equipment)
+                           and DCE (Data Communication Equipment) modes of
+                           operation of the serial device.
+                         . EFI_SERIAL_INPUT_BUFFER_EMPTY : equal to one if the
+                           receive buffer is empty, 0 otherwise.
+                         . EFI_SERIAL_OUTPUT_BUFFER_EMPTY : equal to one if the
+                           transmit buffer is empty, 0 otherwise.
+                         . EFI_SERIAL_HARDWARE_LOOPBACK_ENABLE : equal to one if
+                           the hardware loopback is enabled (the ouput feeds the
+                           receive buffer), 0 otherwise.
+                         . EFI_SERIAL_SOFTWARE_LOOPBACK_ENABLE : equal to one if
+                           a loopback is accomplished by software, 0 otherwise.
+                         . EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE : equal to
+                           one if the hardware flow control based on CTS (Clear
+                           To Send) and RTS (Ready To Send) control signals is
+                           enabled, 0 otherwise.
+
+  @retval RETURN_SUCCESS  The control bits were read from the serial device.
+
+**/
+RETURN_STATUS
+EFIAPI
+DuartGetControl (
+    IN UINTN     UartBase,
+    OUT UINT32  *Control
+  )
+{
+  UINT32      MsrRegister;
+  UINT32      McrRegister;
+  UINT32      LsrRegister;
+
+  MsrRegister = MmioRead8 (UartBase + UMSR);
+  McrRegister = MmioRead8 (UartBase + UMCR);
+  LsrRegister = MmioRead8 (UartBase + ULSR);
+
+  *Control = 0;
+
+  if ((MsrRegister & DUART_MSR_CTS) == DUART_MSR_CTS) {
+    *Control |= EFI_SERIAL_CLEAR_TO_SEND;
+  }
+
+  if ((McrRegister & DUART_MCR_RTS) == DUART_MCR_RTS) {
+    *Control |= EFI_SERIAL_REQUEST_TO_SEND;
+  }
+
+  if ((LsrRegister & DUART_LSR_TEMT) == DUART_LSR_TEMT) {
+    *Control |= EFI_SERIAL_OUTPUT_BUFFER_EMPTY;
+  }
+
+  if ((McrRegister & DUART_MCR_AFE) == DUART_MCR_AFE) {
+    *Control |= EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE;
+  }
+
+  if ((McrRegister & DUART_MCR_LOOP) == DUART_MCR_LOOP) {
+    *Control |= EFI_SERIAL_HARDWARE_LOOPBACK_ENABLE;
+  }
+
+  return RETURN_SUCCESS;
 }
 
