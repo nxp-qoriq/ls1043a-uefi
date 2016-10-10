@@ -138,7 +138,6 @@ GetHIInputInteger (
   return Status;
 }
 
-#ifdef NETLIB
 /**
   Get an IPv4 address
 
@@ -233,7 +232,6 @@ EditHIInputIP (
     }
   }
 }
-#endif
 
 EFI_STATUS
 GetHIInputBoolean (
