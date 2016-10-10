@@ -27,18 +27,12 @@
 #include <Ppi/GuidedSectionExtraction.h>
 #include <Ppi/ArmMpCoreInfo.h>
 #include <Guid/LzmaDecompress.h>
-#include <Guid/ArmGlobalVariableHob.h>
 
 #include "PrePi.h"
 #include "LzmaDecompress.h"
 
-extern UINTN mSystemMemoryEnd;
-
-#define IS_XIP() (((UINT32)FixedPcdGet32 (PcdFdBaseAddress) > mSystemMemoryEnd) || \
-                   ((FixedPcdGet32 (PcdFdBaseAddress) + FixedPcdGet32 (PcdFdSize)) < FixedPcdGet64 (PcdSystemMemoryBase)))
-
-// Not used when PrePi in run in XIP mode
-UINTN mGlobalVariableBase = 0;
+#define IS_XIP() (((UINT64)FixedPcdGet64 (PcdFdBaseAddress) > mSystemMemoryEnd) || \
+                  ((FixedPcdGet64 (PcdFdBaseAddress) + FixedPcdGet32 (PcdFdSize)) < FixedPcdGet64 (PcdSystemMemoryBase)))
 
 EFI_STATUS
 EFIAPI
@@ -51,23 +45,6 @@ EFIAPI
 LzmaDecompressLibConstructor (
   VOID
   );
-
-VOID
-EFIAPI
-BuildGlobalVariableHob (
-  IN EFI_PHYSICAL_ADDRESS         GlobalVariableBase,
-  IN UINT32                       GlobalVariableSize
-  )
-{
-  ARM_HOB_GLOBAL_VARIABLE  *Hob;
-
-  Hob = CreateHob (EFI_HOB_TYPE_GUID_EXTENSION, sizeof (ARM_HOB_GLOBAL_VARIABLE));
-  ASSERT(Hob != NULL);
-
-  CopyGuid (&(Hob->Header.Name), &gArmGlobalVariableGuid);
-  Hob->GlobalVariableBase = GlobalVariableBase;
-  Hob->GlobalVariableSize = GlobalVariableSize;
-}
 
 EFI_STATUS
 GetPlatformPpi (
@@ -97,7 +74,6 @@ VOID
 PrePiMain (
   IN  UINTN                     UefiMemoryBase,
   IN  UINTN                     StacksBase,
-  IN  UINTN                     GlobalVariableBase,
   IN  UINT64                    StartTimeStamp
   )
 {
@@ -106,15 +82,23 @@ PrePiMain (
   UINTN                         ArmCoreCount;
   ARM_CORE_INFO*                ArmCoreInfoTable;
   EFI_STATUS                    Status;
+  CHAR8                         Buffer[100];
+  UINTN                         CharCount;
   UINTN                         StacksSize;
 
   // If ensure the FD is either part of the System Memory or totally outside of the System Memory (XIP)
   ASSERT (IS_XIP() ||
-          ((FixedPcdGet32 (PcdFdBaseAddress) >= FixedPcdGet64 (PcdSystemMemoryBase)) &&
-           ((UINT32)(FixedPcdGet32 (PcdFdBaseAddress) + FixedPcdGet32 (PcdFdSize)) <= (UINT32)mSystemMemoryEnd)));
+          ((FixedPcdGet64 (PcdFdBaseAddress) >= FixedPcdGet64 (PcdSystemMemoryBase)) &&
+           ((UINT64)(FixedPcdGet64 (PcdFdBaseAddress) + FixedPcdGet32 (PcdFdSize)) <= (UINT64)mSystemMemoryEnd)));
 
   // Initialize the architecture specific bits
   ArchInitialize ();
+
+  // Initialize the Serial Port
+  SerialPortInitialize ();
+  CharCount = AsciiSPrint (Buffer,sizeof (Buffer),"UEFI firmware (version %s built at %a on %a)\n\r",
+    (CHAR16*)PcdGetPtr(PcdFirmwareVersionString), __TIME__, __DATE__);
+  SerialPortWrite ((UINT8 *) Buffer, CharCount);
 
   // Initialize the Debug Agent for Source Level Debugging
   InitializeDebugAgent (DEBUG_AGENT_INIT_POSTMEM_SEC, NULL, NULL);
@@ -141,9 +125,6 @@ PrePiMain (
     StacksSize = PcdGet32 (PcdCPUCorePrimaryStackSize);
   }
   BuildStackHob (StacksBase, StacksSize);
-
-  // Declare the Global Variable HOB
-  BuildGlobalVariableHob (GlobalVariableBase, FixedPcdGet32 (PcdPeiGlobalVariableSize));
 
   //TODO: Call CpuPei as a library
   BuildCpuHob (PcdGet8 (PcdPrePiCpuMemorySize), PcdGet8 (PcdPrePiCpuIoSize));
@@ -199,16 +180,12 @@ VOID
 CEntryPoint (
   IN  UINTN                     MpId,
   IN  UINTN                     UefiMemoryBase,
-  IN  UINTN                     StacksBase,
-  IN  UINTN                     GlobalVariableBase
+  IN  UINTN                     StacksBase
   )
 {
   UINT64   StartTimeStamp;
 
-// FIXME : Correct this handling later
-#if 0
   ASSERT(!ArmIsMpCore() || (PcdGet32 (PcdCoreCount) > 1));
-#endif
 
   // Initialize the platform specific controllers
   ArmPlatformInitialize (MpId);
@@ -234,14 +211,20 @@ CEntryPoint (
   // Define the Global Variable region when we are not running in XIP
   if (!IS_XIP()) {
     if (ArmPlatformIsPrimaryCore (MpId)) {
-      mGlobalVariableBase = GlobalVariableBase;
+      if (ArmIsMpCore()) {
+        // Signal the Global Variable Region is defined (event: ARM_CPU_EVENT_DEFAULT)
+        ArmCallSEV ();
+      }
+    } else {
+      // Wait the Primay core has defined the address of the Global Variable region (event: ARM_CPU_EVENT_DEFAULT)
+      ArmCallWFE ();
     }
   }
 
   // If not primary Jump to Secondary Main
   if (ArmPlatformIsPrimaryCore (MpId)) {
     // Goto primary Main.
-    PrimaryMain (UefiMemoryBase, StacksBase, GlobalVariableBase, StartTimeStamp);
+    PrimaryMain (UefiMemoryBase, StacksBase, StartTimeStamp);
   } else {
     SecondaryMain (MpId);
   }
