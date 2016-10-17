@@ -16,25 +16,6 @@
 
 #include <AsmMacroIoLibV8.h>
 
-.text
-.align 3
-
-GCC_ASM_EXPORT (ArmIsMpCore)
-GCC_ASM_EXPORT (ArmEnableAsynchronousAbort)
-GCC_ASM_EXPORT (ArmDisableAsynchronousAbort)
-GCC_ASM_EXPORT (ArmEnableIrq)
-GCC_ASM_EXPORT (ArmDisableIrq)
-GCC_ASM_EXPORT (ArmEnableFiq)
-GCC_ASM_EXPORT (ArmDisableFiq)
-GCC_ASM_EXPORT (ArmEnableInterrupts)
-GCC_ASM_EXPORT (ArmDisableInterrupts)
-GCC_ASM_EXPORT (ArmDisableAllExceptions)
-GCC_ASM_EXPORT (ReadCCSIDR)
-GCC_ASM_EXPORT (ReadCLIDR)
-GCC_ASM_EXPORT(GicV2InitSecure)
-
-#------------------------------------------------------------------------------
-
 .set MPIDR_U_BIT,    (30)
 .set MPIDR_U_MASK,   (1 << MPIDR_U_BIT)
 
@@ -128,25 +109,25 @@ ASM_FUNC(ReadCLIDR)
   mrs   x0, clidr_el1         // Read Cache Level ID Register
   ret
 
-ASM_PFX(GicV2InitSecure):
+ASM_FUNC(GicV2InitSecure)
 	EL1_OR_EL2_OR_EL3(x0)
-	2:
+	1:
 	ret
-	3:
-	LoadConstantToReg(FixedPcdGet32(PcdGicDistributorBase), x0)
-	LoadConstantToReg(FixedPcdGet32(PcdGicInterruptInterfaceBase), x1)
+	2:
+	MOV64 (x0, FixedPcdGet64 (PcdGicDistributorBase))
+	MOV64 (x1, FixedPcdGet64 (PcdGicInterruptInterfaceBase))
 	mov w9, #0x3    // EnableGrp0 | EnableGrp1
 	str w9, [x0, 0x0000]	// GICD_CTLR: Secure GICD_CTLR
 	ldr w9, [x0, 0x0004]	// GICD_TYPER
 	and w10, w9, #0x1f      // ITLinesNumber
-	cbz w10, 4f		// No SPIs
+	cbz w10, 3f		// No SPIs
 	add x11, x0, (0x0080 + 4)   // GICD_IGROUPRn
 	mov w9, #~0  // Config SPIs as Grp1
-	5:
+	4:
 	str w9, [x11], #0x4
 	sub w10, w10, #0x1
-	cbnz w10, 5b
-	4:
+	cbnz w10, 4b
+	3:
 	/*
 	** Initialize SGIs and PPIs	
 	** x0: Distributor Base	
