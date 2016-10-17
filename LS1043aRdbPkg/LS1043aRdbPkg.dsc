@@ -23,11 +23,9 @@
   # -D FLAG=VALUE
   #
 
-[LibraryClasses.common.SEC]
-  ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64LibSec.inf
-
 [LibraryClasses.common]
-  ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64Lib.inf
+  ArmLib|ArmPkg/Library/ArmLib/ArmBaseLib.inf
+  ArmMmuLib|ArmPkg/Library/ArmMmuLib/ArmMmuBaseLib.inf
   ArmCpuLib|ArmPkg/Drivers/ArmCpuLib/ArmCortexAEMv8Lib/ArmCortexAEMv8Lib.inf
   ArmSmcLib|ArmPkg/Library/ArmSmcLib/ArmSmcLib.inf
 
@@ -44,7 +42,6 @@
   UefiHiiServicesLib|MdeModulePkg/Library/UefiHiiServicesLib/UefiHiiServicesLib.inf
 
   FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
-  ImageDecoderLib|MdeModulePkg/Library/ImageDecoderLib/ImageDecoderLib.inf
 
   BootLogoLib|MdeModulePkg/Library/BootLogoLib/BootLogoLib.inf
   PlatformBootManagerLib|ArmPkg/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
@@ -96,7 +93,7 @@
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
 
   EfiFileLib|EmbeddedPkg/Library/EfiFileLib/EfiFileLib.inf
- 
+
   PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
 
   PeCoffGetEntryPointLib|MdePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
@@ -168,9 +165,6 @@
   VarCheckLib|MdeModulePkg/Library/VarCheckLib/VarCheckLib.inf
 
 [LibraryClasses.common.SEC]
-  ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64Lib.inf
-  ArmPlatformGlobalVariableLib|ArmPlatformPkg/Library/ArmPlatformGlobalVariableLib/PrePi/PrePiArmPlatformGlobalVariableLib.inf
-
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   ReportStatusCodeLib|IntelFrameworkModulePkg/Library/PeiDxeDebugLibReportStatusCode/PeiDxeDebugLibReportStatusCode.inf
   UefiDecompressLib|MdePkg/Library/BaseUefiDecompressLib/BaseUefiDecompressLib.inf
@@ -191,7 +185,7 @@
   # 1/123 faster than Stm or Vstm version
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
 
-  # Uncomment to turn on GDB stub in SEC. 
+  # Uncomment to turn on GDB stub in SEC.
   #DebugAgentLib|EmbeddedPkg/Library/GdbDebugAgent/GdbDebugAgent.inf
 
 [LibraryClasses.common.PEI_CORE]
@@ -215,7 +209,6 @@
   DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
   SecurityManagementLib|MdeModulePkg/Library/DxeSecurityManagementLib/DxeSecurityManagementLib.inf
   PerformanceLib|MdeModulePkg/Library/DxePerformanceLib/DxePerformanceLib.inf
-  ArmPlatformGlobalVariableLib|ArmPlatformPkg/Library/ArmPlatformGlobalVariableLib/Dxe/DxeArmPlatformGlobalVariableLib.inf
   MemoryInitPeiLib|ArmPlatformPkg/MemoryInitPei/MemoryInitPeiLib.inf
 
 [LibraryClasses.common.UEFI_APPLICATION]
@@ -239,7 +232,7 @@
   CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibNull/DxeCapsuleLibNull.inf
   PeCoffLib|EmbeddedPkg/Library/DxeHobPeCoffLib/DxeHobPeCoffLib.inf
 
-[LibraryClasses.ARM]
+[LibraryClasses.AARCH64]
   #
   # It is not possible to prevent the ARM compiler for generic intrinsic functions.
   # This library provides the instrinsic functions generate by a given compiler.
@@ -251,8 +244,13 @@
   XCODE:*_*_ARM_PLATFORM_FLAGS == -arch armv7
 
   GCC:*_*_ARM_PLATFORM_FLAGS == -march=armv7-a
+ # GCC:*_GCC49_AARCH64_CC_FLAGS = -mcmodel=small
 
   RVCT:*_*_ARM_PLATFORM_FLAGS == --cpu cortex-a9
+
+#[BuildOptions.common.EDKII.DXE_RUNTIME_DRIVER]
+#  GCC:*_*_ARM_DLINK_FLAGS = -z common-page-size=0x1000
+#  GCC:*_*_AARCH64_DLINK_FLAGS = -z common-page-size=0x10000
 
 ################################################################################
 #
@@ -318,8 +316,6 @@
   gArmPlatformTokenSpaceGuid.PcdCoreCount|1 # Only one core
   gArmPlatformTokenSpaceGuid.PcdCounterFrequency|12000000 #12Mhz
 
-  gEmbeddedTokenSpaceGuid.PcdPrePiCpuMemorySize|32
-  gEmbeddedTokenSpaceGuid.PcdPrePiCpuIoSize|0
   gEfiMdePkgTokenSpaceGuid.PcdMaximumUnicodeStringLength|1000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumAsciiStringLength|2000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumLinkedListLength|1000000
@@ -453,7 +449,7 @@
 !endif
 
   # Size of the region used by UEFI in permanent memory (Reserved 16MB)
-  gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x01000000
+  gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x02000000
 
   # Size of the region reserved for fixed address allocations (Reserved 32MB)
   gArmTokenSpaceGuid.PcdArmLinuxKernelMaxOffset|0x08000000
@@ -514,7 +510,7 @@
   #
   # SEC
   #
-  LS1043aRdbPkg/Library/LS1043aPrePi/PeiMPCore.inf
+  ArmPlatformPkg/PrePi/PeiUniCore.inf
 
   #
   # DXE
@@ -537,7 +533,6 @@
   MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
   MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
   MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
-  MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
   EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
 
   # FDT installation
@@ -576,7 +571,7 @@
   # FAT filesystem + GPT/MBR partitioning
   #
   MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
-  
+
   #
   # Dspi
   LS1043aRdbPkg/Drivers/DspiDxe/DspiDxe.inf
@@ -584,11 +579,11 @@
   #
   # Nor Flash
   LS1043aRdbPkg/Drivers/NorFlashDxe/NorFlashDxe.inf
-  
+
   #
   # Nand Flash
   LS1043aRdbPkg/Drivers/NandFlashDxe/NandFlashDxe.inf
-  
+
   #
   # File System
   LS1043aRdbPkg/Drivers/LS1043aFileSystemDxe/LS1043aFileSystemDxe.inf
@@ -644,10 +639,7 @@
   MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
   MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
   MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
-  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf {
-    <LibraryClasses>
-      NULL|MdeModulePkg/Library/BmpImageDecoderLib/BmpImageDecoderLib.inf
-  }
+  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
   MdeModulePkg/Application/UiApp/UiApp.inf {
     <LibraryClasses>
       NULL|MdeModulePkg/Library/DeviceManagerUiLib/DeviceManagerUiLib.inf

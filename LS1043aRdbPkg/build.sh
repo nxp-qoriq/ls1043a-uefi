@@ -114,7 +114,7 @@ source edksetup.sh BaseTools
 
 # Global Defaults
 ARCH=AARCH64
-TARGET_TOOLS=GCC48
+TARGET_TOOLS=GCC49
 
 # Actual build command
 if [[ $2 == "NAND" ]]; then
@@ -126,14 +126,14 @@ build -p "$WORKSPACE/LS1043aRdbPkg/LS1043aRdbPkg$BootSuffix" -a $ARCH -t $TARGET
 fi
 
 if [[ $2 == "XIP" || $2 == "FATXIP" ]]; then
- 	cat $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDB_EFI.fd >> $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd 
- 	mv $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDB_EFI.fd 
+	cat $WORKSPACE/Build/LS1043aRdb/$1_GCC49/FV/LS1043ARDB_EFI.fd >> $WORKSPACE/Build/LS1043aRdb/$1_GCC49/FV/LS1043ARDBPI_EFI.fd
+	mv $WORKSPACE/Build/LS1043aRdb/$1_GCC49/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/Build/LS1043aRdb/$1_GCC49/FV/LS1043ARDB_EFI.fd
 fi
 
 if [[ $2 == "NAND" ]]; then
-$3/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_nand.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_NAND_EFI.pbl
+$3/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_nand.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC49/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_NAND_EFI.pbl
 echo "PBL image created at $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_NAND_EFI.pbl"
 elif [[ $2 == "SD" ]]; then
-$3/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_sd.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC48/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_SD_EFI.pbl
+$3/mkimage -n $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_rcw_sd.cfg -R $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/ls1043ardb_pbi.cfg -T pblimage -A arm -a 0x10000000 -d $WORKSPACE/Build/LS1043aRdb/$1_GCC49/FV/LS1043ARDBPI_EFI.fd $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_SD_EFI.pbl
 echo "PBL image created at $WORKSPACE/LS1043aRdbPkg/Library/LS1043aPrePiOcram/LS1043ARDBPI_SD_EFI.pbl"
 fi

@@ -113,7 +113,6 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
   INF EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
   INF MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
-  INF MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
   #
   # Multiple Console IO support
   #
@@ -147,9 +146,6 @@ READ_LOCK_STATUS   = TRUE
   # Dspi Flash
   INF LS1043aRdbPkg/Drivers/DspiDxe/DspiDxe.inf
   
-  #
-  # FileSystem
-
 
   # PCI support
   #
@@ -228,7 +224,7 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
   INF MdeModulePkg/Application/UiApp/UiApp.inf
 
-#
+  #
   # FDT installation
   #
   # The UEFI driver is at the end of the list of the driver to be dispatched
@@ -275,7 +271,7 @@ READ_STATUS        = TRUE
 READ_LOCK_CAP      = TRUE
 READ_LOCK_STATUS   = TRUE
 
-  INF LS1043aRdbPkg/Library/LS1043aPrePi/PeiMPCore.inf
+  INF ArmPlatformPkg/PrePi/PeiUniCore.inf
 
   FILE FV_IMAGE = 9E21FD93-9C72-4c15-8C4B-E77F1DB2D792 {
     SECTION GUIDED EE4E5898-3914-4259-9D6E-DC7BD79403CF PROCESSING_REQUIRED = TRUE {

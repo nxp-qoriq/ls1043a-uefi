@@ -317,7 +317,7 @@ typedef VOID (*sync_mem)(UINT64, UINT64, UINT32, UINT32, UINT64);
 //
 extern EFI_DRIVER_BINDING_PROTOCOL gGigUndiDriverBinding;
 extern EFI_COMPONENT_NAME_PROTOCOL gGigUndiComponentName;
-EFI_TIME gTime;
+extern EFI_TIME gTime;
 
 #pragma pack(1)
 typedef struct eth {

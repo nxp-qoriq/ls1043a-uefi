@@ -47,6 +47,7 @@
   gEmbeddedTokenSpaceGuid.PcdCacheEnable
 
 [FixedPcd]
+  gArmTokenSpaceGuid.PcdArmPrimaryCore
   gArmTokenSpaceGuid.PcdFdBaseAddress
   gArmTokenSpaceGuid.PcdFdSize
 
