@@ -53,7 +53,6 @@ EL1_OR_EL2_OR_EL3(x0)
 3:
 	LoadConstantToReg(FixedPcdGet32(PcdCounterFrequency), x0)
 	msr cntfrq_el0, x0 
-
 	ret
 
 //UINTN

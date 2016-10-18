@@ -38,3 +38,11 @@
 
 [Pcd.AARCH64]
   gEmbeddedTokenSpaceGuid.PcdPrePiCpuMemorySize
+
+[Protocols]
+  gEfiCpuArchProtocolGuid
+
+[FixedPcd]
+  gArmTokenSpaceGuid.PcdArmCacheOperationThreshold
+  gArmTokenSpaceGuid.PcdGicDistributorBase
+  gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase

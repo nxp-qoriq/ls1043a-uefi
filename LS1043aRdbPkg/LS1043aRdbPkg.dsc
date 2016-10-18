@@ -412,6 +412,7 @@
 
 !if $(TARGET) == DEBUG
   gArmTokenSpaceGuid.PcdDdrInitialize|FALSE
+  gArmTokenSpaceGuid.PcdI2cInitialize|FALSE
 !endif
 
   # Size of the region used by UEFI in permanent memory (Reserved 16MB)
@@ -517,6 +518,8 @@
   ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
 
   EmbeddedPkg/SimpleTextInOutSerial/SimpleTextInOutSerial.inf
+
+  LS1043aBoardPkg/Drivers/PpaInitDxe/PpaInitDxe.inf
 
   #
   # PPA

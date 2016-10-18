@@ -104,6 +104,8 @@ READ_LOCK_STATUS   = TRUE
   #
   INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
 
+  INF LS1043aBoardPkg/Drivers/PpaInitDxe/PpaInitDxe.inf
+
   INF MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
   INF ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
   INF ArmPkg/Drivers/TimerDxe/TimerDxe.inf
