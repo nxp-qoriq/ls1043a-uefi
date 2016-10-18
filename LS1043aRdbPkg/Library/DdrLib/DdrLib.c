@@ -130,6 +130,14 @@ DdrRegDump (
   DEBUG((EFI_D_RELEASE, "CaptureAddress = 0x%x\n",MmioReadBe32((UINTN)&Ddr->CaptureAddress)));
   DEBUG((EFI_D_RELEASE, "CaptureExtAddress = 0x%x\n",MmioReadBe32((UINTN)&Ddr->CaptureExtAddress)));
   DEBUG((EFI_D_RELEASE, "ErrSbe = 0x%x\n",MmioReadBe32((UINTN)&Ddr->ErrSbe)));
+
+#if 0
+  while (Count) {
+    DEBUG((EFI_D_INFO, "0x%x : 0x%x\n", Ddr, MmioReadBe32((UINTN)Ddr)));
+    Ddr++;
+    Count--;
+  }
+#endif
   DEBUG((EFI_D_ERROR,"\n"));
 }
 
