@@ -104,8 +104,6 @@ READ_LOCK_STATUS   = TRUE
   #
   INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
 
-  INF LS1043aBoardPkg/Drivers/PpaInitDxe/PpaInitDxe.inf
-
   INF MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
   INF ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
   INF ArmPkg/Drivers/TimerDxe/TimerDxe.inf
@@ -210,6 +208,7 @@ READ_LOCK_STATUS   = TRUE
   # UEFI application (Shell Embedded Boot Loader)
   #
   INF ShellPkg/Application/Shell/Shell.inf
+  #INF ShellBinPkg/UefiShell/UefiShell.inf
   INF ArmPkg/Application/LinuxLoader/LinuxLoader.inf
 
   #

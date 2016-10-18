@@ -44,7 +44,6 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   ShellPkg/ShellPkg.dec
-  LS1043aRdbPkg/LS1043aRdbPkg.dec
 
 [Guids]
   gFdtTableGuid
@@ -66,7 +65,6 @@
   TimerLib
   UefiApplicationEntryPoint
   UefiLib
-  LS1043aSocLib
 
 [LibraryClasses.AARCH64]
   ArmGicLib

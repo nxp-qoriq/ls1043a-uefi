@@ -438,7 +438,7 @@ PrintCpuInfo (
 
 	ForEachCpu(CoreIndex, Core, CpuNumCores(), CpuMask()) {
 		if (!(CoreIndex % 3))
-			DEBUG((EFI_D_INFO, "\n       "));
+			DEBUG((EFI_D_RELEASE, "\n       "));
 		Type = TP_ITYP_VER(QoriqCoreToType(Core));
 		CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "CPU%d(%a):%-4a MHz  ", Core,
 		       Type == TY_ITYP_VER_A53 ? "A53" : "Unknown Core",

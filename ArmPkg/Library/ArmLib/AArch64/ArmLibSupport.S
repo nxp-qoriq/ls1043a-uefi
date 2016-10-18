@@ -72,7 +72,7 @@ ASM_FUNC(ArmGetTTBR0BaseAddress)
 1:mrs     x0, ttbr0_el1
   b       4f
 2:mrs     x0, ttbr0_el2
-  b        4f
+  b	   4f
 3:mrs     x0, ttbr0_el3
 4:MOV64 (x1, 0xFFFFFFFFFFFF) /* Look at bottom 48 bits */
   and     x0, x0, x1
