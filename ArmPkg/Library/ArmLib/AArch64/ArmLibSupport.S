@@ -67,7 +67,6 @@ ASM_FUNC(ArmSetTTBR0)
 4:isb
   ret
 
-
 ASM_FUNC(ArmGetTTBR0BaseAddress)
   EL1_OR_EL2_OR_EL3(x1)
 1:mrs     x0, ttbr0_el1
