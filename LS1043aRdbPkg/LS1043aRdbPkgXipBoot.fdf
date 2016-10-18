@@ -63,7 +63,6 @@ NumBlocks     = 0x8000
 gLS1043aRdbTokenSpaceGuid.PcdFvNorBaseAddress|gLS1043aRdbTokenSpaceGuid.PcdFvNorSize
 FV = FVNOR_COMPACT
 
-
 ################################################################################
 #
 # FV Section
@@ -213,7 +212,6 @@ READ_LOCK_STATUS   = TRUE
   # UEFI application (Shell Embedded Boot Loader)
   #
   INF ShellPkg/Application/Shell/Shell.inf
-  #INF ShellBinPkg/UefiShell/UefiShell.inf
   INF ArmPkg/Application/LinuxLoader/LinuxLoader.inf
 
   #

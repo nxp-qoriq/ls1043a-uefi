@@ -43,6 +43,5 @@
   gEfiCpuArchProtocolGuid
 
 [FixedPcd]
-  gArmTokenSpaceGuid.PcdArmCacheOperationThreshold
   gArmTokenSpaceGuid.PcdGicDistributorBase
   gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase
