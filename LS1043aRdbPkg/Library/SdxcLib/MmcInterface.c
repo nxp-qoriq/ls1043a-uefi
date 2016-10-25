@@ -135,9 +135,8 @@ MmcInitialize (
 {
   SelectSdxc();
 
-  if (BoardInit() < 0)
-    if (SdxcMmcInit() < 0)
-      return EFI_DEVICE_ERROR;
+  if (SdxcMmcInit() < 0)
+    return EFI_DEVICE_ERROR;
 
   return EFI_SUCCESS;
 }

@@ -184,3 +184,4 @@
   gLS1043aRdbTokenSpaceGuid.PcdNvFdBase|0x0|UINT64|0x00000045
   gLS1043aRdbTokenSpaceGuid.PcdNvFdSize|0x0|UINT32|0x00000046
   
+  gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported|FALSE|BOOLEAN|0x00000047

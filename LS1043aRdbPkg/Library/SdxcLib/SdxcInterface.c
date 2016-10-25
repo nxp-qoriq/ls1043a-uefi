@@ -54,22 +54,19 @@ __Div64_32 (
   return Rem;
 }
 
-static struct Mmc *
+static EFI_STATUS
 InitDevice (
   IN  BOOLEAN FInit
   )
 {
   EFI_STATUS Status;
-  struct Mmc *Mmc = gMmc;
 
   if (FInit)
-    Mmc->HasInit = 0;
+    gMmc->HasInit = 0;
 
-  Status = MmcInit(Mmc);
-  if (Status != EFI_SUCCESS)
-    return NULL;
+  Status = MmcInit(gMmc);
 
-  return Mmc;
+  return Status;
 }
 
 /*
@@ -115,9 +112,9 @@ PrintSizeSdxc (
   }
 
   DEBUG((EFI_D_RELEASE, "%Ld", n));
-  if (M) {
+  if (M)
     DEBUG((EFI_D_RELEASE, ".%Ld", M));
-  }
+
   DEBUG((EFI_D_RELEASE, " %ciB", C));
 }
 
@@ -162,17 +159,16 @@ DoMmcInfo (
   VOID
   )
 {
-  struct Mmc *Mmc;
-
+  EFI_STATUS Status;
+ 
   SelectSdxc();
-
-  Mmc = InitDevice(FALSE);
-  if (!Mmc)
+  Status = InitDevice(FALSE);
+  if (Status)
     return EFI_NO_MAPPING;
 
-  PrintSdxcInfo(Mmc);
+  PrintSdxcInfo(gMmc);
 
-  return EFI_SUCCESS;
+  return Status;
 }
 
 EFI_STATUS
@@ -183,14 +179,37 @@ DoMmcRead (
   )
 {
   UINT32 BlocksRead;
+  EFI_STATUS Status;
 
   DEBUG((EFI_D_INFO, "MMC Read: Block # %d, Count %d ...\n", StartBlk, Count));
-
+  
   SelectSdxc();
+ 
+  if (PcdGetBool(PcdSdxcDmaSupported)) {
+    struct DmaData DmaData;
+    VOID * Temp = NULL;
 
-  BlocksRead = gMmc->BlockDev.BlkRead(StartBlk, Count, InAddr);
-  /* Flush Cache After Read */
-  // TODO FlushCache((Ulong)InAddr, Count * 512); /* FIXME */
+    DmaData.Bytes = Count * gMmc->BlockDev.Blksz;    
+    DmaData.MapOperation = MapOperationBusMasterRead;
+
+    Temp = GetDmaBuffer(&DmaData);
+    if (Temp == NULL) {
+      DEBUG((EFI_D_ERROR,"Mmc Read : Failed to get DMA buffer \n"));
+      return EFI_OUT_OF_RESOURCES;
+    }
+
+    BlocksRead = SdxcBlkRead(StartBlk, Count, Temp);
+
+    InternalMemCopyMem(InAddr, Temp , DmaData.Bytes);
+ 
+    Status = FreeDmaBuffer(&DmaData);
+    if (Status) {
+      DEBUG((EFI_D_ERROR,"Mmc Read : Failed to release DMA buffer \n"));
+      return Status;
+    }
+  } else
+    BlocksRead = SdxcBlkRead(StartBlk, Count, InAddr);
+
   DEBUG((EFI_D_INFO, "%d Blocks Read: %a\n",
 	BlocksRead, (BlocksRead == Count) ? "OK" : "ERROR"));
 
@@ -205,6 +224,7 @@ DoMmcWrite (
   )
 {
   UINT32 BlkWrtn;
+  EFI_STATUS Status;
 
   DEBUG((EFI_D_INFO, "MMC Write: Block # %d, Count %d ... \n", StartBlk, Count));
 
@@ -214,7 +234,32 @@ DoMmcWrite (
     DEBUG((EFI_D_ERROR, "Error: Card Is Write Protected!\n"));
     return EFI_WRITE_PROTECTED;
   }
-  BlkWrtn = gMmc->BlockDev.BlkWrite(StartBlk, Count, InAddr);
+
+  if (PcdGetBool(PcdSdxcDmaSupported)) {
+    struct DmaData DmaData;
+    VOID * Temp = NULL;
+
+    DmaData.Bytes = Count * gMmc->BlockDev.Blksz;    
+    DmaData.MapOperation = MapOperationBusMasterWrite;
+
+    Temp = GetDmaBuffer(&DmaData);
+    if (Temp == NULL) {
+      DEBUG((EFI_D_ERROR,"Mmc Write : Failed to get DMA buffer \n"));
+      return EFI_OUT_OF_RESOURCES;
+    }
+
+    InternalMemCopyMem(Temp, InAddr , DmaData.Bytes);
+
+    BlkWrtn = SdxcBlkWrite(StartBlk, Count, Temp);
+    
+    Status = FreeDmaBuffer(&DmaData);
+    if (Status) {
+      DEBUG((EFI_D_ERROR,"Mmc Write : Failed to release DMA buffer \n"));
+      return Status;
+    }
+  } else
+    BlkWrtn = SdxcBlkWrite(StartBlk, Count, InAddr);
+
   DEBUG((EFI_D_INFO, "%d Blocks Written: %a\n",
 	BlkWrtn, (BlkWrtn == Count) ? "OK" : "ERROR"));
 
@@ -238,7 +283,7 @@ DoMmcErase (
      return EFI_WRITE_PROTECTED;
   }
 
-  BlkErsd = gMmc->BlockDev.BlkErase(StartBlk, Count);
+  BlkErsd = SdxcBlkErase(StartBlk, Count);
   DEBUG((EFI_D_INFO, "%d Blocks Erased: %a\n",
 	BlkErsd, (BlkErsd == Count) ? "OK" : "ERROR"));
 

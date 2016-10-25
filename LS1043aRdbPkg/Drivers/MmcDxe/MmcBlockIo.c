@@ -129,9 +129,7 @@ MmcIoBlocks (
     return EFI_INVALID_PARAMETER;
   }
   if (Transfer == MMC_DATA_WRITE) {
-    Status = DoMmcErase(Lba, (BufferSize / This->Media->BlockSize));
-    if (Status == EFI_SUCCESS)
-      Status = DoMmcWrite(Buffer, Lba, (BufferSize / This->Media->BlockSize));
+    Status = DoMmcWrite(Buffer, Lba, (BufferSize / This->Media->BlockSize));
   } else if (Transfer == MMC_DATA_READ)
     Status = DoMmcRead(Buffer, Lba, (BufferSize / This->Media->BlockSize));
 

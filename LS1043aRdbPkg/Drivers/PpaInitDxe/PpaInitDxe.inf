@@ -41,7 +41,6 @@
   MemoryInitPeiLib
   ArmLib
   BdsLib
-  SdxcLib
 
 [Guids]
 

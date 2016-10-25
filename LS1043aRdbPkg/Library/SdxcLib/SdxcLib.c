@@ -24,9 +24,52 @@ struct SdxcOperations SdxcOps = {
        .SdxcGetcd       = SdxcGetcd,
 };
 
-struct SdxcCfg SdxcCfg[1] = {
-  {(VOID *)CONFIG_SYS_FSL_SDXC_ADDR},
-};
+VOID *
+GetDmaBuffer (
+  IN struct DmaData *DmaData
+  )
+{
+  EFI_STATUS Status;
+  EFI_PHYSICAL_ADDRESS PhyAddr;
+
+  Status = DmaAllocateBuffer(EfiBootServicesData,
+		EFI_SIZE_TO_PAGES(DmaData->Bytes),
+		&(DmaData->DmaAddr));
+  if (Status) {
+    DEBUG((EFI_D_ERROR,"DmaAllocateBuffer failed\n"));
+    return NULL;
+  }
+
+  Status = DmaMap (DmaData->MapOperation, DmaData->DmaAddr,
+		&DmaData->Bytes, &PhyAddr, &DmaData->Mapping); 
+  if (Status) {
+    DEBUG((EFI_D_ERROR,"DmaMap failed %d \n", Status));
+    return NULL;
+  }
+  return (VOID *)PhyAddr;
+}
+
+EFI_STATUS
+FreeDmaBuffer (
+  IN struct DmaData *DmaData
+  )
+{
+  EFI_STATUS Status;
+
+  Status = DmaUnmap(DmaData->Mapping);
+  if (Status) {
+    DEBUG((EFI_D_ERROR,"DmaUnmap failed\n"));
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  Status = DmaFreeBuffer(EFI_SIZE_TO_PAGES (DmaData->Bytes), DmaData->DmaAddr);
+  if (Status) {
+    DEBUG((EFI_D_ERROR,"DmaFreeBuffer failed\n"));
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  return EFI_SUCCESS;
+}
 
 /* return The XFERTYPE Flags for A Given Command And Data Packet */
 UINT32
@@ -39,9 +82,10 @@ SdxcXfertype (
 
   if (Data) {
     Xfertype |= XFERTYPE_DPSEL;
-#ifndef CONFIG_SYS_FSL_SDXC_USE_PIO
-    Xfertype |= XFERTYPE_DMAEN;
-#endif
+
+    if (PcdGetBool(PcdSdxcDmaSupported))
+      Xfertype |= XFERTYPE_DMAEN;
+
     if (Data->Blocks > 1) {
       Xfertype |= XFERTYPE_MSBSEL;
       Xfertype |= XFERTYPE_BCEN;
@@ -75,14 +119,8 @@ SdxcSetupData (
   IN  struct SdData *Data
   )
 {
-  INT32 Timeout;
-
-#ifndef CONFIG_SYS_FSL_SDXC_USE_PIO
-#ifdef CONFIG_LS1043A
-  DmaAddr Addr;
-#endif
-#endif
-  UINT32 WmlVal;
+  INT32 Timeout = 0;
+  UINT32 WmlVal = 0;
   UINT32 Dsaddr = 0;;
 
   WmlVal = Data->Blocksize/4;
@@ -94,37 +132,27 @@ SdxcSetupData (
       WmlVal = WML_RD_MAX_VAL;
 
     MmioClearSetBe32((UINTN)&Regs->Wml, WML_RD_MASK, WmlVal);
-#ifndef CONFIG_SYS_FSL_SDXC_USE_PIO
-#ifdef CONFIG_LS1043A
-    Addr = VirtToPhys((VOID *)(Data->Dest));
-    if (Upper32Bits(Addr))
-      DEBUG((EFI_D_ERROR, "Error found for upper 32 bits\n"));
-    else
-      MmioWriteBe32((UINTN)&Regs->Dsaddr, Lower32Bits(Addr));
-#else
-    MmioWriteBe32((UINTN)&Regs->Dsaddr, Data->Dest);
-#endif
-#endif
+
+    if (PcdGetBool(PcdSdxcDmaSupported)) {
+      EFI_PHYSICAL_ADDRESS Addr = (EFI_PHYSICAL_ADDRESS)Data->Dest;
+      MmioWriteBe32((UINTN)&Regs->Dsaddr, Addr);
+    }
   } else {
     InternalMemCopyMem(&Dsaddr, Data->Src, sizeof(UINT32));
     if (WmlVal > WML_WR_MAX)
       WmlVal = WML_WR_MAX_VAL;
+
     if ((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_WPSPL) == 0) {
       DEBUG((EFI_D_ERROR, "The SD Card Is Locked. Can Not Write To A Locked Card.\n"));
       return EFI_TIMEOUT;
     }
+
     MmioClearSetBe32((UINTN)&Regs->Wml, WML_WR_MASK, WmlVal << 16);
-#ifndef CONFIG_SYS_FSL_SDXC_USE_PIO
-#ifdef CONFIG_LS1043A 
-    Addr = VirtToPhys((VOID *)(Data->Src));
-    if (Upper32Bits(Addr))
-      DEBUG((EFI_D_ERROR, "Error found for upper 32 bits\n"));
-    else
-      MmioWriteBe32((UINTN)&Regs->Dsaddr,Lower32Bits(Addr));
-#else
-    MmioWriteBe32((UINTN)&Regs->Dsaddr, Data->Src);
-#endif
-#endif
+
+    if (PcdGetBool(PcdSdxcDmaSupported)) {
+      EFI_PHYSICAL_ADDRESS Addr = (EFI_PHYSICAL_ADDRESS)Data->Src;
+      MmioWriteBe32((UINTN)&Regs->Dsaddr,Addr);
+    }
   }
 
   MmioWriteBe32((UINTN)&Regs->Blkattr, Data->Blocks << 16 | Data->Blocksize);
@@ -142,20 +170,6 @@ SdxcSetupData (
   MmioClearSetBe32((UINTN)&Regs->Sysctl, SYSCTL_TIMEOUT_MASK, Timeout << 16);
 
   return EFI_SUCCESS;
-}
-
-/*TODO*/
-VOID
-CheckAndInvalidateDcacheRange (
-  IN  struct SdData *Data
-  )
-{
-  return;
-//	UINT32 Start = (UINT32 *)Data->Dest;
-//	UINT32 Size = RoundUp(DMA_MINALIGN,
-//				Data->Blocks*Data->Blocksize);
-//	UINT32 End = Start+Size ;
-//TODO	InvalidateDcacheRange(Start, End);
 }
 
 VOID
@@ -188,7 +202,6 @@ ResetCmdFailedData (
 
 }
 
-#ifdef CONFIG_SYS_FSL_SDXC_USE_PIO
 static EFI_STATUS
 SdxcReadWrite (
   IN  struct SdxcRegs *Regs,
@@ -209,6 +222,7 @@ SdxcReadWrite (
       TimeOut = CPU_POLL_TIMEOUT;
       Size = Data->Blocksize;
       Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
+
       while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_BREN)
              && --TimeOut);
       if (TimeOut <= 0) {
@@ -217,7 +231,7 @@ SdxcReadWrite (
         return EFI_DEVICE_ERROR;
       }
       while (Size && (!(Irqstat & IRQSTATE_TC))) {
-        MicroSecondDelay(100); /* Wait before last byte transfer complete */
+	 NanoSecondDelay(4000);  /* Wait before last byte transfer complete */
         Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
         DataBuf = MmioRead32((UINTN)&Regs->Datport);
         *((UINT32 *)Buffer) = DataBuf;
@@ -241,7 +255,7 @@ SdxcReadWrite (
         return EFI_DEVICE_ERROR;
       }
       while (Size && (!(Irqstat & IRQSTATE_TC))) {
-        MicroSecondDelay(100); /* Wait before last byte transfer complete */
+	 NanoSecondDelay(4000);  /* Wait before last byte transfer complete */
         DataBuf = *((UINT32 *)Buffer);
         Buffer += 4;
         Size -= 4;
@@ -254,7 +268,6 @@ SdxcReadWrite (
 
   return EFI_SUCCESS;
 }
-#endif
 
 EFI_STATUS
 RecvResp(
@@ -264,7 +277,7 @@ RecvResp(
   OUT UINT32 *Response
   )
 {
-  INT32 Timeout = 0;
+  INT32 Timeout = 25000;
   EFI_STATUS Status = 0;
 
    /* Workaround for SDXC Errata ENGcm03648 */
@@ -302,35 +315,35 @@ RecvResp(
 
   /* Wait Until All Of The Blocks Are Transferred */
   if (Data) {
-#ifdef CONFIG_SYS_FSL_SDXC_USE_PIO
-    Status = SdxcReadWrite(Regs, Data);
-#else
-    UINT32	Irqstat;
-    Timeout = 10000000;
-    do {
+    if (!PcdGetBool(PcdSdxcDmaSupported)) {
+      Status = SdxcReadWrite(Regs, Data);
+    } else {
+      UINT32	Irqstat;
+      Timeout = 10000000;
+      do {
 
-      Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
+        Irqstat = MmioReadBe32((UINTN)&Regs->Irqstat);
 
-      if (Irqstat & IRQSTATE_DTOE) {
+        if (Irqstat & IRQSTATE_DTOE) {
+          ResetCmdFailedData(Regs, Data);
+          return EFI_TIMEOUT;
+        }
+
+        if (Irqstat & DATA_ERR) {
+          ResetCmdFailedData(Regs, Data);
+          return EFI_DEVICE_ERROR;
+        }
+
+	MicroSecondDelay(10);
+	
+      } while ((!(Irqstat & DATA_COMPLETE)) && Timeout--);
+
+      if (Timeout <= 0) {
+        DEBUG((EFI_D_ERROR, "Timeout Waiting for DATA_COMPLETE to set\n"));
         ResetCmdFailedData(Regs, Data);
         return EFI_TIMEOUT;
       }
-
-      if (Irqstat & DATA_ERR) {
-        ResetCmdFailedData(Regs, Data);
-        return EFI_DEVICE_ERROR;
-      }
-
-    } while ((!(Irqstat & DATA_COMPLETE)) && Timeout--);
-    if (Timeout <= 0) {
-      DEBUG((EFI_D_ERROR, "Timeout Waiting for DATA_COMPLETE to set\n"));
-      ResetCmdFailedData(Regs, Data);
-      return EFI_TIMEOUT;
-    }
-
-    if (Data->Flags & MMC_DATA_READ)
-      CheckAndInvalidateDcacheRange(Data);
-#endif
+    } /* end of DMA R/W */
   }
 
   MmioWriteBe32((UINTN)&Regs->Irqstat, -1);
@@ -361,24 +374,13 @@ SdxcSendCmd (
   asm("Dmb :");
 
   /* Wait for The Bus To Be Idle */
-  while (((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_CICHB) ||
+  while ((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_CICHB) ||
 		(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_CIDHB))
-		&& Timeout--)
-	;
+    NanoSecondDelay(10);
 
-  if (Timeout <= 0) {
-    DEBUG((EFI_D_ERROR, "Bus is not idle %d\n", Cmd->CmdIdx));
-    return EFI_TIMEOUT;
-  }
-
-  Timeout = 1000;
-  while ((MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_DLA) && Timeout--)
-  	;
-
-  if (Timeout <= 0) {
-    DEBUG((EFI_D_ERROR, "Data line is active %d\n", Cmd->CmdIdx));
-    return EFI_TIMEOUT;
-  }
+  /* Wait for data line to be active */
+  while (MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_DLA)
+    NanoSecondDelay(10);
 
   /* Wait Before The Next Command */
   MicroSecondDelay(1000);
@@ -425,13 +427,14 @@ SdxcSendCmd (
 
   if (Cmd->RespType != 0xFF) {
     Status = RecvResp(Regs, Data, Cmd->RespType, Cmd->Response);
-    return Status;
+    if (Status == EFI_SUCCESS)
+      return Status;
   }
 
 Out:
-  if (Status) {
+  if (Status)
     ResetCmdFailedData(Regs, Data);
-  } else
+  else
     MmioWriteBe32((UINTN)&Regs->Irqstat, -1);
 
   return Status;
@@ -463,7 +466,7 @@ SetSysctl (
     if ((SdhcClk / (Div * PreDiv)) <= Clock)
       break;
 
-  PreDiv >>= 1;
+  PreDiv >>= Mmc->DdrMode ? DIV_2 : DIV_1;
   Div -= 1;
 
   Clk = (PreDiv << 8) | (Div << 4);
@@ -472,7 +475,7 @@ SetSysctl (
 
   MmioClearSetBe32((UINTN)&Regs->Sysctl, SYSCTL_CLOCK_MASK, Clk);
 
-  MicroSecondDelay(10000);
+  MicroSecondDelay(100);
 
   Clk = SYSCTL_PEREN | SYSCTL_CKEN;
 
@@ -518,7 +521,7 @@ SdxcInit (
   /* Enable Cache Snooping */
   MmioWriteBe32((UINTN)&Regs->Scr, 0x00000040);
 
-//  MmioSetBitsBe32((UINTN)&Regs->Sysctl, SYSCTL_HCKEN | SYSCTL_IPGEN);
+  MmioSetBitsBe32((UINTN)&Regs->Sysctl, SYSCTL_HCKEN | SYSCTL_IPGEN);
 
   /* Set The Initial Clock Speed */
   SdxcSetClock(Mmc, 400000);
@@ -532,7 +535,7 @@ SdxcInit (
   /* Set Timout To The Maximum Value */
   MmioClearSetBe32((UINTN)&Regs->Sysctl, SYSCTL_TIMEOUT_MASK, 14 << 16);
 
-  return 0;
+  return EFI_SUCCESS;
 }
 
 INT32
@@ -545,7 +548,7 @@ SdxcGetcd (
   INT32 Timeout = 1000;
 
   while (!(MmioReadBe32((UINTN)&Regs->Prsstat) & PRSSTATE_CINS) && --Timeout)
-    MicroSecondDelay(1000);
+    MicroSecondDelay(10);
 
   return Timeout > 0;
 }
@@ -562,7 +565,7 @@ SdxcReset (
 
   /* Hardware Clears The Bit When It Is Done */
   while ((MmioReadBe32((UINTN)&Regs->Sysctl) & SYSCTL_RSTA) && --Timeout)
-    MicroSecondDelay(1000);
+    MicroSecondDelay(10);
 
   if (!Timeout)
     DEBUG((EFI_D_ERROR, "MMC/SD: Reset Never Completed.\n"));
@@ -652,26 +655,10 @@ SdxcMmcInit (
 
   Cfg = (struct SdxcCfg *)AllocatePool(sizeof(struct SdxcCfg));
   InternalMemZeroMem(Cfg, sizeof(struct SdxcCfg));
-  Cfg->SdxcBase = (VOID *)CONFIG_SYS_FSL_SDXC_ADDR;
+  Cfg->SdxcBase = (VOID *)SDXC_BASE_ADDR;
  
   GetSysInfo(&SocSysInfo);
  
   Cfg->SdhcClk = (UINT32)SocSysInfo.FreqSdhc;
   return SdxcInitialize(Cfg);
 }
-
-INT32
-BoardInit (
-  VOID
-  )
-{
-#ifndef CONFIG_RDB
-  struct SysInfo SocSysInfo;
-  GetSysInfo(&SocSysInfo);
-  SdxcCfg[0].SdhcClk = (UINT32)SocSysInfo.FreqSdhc;
-  return SdxcInitialize(&SdxcCfg[0]);
-#else
-  return -1;
-#endif
-}
-

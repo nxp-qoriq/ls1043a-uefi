@@ -271,9 +271,9 @@ SdxcEraseBlks (
   UINT64 End;
   INT32 Status, StartCmd, EndCmd;
 
-  if (Mmc->HighCapacity) {
+  if (Mmc->HighCapacity)
     End = Start + Blkcnt/Mmc->EraseGrpSize - 1;
-  } else {
+  else {
     End = (Start + Blkcnt/Mmc->EraseGrpSize - 1) * Mmc->WriteBlkLen;
     Start *= Mmc->WriteBlkLen;
   }
@@ -473,7 +473,7 @@ SdxcGoIdle (
   struct SdCmd Cmd;
   INT32 Status;
 
-  MicroSecondDelay(1000);
+  MicroSecondDelay(10);
 
   Cmd.CmdIdx = EMMC_CMD_GO_IDLE_STATE;
   Cmd.CmdArg = 0;
@@ -484,7 +484,7 @@ SdxcGoIdle (
   if (Status)
     return Status;
 
-  MicroSecondDelay(2000);
+  MicroSecondDelay(10);
 
   return EFI_SUCCESS;
 }
@@ -538,7 +538,7 @@ SdSendOpCond (
   VOID
   )
 {
-  INT32 Timeout = 1000;
+  INT32 Timeout = 100000;
   EFI_STATUS Status;
   struct SdCmd Cmd;
 
@@ -652,9 +652,9 @@ SdStartInit (
   VOID
   )
 {
+  EFI_STATUS Status;
   struct SdxcCfg *Cfg = gMmc->Private;
   struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
-  EFI_STATUS Status;
 
   /* We Pretend There'S No Card When Init Is NULL */
   if (Getcd() == 0 || gMmc->Cfg->Ops->SdxcInit == NULL) {
@@ -745,10 +745,6 @@ CreateMmcNode (
   /* Setup Dsr Related Values */
   Mmc->DsrImp = 0;
   Mmc->Dsr = 0xffffffff;
-  /* Setup The Universal Parts Of The Block Interface Just Once */
-  Mmc->BlockDev.BlkRead = SdxcBlkRead;
-  Mmc->BlockDev.BlkWrite = SdxcBlkWrite;
-  Mmc->BlockDev.BlkErase = SdxcBlkErase;
 
   return Mmc;
 }
@@ -764,14 +760,14 @@ SdxcCompleteOpCond (
   Mmc->OpCondPending = 0;
 
   if (IsSpi(Mmc)) { /* Read OCR for Spi */
-         Cmd.CmdIdx = EMMC_CMD_SPI_READ_OCR;
-         Cmd.RespType = MMC_RSP_R3;
-         Cmd.CmdArg = 0;
+    Cmd.CmdIdx = EMMC_CMD_SPI_READ_OCR;
+    Cmd.RespType = MMC_RSP_R3;
+    Cmd.CmdArg = 0;
 
-         Status = SendCmd(&Cmd, NULL);
+    Status = SendCmd(&Cmd, NULL);
 
-         if (Status)
-                return Status;
+    if (Status)
+      return Status;
   }
 
   Mmc->Version = MMC_VER_UNKNOWN;
@@ -839,145 +835,6 @@ MmcSetCapacity (
   return 0;
 }
 
-#ifdef GET_SD_REVISION
-static INT32
-SdxcSwitch (
-  IN  struct Mmc *Mmc,
-  IN  INT32 Mode,
-  IN  INT32 Group,
-  IN  UINT8 Value,
-  UINT8 *Resp
-  )
-{
-  struct SdCmd Cmd;
-  struct SdData Data;
-
-  /* switch The Frequency */
-  Cmd.CmdIdx = SD_CMD_SWITCH_FUNC;
-  Cmd.RespType = MMC_RSP_R1;
-  Cmd.CmdArg = (Mode << 31) | 0xffffff;
-  Cmd.CmdArg &= ~(0xf << (Group * 4));
-  Cmd.CmdArg |= Value << (Group * 4);
-
-  Data.Blocks = 1;
-  Data.Flags = MMC_DATA_READ;
-  Data.Dest = (CHAR8 *)Resp;
-  Data.Blocksize = 64;
-
-  return SendCmd(&Cmd, &Data);
-}
-
-static INT32
-SdxcChangeFreq (
-  IN  struct Mmc *Mmc
-  )
-{
-  INT32 Status;
-  struct SdCmd Cmd;
-  ALLOC_CACHE_ALIGN_BUF(UINT32, Scr, 2);
-  ALLOC_CACHE_ALIGN_BUF(UINT32, SwitchStatus, 16);
-  struct SdData Data;
-  INT32 Timeout;
-
-  Mmc->CardCaps = 0;
-
-  if (IsSpi(Mmc))
-    return 0;
-
-  /* Read The SCR To Find Out if This Card Supports Higher Speeds */
-  Status = SendAppCmd(TRUE);
-
-  if (Status)
-    return Status;
-
-  Cmd.CmdIdx = SD_CMD_APP_SEND_SCR;
-  Cmd.RespType = MMC_RSP_R1;
-  Cmd.CmdArg = 0;
-
-  Timeout = 5;
-
-RetryScr:
-  Data.Blocks = 1;
-  Data.Flags = MMC_DATA_READ;
-  Data.Dest = (CHAR8 *)Scr;
-  Data.Blocksize = 8;
-
-  Status = SendCmd(&Cmd, &Data);
-
-  if (Status) {
-    if (Timeout--)
-      goto RetryScr;
-
-    return Status;
-  }
-
-  MicroSecondDelay(100);
-
-  Mmc->Scr[0] = Scr[0];
-  Mmc->Scr[1] = Scr[1];
-
-  switch ((Mmc->Scr[0] >> 24) & 0xf) {
-    case 0:
-      Mmc->Version = SD_VER_1_0;
-      break;
-    case 1:
-      Mmc->Version = SD_VER_1_10;
-      break;
-    case 2:
-      Mmc->Version = SD_VER_2;
-      if ((Mmc->Scr[0] >> 15) & 0x1)
-        Mmc->Version = SD_VER_3;
-      break;
-    default:
-      Mmc->Version = SD_VER_1_0;
-      break;
-  }
-
-  if (Mmc->Scr[0] & SD_DATA_4_BIT)
-    Mmc->CardCaps |= MMC_MODE_4_BIT;
-
-  /* Switching not supported in Version 1.0 */
-  if (Mmc->Version == SD_VER_1_0)
-    return 0;
-
-  Timeout = 3;
-  do {
-    Status = SdxcSwitch(Mmc, SD_SWITCH_CHECK, 0, 1,
-		(UINT8 *)SwitchStatus);
-
-    if (Status)
-      return Status;
-
-    /* Try again if high-Speed Function Is Busy. */
-    if (!(SwitchStatus[7] & SD_HIGHSPEED_BUSY))
-      break;
-
-  }while (Timeout--);
-
-  /* Return if High-Speed Isn'T Supported */
-  if (!(SwitchStatus[3] & SD_HIGHSPEED_SUPPORTED))
-    return 0;
-
-  /*
-   * If card support SD_HIGHSPPED. and Host Doesn'T Support SD_HIGHSPEED,
-   * then do Not switch Card To HIGHSPEED Mode.
-   */
-  if (!((Mmc->Cfg->HostCaps & MMC_MODE_HS_52MHz) &&
-	(Mmc->Cfg->HostCaps & MMC_MODE_HS)))
-    return 0;
-
-  Status = SdxcSwitch(Mmc, SD_SWITCH_SWITCH, 0, 1, (UINT8 *)SwitchStatus);
-
-  if (Status)
-    return Status;
-
-  if ((SwitchStatus[4] & 0x0f000000) == 0x01000000)
-    Mmc->CardCaps |= MMC_MODE_HS;
-
-  return 0;
-}
-#endif
-
 static INT32
 MmcSwitch (
   IN  struct Mmc *Mmc,
@@ -1007,6 +864,192 @@ MmcSwitch (
 
 #ifdef GET_SD_REVISION
 static INT32
+SdxcSwitch (
+  IN  struct Mmc *Mmc,
+  IN  INT32 Mode,
+  IN  INT32 Group,
+  IN  UINT8 Value,
+  UINT8 *Resp
+  )
+{
+  struct SdCmd Cmd;
+  struct SdData Data;
+
+  /* switch The Frequency */
+  Cmd.CmdIdx = SD_CMD_SWITCH_FUNC;
+  Cmd.RespType = MMC_RSP_R1;
+  Cmd.CmdArg = (Mode << 31) | 0xffffff;
+  Cmd.CmdArg &= ~(0xf << (Group * 4));
+  Cmd.CmdArg |= Value << (Group * 4);
+
+  Data.Blocks = 1;
+  Data.Flags = MMC_DATA_READ;
+  Data.Dest = (CHAR8 *)Resp;
+  Data.Blocksize = 64;
+
+  return SendCmd(&Cmd, &Data);
+}
+
+EFI_STATUS
+SdxcChangeFreq (
+  IN  struct Mmc *Mmc
+  )
+{
+  EFI_STATUS Status = EFI_SUCCESS;
+  struct SdCmd Cmd;
+  UINT32 *Scr = NULL;
+  UINT32 *SwitchStatus = NULL;
+  struct SdData Data;
+  INT32 Timeout;
+  struct DmaData ScrDmaData;
+  struct DmaData SwitchDmaData;
+
+  ScrDmaData.Bytes = 2;
+  SwitchDmaData.Bytes = 16;
+
+  Mmc->CardCaps = 0;
+
+  if (IsSpi(Mmc))
+    return EFI_SUCCESS;
+
+  /* Read The SCR To Find Out if This Card Supports Higher Speeds */
+  Status = SendAppCmd(TRUE);
+
+  if (Status)
+    return Status;
+
+  Cmd.CmdIdx = SD_CMD_APP_SEND_SCR;
+  Cmd.RespType = MMC_RSP_R1;
+  Cmd.CmdArg = 0;
+
+  Timeout = 5;
+
+  if (PcdGetBool(PcdSdxcDmaSupported)) {
+    ScrDmaData.MapOperation = MapOperationBusMasterRead;
+
+    Scr = GetDmaBuffer(&ScrDmaData);
+    if (Scr == NULL) {
+      DEBUG((EFI_D_ERROR,"Failed to get DMA buffer \n"));
+      return EFI_OUT_OF_RESOURCES;
+    }
+  } else
+    Scr = AllocatePool(ScrDmaData.Bytes);;
+
+RetryScr:
+  Data.Blocks = 1;
+  Data.Flags = MMC_DATA_READ;
+  Data.Dest = (CHAR8 *)Scr;
+  Data.Blocksize = 8;
+
+  Status = SendCmd(&Cmd, &Data);
+
+  if (Status) {
+    if (Timeout--)
+      goto RetryScr;
+
+    goto FreeMem;
+  }
+
+  if (!PcdGetBool(PcdSdxcDmaSupported))
+    MicroSecondDelay(1000000);
+
+  Mmc->Scr[0] = Scr[0];
+  Mmc->Scr[1] = Scr[1];
+
+  switch ((Mmc->Scr[0] >> 24) & 0xf) {
+    case 0:
+      Mmc->Version = SD_VER_1_0;
+      break;
+    case 1:
+      Mmc->Version = SD_VER_1_10;
+      break;
+    case 2:
+      Mmc->Version = SD_VER_2;
+      if ((Mmc->Scr[0] >> 15) & 0x1)
+        Mmc->Version = SD_VER_3;
+      break;
+    default:
+      Mmc->Version = SD_VER_1_0;
+      break;
+  }
+
+  if (Mmc->Scr[0] & SD_DATA_4BIT)
+    Mmc->CardCaps |= MMC_MODE_4_BIT;
+
+  /* Switching not supported in Version 1.0 */
+  if (Mmc->Version == SD_VER_1_0) {
+    Status = EFI_SUCCESS;
+    goto FreeMem;
+  }
+
+  if (PcdGetBool(PcdSdxcDmaSupported)) {
+    SwitchDmaData.MapOperation = MapOperationBusMasterRead;
+
+    SwitchStatus = GetDmaBuffer(&SwitchDmaData);
+    if (SwitchStatus == NULL) {
+      DEBUG((EFI_D_ERROR,"Failed to get DMA buffer \n"));
+      Status = EFI_OUT_OF_RESOURCES;
+      goto FreeMem;
+    }
+  } else {
+    SwitchStatus = AllocatePool(SwitchDmaData.Bytes);
+  }
+
+  Timeout = 3;
+  do {
+    Status = SdxcSwitch(Mmc, SD_SWITCH_CHECK, 0, 1,
+		(UINT8 *)SwitchStatus);
+
+    if (Status)
+      goto FreeMem;
+    /* Try again if high-Speed Function Is Busy. */
+    if (!(SwitchStatus[7] & SD_HIGHSPEED_BUSY))
+      break;
+
+  }while (Timeout--);
+
+  /* Return if High-Speed Isn'T Supported */
+  if (!(SwitchStatus[3] & SD_HIGHSPEED_SUPPORTED)) {
+    Status = 0;
+    goto FreeMem;
+  }
+
+  /*
+   * If card support SD_HIGHSPPED. and Host Doesn'T Support SD_HIGHSPEED,
+   * then do Not switch Card To HIGHSPEED Mode.
+   */
+  if (!((Mmc->Cfg->HostCaps & MMC_MODE_HS_52MHz) &&
+	(Mmc->Cfg->HostCaps & MMC_MODE_HS))) {
+    Status = 0;
+    goto FreeMem;
+  }
+
+  Status = SdxcSwitch(Mmc, SD_SWITCH_SWITCH, 0, 1, (UINT8 *)SwitchStatus);
+
+  if (Status)
+    goto FreeMem;
+
+  if ((SwitchStatus[4] & 0x0f000000) == 0x01000000)
+    Mmc->CardCaps |= MMC_MODE_HS;
+
+FreeMem:
+  if (Scr) {
+    if (PcdGetBool(PcdSdxcDmaSupported))
+        FreeDmaBuffer(&ScrDmaData);
+    else
+	 FreePool(Scr);
+  }
+  if (SwitchStatus) {
+    if (PcdGetBool(PcdSdxcDmaSupported))
+        FreeDmaBuffer(&SwitchDmaData);
+    else
+	 FreePool(SwitchStatus);
+  }
+
+  return Status;
+}
+
+INT32
 MmcChangeFreq (
   IN  struct Mmc *Mmc
   )
@@ -1050,9 +1093,8 @@ MmcChangeFreq (
     if (Cardtype & EXT_CSD_CARD_TYPE_DDR_52)
       Mmc->CardCaps |= MMC_MODE_DDR_52MHz;
     Mmc->CardCaps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
-  } else {
+  } else
      Mmc->CardCaps |= MMC_MODE_HS;
-  }
 
   return 0;
 }
@@ -1381,15 +1423,6 @@ SdxcStartup (
       UINT32 Extw = ExtCsdBits[Idx];
       UINT32 Caps = ExtToHostcaps[Extw];
 
-      /*
-       * Check To Make Sure The Controller Supports
-       * This Bus Width, if It'S More Than 1
-       */
-#if 0
-      if (Extw != EXT_CSD_BUS_WIDTH_1 &&
-                    !(Mmc->Cfg->HostCaps & ExtToHostcaps[Extw]))
-        continue;
-#endif
       if ((Mmc->CardCaps & Caps) != Caps)
         continue;
 

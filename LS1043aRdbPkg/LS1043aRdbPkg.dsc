@@ -443,6 +443,11 @@
   gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|TRUE
   gArmPlatformTokenSpaceGuid.PcdCci400Initialize|TRUE
   gArmPlatformTokenSpaceGuid.PcdClockInitialize|TRUE
+
+  #
+  # SD Specific PCDs
+  #
+  gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported|TRUE
   
   #
   # PPA specific PCDs

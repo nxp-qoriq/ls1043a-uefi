@@ -400,7 +400,7 @@ SdxcBootInit (
   INT32 Timeout = 1000;
   UINT32 Caps = 0, VoltageCaps = 0;
 
-  gBoot.SdxcBase = (VOID *)CONFIG_SYS_FSL_SDXC_ADDR;
+  gBoot.SdxcBase = (VOID *)SDXC_BASE_ADDR;
   GetSysInfo(&SocSysInfo);
  
   gBoot.SdxcClk = (UINT32)SocSysInfo.FreqSdhc;

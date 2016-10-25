@@ -31,6 +31,7 @@
 
 [LibraryClasses]
   ArmLib
+  ArmPlatformLib
   PcdLib
   MemoryAllocationLib
   DebugLib
@@ -40,6 +41,7 @@
   PrintLib
   CpldLib
   LS1043aSocLib
+  DmaLib
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec
@@ -47,3 +49,6 @@
   MdeModulePkg/MdeModulePkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec
   LS1043aRdbPkg/LS1043aRdbPkg.dec
+
+[FixedPcd]
+  gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported

@@ -34,6 +34,7 @@
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/TimerLib.h>
 #include <Library/PrintLib.h>
+#include <Library/DmaLib.h>
 
 /**
   Set Block Count Limit Because Of 16 Bit Register Limit On Some Hardware
@@ -41,6 +42,12 @@
 #ifndef CONFIG_SYS_MMC_MAX_BLK_COUNT
 #define CONFIG_SYS_MMC_MAX_BLK_COUNT 65535
 #endif
+
+/**
+  Pre Div factor for DDR mode
+**/
+#define DIV_2				2
+#define DIV_1				1
 
 /**
   SDXC-Specific Constants
@@ -285,7 +292,7 @@
 #define XFERTYPE_BCEN        	0x00000002
 #define XFERTYPE_DMAEN              0x00000001
 
-#define CPU_POLL_TIMEOUT         10000000
+#define CPU_POLL_TIMEOUT         1000000000
 
 #define IRQSTAT             (0x0002e030)
 #define IRQSTATE_DMAE        (0x10000000)
@@ -357,9 +364,7 @@
 #define MMC_STATUS_ERROR    	(1 << 19)
 #define MMC_STATE_PRG              (7 << 9)
 
-#define LBA			7744512
-/* Dma addresses are 32-bits wide.  */
-typedef UINT32 DmaAddr;
+#define LBA                    7744512
 
 struct SdxcRegs {
        UINT32    Dsaddr;      // SDMA System Address Register
@@ -385,20 +390,29 @@ struct SdxcRegs {
        UINT32    Fevt;        // Force Event Register
        UINT32    Admaes;      // ADMA Error Status Register
        UINT32    Adsaddr;     // ADMA System Address Register
-       CHAR8     Reserved2[160];// Reserved
+       CHAR8     Reserved2[100];// Reserved
+       UINT32    VendorSpec;  //Vendor Specific Register
+       CHAR8     Reserved3[56];// Reserved
        UINT32    Hostver;     // Host Controller Version Register
-       CHAR8     Reserved3[4];// Reserved
-       UINT32    Dmaerraddr;  // DMA Error Address Register
        CHAR8     Reserved4[4];// Reserved
-       UINT32    Dmaerrattr;  // DMA Error Attribute Register
+       UINT32    Dmaerraddr;  // DMA Error Address Register
        CHAR8     Reserved5[4];// Reserved
+       UINT32    Dmaerrattr;  // DMA Error Attribute Register
+       CHAR8     Reserved6[4];// Reserved
        UINT32    Hostcapblt2; // Host Controller Capabilities Register 2
-       CHAR8     Reserved6[8];// Reserved
+       CHAR8     Reserved7[8];// Reserved
        UINT32    Tcr;         // Tuning Control Register
-       CHAR8     Reserved7[28];// Reserved
+       CHAR8     Reserved8[28];// Reserved
        UINT32    Sddirctl;    // SD Direction Control Register
-       CHAR8     Reserved8[712];// Reserved
+       CHAR8     Reserved9[712];// Reserved
        UINT32    Scr;         // SDXC Control Register
+};
+
+struct DmaData {
+	VOID *DmaAddr;
+	UINTN Bytes;
+	VOID *Mapping; 
+        DMA_MAP_OPERATION MapOperation;
 };
 
 struct SdData {
@@ -424,9 +438,6 @@ typedef struct BlockDev {
        CHAR8  Vendor [41];       // IDE Model, SCSI Vendor
        CHAR8  Product[21];       // IDE Serial No, SCSI Product
        CHAR8  Revision[9];       // Firmware Revision
-       UINT32 (*BlkRead)(UINT32 Start, UINT32 Blkcnt, VOID *Buffer);
-       UINT32 (*BlkWrite)(UINT32 Start, UINT32 Blkcnt, CONST VOID *Buffer);
-       UINT32 (*BlkErase)(UINT32 Start, UINT32 Blkcnt);
        VOID   *Private;        // Driver Privateate struct Pointer
 }BlockDevT;
 
@@ -703,6 +714,47 @@ CreateBootStruct (
 VOID
 UpdateBootStruct (
   IN VOID
+  );
+
+EFI_STATUS
+SdxcChangeFreq (
+  IN  struct Mmc *Mmc
+  );
+
+
+INT32
+MmcChangeFreq (
+  IN  struct Mmc *Mmc
+  );
+
+UINT32
+SdxcBlkErase (
+  IN  UINT32 Start,
+  IN  UINT32 Blkcnt
+  );
+
+UINT32
+SdxcBlkWrite (
+  IN  UINT32 Start,
+  IN  UINT32 Blkcnt,
+  IN  CONST VOID *Src
+  );
+
+UINT32
+SdxcBlkRead (
+  IN  UINT32 Start,
+  IN  UINT32 Blkcnt,
+  OUT VOID *Dest
+  );
+
+VOID *
+GetDmaBuffer (
+  IN struct DmaData *DmaData
+  );
+
+EFI_STATUS
+FreeDmaBuffer (
+  IN struct DmaData *DmaData
   );
 
 #endif
