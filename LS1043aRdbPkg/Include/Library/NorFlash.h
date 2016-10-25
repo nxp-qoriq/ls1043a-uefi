@@ -32,8 +32,12 @@
 #include <Library/IoLib.h>
 #include <Library/UefiLib.h>
 #include <Library/UefiRuntimeLib.h>
-#include <Library/NorFlashPlatformLib.h>
+#include <Library/NorFlashLib.h>
 #include <Library/FslIfc.h>
+
+#define NOR_FLASH_ERASE_RETRY                     10
+
+#define GET_NOR_BLOCK_ADDRESS(BaseAddr,Lba,LbaSize) ( BaseAddr + (UINTN)((Lba) * LbaSize) )
 
 #define NOR_FLASH_SIGNATURE                       SIGNATURE_32('n', 'o', 'r', '0')
 #define INSTANCE_FROM_FVB_THIS(a)                 CR(a, NOR_FLASH_INSTANCE, FvbProtocol, NOR_FLASH_SIGNATURE)
@@ -64,6 +68,8 @@ struct _NOR_FLASH_INSTANCE {
   EFI_BLOCK_IO_PROTOCOL               BlockIoProtocol;
   EFI_BLOCK_IO_MEDIA                  Media;
 
+  BOOLEAN                             SupportFvb;
+  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL FvbProtocol;
   VOID*                               ShadowBuffer;
 
   NOR_FLASH_DEVICE_PATH               DevicePath;
@@ -74,26 +80,12 @@ struct _NOR_FLASH_INSTANCE {
 //
 
 EFI_STATUS
-NorFlashPlatformWriteSingleWord (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN UINTN                  WordAddress,
-  IN UINT8                  WriteData
-  );
-
-EFI_STATUS
 NorFlashPlatformWriteBuffer (
   IN NOR_FLASH_INSTANCE     *Instance,
-  IN UINTN                  TargetAddress,
-  IN UINTN                  BufferSizeInBytes,
-  IN UINT16                 *pSrcBuffer
-  );
-
-EFI_STATUS
-NorFlashPlatformWriteFullBlock (
-  IN NOR_FLASH_INSTANCE     *Instance,
   IN EFI_LBA                Lba,
-  IN UINT32                 *DataBuffer,
-  IN UINT32                 BlockSizeInWords
+  IN        UINTN           Offset,
+  IN OUT    UINTN           *NumBytes,
+  IN        UINT8           *Buffer
   );
 
 EFI_STATUS
@@ -125,70 +117,97 @@ NorFlashPlatformControllerInitialization (
   );
 
 EFI_STATUS
-NorFlashPlatformPlatformEraseSector (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN UINTN                  SectorAddress
-  );
-
-EFI_STATUS
-NorFlashPlatformEraseChip (
-  IN NOR_FLASH_INSTANCE     *Instance
-  );
-
-EFI_STATUS
-NorFlashPlatformWriteSingleBlock (
-  IN        NOR_FLASH_INSTANCE   *Instance,
-  IN        EFI_LBA               Lba,
-  IN        UINTN                 Offset,
-  IN OUT    UINTN                *NumBytes,
-  IN        UINT8                *Buffer
-  );
-
-EFI_STATUS
-NorFlashPlatformWriteBlocks (
-  IN  NOR_FLASH_INSTANCE *Instance,
-  IN  EFI_LBA           Lba,
-  IN  UINTN             BufferSizeInBytes,
-  IN  VOID              *Buffer
-  );
-
-EFI_STATUS
-NorFlashPlatformReadBlocks (
-  IN NOR_FLASH_INSTANCE   *Instance,
-  IN EFI_LBA              Lba,
-  IN UINTN                BufferSizeInBytes,
-  OUT VOID                *Buffer
-  );
-
-EFI_STATUS
 NorFlashPlatformRead (
-  IN NOR_FLASH_INSTANCE   *Instance,
+  IN NOR_FLASH_INSTANCE     *Instance,
   IN EFI_LBA              Lba,
   IN UINTN                Offset,
   IN UINTN                BufferSizeInBytes,
-  OUT VOID                *Buffer
-  );
-
-EFI_STATUS
-NorFlashPlatformWrite (
-  IN        NOR_FLASH_INSTANCE   *Instance,
-  IN        EFI_LBA               Lba,
-  IN        UINTN                 Offset,
-  IN OUT    UINTN                *NumBytes,
-  IN        UINT8                *Buffer
+  OUT UINT8                *Buffer
   );
 
 EFI_STATUS
 NorFlashPlatformReset (
-  IN  NOR_FLASH_INSTANCE *Instance
+  IN NOR_FLASH_INSTANCE     *Instance
   );
+
+extern CONST EFI_GUID* CONST          mNorFlashVariableGuid;
+
+//
+// NorFlashFvbDxe.c
+//
+
+EFI_STATUS
+EFIAPI
+NorFlashFvbInitialize (
+  IN NOR_FLASH_INSTANCE*                            Instance
+  );
+
+EFI_STATUS
+EFIAPI
+FvbGetAttributes(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL     *This,
+  OUT       EFI_FVB_ATTRIBUTES_2                    *Attributes
+  );
+
+EFI_STATUS
+EFIAPI
+FvbSetAttributes(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL     *This,
+  IN OUT    EFI_FVB_ATTRIBUTES_2                    *Attributes
+  );
+
+EFI_STATUS
+EFIAPI
+FvbGetPhysicalAddress(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL     *This,
+  OUT       EFI_PHYSICAL_ADDRESS                    *Address
+  );
+
+EFI_STATUS
+EFIAPI
+FvbGetBlockSize(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL     *This,
+  IN EFI_LBA              Lba,
+  OUT       UINTN                                   *BlockSize,
+  OUT       UINTN                                   *NumberOfBlocks
+  );
+
+EFI_STATUS
+EFIAPI
+FvbRead(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL     *This,
+  IN EFI_LBA              Lba,
+  IN UINTN                Offset,
+  IN OUT    UINTN                                   *NumBytes,
+  IN OUT    UINT8                                   *Buffer
+  );
+
+EFI_STATUS
+EFIAPI
+FvbWrite(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL     *This,
+  IN        EFI_LBA               Lba,
+  IN        UINTN                 Offset,
+  IN OUT    UINTN                *NumBytes,
+  IN        UINT8                *Buffer
+  );
+
+EFI_STATUS
+EFIAPI
+FvbEraseBlocks(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL     *This,
+  ...
+  );
+//
+// NorFlashBlockIoDxe.c
+//
 
 //
 // BlockIO Protocol function EFI_BLOCK_IO_PROTOCOL.Reset
 //
 EFI_STATUS
 EFIAPI
-NorFlashPlatformBlockIoReset (
+NorFlashBlockIoReset (
   IN EFI_BLOCK_IO_PROTOCOL    *This,
   IN BOOLEAN                  ExtendedVerification
   );
@@ -198,7 +217,7 @@ NorFlashPlatformBlockIoReset (
 //
 EFI_STATUS
 EFIAPI
-NorFlashPlatformBlockIoReadBlocks (
+NorFlashBlockIoReadBlocks (
   IN  EFI_BLOCK_IO_PROTOCOL   *This,
   IN  UINT32                  MediaId,
   IN  EFI_LBA                 Lba,
@@ -211,7 +230,7 @@ NorFlashPlatformBlockIoReadBlocks (
 //
 EFI_STATUS
 EFIAPI
-NorFlashPlatformBlockIoWriteBlocks (
+NorFlashBlockIoWriteBlocks (
   IN  EFI_BLOCK_IO_PROTOCOL   *This,
   IN  UINT32                  MediaId,
   IN  EFI_LBA                 Lba,
@@ -224,7 +243,7 @@ NorFlashPlatformBlockIoWriteBlocks (
 //
 EFI_STATUS
 EFIAPI
-NorFlashPlatformBlockIoFlushBlocks (
+NorFlashBlockIoFlushBlocks (
   IN EFI_BLOCK_IO_PROTOCOL    *This
 );
 

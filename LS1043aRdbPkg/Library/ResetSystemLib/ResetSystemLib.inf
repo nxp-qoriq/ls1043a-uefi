@@ -45,6 +45,11 @@
   TimerLib
   UefiLib
   UefiBootServicesTableLib
+  DxeServicesTableLib
+  UefiRuntimeLib
 
+[Guids]
+  gEfiEventVirtualAddressChangeGuid
+  
 [FixedPcd]
   gArmTokenSpaceGuid.PcdFvBaseAddress

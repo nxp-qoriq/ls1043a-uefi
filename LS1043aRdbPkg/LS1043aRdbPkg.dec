@@ -174,3 +174,13 @@
   gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000|UINT32|0x00000040
   gLS1043aRdbTokenSpaceGuid.PcdPpaSdxcLba|0x10|UINT32|0x00000041
   gLS1043aRdbTokenSpaceGuid.PcdFdSdxcLba|0x0|UINT32|0x00000042
+  
+  #Flash Pcd
+  gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x0|UINT64|0x00000043
+  
+  #Runtime Variable Pcds
+  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x0|UINT64|0x00000044
+  
+  gLS1043aRdbTokenSpaceGuid.PcdNvFdBase|0x0|UINT64|0x00000045
+  gLS1043aRdbTokenSpaceGuid.PcdNvFdSize|0x0|UINT32|0x00000046
+  
