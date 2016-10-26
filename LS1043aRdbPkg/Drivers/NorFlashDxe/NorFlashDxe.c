@@ -1,6 +1,6 @@
 /** @file  NorFlashDxe.c
 
-  Based on NorFlash implementation available in NorFlashDxe.c
+  Based on NorFlash implementation available in ArmPlatformPkg/Drivers/NorFlashDxe/NorFlashDxe.c
 
   Copyright (c) 2011 - 2014, ARM Ltd. All rights reserved.<BR>
   Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
@@ -22,82 +22,8 @@
 #include <Library/PcdLib.h>
 #include <Library/NorFlash.h>
 
-/* Block IO layer */
+STATIC EFI_EVENT mNorFlashVirtualAddrChangeEvent;
 
-//
-// BlockIO Protocol function EFI_BLOCK_IO_PROTOCOL.Reset
-//
-EFI_STATUS
-EFIAPI
-NorFlashBlockIoReset (
-  IN EFI_BLOCK_IO_PROTOCOL  *This,
-  IN BOOLEAN                ExtendedVerification
-  )
-{
-  EFI_STATUS              Status;
-
-  Status = NorFlashPlatformBlockIoReset (This, ExtendedVerification);
-
-  return Status;
-}
-
-//
-// BlockIO Protocol function EFI_BLOCK_IO_PROTOCOL.ReadBlocks
-//
-EFI_STATUS
-EFIAPI
-NorFlashBlockIoReadBlocks (
-  IN  EFI_BLOCK_IO_PROTOCOL   *This,
-  IN  UINT32                  MediaId,
-  IN  EFI_LBA                 Lba,
-  IN  UINTN                   BufferSizeInBytes,
-  OUT VOID                    *Buffer
-  )
-{
-  EFI_STATUS              Status;
-
-  Status = NorFlashPlatformBlockIoReadBlocks (This, MediaId,
-		  Lba, BufferSizeInBytes, Buffer);
-
-  return Status;
-}
-
-//
-// BlockIO Protocol function EFI_BLOCK_IO_PROTOCOL.WriteBlocks
-//
-EFI_STATUS
-EFIAPI
-NorFlashBlockIoWriteBlocks (
-  IN  EFI_BLOCK_IO_PROTOCOL   *This,
-  IN  UINT32                  MediaId,
-  IN  EFI_LBA                 Lba,
-  IN  UINTN                   BufferSizeInBytes,
-  IN  VOID                    *Buffer
-  )
-{
-  EFI_STATUS              Status;
-
-  Status = NorFlashPlatformBlockIoWriteBlocks (This, MediaId,
-		  Lba, BufferSizeInBytes, Buffer);
-
-  return Status;
-}
-
-//
-// BlockIO Protocol function EFI_BLOCK_IO_PROTOCOL.FlushBlocks
-//
-EFI_STATUS
-EFIAPI
-NorFlashBlockIoFlushBlocks (
-  IN EFI_BLOCK_IO_PROTOCOL  *This
-  )
-{
-  EFI_STATUS              Status;
-
-  Status = NorFlashPlatformBlockIoFlushBlocks (This);
-
-  return Status;
-}
 //
 // Global variable declarations
 //
@@ -138,6 +64,18 @@ NOR_FLASH_INSTANCE  mNorFlashInstanceTemplate = {
     0, // LowestAlignedLba
     1, // LogicalBlocksPerPhysicalBlock
   }, //Media;
+
+  FALSE, // SupportFvb ... NEED TO BE FILLED
+  {
+    FvbGetAttributes, // GetAttributes
+    FvbSetAttributes, // SetAttributes
+    FvbGetPhysicalAddress,  // GetPhysicalAddress
+    FvbGetBlockSize,  // GetBlockSize
+    FvbRead,  // Read
+    FvbWrite, // Write
+    FvbEraseBlocks, // EraseBlocks
+    NULL, //ParentHandle
+  }, //  FvbProtoccol;
   NULL, // ShadowBuffer
   {
     {
@@ -163,6 +101,7 @@ NorFlashCreateInstance (
   IN UINTN                  NorFlashSize,
   IN UINT32                 MediaId,
   IN UINT32                 BlockSize,
+  IN BOOLEAN                SupportFvb,
   IN CONST GUID             *NorFlashGuid,
   OUT NOR_FLASH_INSTANCE**  NorFlashInstance
   )
@@ -173,9 +112,8 @@ NorFlashCreateInstance (
   ASSERT(NorFlashInstance != NULL);
 
   Instance = AllocateRuntimeCopyPool (sizeof(NOR_FLASH_INSTANCE),&mNorFlashInstanceTemplate);
-  if (Instance == NULL) {
+  if (Instance == NULL)
     return EFI_OUT_OF_RESOURCES;
-  }
 
   Instance->DeviceBaseAddress = NorFlashDeviceBase;
   Instance->RegionBaseAddress = NorFlashRegionBase;
@@ -188,189 +126,80 @@ NorFlashCreateInstance (
 
   CopyGuid (&Instance->DevicePath.Vendor.Guid, NorFlashGuid);
 
-  Instance->ShadowBuffer = AllocateRuntimePool (BlockSize);;
-  if (Instance->ShadowBuffer == NULL) {
-	  return EFI_OUT_OF_RESOURCES;
-  }
+  if (SupportFvb) {
+    Instance->SupportFvb = TRUE;
+    Instance->Initialize = NorFlashFvbInitialize;
 
-  Instance->Initialized = TRUE;
-
-  Status = gBS->InstallMultipleProtocolInterfaces (
+    Status = gBS->InstallMultipleProtocolInterfaces (
 		  &Instance->Handle,
 		  &gEfiDevicePathProtocolGuid, &Instance->DevicePath,
 		  &gEfiBlockIoProtocolGuid,  &Instance->BlockIoProtocol,
+            &gEfiFirmwareVolumeBlockProtocolGuid, &Instance->FvbProtocol,
 		  NULL
 		  );
-  if (EFI_ERROR(Status)) {
-	  FreePool (Instance);
-	  return Status;
+    if (EFI_ERROR(Status)) {
+       FreePool (Instance);
+       return Status;
+    }
+  } else {
+    Instance->Initialized = TRUE;
+
+    Status = gBS->InstallMultipleProtocolInterfaces (
+          &Instance->Handle,
+          &gEfiDevicePathProtocolGuid, &Instance->DevicePath,
+          &gEfiBlockIoProtocolGuid,  &Instance->BlockIoProtocol,
+          NULL
+          );
+    if (EFI_ERROR(Status)) {
+      FreePool (Instance);
+      return Status;
+    }
   }
 
   *NorFlashInstance = Instance;
-  return Status;
-}
-
-/**
- * The following function unlocks and erases a single block.
- **/
-EFI_STATUS
-NorFlashEraseSingleBlock (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN UINTN                  BlockAddress
-  )
-{
-  EFI_STATUS            Status;
-
-  Status = NorFlashPlatformEraseSector (Instance, BlockAddress);
 
   return Status;
 }
 
 /**
- * This function unlock and erase an entire NOR Flash block.
- **/
-EFI_STATUS
-NorFlashEraseEntireChip (
-  IN NOR_FLASH_INSTANCE     *Instance
+  Fixup internal data so that EFI can be call in virtual mode.
+  Call the passed in Child Notify event and convert any pointers in
+  lib to virtual mode.
+
+  @param[in]    Event   The Event that is being processed
+  @param[in]    Context Event Context
+**/
+VOID
+EFIAPI
+NorFlashVirtualNotifyEvent (
+  IN EFI_EVENT        Event,
+  IN VOID             *Context
   )
 {
-  EFI_STATUS      Status;
+  UINTN Index;
 
-  Status = NorFlashPlatformEraseChip (Instance);
+  for (Index = 0; Index < mNorFlashDeviceCount; Index++) {
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->DeviceBaseAddress);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->RegionBaseAddress);
 
-  return Status;
-}
+    // Convert BlockIo protocol
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->BlockIoProtocol.FlushBlocks);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->BlockIoProtocol.ReadBlocks);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->BlockIoProtocol.Reset);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->BlockIoProtocol.WriteBlocks);
 
-EFI_STATUS
-NorFlashWriteSingleWord (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN UINTN                  WordAddress,
-  IN UINT8                  WriteData
-  )
-{
-  EFI_STATUS      Status;
+    // Convert Fvb
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->FvbProtocol.EraseBlocks);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->FvbProtocol.GetAttributes);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->FvbProtocol.GetBlockSize);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->FvbProtocol.GetPhysicalAddress);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->FvbProtocol.Read);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->FvbProtocol.SetAttributes);
+    EfiConvertPointer (0x0, (VOID**)&mNorFlashInstances[Index]->FvbProtocol.Write);
 
-  Status = NorFlashPlatformWriteSingleWord (Instance, WordAddress, WriteData);
+  }
 
-  return Status;
-}
- 
-/*
- * Writes data to the NOR Flash using the Buffered Programming method.
- *
- * Write Buffer Programming allows the system to write a maximum of 32 bytes in one
- * programming operation. Therefore this function will only handle buffers up to 32
- * bytes. To deal with larger buffers, call this function again.
- *
- */
-EFI_STATUS
-NorFlashWriteBuffer (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN UINTN                  TargetAddress,
-  IN UINTN                  BufferSizeInBytes,
-  IN UINT32                 *Buffer
-  )
-{
-  EFI_STATUS      Status;
-
-  UINT16          *pSrcBuffer = (UINT16 *)Buffer;
-
-  Status = NorFlashPlatformWriteBuffer (Instance, TargetAddress, BufferSizeInBytes, pSrcBuffer);
-
-  return Status;
-}
-
-EFI_STATUS
-NorFlashWriteFullBlock (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN EFI_LBA                Lba,
-  IN UINT32                 *DataBuffer,
-  IN UINT32                 BlockSizeInWords
-  )
-{
-  EFI_STATUS      Status;
-
-  Status = NorFlashPlatformWriteFullBlock (Instance, Lba, DataBuffer, BlockSizeInWords);
-
-  return Status;
-}
-
-EFI_STATUS
-NorFlashWriteBlocks (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN EFI_LBA                Lba,
-  IN UINTN                  BufferSizeInBytes,
-  IN VOID                   *Buffer
-  )
-{
-  EFI_STATUS      Status;
-
-  Status = NorFlashPlatformWriteBlocks (Instance, Lba, BufferSizeInBytes, Buffer);
-
-  return Status;
-}
-
-EFI_STATUS
-NorFlashReadBlocks (
-  IN NOR_FLASH_INSTANCE   *Instance,
-  IN EFI_LBA              Lba,
-  IN UINTN                BufferSizeInBytes,
-  OUT VOID                *Buffer
-  )
-{
-  EFI_STATUS		Status;
-
-  Status = NorFlashPlatformReadBlocks (Instance, Lba, BufferSizeInBytes, Buffer);
-
-  return Status;
-}
-
-EFI_STATUS
-NorFlashRead (
-  IN NOR_FLASH_INSTANCE   *Instance,
-  IN EFI_LBA              Lba,
-  IN UINTN                Offset,
-  IN UINTN                BufferSizeInBytes,
-  OUT VOID                *Buffer
-  )
-{
-  EFI_STATUS		Status;
-
-  Status = NorFlashPlatformRead (Instance, Lba, Offset, BufferSizeInBytes, Buffer);
-
-  return Status;
-}
-
-/*
-  Write a full or portion of a block. It must not span block boundaries; that is,
-  Offset + *NumBytes <= Instance->Media.BlockSize.
-*/
-EFI_STATUS
-NorFlashWriteSingleBlock (
-  IN        NOR_FLASH_INSTANCE   *Instance,
-  IN        EFI_LBA               Lba,
-  IN        UINTN                 Offset,
-  IN OUT    UINTN                *NumBytes,
-  IN        UINT8                *Buffer
-  )
-{
-  EFI_STATUS		Status;
-
-  Status = NorFlashPlatformWriteSingleBlock (Instance, Lba, Offset, NumBytes, Buffer);
-
-  return Status;
-}
-
-EFI_STATUS
-NorFlashReset (
-  IN  NOR_FLASH_INSTANCE *Instance
-  )
-{
-  EFI_STATUS              Status;
-
-  Status = NorFlashPlatformReset (Instance);
-  
-  return Status;
+  return;
 }
 
 EFI_STATUS
@@ -383,6 +212,7 @@ NorFlashInitialise (
   EFI_STATUS              Status;
   UINT32                  Index;
   NOR_FLASH_DESCRIPTION*  NorFlashDevices;
+  BOOLEAN                 ContainVariableStorage;
 
   Status = NorFlashPlatformControllerInitialization ();
   if (EFI_ERROR(Status)) {
@@ -399,26 +229,42 @@ NorFlashInitialise (
   Status = NorFlashPlatformFlashGetAttributes (&NorFlashDevices, mNorFlashDeviceCount);
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR,"NorFlashInitialise: Fail to get Nor Flash device attributes\n"));
+    ASSERT_EFI_ERROR (Status); /* System becomes unusable if NOR flash is not detected */
     return Status;
   }
 
   mNorFlashInstances = AllocateRuntimePool (sizeof(NOR_FLASH_INSTANCE*) * mNorFlashDeviceCount);
 
   for (Index = 0; Index < mNorFlashDeviceCount; Index++) {
+    // Check if this NOR Flash device contain the variable storage region
+    ContainVariableStorage =
+      (NorFlashDevices[Index].RegionBaseAddress <= PcdGet64(PcdFlashNvStorageVariableBase64)) &&
+      (PcdGet64(PcdFlashNvStorageVariableBase64) + PcdGet32(PcdFlashNvStorageVariableSize) <= NorFlashDevices[Index].RegionBaseAddress + NorFlashDevices[Index].Size);
+      
     Status = NorFlashCreateInstance (
       NorFlashDevices[Index].DeviceBaseAddress,
       NorFlashDevices[Index].RegionBaseAddress,
       NorFlashDevices[Index].Size,
       Index,
       NorFlashDevices[Index].BlockSize,
+      ContainVariableStorage,
       &NorFlashDevices[Index].Guid,
       &mNorFlashInstances[Index]
     );
-    if (EFI_ERROR(Status)) {
+    if (EFI_ERROR(Status))
       DEBUG((EFI_D_ERROR,"NorFlashInitialise: Fail to create instance for NorFlash[%d]\n",Index));
-    }
   }
-
+  //
+  // Register for the virtual address change event
+  //
+  Status = gBS->CreateEventEx (
+                  EVT_NOTIFY_SIGNAL,
+                  TPL_NOTIFY,
+                  NorFlashVirtualNotifyEvent,
+                  NULL,
+                  &gEfiEventVirtualAddressChangeGuid,
+                  &mNorFlashVirtualAddrChangeEvent
+                  );
   ASSERT_EFI_ERROR (Status);
 
   return Status;

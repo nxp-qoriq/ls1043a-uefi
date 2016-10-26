@@ -248,9 +248,9 @@
 
   RVCT:*_*_ARM_PLATFORM_FLAGS == --cpu cortex-a9
 
-#[BuildOptions.common.EDKII.DXE_RUNTIME_DRIVER]
-#  GCC:*_*_ARM_DLINK_FLAGS = -z common-page-size=0x1000
-#  GCC:*_*_AARCH64_DLINK_FLAGS = -z common-page-size=0x10000
+[BuildOptions.common.EDKII.DXE_RUNTIME_DRIVER]
+  GCC:*_*_ARM_DLINK_FLAGS = -z common-page-size=0x1000
+  GCC:*_*_AARCH64_DLINK_FLAGS = -z common-page-size=0x10000
 
 ################################################################################
 #
@@ -315,7 +315,15 @@
 
   gArmPlatformTokenSpaceGuid.PcdCoreCount|1 # Only one core
   gArmPlatformTokenSpaceGuid.PcdCounterFrequency|12000000 #12Mhz
-
+  
+    
+  #
+  # NV Storage PCDs.
+  #
+  gArmTokenSpaceGuid.PcdVFPEnabled|1
+  gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x060000000
+  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x063900000
+  
   gEfiMdePkgTokenSpaceGuid.PcdMaximumUnicodeStringLength|1000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumAsciiStringLength|2000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumLinkedListLength|1000000
@@ -531,9 +539,15 @@
   MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
   MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
   MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
-  MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
+  MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf {
+    <LibraryClasses>
+      NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
+  }
+  MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
   EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
-
+  EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
+  EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
+  
   # FDT installation
   EmbeddedPkg/Drivers/FdtPlatformDxe/FdtPlatformDxe.inf
 
@@ -545,8 +559,6 @@
 
   MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
 
-  EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
-  EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
   EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
   ArmPkg/Drivers/TimerDxe/TimerDxe.inf
   LS1043aRdbPkg/Drivers/LS1043aWatchDog/LS1043aWatchDogDxe.inf

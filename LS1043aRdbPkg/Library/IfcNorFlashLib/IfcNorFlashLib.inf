@@ -45,3 +45,7 @@
 
 [FixedPcd]
   gLS1043aRdbTokenSpaceGuid.PcdBootMode
+  
+[Pcd.common]
+  gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64
+  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64

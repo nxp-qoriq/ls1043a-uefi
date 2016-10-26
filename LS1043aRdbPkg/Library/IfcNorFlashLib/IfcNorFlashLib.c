@@ -15,7 +15,7 @@
 #include <PiDxe.h>
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
-#include <Library/NorFlashPlatformLib.h>
+#include <Library/NorFlashLib.h>
 #include <Library/FslIfc.h>
 
 UINT32 NorCs;

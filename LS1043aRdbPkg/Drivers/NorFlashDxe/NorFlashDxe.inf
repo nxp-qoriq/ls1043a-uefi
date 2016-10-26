@@ -18,12 +18,14 @@
   INF_VERSION                    = 0x00010005
   BASE_NAME                      = NorFlashDxe
   FILE_GUID                      = 93E34C7E-B50E-11DF-9223-2443DFD72085
-  MODULE_TYPE                    = DXE_DRIVER
+  MODULE_TYPE                    = DXE_RUNTIME_DRIVER
   VERSION_STRING                 = 1.0
   ENTRY_POINT                    = NorFlashInitialise
 
 [Sources.common]
   NorFlashDxe.c
+  NorFlashFvbDxe.c
+  NorFlashBlockIoDxe.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -39,16 +41,33 @@
   UefiLib
   UefiDriverEntryPoint
   NorFlashLib
+  UefiBootServicesTableLib
+  UefiRuntimeLib
+  DxeServicesTableLib
 
 [Guids]
+  gEfiSystemNvDataFvGuid
+  gEfiVariableGuid
+  gEfiAuthenticatedVariableGuid
+  gEfiEventVirtualAddressChangeGuid
 
 [Protocols]
   gEfiBlockIoProtocolGuid
   gEfiDiskIoProtocolGuid
   gEfiSimpleFileSystemProtocolGuid
   gEfiCpuArchProtocolGuid
+  gEfiFirmwareVolumeBlockProtocolGuid
 
-[Pcd]
+[Pcd.common]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase64
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase64
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
 
-[depex]
-  TRUE
+[Depex]
+  #
+  # NorFlashDxe must be loaded before VariableRuntimeDxe in case empty flash needs populating with default values
+  #
+  BEFORE gVariableRuntimeDxeFileGuid

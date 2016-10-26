@@ -188,4 +188,16 @@
 #define CONFIG_CMD_NET
 #endif
 
+/*
+ * RPCM block
+ */
+#define RESET_BASE_ADDR		0x1EE0000
+#define RESET_SIZE              0x1000
+#define	RST_CONTROL_REG_OFFSET	0xB0
+/* Hardware reset request. External hardware may then
+ * decide to issue the desired reset signal (PORESET_B or HRESET_B)
+ * to the device.
+ */
+#define RESET_REQ_MASK		0x02
+
 #endif

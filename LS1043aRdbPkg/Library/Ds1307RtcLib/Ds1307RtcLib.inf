@@ -26,13 +26,17 @@
 [Sources.common]
   Ds1307RtcLib.c
 
-
 [Packages]
   MdePkg/MdePkg.dec
   EmbeddedPkg/EmbeddedPkg.dec
-	LS1043aRdbPkg/LS1043aRdbPkg.dec
+  LS1043aRdbPkg/LS1043aRdbPkg.dec
 
 [LibraryClasses]
   IoLib
   DebugLib
-	I2cLib
+  I2cLib
+  DxeServicesTableLib
+  UefiRuntimeLib
+
+[Guids]
+  gEfiEventVirtualAddressChangeGuid

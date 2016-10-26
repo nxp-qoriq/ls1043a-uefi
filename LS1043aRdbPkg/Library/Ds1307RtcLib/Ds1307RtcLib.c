@@ -22,8 +22,12 @@
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
 #include <Library/RealTimeClockLib.h>
+#include <Library/DxeServicesTableLib.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/UefiRuntimeServicesTableLib.h>
+#include <Library/UefiRuntimeLib.h>
 #include <I2c.h>
-
+#include <Protocol/RealTimeClock.h>
 
 #define Bin(Bcd) ((Bcd) & 0x0f) + ((Bcd) >> 4) * 10
 #define Bcd(Bin) (((Bin / 10) << 4) | (Bin % 10))
@@ -49,13 +53,16 @@
 #define DS1307_CTL_BIT_SQWE	0x10	/* Square Wave Enable           */
 #define DS1307_CTL_BIT_OUT		0x80	/* Output Control               */
 
+STATIC EFI_EVENT              mRtcVirtualAddrChangeEvent;
+STATIC UINTN                  mI2c0BaseAddress;
+
 UINT8 RtcRead(
 		UINT8 RtcRegAddr
 )
 {
 	INT32 Status;
 	UINT8 Val = 0;
-	Status = I2cDataRead((VOID*)I2C0_BASE_ADDRESS, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
+	Status = I2cDataRead((VOID*)mI2c0BaseAddress, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
 	if(EFI_ERROR(Status))
 		DEBUG((EFI_D_ERROR, "RTC read error at Addr:0x%x\n", RtcRegAddr));
 	return Val;
@@ -66,7 +73,7 @@ VOID RtcWrite(
 		UINT8 Val)
 {
 	INT32 Status;
-	Status = I2cDataWrite((VOID*)I2C0_BASE_ADDRESS, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
+	Status = I2cDataWrite((VOID*)mI2c0BaseAddress, DS1307_I2C_ADDR, RtcRegAddr, 0x1, &Val, sizeof(Val));
 	if(EFI_ERROR(Status))
 		DEBUG((EFI_D_ERROR, "RTC write error at Addr:0x%x\n", RtcRegAddr));
 
@@ -118,7 +125,7 @@ LibGetTime (
 	Time->Month  = Bin (Month & 0x1F);
 	Time->Year = Bin (Year) + ( Bin (Year) >= 70 ? 1900 : 2000);
 
-  return Status;
+	return Status;
 }
 
 
@@ -148,7 +155,7 @@ LibSetTime (
 	RtcWrite (DS1307_MIN_REG_ADDR, Bcd (Time->Minute));
 	RtcWrite (DS1307_SEC_REG_ADDR, Bcd (Time->Second));
 
-  return EFI_SUCCESS;
+	return EFI_SUCCESS;
 }
 
 
@@ -201,32 +208,6 @@ LibSetWakeupTime (
   return EFI_UNSUPPORTED;
 }
 
-
-
-/**
-  This is the declaration of an EFI image entry point. This can be the entry point to an application
-  written to this specification, an EFI boot service driver, or an EFI runtime driver.
-
-  @param  ImageHandle           Handle that identifies the loaded image.
-  @param  SystemTable           System Table for this image.
-
-  @retval EFI_SUCCESS           The operation completed successfully.
-
-**/
-EFI_STATUS
-EFIAPI
-LibRtcInitialize (
-  IN EFI_HANDLE                            ImageHandle,
-  IN EFI_SYSTEM_TABLE                      *SystemTable
-  )
-{
-  //
-  // Do some initialization if reqruied to turn on the RTC
-  //
-  return EFI_SUCCESS;
-}
-
-
 /**
   Fixup internal data so that EFI can be call in virtual mode.
   Call the passed in Child Notify event and convert any pointers in
@@ -248,5 +229,70 @@ LibRtcVirtualNotifyEvent (
   // to virtual address. After the OS transistions to calling in virtual mode, all future
   // runtime calls will be made in virtual mode.
   //
+  EfiConvertPointer (0x0, (VOID**)&mI2c0BaseAddress);
   return;
+}
+
+/**
+  This is the declaration of an EFI image entry point. This can be the entry point to an application
+  written to this specification, an EFI boot service driver, or an EFI runtime driver.
+
+  @param  ImageHandle           Handle that identifies the loaded image.
+  @param  SystemTable           System Table for this image.
+
+  @retval EFI_SUCCESS           The operation completed successfully.
+
+**/
+EFI_STATUS
+EFIAPI
+LibRtcInitialize (
+  IN EFI_HANDLE                            ImageHandle,
+  IN EFI_SYSTEM_TABLE                      *SystemTable
+  )
+{
+  //
+  // Do some initialization if reqruied to turn on the RTC
+  //
+  EFI_STATUS    Status;
+  EFI_HANDLE    Handle;
+  // Initialize RTC Base Address
+  mI2c0BaseAddress = (UINTN)I2C0_BASE_ADDRESS;
+
+  // Declare the controller as EFI_MEMORY_RUNTIME
+  Status = gDS->AddMemorySpace (
+                  EfiGcdMemoryTypeMemoryMappedIo,
+                  mI2c0BaseAddress, I2C_SIZE,
+                  EFI_MEMORY_UC | EFI_MEMORY_RUNTIME
+                  );
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
+  Status = gDS->SetMemorySpaceAttributes (mI2c0BaseAddress, I2C_SIZE, EFI_MEMORY_UC | EFI_MEMORY_RUNTIME);
+  if (EFI_ERROR (Status))
+    return Status;
+
+  // Install the protocol
+  Handle = NULL;
+  Status = gBS->InstallMultipleProtocolInterfaces (
+                  &Handle,
+                  &gEfiRealTimeClockArchProtocolGuid,  NULL,
+                  NULL
+                 );
+  ASSERT_EFI_ERROR (Status);
+
+  //
+  // Register for the virtual address change event
+  //
+  Status = gBS->CreateEventEx (
+                  EVT_NOTIFY_SIGNAL,
+                  TPL_NOTIFY,
+                  LibRtcVirtualNotifyEvent,
+                  NULL,
+                  &gEfiEventVirtualAddressChangeGuid,
+                  &mRtcVirtualAddrChangeEvent
+                  );
+  ASSERT_EFI_ERROR (Status);
+  
+  return EFI_SUCCESS;
 }
