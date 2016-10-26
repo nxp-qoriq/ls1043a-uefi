@@ -1303,18 +1303,17 @@ RootBridgeIoMap (
     return EFI_INVALID_PARAMETER;
   }
 
-  if ((*NumberOfBytes) > 0x40000000ULL) {
-    DEBUG((EFI_D_INFO, "Cannot map more than 1G at one transaction\n"));
+  if ((*NumberOfBytes) > 0x10000000ULL) {
+    DEBUG((EFI_D_INFO, "Cannot map more than 256MB at one transaction\n"));
     return EFI_INVALID_PARAMETER;
   }
 
   //
-  // Most PCAT like chipsets can not handle performing DMA above 4GB.
-  // If any part of the DMA transfer being mapped is above 1GB, then
-  // map the DMA transfer to a buffer below 1GB.
+  // If any part of the DMA transfer being mapped is above 4GB, then
+  // map the DMA transfer to a buffer below 4GB
   //
   PhysicalAddress = (EFI_PHYSICAL_ADDRESS) (UINTN) HostAddress;
-  if ((PhysicalAddress + *NumberOfBytes) > 0x40000000ULL) {
+  if ((PhysicalAddress + *NumberOfBytes) > 0x100000000ULL) {
 
     //
     // Common Buffer operations can not be remapped.  If the common buffer
