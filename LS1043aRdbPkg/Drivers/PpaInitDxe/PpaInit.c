@@ -27,7 +27,7 @@
 #include <Library/IfcNand.h>
 #include <LS1043aRdb.h>
 
-extern EFI_STATUS PpaInit(UINT64);
+extern EFI_STATUS PpaInit(UINTN *);
 extern VOID InitMmu(ARM_MEMORY_REGION_DESCRIPTOR*);
 
 EFI_STATUS GetPpaFromNand(
@@ -55,13 +55,13 @@ CopyPpaImage (
   const char *title,
   UINTN image_addr,
   UINTN image_size,
-  UINTN PpaRamAddr)
+  UINTN *PpaRamAddr)
 {
-	DEBUG((EFI_D_INFO, "%a copied to address 0x%x\n", title, PpaRamAddr));
+	DEBUG((EFI_D_INFO, "%a copied to address 0x%llx\n", title, PpaRamAddr));
   	InternalMemCopyMem((void *)PpaRamAddr, (void *)image_addr, image_size);
 }
 
-UINTN
+UINTN *
 GetPpaImagefromFlash (
   VOID
   )
@@ -72,7 +72,8 @@ GetPpaImagefromFlash (
 	INT32 CfgNodeOffset;
 	INT32 NodeOffset;
 	INT32 PpaImageSize;
-	UINTN PpaRamAddr;
+	UINTN *PpaRamAddr;
+	UINTN PpaDdrSize = PcdGet64 (PcdPpaDdrOffsetAddr);
 
 	// Assuming that the PPA FW is present on NOR flash
 	// FIXME: Add support for other flash devices.
@@ -84,9 +85,10 @@ GetPpaImagefromFlash (
 		FitImage = PcdGet64 (PcdPpaNorBaseAddr);
 	
 	// PPA will be placed on DDR at this address:
-	// Top of DDR - PcdPpaDdrOffsetAddr
-	PpaRamAddr = PcdGet64 (PcdSystemMemoryBase) + PcdGet64 (PcdSystemMemorySize)
-			- PcdGet64 (PcdPpaDdrOffsetAddr);
+	PpaRamAddr = (UINTN *)AllocateAlignedRuntimePages((PpaDdrSize / (4 * 1024)) /* no of 4 KB pages to allocate */,
+                                                   (64 * 1024 ) /* Alignment = 64 KB*/);
+       PpaRamAddr = ZeroMem (PpaRamAddr, (PpaDdrSize));
+
 
 	Status = FitCheckHeader(FitImage);
 	if (EFI_ERROR (Status)) {
@@ -130,13 +132,13 @@ PpaInitialize (
   )
 {
 	EFI_STATUS Status;
-	UINTN PpaRamAddr;
-  ARM_MEMORY_REGION_DESCRIPTOR *MemoryTable;
+	UINTN *PpaRamAddr;
+	ARM_MEMORY_REGION_DESCRIPTOR *MemoryTable;
 
 	PpaRamAddr = GetPpaImagefromFlash();
 
 	Status = PpaInit(PpaRamAddr);
-  ArmPlatformGetVirtualMemoryMap (&MemoryTable);
+	ArmPlatformGetVirtualMemoryMap (&MemoryTable);
 	InitMmu(MemoryTable);
 	return Status;
 }
