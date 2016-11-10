@@ -379,7 +379,8 @@ PlatformRegisterFvBootOption (
                   );
 
   if (OptionIndex == -1) {
-    Status = EfiBootManagerAddLoadOptionVariable (&NewOption, MAX_UINTN);
+    // Register Shell as the default boot option
+    Status = EfiBootManagerAddLoadOptionVariable (&NewOption, 0);
     ASSERT_EFI_ERROR (Status);
   }
   EfiBootManagerFreeLoadOption (&NewOption);
@@ -520,15 +521,6 @@ PlatformBootManagerAfterConsole (
   EnableQuietBoot (PcdGetPtr (PcdLogoFile));
 
   //
-  // Register UEFI Shell
-  //
-  PlatformRegisterFvBootOption (
-    PcdGetPtr (PcdShellFile), L"UEFI Shell", LOAD_OPTION_ACTIVE
-    );
-
-  Print (L"Press ESCAPE for boot options ");
-
-  //
   // Connect the rest of the devices.
   //
   EfiBootManagerConnectAll ();
@@ -537,6 +529,15 @@ PlatformBootManagerAfterConsole (
   // Enumerate all possible boot options.
   //
   EfiBootManagerRefreshAllBootOption ();
+
+  //
+  // Register UEFI Shell
+  //
+  PlatformRegisterFvBootOption (
+    PcdGetPtr (PcdShellFile), L"UEFI Shell", LOAD_OPTION_ACTIVE
+    );
+
+  Print (L"Press ESCAPE for boot options ");
 }
 
 /**
