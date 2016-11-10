@@ -33,6 +33,7 @@
   gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x0
 
 [LibraryClasses.common.PEIM]
+  PcdLib|MdePkg/Library/PeiPcdLib/PeiPcdLib.inf
   PeimEntryPoint|MdePkg/Library/PeimEntryPoint/PeimEntryPoint.inf
   PeiServicesLib|MdePkg/Library/PeiServicesLib/PeiServicesLib.inf
   PeiServicesTablePointerLib|MdePkg/Library/PeiServicesTablePointerLib/PeiServicesTablePointerLib.inf

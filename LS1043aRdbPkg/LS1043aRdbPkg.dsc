@@ -84,7 +84,7 @@
   MemoryAllocationLib|MdePkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
 
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
-  SynchronizationLib|MdePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf 
+  SynchronizationLib|MdePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf
   BaseMemoryLib|ArmPkg/Library/BaseMemoryLibStm/BaseMemoryLibStm.inf
 
   EfiResetSystemLib|LS1043aRdbPkg/Library/ResetSystemLib/ResetSystemLib.inf
@@ -131,10 +131,10 @@
   PciHostBridgeLib|LS1043aRdbPkg/Library/PciHostBridgeLib/PciHostBridgeLib.inf
   SdxcLib|LS1043aRdbPkg/Library/SdxcLib/SdxcLib.inf
 
-#
-# Assume everything is fixed at build
-#
-  PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
+  #
+  # Allow dynamic PCDs
+  #
+  PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
 
   UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
 
@@ -189,7 +189,7 @@
   #DebugAgentLib|EmbeddedPkg/Library/GdbDebugAgent/GdbDebugAgent.inf
 
 [LibraryClasses.common.PEI_CORE]
-  PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
+  PcdLib|MdePkg/Library/PeiPcdLib/PeiPcdLib.inf
   ReportStatusCodeLib|IntelFrameworkModulePkg/Library/PeiDxeDebugLibReportStatusCode/PeiDxeDebugLibReportStatusCode.inf
 
 [LibraryClasses.common.DXE_CORE]
@@ -300,6 +300,9 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoHorizontalResolution|640
   gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoVerticalResolution|480
 
+[PcdsDynamicHii.common.DEFAULT]
+  gEfiMdePkgTokenSpaceGuid.PcdPlatformBootTimeOut|L"Timeout"|gEfiGlobalVariableGuid|0x0|10
+
 [PcdsFixedAtBuild.common]
   gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVariableSize|0x2000
   gEfiMdeModulePkgTokenSpaceGuid.PcdMaxAuthVariableSize|0x2800
@@ -307,23 +310,20 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdResetOnMemoryTypeInformationChange|FALSE
   gEfiMdeModulePkgTokenSpaceGuid.PcdBootManagerMenuFile|{ 0x21, 0xaa, 0x2c, 0x46, 0x14, 0x76, 0x03, 0x45, 0x83, 0x6e, 0x8a, 0xb6, 0xf4, 0x66, 0x23, 0x31 }
   gEfiIntelFrameworkModulePkgTokenSpaceGuid.PcdShellFile|{ 0x83, 0xA5, 0x04, 0x7C, 0x3E, 0x9E, 0x1C, 0x4F, 0xAD, 0x65, 0xE0, 0x52, 0x68, 0xD0, 0xB4, 0xD1 }
-  gEfiMdePkgTokenSpaceGuid.PcdPlatformBootTimeOut|20
 
-[PcdsFixedAtBuild.common]
   gArmPlatformTokenSpaceGuid.PcdFirmwareVendor|"LS1043a RDB board"
   gEmbeddedTokenSpaceGuid.PcdEmbeddedPrompt|"LS1043a"
 
   gArmPlatformTokenSpaceGuid.PcdCoreCount|1 # Only one core
   gArmPlatformTokenSpaceGuid.PcdCounterFrequency|12000000 #12Mhz
-  
-    
+
   #
   # NV Storage PCDs.
   #
   gArmTokenSpaceGuid.PcdVFPEnabled|1
   gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x060000000
   gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x063900000
-  
+
   gEfiMdePkgTokenSpaceGuid.PcdMaximumUnicodeStringLength|1000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumAsciiStringLength|2000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumLinkedListLength|1000000
@@ -448,7 +448,7 @@
   # SD Specific PCDs
   #
   gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported|TRUE
-  
+
   #
   # PPA specific PCDs
   #
@@ -552,7 +552,7 @@
   EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
   EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
   EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
-  
+
   # FDT installation
   EmbeddedPkg/Drivers/FdtPlatformDxe/FdtPlatformDxe.inf
 
