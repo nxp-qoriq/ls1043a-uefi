@@ -196,11 +196,15 @@ READ_LOCK_STATUS   = TRUE
   # I2C
   #
   INF LS1043aRdbPkg/Drivers/I2c/I2cDxe.inf
+
   #
   # SoC Drivers
   #
   # To be added later
-  
+
+  #
+  # DPAA1 Ethernet driver
+  INF LS1043aRdbPkg/Drivers/Dpaa1EthernetDxe/Dpaa1EthernetDxe.inf
 
   #
   # FAT filesystem + GPT/MBR partitioning
@@ -283,3 +287,4 @@ READ_LOCK_STATUS   = TRUE
   }
 
 !include $(WORKSPACE)/ArmVirtPkg/ArmVirtRules.fdf.inc
+

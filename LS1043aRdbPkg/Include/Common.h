@@ -16,6 +16,8 @@
 #ifndef __COMMON_H__
 #define __COMMON_H__
 
+#define MASK_LOWER_16		0xFFFF0000
+#define MASK_UPPER_16		0x0000FFFF
 
 /**
   Utility to return minimum among X and Y
@@ -71,13 +73,52 @@
  */
 #define Lower32Bits(N) ((UINT32)(N))
 
+/*
+ * Compile-time assertion macro
+ */
+#if __STDC_VERSION__ >= 201112L
+#define C_ASSERT(_cond) \
+	static_assert(_cond, #_cond)
+
+#else
+#define C_ASSERT(_cond) \
+        extern CONST CHAR8 c_assert_dummy_decl[(_cond) ? 1 : -1]
+#endif
+
+//
+// Stores a value for a given bit field in _container
+//
+#define SET_BIT_FIELD(_container, _bit_mask, _bit_shift, _value) \
+    do {                                                                    \
+        (_container) &= ~(_bit_mask);                                       \
+        if ((_value) != 0) {                                                \
+            ASSERT(((UINT32)(_value) << (_bit_shift)) <= (_bit_mask));      \
+            (_container) |=                                                 \
+                ((UINT32)(_value) << (_bit_shift)) & (_bit_mask);           \
+        }                                                                   \
+    } while (0)
+
+//
+// Returns the number of elements of an array
+//
+#define ARRAY_NUM_ENTRIES(_array)   (sizeof(_array) / sizeof((_array)[0]))
+
+//
+// Converts a 32-bit big endian value to the corresponding value in CPU
+// byte-order, assuming the CPU byte order is little endian.
+//
+#define BE32_TO_CPU(_x) ByteSwap32(_x)
+
+
+/*
+ * Returns the number of elements of an array
+ */
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(_Array)   (sizeof(_Array) / sizeof((_Array)[0]))
+#endif
+
 typedef UINTN PhysAddrT;
 typedef UINTN PhysSizeT;
-
-static inline PhysAddrT VirtToPhys(VOID * VAddr)
-{
-       return (PhysAddrT)(VAddr);
-}
 
 /*
  * The ALLOC_CACHE_ALIGN_BUF macro is used to allocate a buffer
@@ -112,6 +153,29 @@ static inline PhysAddrT VirtToPhys(VOID * VAddr)
 	ALLOC_ALIGN_BUF_PAD(Type, Name, size, DMA_MINALIGN, Pad)
 #define ALLOC_CACHE_ALIGN_BUF(Type, Name, Size)			\
 	ALLOC_ALIGN_BUF(Type, Name, Size, DMA_MINALIGN)
+
+STATIC inline PhysAddrT VirtToPhys(VOID * VAddr)
+{
+       return (PhysAddrT)(VAddr);
+}
+
+//
+// Invert byte order of a 32-bit value
+//
+STATIC inline
+UINT32
+ByteSwap32(UINT32 Value)
+{
+    UINT32 SwappedVal;
+
+    asm volatile (
+            "rev32 %[SwappedVal], %[Value]\n\t"
+            : [SwappedVal] "=r" (SwappedVal)
+            : [Value] "r" (Value)
+    );
+
+    return SwappedVal;
+}
 
 /**
   Funtion to divide N to base Base

@@ -37,6 +37,7 @@
   CpldLib|LS1043aRdbPkg/Library/CpldLib/CpldLib.inf
   ArmPlatformLib|LS1043aRdbPkg/Library/LS1043aRdbLib/LS1043aRdbLib.inf
   ArmPlatformStackLib|ArmPlatformPkg/Library/ArmPlatformStackLib/ArmPlatformStackLib.inf
+  Dpaa1Lib|LS1043aRdbPkg/Library/Dpaa1Lib/Dpaa1Lib.inf
 
   HiiLib|MdeModulePkg/Library/UefiHiiLib/UefiHiiLib.inf
   UefiHiiServicesLib|MdeModulePkg/Library/UefiHiiServicesLib/UefiHiiServicesLib.inf
@@ -130,6 +131,11 @@
   DspiFlashLib|LS1043aRdbPkg/Library/DspiFlashLib/DspiFlashLib.inf
   PciHostBridgeLib|LS1043aRdbPkg/Library/PciHostBridgeLib/PciHostBridgeLib.inf
   SdxcLib|LS1043aRdbPkg/Library/SdxcLib/SdxcLib.inf
+
+  # DPAA1 Ethernet
+  Dpaa1EthernetMacLib|LS1043aRdbPkg/Library/Dpaa1EthernetMacLib/Dpaa1EthernetMacLib.inf
+  Dpaa1EthernetPhyLib|LS1043aRdbPkg/Library/Dpaa1EthernetPhyLib/Dpaa1EthernetPhyLib.inf
+  Dpaa1BoardSpecificLib|LS1043aRdbPkg/Library/Dpaa1BoardSpecificLib/Dpaa1BoardSpecificLib.inf
 
   #
   # Allow dynamic PCDs
@@ -445,6 +451,15 @@
   gArmPlatformTokenSpaceGuid.PcdClockInitialize|TRUE
 
   #
+  # LS1043a SoC specific DPAA1 PCDs
+  #
+  gLS1043aRdbTokenSpaceGuid.PcdDpaa1DebugFlags|0x00
+
+  # Enable MEMACS 1, 2, 5, 6, 9
+  #
+  gLS1043aRdbTokenSpaceGuid.PcdDpaa1UsedMemacsMask|0x133
+  
+  #
   # SD Specific PCDs
   #
   gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported|TRUE
@@ -647,6 +662,10 @@
   # Intel E1000 driver
   LS1043aRdbPkg/Drivers/LanIntelE1000Dxe/LanIntelE1000Dxe.inf
 
+  #
+  # DPAA1 Ethernet driver
+  LS1043aRdbPkg/Drivers/Dpaa1EthernetDxe/Dpaa1EthernetDxe.inf
+  
   #
   # Bds
   #

@@ -62,8 +62,6 @@
 #define BUS_BUSY (I2C_SR_IBB | (I2C_SR_IBB << 8))
 #define IIF (I2C_SR_IIF | (I2C_SR_IIF << 8))
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
 /**
   Record defining i2c registers
 **/

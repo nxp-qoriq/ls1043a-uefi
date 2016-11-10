@@ -38,9 +38,9 @@
 #include <libfdt.h>
 
 /* Global Clock Information pointer */
-static SocClockInfo gClkInfo;
+STATIC SocClockInfo gClkInfo;
 
-static struct CsuNsDev NonSecureDevices[] =
+STATIC struct CsuNsDev NonSecureDevices[] =
 {
 	 {SEC_UNIT_CSLX_PCIE2_IO, SEC_UNIT_ALL_RW},
 	 {SEC_UNIT_CSLX_PCIE1_IO, SEC_UNIT_ALL_RW},
@@ -115,8 +115,8 @@ static struct CsuNsDev NonSecureDevices[] =
 	 {SEC_UNIT_CSLX_DSCR, SEC_UNIT_ALL_RW},
 };
 
-char *StringToMHz (
-  char *Buf,
+CHAR8 *StringToMHz (
+  CHAR8 *Buf,
   unsigned long Hz
   )
 {
@@ -232,18 +232,18 @@ GetSysInfo (
   OUT struct SysInfo *PtrSysInfo
   )
 {
-	struct CcsrGur *GurBase = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
-	struct CcsrClk *ClkBase = (void *)(CONFIG_SYS_FSL_CLK_ADDR);
+	struct CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
+	struct CcsrClk *ClkBase = (VOID *)(CONFIG_SYS_FSL_CLK_ADDR);
 	UINTN CpuIndex;
 	UINT32 TempRcw;
-	const UINT8 CoreCplxPll[8] = {
+	CONST UINT8 CoreCplxPll[8] = {
 		[0] = 0,	/* CC1 PPL / 1 */
 		[1] = 0,	/* CC1 PPL / 2 */
 		[4] = 1,	/* CC2 PPL / 1 */
 		[5] = 1,	/* CC2 PPL / 2 */
 	};
 
-	const UINT8 CoreCplxPllDivisor[8] = {
+	CONST UINT8 CoreCplxPllDivisor[8] = {
 		[0] = 1,	/* CC1 PPL / 1 */
 		[1] = 2,	/* CC1 PPL / 2 */
 		[4] = 1,	/* CC2 PPL / 1 */
@@ -288,10 +288,16 @@ GetSysInfo (
 		PtrSysInfo->FreqFman[0] = FreqCPll[0] / 2;
 		break;
 	case 3:
-		PtrSysInfo->FreqFman[0] = FreqCPll[1] / 3;
+		PtrSysInfo->FreqFman[0] = FreqCPll[0] / 3;
+		break;
+	case 4:
+		PtrSysInfo->FreqFman[0] = FreqCPll[0] / 4;
+		break;
+	case 5:
+		PtrSysInfo->FreqFman[0] = PtrSysInfo->FreqSystemBus;
 		break;
 	case 6:
-		PtrSysInfo->FreqFman[0] = FreqCPll[0] / 2;
+		PtrSysInfo->FreqFman[0] = FreqCPll[1] / 2;
 		break;
 	case 7:
 		PtrSysInfo->FreqFman[0] = FreqCPll[1] / 3;
@@ -340,14 +346,14 @@ TimerInit (
 	return 0;
 }
 
-static inline
+STATIC inline
 UINT32
 InitiatorType (
   IN UINT32 Cluster,
   IN UINTN InitId
   )
 {
-	struct CcsrGur *GurBase = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+	struct CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
 	UINT32 Idx = (Cluster >> (InitId * 8)) & TP_CLUSTER_INIT_MASK;
 	UINT32 Type = MmioReadBe32((UINTN)&GurBase->tp_ityp[Idx]);
 
@@ -362,7 +368,7 @@ CpuMask (
   VOID
   )
 {
-	struct CcsrGur *GurBase = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+	struct CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
 	UINTN ClusterIndex = 0, Count = 0;
 	UINT32 Cluster, Type, Mask = 0;
 
@@ -399,7 +405,7 @@ QoriqCoreToType (
   IN UINTN Core
   )
 {
-	struct CcsrGur *GurBase = (VOID *)(CONFIG_SYS_FSL_GUTS_ADDR);
+	struct CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
 	UINTN ClusterIndex = 0, Count = 0;
 	UINT32 Cluster, Type;
 
@@ -451,6 +457,9 @@ PrintCpuInfo (
 	SerialPortWrite ((UINT8 *) Buffer, CharCount);
 	CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "DDR:      %-4a MHz", StringToMHz(Buf, SysInfo.FreqDdrBus));
 	SerialPortWrite ((UINT8 *) Buffer, CharCount);
+	CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "\n       FMAN:      %-4a MHz  ",
+				StringToMHz(Buf, SysInfo.FreqFman[0]));
+	SerialPortWrite ((UINT8 *) Buffer, CharCount);
 	CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "\n");
 	SerialPortWrite ((UINT8 *) Buffer, CharCount);
 }
@@ -482,7 +491,7 @@ PrintBoardPersonality (
   VOID
   )
 {
-	static const char *Freq[3] = {"100.00MHZ", "156.25MHZ"};
+	STATIC CONST CHAR8 *Freq[3] = {"100.00MHZ", "156.25MHZ"};
 	UINT8 RcwSrc1, RcwSrc2;
 	UINT32 RcwSrc;
 	UINT32 sd1refclk_sel;
@@ -515,7 +524,7 @@ PrintRCW (
   VOID
   )
 {
-	struct CcsrGur *Base = (void *)(CONFIG_SYS_FSL_GUTS_ADDR);
+	struct CcsrGur *Base = (VOID *)(GUTS_ADDR);
 	UINTN Count;
 	CHAR8 Buffer[100];
 	UINTN CharCount;
@@ -624,8 +633,8 @@ SocInit (
 VOID
 FixupByCompatibleField (
   VOID *Fdt,
-  CONST char *Compat,
-  CONST char *Prop,
+  CONST CHAR8 *Compat,
+  CONST CHAR8 *Prop,
   CONST VOID *Val,
   INTN Len,
   INTN Create
@@ -643,8 +652,8 @@ FixupByCompatibleField (
 VOID
 FixupByCompatibleField32 (
   VOID *Fdt,
-  CONST char *Compat,
-  CONST char *Prop,
+  CONST CHAR8 *Compat,
+  CONST CHAR8 *Prop,
   UINT32 Val,
   INTN Create
   )
@@ -664,9 +673,9 @@ FdtFixupBmanPortals (
 	UINTN Maj, Min;
 	UINTN IpCfg;
 
-	UINT32 BmanRev1 = MmioReadBe32(CONFIG_SYS_FSL_BMAN_ADDR + BMAN_IP_REV_1);
-	UINT32 BmanRev2 = MmioReadBe32(CONFIG_SYS_FSL_BMAN_ADDR + BMAN_IP_REV_2);
-	char Compatible[64];
+	UINT32 BmanRev1 = MmioReadBe32(BMAN_ADDR + BMAN_IP_REV_1);
+	UINT32 BmanRev2 = MmioReadBe32(BMAN_ADDR + BMAN_IP_REV_2);
+	CHAR8 Compatible[64];
 	INTN CompatibleLength;
 
 	Maj = (BmanRev1 >> 8) & 0xff;
@@ -705,9 +714,9 @@ FdtFixupQmanPortals (
 	INTN Off, Err;
 	UINTN Maj, Min;
 	UINTN IpCfg;
-	UINT32 QmanRev1 = MmioReadBe32(CONFIG_SYS_FSL_QMAN_ADDR + QMAN_IP_REV_1);
-	UINT32 QmanRev2 = MmioReadBe32(CONFIG_SYS_FSL_QMAN_ADDR + QMAN_IP_REV_2);
-	char Compatible[64];
+	UINT32 QmanRev1 = MmioReadBe32(QMAN_ADDR + QMAN_IP_REV_1);
+	UINT32 QmanRev2 = MmioReadBe32(QMAN_ADDR + QMAN_IP_REV_2);
+	CHAR8 Compatible[64];
 	INTN CompatLength;
 
 	Maj = (QmanRev1 >> 8) & 0xff;
@@ -740,7 +749,7 @@ FdtFixupSdhc (
   UINTN SdhcClk
   )
 {
-	const char *Compatible = "fsl,esdhc";
+	CONST CHAR8 *Compatible = "fsl,esdhc";
 
 	FixupByCompatibleField32(Blob, Compatible, "clock-frequency", SdhcClk, 1);
 

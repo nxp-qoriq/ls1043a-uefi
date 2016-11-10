@@ -36,16 +36,16 @@
 #define TP_CLUSTER_INIT_MASK	0x0000003f	/* initiator mask */
 #define TP_INIT_PER_CLUSTER	4
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
 #define CONFIG_SYS_CLK_FREQ		100000000
 #define CONFIG_DDR_CLK_FREQ		100000000
 
 #define CONFIG_MAX_CPUS				4
-#define CONFIG_SYS_FMAN_V3
-#define CONFIG_SYS_NUM_FMAN			1
-#define CONFIG_SYS_NUM_FM1_DTSEC		7
-#define CONFIG_SYS_NUM_FM1_10GEC		1
+#define FMAN_V3
+#define NUM_FMAN			1
+#define NUM_FMAN1_DTSEC		7
+#define NUM_FMAN1_10GEC		1
+
+#define FMAN_MEM_SIZE	0x60000
 
 /*
  * Divide positive or negative dividend by positive divisor and round
@@ -95,7 +95,7 @@ struct SysInfo {
 	UINTN FreqDdrBus;
 	UINTN FreqLocalBus;
 	UINTN FreqSdhc;
-	UINTN FreqFman[CONFIG_SYS_NUM_FMAN];
+	UINTN FreqFman[NUM_FMAN];
 	UINTN FreqQman;
 };
 
@@ -218,22 +218,17 @@ struct CcsrGur {
 	UINT32     porsr2;         /* POR status 2 */
 	UINT8      res_008[0x20-0x8];
 	UINT32     gpporcr1;       /* General-purpose POR configuration */
-	UINT32	gpporcr2;
+	UINT32	   gpporcr2;
 	UINT32     dcfg_fusesr;    /* Fuse status register */
 	UINT8      res_02c[0x70-0x2c];
 	UINT32     devdisr;        /* Device disable control */
-#define FSL_CHASSIS2_DEVDISR2_DTSEC1_1	0x80000000
-#define FSL_CHASSIS2_DEVDISR2_DTSEC1_2	0x40000000
-#define FSL_CHASSIS2_DEVDISR2_DTSEC1_3	0x20000000
-#define FSL_CHASSIS2_DEVDISR2_DTSEC1_4	0x10000000
-#define FSL_CHASSIS2_DEVDISR2_DTSEC1_5	0x08000000
-#define FSL_CHASSIS2_DEVDISR2_DTSEC1_6	0x04000000
-#define FSL_CHASSIS2_DEVDISR2_DTSEC1_9	0x00800000
-#define FSL_CHASSIS2_DEVDISR2_DTSEC1_10	0x00400000
-#define FSL_CHASSIS2_DEVDISR2_10GEC1_1	0x00800000
-#define FSL_CHASSIS2_DEVDISR2_10GEC1_2	0x00400000
-#define FSL_CHASSIS2_DEVDISR2_10GEC1_3	0x80000000
-#define FSL_CHASSIS2_DEVDISR2_10GEC1_4	0x40000000
+#define DEVDISR2_DTSEC1_1	0x80000000
+#define DEVDISR2_DTSEC1_2	0x40000000
+#define DEVDISR2_DTSEC1_3	0x20000000
+#define DEVDISR2_DTSEC1_4	0x10000000
+#define DEVDISR2_DTSEC1_5	0x08000000
+#define DEVDISR2_DTSEC1_6	0x04000000
+#define DEVDISR2_DTSEC1_9	0x00800000
 	UINT32     devdisr2;       /* Device disable control 2 */
 	UINT32     devdisr3;       /* Device disable control 3 */
 	UINT32     devdisr4;       /* Device disable control 4 */

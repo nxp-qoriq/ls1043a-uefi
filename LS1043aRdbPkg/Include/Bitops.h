@@ -16,6 +16,11 @@
 #ifndef __BITOPS_H__
 #define __BITOPS_H__
 
+/*
+ * Returns the bit mask for a bit index from 0 to 31
+ */
+#define BIT(_BitIndex)         (0x1u << (_BitIndex))
+
 /**
   Find last (most-significant) bit set
 
