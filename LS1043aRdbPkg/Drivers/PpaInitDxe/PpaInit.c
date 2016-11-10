@@ -73,7 +73,7 @@ GetPpaImagefromFlash (
 	INT32 NodeOffset;
 	INT32 PpaImageSize;
 	UINTN *PpaRamAddr;
-	UINTN PpaDdrSize = PcdGet64 (PcdPpaDdrOffsetAddr);
+	UINTN PpaDdrSize = PcdGet64 (PcdPpaFwSize);
 
 	// Assuming that the PPA FW is present on NOR flash
 	// FIXME: Add support for other flash devices.
@@ -86,9 +86,8 @@ GetPpaImagefromFlash (
 	
 	// PPA will be placed on DDR at this address:
 	PpaRamAddr = (UINTN *)AllocateAlignedRuntimePages((PpaDdrSize / (4 * 1024)) /* no of 4 KB pages to allocate */,
-                                                   (64 * 1024 ) /* Alignment = 64 KB*/);
-       PpaRamAddr = ZeroMem (PpaRamAddr, (PpaDdrSize));
-
+								(64 * 1024 ) /* Alignment = 64 KB*/);
+	PpaRamAddr = ZeroMem (PpaRamAddr, (PpaDdrSize));
 
 	Status = FitCheckHeader(FitImage);
 	if (EFI_ERROR (Status)) {

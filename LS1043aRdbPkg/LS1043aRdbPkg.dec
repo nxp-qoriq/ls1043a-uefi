@@ -138,7 +138,7 @@
   # PPA specific PCDs
   #
   gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x0|UINT64|0x00000032
-  gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr|0x0|UINT64|0x00000033 # calculated from top of DDR
+  gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize|0x0|UINT64|0x00000033
   gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration|""|VOID*|0x00000034
 
   gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x0|UINT64|0x00000035

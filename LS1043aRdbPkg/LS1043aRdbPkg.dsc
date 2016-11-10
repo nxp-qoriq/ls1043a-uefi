@@ -468,7 +468,7 @@
   # PPA specific PCDs
   #
   gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x60500000
-  gArmPlatformTokenSpaceGuid.PcdPpaDdrOffsetAddr|0x8000000 # (128MB) calculated from top of DDR
+  gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize|0x8000000 # (128MB)
   gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000
 
 !if $(TARGET) == DEBUG
