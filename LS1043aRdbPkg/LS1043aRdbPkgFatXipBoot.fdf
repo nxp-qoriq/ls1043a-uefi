@@ -77,6 +77,7 @@ FV = FVNOR_COMPACT
 ################################################################################
 
 [FV.FvMain]
+FvNameGuid         = 1037c42b-8452-4c41-aac7-41e6c31468da
 BlockSize          = 0x1
 NumBlocks          = 0         # This FV gets compressed so make it just big enough
 FvAlignment        = 8         # FV alignment and FV attributes setting.
