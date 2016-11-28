@@ -107,7 +107,7 @@ InstallFdt (
   }
   
   /* fdt fixup for LS1043A */
-  FdtCpuSetup((VOID *)FdtBlobBase);
+  FdtCpuSetup((VOID *)FdtBlobBase, FdtBlobSize);
 
   //
   // Store the FDT as Runtime Service Data to prevent the Kernel from
