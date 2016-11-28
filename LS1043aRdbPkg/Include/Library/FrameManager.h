@@ -18,6 +18,7 @@
 #define __FRAME_MANAGER_H__
 
 #include <Bitops.h>
+#include <Common.h>
 #include <Library/Dpaa1EthernetMacLib.h>
 #include <Library/Dpaa1Lib.h>
 #include <LS1043aSocLib.h>
@@ -425,6 +426,12 @@ EFI_STATUS
 FmanInit (
   INTN  FmanIndex,
   FMAN_CCSR *FmanCcsr
+  );
+
+UINT32
+ComputeCrc32(
+  IN  CONST VOID    *Data,
+  IN  UINTN         DataSize
   );
 
 #endif /* __FRAME_MANAGER_H__ */

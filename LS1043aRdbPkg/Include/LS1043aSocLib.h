@@ -47,6 +47,39 @@
 
 #define FMAN_MEM_SIZE	0x60000
 
+/* Generic Interrupt Controller Definitions */
+#define GICD_BASE_4K        0x01401000
+#define GICD_SIZE_4K        0x1000
+#define GICC_BASE_4K        0x01402000
+#define GICC_SIZE_4K        0x2000
+#define GICH_BASE_4K        0x01404000
+#define GICH_SIZE_4K        0x2000
+#define GICV_BASE_4K        0x01406000
+#define GICV_SIZE_4K        0x2000
+
+#define REV1_0                     0x10
+#define REV1_1                     0x11
+#define GIC_ADDR_BIT        31
+#define SCFG_GIC400_ALIGN   0x1570188
+
+typedef struct CpuType {
+	CHAR8  name[16];
+	UINT32 soc_ver;
+	UINT32 num_cores;
+}CPU_TYPE;
+
+#define CPU_TYPE_ENTRY(n, v, nc) \
+       { .name = #n, .soc_ver = SVR_##v, .num_cores = (nc)}
+
+#define SVR_WO_E            0xFFFFFE
+#define SVR_MAJOR(svr)      (((svr) >> 4) & 0xf)
+#define SVR_MINOR(svr)      (((svr) >> 0) & 0xf)
+#define SVR_SOC_VER(svr)    (((svr) >> 8) & SVR_WO_E)
+
+#define SVR_LS1043A		0x879200
+
+#define IS_E_PROCESSOR(svr) (!((svr >> 8) & 0x1))
+
 /*
  * Divide positive or negative dividend by positive divisor and round
  * to closest UINTNeger. Result is undefined for negative divisors and
@@ -374,7 +407,8 @@ struct CcsrScfg {
 	UINT32 qspi_cfg;
 	UINT8 res_160[0x180-0x160];
 	UINT32 dmamcr;
-	UINT8 res_184[0x18c-0x184];
+	UINT8 res_184[0x188-0x184];
+	UINT32 gic_align;
 	UINT32 debug_icid;
 	UINT8 res_190[0x1a4-0x190];
 	UINT32 snpcnfgcr;
@@ -495,6 +529,6 @@ VOID SocInit(VOID);
 
 VOID SerDesInit(VOID);
 
-VOID FdtCpuSetup(VOID *Blob);
+VOID FdtCpuSetup(VOID *Blob, UINTN BlobSize);
 
 #endif /* __LS1043A_SOC_H__ */

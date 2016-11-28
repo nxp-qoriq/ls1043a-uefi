@@ -36,6 +36,14 @@
 
 #define FM1_10GEC1_PHY_ADDR			0x1
 
+#define FMAN_FW_LENGTH			0x10000
+
+typedef struct FdtPort {
+    FMAN_MEMAC_ID  Id;
+    PHY_INTERFACE_TYPE  PhyInterfaceType;
+    UINTN  CompatAddress;
+} FDT_PORT;
+
 VOID
 Dpaa1DiscoverFmanMemac(SERDES_LANE_PROTOCOL LaneProtocol,
                        VOID *Arg);
@@ -44,6 +52,11 @@ VOID
 GetMemacIdAndPhyType(SERDES_LANE_PROTOCOL LaneProtocol,
                      FMAN_MEMAC_ID *MemacId,
                      PHY_INTERFACE_TYPE *PhyInterfaceType);
+
+BOOLEAN
+IsMemacEnabled (
+  IN  FMAN_MEMAC_ID MemacId
+  );
 
 extern DPAA1_PHY_MDIO_BUS gDpaa1MdioBuses[];
 

@@ -15,7 +15,9 @@
 
 #include <Library/Dpaa1BoardSpecificLib.h>
 #include <Library/Dpaa1DebugLib.h>
+#include <Library/IoLib.h>
 #include <LS1043aRdb.h>
+#include <LS1043aSocLib.h>
 
 /**
  * Mapping of FMAN MEMACs to Ethernet PHYs
@@ -136,7 +138,7 @@ GetMemacIdAndPhyType(SERDES_LANE_PROTOCOL LaneProtocol,
         *PhyInterfaceType = PHY_INTERFACE_SGMII;
         break;
       case QSGMII_FM1_A:
-        *MemacId = INVALID_FMAN_MEMAC_ID;	//TODO
+        *MemacId = FM1_DTSEC_M;
         *PhyInterfaceType = PHY_INTERFACE_QSGMII;
         break;
       case SGMII_2500_FM1_DTSEC2:
@@ -150,8 +152,31 @@ GetMemacIdAndPhyType(SERDES_LANE_PROTOCOL LaneProtocol,
 	default:
 	 break;
     }
-  }      
+  }
 }
+
+BOOLEAN
+IsMemacEnabled (
+  IN  FMAN_MEMAC_ID MemacId
+  )
+{
+  UINT32 RegValue;
+  struct CcsrGur *Gur = (VOID *)(GUTS_ADDR);
+  UINT32 Enabled[7] = {
+			DEVDISR2_DTSEC1_1,
+			DEVDISR2_DTSEC1_2,
+			DEVDISR2_DTSEC1_3,
+			DEVDISR2_DTSEC1_4,
+			DEVDISR2_DTSEC1_5,
+			DEVDISR2_DTSEC1_6,
+			DEVDISR2_DTSEC1_9
+			};
+
+  RegValue = MmioReadBe32((UINTN)&Gur->devdisr2);
+  //DPAA1_DEBUG_MSG(" IsMemacEnabled [%d] = 0x%x \n", MemacId, RegValue);
+  return (!(RegValue & Enabled[MemacId-1]));
+}
+
 /**
    SerDes lane probe callback
 
@@ -182,5 +207,5 @@ Dpaa1DiscoverFmanMemac(SERDES_LANE_PROTOCOL LaneProtocol,
                   gMemacToPhyMap[MemacId].MdioBus,
                   gMemacToPhyMap[MemacId].PhyAddress,
                   Arg); 
-  }  
-}  
+  }
+}

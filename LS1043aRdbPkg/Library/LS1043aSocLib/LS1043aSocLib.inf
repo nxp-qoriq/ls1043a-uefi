@@ -33,6 +33,8 @@
   CpldLib
   DebugLib
   DebugAgentLib
+  Dpaa1Lib
+  Dpaa1BoardSpecificLib
   IoLib
   ArmLib
   MemoryAllocationLib
@@ -52,4 +54,5 @@
   gArmPlatformTokenSpaceGuid.PcdCci400Initialize
   gArmPlatformTokenSpaceGuid.PcdClockInitialize
   gArmPlatformTokenSpaceGuid.PcdCounterFrequency
+  gLS1043aRdbTokenSpaceGuid.PcdFManFwNorAddr
 

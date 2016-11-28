@@ -15,12 +15,11 @@
 
 #include <Bitops.h>
 #include <Common.h>
+#include <Library/Dpaa1BoardSpecificLib.h>
 #include <Library/Dpaa1DebugLib.h>
 #include <Library/Dpaa1EthernetMacLib.h>
 #include <Library/IoLib.h>
-#include <Library/PcdLib.h>
 #include <LS1043aRdb.h>
-#include <LS1043aSocLib.h>
 
 CONST CHAR8 *SerdesPrtclToStr[] = {
        [NONE] = "NONE",
@@ -49,6 +48,7 @@ CONST CHAR8 *CONST gFmanMemacStrings[] = {
   [FM1_DTSEC_5] = "MEMAC5",
   [FM1_DTSEC_6] = "MEMAC6",
   [FM1_DTSEC_9] = "MEMAC9",
+  [FM1_DTSEC_M] = "MEMACM",
 };
 
 C_ASSERT(ARRAY_SIZE(gFmanMemacStrings) == NUM_FMAN_MEMACS);
@@ -81,29 +81,10 @@ STATIC FMAN_MEMAC gFmanMemacs[] = {
   FMAN_MEMAC_INITIALIZER(FM1_DTSEC_5),
   FMAN_MEMAC_INITIALIZER(FM1_DTSEC_6),
   FMAN_MEMAC_INITIALIZER(FM1_DTSEC_9), 
+  FMAN_MEMAC_INITIALIZER(FM1_DTSEC_M),
 };
 
 C_ASSERT(ARRAY_SIZE(gFmanMemacs) == NUM_FMAN_MEMACS);
-
-STATIC BOOLEAN
-IsMemacEnabled(FMAN_MEMAC_ID MemacId)
-{
-  UINT32 RegValue;
-  struct CcsrGur *Gur = (VOID *)(GUTS_ADDR);
-  UINT32 Enabled[7] = {
-			DEVDISR2_DTSEC1_1,
-			DEVDISR2_DTSEC1_2,
-			DEVDISR2_DTSEC1_3,
-			DEVDISR2_DTSEC1_4,
-			DEVDISR2_DTSEC1_5,
-			DEVDISR2_DTSEC1_6,
-			DEVDISR2_DTSEC1_9
-			};
-
-  RegValue = MmioReadBe32((UINTN)&Gur->devdisr2);
-  DPAA1_DEBUG_MSG(" IsMemacEnabled [%d] = 0x%x \n", MemacId, RegValue);
-  return (!(RegValue & Enabled[MemacId-1]));
-}
 
 VOID
 DumpMac (
@@ -233,7 +214,7 @@ FmanMemacInit(
 
   /* Initialize with default values */
   Memac = &gFmanMemacs[MemacId];
-  
+
   ASSERT(Memac->Id == MemacId);
   Memac->Enabled = IsMemacEnabled(MemacId);
   Memac->Phy.PhyInterfaceType = PhyInterfaceType;

@@ -153,7 +153,7 @@ typedef struct _DPAA1_PHY {
    */
   UINT32 Flags;
 # define PHY_BROKEN_RESET   BIT(0) /* Soft reset not supported */
- } DPAA1_PHY;
+} DPAA1_PHY;
 
 
 EFI_STATUS

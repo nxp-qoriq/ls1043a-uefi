@@ -1007,70 +1007,6 @@ STATIC CONST DPAA1_ETHERNET_DEVICE gDpaa1EthernetDeviceInitTemplate = {
   .FmanMemac = NULL ,
 };
 
-
-/**
- * Retrieve the SoC unique ID
- */
-STATIC
-UINT32
-GetSocUniqueId(VOID)
-{
-  /*
-   * TODO: We need to retrieve a SoC unique ID here.
-   * A possiblity is to read the Fresscale Unique ID register (FUIDR) register
-   * in the Security Fuse Processor (SFP)
-   *
-   * For now we just generate a pseudo-randmom number.
-   */
-  STATIC UINT32 SocUniqueId = 0;
-
-  if (SocUniqueId == 0) {
-    SocUniqueId = NET_RANDOM(NetRandomInitSeed());
-  }
-
-  return SocUniqueId;
-}
-
-/**
- * Generate an Ethernet address (MAC) that is not multicast
- * and has the local assigned bit set.
- */
-STATIC
-VOID
-GenerateMacAddress(
-  IN  UINT32 SocUniqueId,
-  IN  FMAN_MEMAC_ID MemacId,
-  OUT EFI_MAC_ADDRESS *MacAddrBuf)
-{
-  /*
-   * Bit masks for first byte of a MAC address
-   */
-# define MAC_MULTICAST_ADDRESS_MASK 0x1
-# define MAC_PRIVATE_ADDRESS_MASK   0x2
-
-  /*
-   * Build MAC address from SoC's unique hardware identifier:
-   */
-  CopyMem(MacAddrBuf->Addr, &SocUniqueId, sizeof(UINT32));
-  MacAddrBuf->Addr[4] = ((UINT16)MemacId + 1) >> 8;
-  MacAddrBuf->Addr[5] = (UINT8)MemacId + 1;
-
-  /*
-   * Ensure special bits of first byte of the MAC address are properly
-   * set:
-   */
-  MacAddrBuf->Addr[0] &= ~MAC_MULTICAST_ADDRESS_MASK;
-  MacAddrBuf->Addr[0] |= MAC_PRIVATE_ADDRESS_MASK;
-
-  DPAA1_INFO_MSG("MAC addr: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                  MacAddrBuf->Addr[0],
-                  MacAddrBuf->Addr[1],
-                  MacAddrBuf->Addr[2],
-                  MacAddrBuf->Addr[3],
-                  MacAddrBuf->Addr[4],
-                  MacAddrBuf->Addr[5]);
-}
-
 VOID
 Dpaa1StopNetworkInterface (
   IN  DPAA1_ETHERNET_DEVICE *Dpaa1EthDev
@@ -1406,7 +1342,7 @@ DestroyDpaa1EthernetDevice(
 }
 
 VOID
-DestroyAllDpaa1NetworkInterfacesInMc(VOID)
+DestroyAllDpaa1NetworkInterfaces(VOID)
 {
   LIST_ENTRY *ListNode;
   DPAA1_ETHERNET_DEVICE *Dpaa1EthDev;
@@ -1449,7 +1385,7 @@ Dpaa1NotifyExitBootServices (
                   __func__, Event, Context);
 
   if (gDpaa1Driver.FmanStatus == EFI_SUCCESS)
-    DestroyAllDpaa1NetworkInterfacesInMc(); 
+    DestroyAllDpaa1NetworkInterfaces();
 }
 
 

@@ -86,6 +86,7 @@ typedef enum _FMAN_MEMAC_ID {
   FM1_DTSEC_5,
   FM1_DTSEC_6,
   FM1_DTSEC_9 = 0x9,
+  FM1_DTSEC_M,
   /*
    * New values must added above this entry
    */

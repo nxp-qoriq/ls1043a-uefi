@@ -18,14 +18,13 @@
 #include <Library/DebugLib.h>
 #include <Library/Dpaa1Lib.h>
 #include <Library/Dpaa1DebugLib.h>
+#include <Library/FrameManager.h>
 #include <Library/IoLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/PcdLib.h>
 #include <Library/TimerLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <LS1043aRdb.h>
-
-#include "FrameManager.h"
 
 #define FMAN_FW_VERSION     1
 
@@ -62,7 +61,7 @@ STATIC CONST  EFI_LOCK RxLock = EFI_INITIALIZE_LOCK_VARIABLE(TPL_CALLBACK);
    @retval Computed CRC
 
  **/
-STATIC UINT32
+UINT32
 ComputeCrc32(
   IN  CONST VOID    *Data,
   IN  UINTN         DataSize

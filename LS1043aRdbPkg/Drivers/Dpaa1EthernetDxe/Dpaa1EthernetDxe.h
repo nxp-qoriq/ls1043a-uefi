@@ -84,17 +84,6 @@ typedef struct _DPAA1_ETHERNET_DEVICE {
    * Node in the global list of DPAA1 Ethernet devices
    */
   LIST_ENTRY ListNode;
-
-  /**
-   * Head of the linked list of Tx frames in flight
-   */
-  LIST_ENTRY TxFramesInFlightList;
-
-  /**
-   * TPL-based lock to serialize access to TxFramesInFlightList
-   */
-  EFI_LOCK TxFramesInFlightLock;
-
 } DPAA1_ETHERNET_DEVICE;
 
 VOID

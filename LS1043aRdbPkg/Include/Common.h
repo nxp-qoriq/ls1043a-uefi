@@ -18,6 +18,8 @@
 
 #define MASK_LOWER_16		0xFFFF0000
 #define MASK_UPPER_16		0x0000FFFF
+#define MASK_LOWER_8			0xFF000000
+#define MASK_UPPER_8			0x000000FF
 
 /**
   Utility to return minimum among X and Y
@@ -79,7 +81,6 @@
 #if __STDC_VERSION__ >= 201112L
 #define C_ASSERT(_cond) \
 	static_assert(_cond, #_cond)
-
 #else
 #define C_ASSERT(_cond) \
         extern CONST CHAR8 c_assert_dummy_decl[(_cond) ? 1 : -1]

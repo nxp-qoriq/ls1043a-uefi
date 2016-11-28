@@ -86,4 +86,14 @@ ReceiveFrame(
   VOID *Data
   );
 
+VOID
+GenerateMacAddress(
+  IN  UINT32 SocUniqueId,
+  IN  FMAN_MEMAC_ID MemacId,
+  OUT EFI_MAC_ADDRESS *MacAddrBuf
+  );
+
+UINT32
+GetSocUniqueId(VOID);
+
 #endif /* __DPAA_LIB_H__ */
