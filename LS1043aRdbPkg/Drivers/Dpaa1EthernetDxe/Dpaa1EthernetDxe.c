@@ -758,9 +758,8 @@ Dpaa1SnpGetStatus (
     *IrqStat = 0; /* TODO: Dow we need to set IRQ Tx/Rx status? */
   }
 
-  if (TxBuff != NULL) {
-    *TxBuff = NULL;
-  }
+  if (TxBuff != NULL)
+    GetTransmitStatus(Dpaa1EthDev->FmanEthDevice,TxBuff);
 
   /*
    * Check physical link status:

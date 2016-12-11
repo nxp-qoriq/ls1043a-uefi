@@ -228,7 +228,9 @@ typedef struct _ETH_DEVICE {
        VOID *CurRxbd;                    /* current Rx BD */
        VOID *RxBuf;               /* Rx buffer base */
        VOID *TxBdRing;           /* Tx BD ring base */
-       VOID *CurTxbd;                    /* current Tx BD */
+       INT8 CurPendingTxbdId;    /*latest Transmission Pending BD ID : Rear of Circular TxBD Queue*/
+       INT8 CurUsedTxbdId;       /*oldest used(transmitted) BD Id : Front of Circular TxBD Queue*/
+       UINT8 TotalPendingTxbd;   /*Total Buffers pending to be transmitted : Size of Circular TxBD Queue*/
        EFI_LOCK TxSyncLock;		/* TPL-based lock to serialize access to Transmit BD Ring */
        EFI_LOCK RxSyncLock;		/* TPL-based lock to serialize access to Receive BD Ring */
 } ETH_DEVICE;

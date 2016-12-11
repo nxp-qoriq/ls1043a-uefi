@@ -410,7 +410,9 @@ DumpEthDev (
   DPAA1_DEBUG_MSG("  CurRxbd   	: 	0x%x \n", FmanEthDevice->CurRxbd);        
   DPAA1_DEBUG_MSG("  RxBuf     	: 	0x%x \n", FmanEthDevice->RxBuf);          
   DPAA1_DEBUG_MSG("  TxBdRing 	: 	0x%x \n", FmanEthDevice->TxBdRing);      
-  DPAA1_DEBUG_MSG("  CurTxbd   	: 	0x%x \n", FmanEthDevice->CurTxbd);        
+  DPAA1_DEBUG_MSG("  CurPendingTxbdId 	: 	%d \n", FmanEthDevice->CurPendingTxbdId);
+  DPAA1_DEBUG_MSG("  CurUsedTxbdId      : 	%d \n", FmanEthDevice->CurUsedTxbdId);
+  DPAA1_DEBUG_MSG("  TotalPendingTxbd   : 	%u \n", FmanEthDevice->TotalPendingTxbd);
 }                                                                               
                                                                                 
 VOID                                                                            
@@ -676,7 +678,9 @@ EFI_STATUS FmTxPortParamInit (
   }
 
   FmanEthDevice->TxBdRing = TxRingBase;
-  FmanEthDevice->CurTxbd = TxRingBase;
+  FmanEthDevice->CurPendingTxbdId = -1;
+  FmanEthDevice->CurUsedTxbdId = 0;
+  FmanEthDevice->TotalPendingTxbd = 0;
 
   /* init Tx ring */
   TxBd = (BD *)TxRingBase;
@@ -1214,6 +1218,10 @@ ReceiveFrame(
   return EFI_SUCCESS;
 }
 
+/*
+* Transmit Frame : Enqueue a buffer to TxBD circular queue
+* for transmitting
+*/
 EFI_STATUS
 TransmitFrame (
   IN  ETH_DEVICE *FmanEthDevice,
@@ -1222,24 +1230,24 @@ TransmitFrame (
   )
 {
   FMAN_GLOBAL_PARAM *Pram;
-  BD *Txbd, *TxbdBase;
+  UINT8 TxbdId;
+  BD *Txbd;
   UINT16 Offset;
-  UINT32 I;
 
   Pram = FmanEthDevice->TxPram;
-  Txbd = FmanEthDevice->CurTxbd;
+
+  if (FmanEthDevice->TotalPendingTxbd == TX_RING_SIZE)
+    return EFI_NOT_READY;
+
+  TxbdId = (FmanEthDevice->CurPendingTxbdId+1) % TX_RING_SIZE;
+
+  Txbd = &(((BD *)FmanEthDevice->TxBdRing)[TxbdId]);
 
   EfiAcquireLock(&FmanEthDevice->TxSyncLock);
 
-  /* Find an empty TxBD */
-  for (I = 0; MemReadMasked(&Txbd->Status) & Tx_READY; I++) {
-    MicroSecondDelay(1000);
-    if (I > 0x1000) {
-           DPAA1_ERROR_MSG("Tx buffer not ready, Txbd->Status = 0x%x\n",
-                  MemReadMasked(&Txbd->Status));
-  	    EfiReleaseLock(&FmanEthDevice->TxSyncLock);
-           return EFI_NOT_READY;
-    }
+  if (MemReadMasked(&Txbd->Status) & Tx_READY) {
+    EfiReleaseLock(&FmanEthDevice->TxSyncLock);
+    return EFI_NOT_READY;
   }
 
   /* setup TxBD */
@@ -1260,26 +1268,41 @@ TransmitFrame (
   MemWriteMasked(&Pram->Txqd.OffsetIn, Offset);
   MemoryFence();
 
-  /* Let transmission to complete */
-  for (I = 0; MemReadMasked(&Txbd->Status) & Tx_READY; I++) {
-    MicroSecondDelay(1000);
-    if (I > 0x10000) {
-           DPAA1_ERROR_MSG("Tx error, Txbd->Status = 0x%x\n",
-                         MemReadMasked(&Txbd->Status));
+  /* update current txbd and peding TxBd count */
+  FmanEthDevice->CurPendingTxbdId = TxbdId;
+  FmanEthDevice->TotalPendingTxbd++;
+  EfiReleaseLock(&FmanEthDevice->TxSyncLock);
 
-  	    EfiReleaseLock(&FmanEthDevice->TxSyncLock);
-           return EFI_DEVICE_ERROR;
-    }
+  return EFI_SUCCESS;
+}
+
+/*
+* GetTransmitStatus : Dequeue a buffer from TxBD circular queue
+* that has been transmitted
+*/
+EFI_STATUS
+GetTransmitStatus (
+  IN  ETH_DEVICE *FmanEthDevice,
+  IN VOID        **TxBuf
+  )
+{
+  BD *Txbd;
+  UINT32 BufLo, BufHi;
+
+  Txbd = &(((BD *)FmanEthDevice->TxBdRing)[FmanEthDevice->CurUsedTxbdId]);
+
+  EfiAcquireLock(&FmanEthDevice->TxSyncLock);
+
+  if ((0 == FmanEthDevice->TotalPendingTxbd) ||
+     (MemReadMasked(&Txbd->Status) & Tx_READY))
+    *TxBuf = NULL;
+  else {
+    BufHi = MemReadMasked(&Txbd->BufPtrHi);
+    BufLo = MmioReadBe32((UINTN)&Txbd->BufPtrLo);
+    *TxBuf = (UINT8 *)((UINTN)(BufHi << 16) << 16 | BufLo);
+    FmanEthDevice->CurUsedTxbdId = (FmanEthDevice->CurUsedTxbdId + 1) % TX_RING_SIZE;
+    FmanEthDevice->TotalPendingTxbd--;
   }
-
-  /* make TxBD point to next buffer in BD ring */
-  Txbd++;
-  TxbdBase = (BD *)FmanEthDevice->TxBdRing;
-  if (Txbd >= (TxbdBase + TX_RING_SIZE))
-         Txbd = TxbdBase;
-
-  /* update current txbd */
-  FmanEthDevice->CurTxbd = (VOID *)Txbd;
   EfiReleaseLock(&FmanEthDevice->TxSyncLock);
 
   return EFI_SUCCESS;

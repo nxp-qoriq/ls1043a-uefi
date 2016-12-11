@@ -80,6 +80,12 @@ TransmitFrame (
   );
 
 EFI_STATUS
+GetTransmitStatus (
+  IN  ETH_DEVICE *FmanEthDevice,
+  IN VOID        **TxBuf
+  );
+
+EFI_STATUS
 ReceiveFrame(
   ETH_DEVICE *FmanEthDevice,
   UINTN *BuffSize,
