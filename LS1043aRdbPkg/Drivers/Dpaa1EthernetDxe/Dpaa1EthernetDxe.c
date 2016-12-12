@@ -1019,7 +1019,7 @@ Dpaa1StopNetworkInterface (
   /* Enable graceful stop for TX */
   TxGracefulStopEnable(FmanEthDevice);
 
-  /* Enable BMI and Mac TX/RX ports */
+  /* Disable BMI and Mac TX/RX ports */
   DisablePorts(FmanEthDevice);
 }
 
@@ -1358,7 +1358,14 @@ DestroyAllDpaa1NetworkInterfaces(VOID)
     FmanMemac = Dpaa1EthDev->FmanMemac;
     ASSERT(FmanMemac != NULL);
 
-    /* TODO call TX shutdown here */
+    /*
+     * Destroy DPAA1 network interface:
+     */
+    DPAA1_INFO_MSG("Disabling DPAA1 Ethernet physical device for %a ...\n",
+                   gFmanMemacStrings[FmanMemac->Id]);
+    Dpaa1StopNetworkInterface(Dpaa1EthDev);
+
+    Dpaa1PhyShutdown(&Dpaa1EthDev->FmanMemac->Phy);
   } 
 } 
 
