@@ -29,8 +29,8 @@ CONST CHAR8 *SerdesPrtclToStr[] = {
        [SATA] = "SATA",
        [SGMII_FM1_DTSEC1] = "SGMII_FM1_DTSEC1",
        [SGMII_FM1_DTSEC2] = "SGMII_FM1_DTSEC2",
-       [SGMII_FM1_DTSEC3] = "SGMII_FM1_DTSEC3",
-       [SGMII_FM1_DTSEC4] = "SGMII_FM1_DTSEC4",
+       [RGMII_FM1_DTSEC3] = "RGMII_FM1_DTSEC3",
+       [RGMII_FM1_DTSEC4] = "RGMII_FM1_DTSEC4",
        [SGMII_FM1_DTSEC5] = "SGMII_FM1_DTSEC5",
        [SGMII_FM1_DTSEC6] = "SGMII_FM1_DTSEC6",
        [SGMII_FM1_DTSEC9] = "SGMII_FM1_DTSEC9",
@@ -58,6 +58,7 @@ STATIC CONST CHAR8 *CONST gPhyInterfaceTypeStrings[] = {
   [PHY_INTERFACE_SGMII] = "sgmii",
   [PHY_INTERFACE_SGMII_2500] = "Sgmii_2500",
   [PHY_INTERFACE_QSGMII] = "qsgmii",
+  [PHY_INTERFACE_RGMII] = "rgmii",
 };
 
 C_ASSERT(ARRAY_SIZE(gPhyInterfaceTypeStrings) == NUM_PHY_INTERFACE_TYPES);
@@ -282,6 +283,9 @@ VOID SetInterface (
          Mode &= ~IF_MODE_MASK;
          Mode |= (IF_MODE_GMII);
          break;
+  case PHY_INTERFACE_RGMII:
+         Mode |= (IF_MODE_GMII | IF_MODE_RGMII);
+         break;
   case PHY_INTERFACE_XFI:
          Mode &= ~IF_MODE_MASK;
          Mode |= IF_MODE_XFI;
@@ -292,6 +296,22 @@ VOID SetInterface (
   /* Enable automatic speed selection for Non-XFI */
   if (Type != PHY_INTERFACE_XFI)
          Mode |= IF_MODE_EN_AUTO;
+  if (Type == PHY_INTERFACE_RGMII) {
+        Mode &= ~IF_MODE_EN_AUTO;
+        Mode &= ~IF_MODE_SETSP_MASK;
+        switch (Speed) {
+        case 1000:
+                Mode |= IF_MODE_SETSP_1000M;
+                break;
+        case 100:
+                Mode |= IF_MODE_SETSP_100M;
+                break;
+        case 10:
+                Mode |= IF_MODE_SETSP_10M;
+        default:
+                break;
+        }
+  }
 
   DPAA1_DEBUG_MSG(" IfMode = %x\n",Mode);
   DPAA1_DEBUG_MSG(" IfStatus = %x\n", Status);

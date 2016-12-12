@@ -42,7 +42,8 @@ Dpaa1PhyMdioBusInit (
   UINT32 RegValue = MmioReadBe32((UINTN)&MdioBusRegs->MdioStat);
 
   RegValue |= MDIO_STAT_CLKDIV(MDIO_CLOCK_DIVIDER) | MDIO_STAT_NEG;
-  DPAA1_DEBUG_MSG(" MDIO Init : 0x%x : 0x%x \n", &MdioBusRegs->MdioStat, RegValue);
+  DPAA1_DEBUG_MSG(" MDIO Init : 0x%x : 0x%x \n",
+                                &MdioBusRegs->MdioStat, RegValue);
   MmioWriteBe32((UINTN)&MdioBusRegs->MdioStat, RegValue);
 
   return EFI_SUCCESS;
@@ -83,21 +84,29 @@ VOID
 Dpaa1PhyMdioBusWrite (
   IN DPAA1_PHY_MDIO_BUS *MdioBus,
   IN UINT8 PhyAddress,
-  IN UINT8 MdioCtlDevAddr,
+  IN INT8 MdioCtlDevAddr,
   IN UINT16 PhyRegNum,
   IN UINT16 Value
   )
 {
   UINT32 RegValue;
+  BOOLEAN Clause45 = TRUE; // Clause 45 is used for 10 GigPHYs and MACs
   MEMAC_MDIO_BUS_REGS *CONST MdioBusRegs = MdioBus->IoRegs;
-  DPAA1_DEBUG_MSG("MDIO bus WRITE for PHY addr 0x%x, dev addr 0x%x, "
+  DPAA1_DEBUG_MSG("MDIO bus WRITE for PHY addr 0x%x, dev addr %d, "
                    "reg num 0x%x (MDIO stat reg: 0x%x)\n",
                    PhyAddress, MdioCtlDevAddr, PhyRegNum, Value);
 
   ASSERT(MdioBus->Signature == DPAA1_PHY_MDIO_BUS_SIGNATURE);
 
   RegValue = MmioReadBe32((UINTN)&MdioBusRegs->MdioStat);
-  RegValue |= MDIO_STAT_ENC;
+  if (MDIO_CTL_DEV_NONE == MdioCtlDevAddr) {
+    Clause45 = FALSE; // Clause 22
+    MdioCtlDevAddr = MDIO_CTL_DEV_ADDR(PhyRegNum);
+    RegValue &= ~MDIO_STAT_ENC;
+  }
+  else
+    RegValue |= MDIO_STAT_ENC;
+
   MmioWriteBe32((UINTN)&MdioBusRegs->MdioStat, RegValue);
 
   /*
@@ -117,7 +126,8 @@ Dpaa1PhyMdioBusWrite (
   /*
    * Specify the target PHY register:
    */
-  MmioWriteBe32((UINTN)&MdioBusRegs->MdioAddr, PhyRegNum);
+  if (TRUE == Clause45)
+    MmioWriteBe32((UINTN)&MdioBusRegs->MdioAddr, PhyRegNum);
 
   /*
    * Wait until the MDIO bus is not busy:
@@ -154,19 +164,19 @@ Dpaa1PhyMdioBusWrite (
 VOID
 Dpaa1PhyRegisterWrite (
   IN DPAA1_PHY *Dpaa1Phy,
-  IN UINT8 MdioCtlDevAddr,
+  IN INT8 MdioCtlDevAddr,
   IN UINT16 PhyRegNum,
   IN UINT16 Value
   )
 {
   ASSERT(Dpaa1Phy->Signature == DPAA1_PHY_SIGNATURE);
   ASSERT(MdioCtlDevAddr == MDIO_PHY_DEV_ADDR ||
+         MdioCtlDevAddr == MDIO_CTL_DEV_NONE ||
          MdioCtlDevAddr == MDIO_CTL_DEV_PMAPMD ||
          MdioCtlDevAddr == MDIO_CTL_DEV_AUTO_NEGOTIATION);
-  ASSERT(PhyRegNum == PHY_CONTROL_REG || PhyRegNum == PHY_STATUS_REG);
 
-  // only XFI is supported
-  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI);
+  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI ||
+         Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII);
   Dpaa1PhyMdioBusWrite(Dpaa1Phy->MdioBus,
                        Dpaa1Phy->PhyAddress,
                        MdioCtlDevAddr,
@@ -179,17 +189,25 @@ UINT16
 Dpaa1PhyMdioBusRead (
   IN DPAA1_PHY_MDIO_BUS *MdioBus,
   IN UINT8 PhyAddress,
-  IN UINT8 MdioCtlDevAddr,
+  IN INT8 MdioCtlDevAddr,
   IN UINT16 PhyRegNum
   )
 {
   UINT32 RegValue;
   MEMAC_MDIO_BUS_REGS *CONST MdioBusRegs = MdioBus->IoRegs;
+  BOOLEAN Clause45 = TRUE; // Clause 45 is used for 10 GigPHYs and MACs
 
   ASSERT(MdioBus->Signature == DPAA1_PHY_MDIO_BUS_SIGNATURE);
 
   RegValue = MmioReadBe32((UINTN)&MdioBusRegs->MdioStat);
-  RegValue |= MDIO_STAT_ENC;
+  if (MDIO_CTL_DEV_NONE == MdioCtlDevAddr) {
+    Clause45 = FALSE; // Clause 22
+    MdioCtlDevAddr = MDIO_CTL_DEV_ADDR(PhyRegNum);
+    RegValue &= ~MDIO_STAT_ENC;
+  }
+  else
+    RegValue |= MDIO_STAT_ENC;
+
   MmioWriteBe32((UINTN)&MdioBusRegs->MdioStat, RegValue);
 
   /*
@@ -209,7 +227,8 @@ Dpaa1PhyMdioBusRead (
   /*
    * Specify the target PHY register:
    */
-  MmioWriteBe32((UINTN)&MdioBusRegs->MdioAddr, PhyRegNum & 0xFFFF);
+  if (TRUE == Clause45)
+    MmioWriteBe32((UINTN)&MdioBusRegs->MdioAddr, PhyRegNum & 0xFFFF);
 
   /*
    * Wait until the MDIO bus is not busy:
@@ -239,13 +258,13 @@ Dpaa1PhyMdioBusRead (
     /*
      * If read failed, return -1:
      */
-    DPAA1_ERROR_MSG("MDIO bus read failed for PHY addr 0x%x, dev addr 0x%x, "
+    DPAA1_ERROR_MSG("MDIO bus read failed for PHY addr 0x%x, dev addr %d, "
                     "reg num 0x%x (MDIO stat reg: 0x%x)\n",
                     PhyAddress, MdioCtlDevAddr, PhyRegNum, RegValue);
     return (UINT16)(-1);
   }
   RegValue = MmioReadBe32((UINTN)&MdioBusRegs->MdioData);
-  DPAA1_DEBUG_MSG("MDIO bus read for PHY addr 0x%x, dev addr 0x%x, "
+  DPAA1_DEBUG_MSG("MDIO bus read for PHY addr 0x%x, dev addr %d, "
                     "reg num 0x%x (MDIO stat reg: 0x%x)\n",
                     PhyAddress, MdioCtlDevAddr, PhyRegNum, RegValue);
 
@@ -267,18 +286,18 @@ Dpaa1PhyMdioBusRead (
 UINT16
 Dpaa1PhyRegisterRead (
   IN DPAA1_PHY *Dpaa1Phy,
-  IN UINT8 MdioCtlDevAddr,
+  IN INT8 MdioCtlDevAddr,
   IN UINT16 PhyRegNum
   )
 {
   ASSERT(Dpaa1Phy->Signature == DPAA1_PHY_SIGNATURE);
   ASSERT(MdioCtlDevAddr == MDIO_PHY_DEV_ADDR ||
+         MdioCtlDevAddr == MDIO_CTL_DEV_NONE ||
          MdioCtlDevAddr == MDIO_CTL_DEV_PMAPMD ||
          MdioCtlDevAddr == MDIO_CTL_DEV_AUTO_NEGOTIATION);
-  ASSERT(PhyRegNum == PHY_CONTROL_REG || PhyRegNum == PHY_STATUS_REG);
 
-  // only XFI is supported
-  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI);
+  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI ||
+         Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII);
   return Dpaa1PhyMdioBusRead(Dpaa1Phy->MdioBus,
                              Dpaa1Phy->PhyAddress,
                              MdioCtlDevAddr,
@@ -304,6 +323,7 @@ Dpaa1PhyReset (
 {
   UINT16 PhyRegValue;
   UINT32 TimeoutMsCount = 500;
+  INT8   DevAddr = MDIO_CTL_DEV_NONE;
 
   if (Dpaa1Phy->Flags & PHY_BROKEN_RESET) {
     return EFI_SUCCESS;
@@ -312,17 +332,23 @@ Dpaa1PhyReset (
   DPAA1_DEBUG_MSG("****Resetting PHY (PHY address: 0x%x) ...\n",
                   Dpaa1Phy->PhyAddress);
 
-  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI);
+  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI ||
+         Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII);
+
+  if(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI)
+    DevAddr = MDIO_PHY_DEV_ADDR;
+  else
+    DevAddr = MDIO_CTL_DEV_NONE;
 
   PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
-			MDIO_PHY_DEV_ADDR, PHY_CONTROL_REG);
+                        DevAddr, PHY_CONTROL_REG);
   if (PhyRegValue == (UINT16)(-1)) {
     return EFI_DEVICE_ERROR;
   }
 
   PhyRegValue |= PHY_CONTROL_RESET;
   Dpaa1PhyRegisterWrite(Dpaa1Phy,
-		MDIO_PHY_DEV_ADDR, PHY_CONTROL_REG, PhyRegValue);
+                DevAddr, PHY_CONTROL_REG, PhyRegValue);
 
   /*
    * Poll the control register for the reset bit to go to 0 (it is
@@ -331,7 +357,7 @@ Dpaa1PhyReset (
    */
   for ( ; ; ) {
     PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
-			MDIO_PHY_DEV_ADDR, PHY_CONTROL_REG);
+                        DevAddr, PHY_CONTROL_REG);
     if (PhyRegValue == (UINT16)(-1)) {
       return EFI_DEVICE_ERROR;
     }
@@ -371,18 +397,62 @@ Dpaa1PhyConfig (
   DPAA1_DEBUG_MSG("Configuring PHY (PHY address: 0x%x) ...\n",
                   Dpaa1Phy->PhyAddress);
 
-  /*
-   * Support Aquantia PHY only right now
-   */
-  if (Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI) {
-    return AquantiaPhyConfig(Dpaa1Phy);
-  } else {
-    DPAA1_INFO_MSG("SGMII/QSGMII PHY configuration is not supported yet\n");
-    return EFI_UNSUPPORTED;
-  }  
+  if (NULL != Dpaa1Phy->Dpaa1PhyConfig)
+    return Dpaa1Phy->Dpaa1PhyConfig(Dpaa1Phy);
+  else
+    DPAA1_INFO_MSG("PhyIdentifier 0x%08x configuration is not supported yet",
+                                  Dpaa1Phy->PhyIdentifier);
+
+  return EFI_UNSUPPORTED;
 }
 
+STATIC
+EFI_STATUS
+Dpaa1PhyIdentify (
+  IN  DPAA1_PHY *Dpaa1Phy
+  )
+{
+  INT8   DevAddr = MDIO_CTL_DEV_NONE;
 
+  if(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI)
+    DevAddr = MDIO_CTL_DEV_PMAPMD;
+  else
+    DevAddr = MDIO_CTL_DEV_NONE;
+
+  Dpaa1Phy->PhyIdentifier = \
+     (Dpaa1PhyRegisterRead(Dpaa1Phy,DevAddr, PHY_IDENTIFIER_HIGH_WORD) << 16) |
+      Dpaa1PhyRegisterRead(Dpaa1Phy,DevAddr, PHY_IDENTIFIER_LOW_WORD);
+
+  DPAA1_DEBUG_MSG("%a PhyIdentifier = 0x%08x\n",
+                    __FUNCTION__, Dpaa1Phy->PhyIdentifier);
+  /* The PHY Identifier shall be composed of the third through 24th bits
+   * of the Organizationally Unique Identifier (OUI) assigned to the PHY
+   * manufacturer by the IEEE,1 plus a six-bit manufacturer’s model
+   * number, plus a four-bit manufacturer’s revision number.*/
+
+  switch((Dpaa1Phy->PhyIdentifier & PHY_IDENTIFIER_OUI_MASK)>>0xA) // Extract OUI
+  {
+    case REALTEK_OUI:
+                 Dpaa1Phy->Dpaa1PhyStatus = RealtekPhyStatus;
+                 Dpaa1Phy->Dpaa1PhyStartup = RealtekPhyStartup;
+                 Dpaa1Phy->Dpaa1PhyConfig = RealtekPhyConfig;
+                 break;
+    case AQUANTIA_OUI:
+                 Dpaa1Phy->Dpaa1PhyStatus = AquantiaPhyStatus;
+                 Dpaa1Phy->Dpaa1PhyStartup = AquantiaPhyStartup;
+                 Dpaa1Phy->Dpaa1PhyConfig = AquantiaPhyConfig;
+                 break;
+    default:
+           DPAA1_ERROR_MSG("PhyIdentifier 0x%08x is not supported yet\n",
+                                        Dpaa1Phy->PhyIdentifier);
+           break;
+  }
+
+  if(NULL != Dpaa1Phy->Dpaa1PhyStartup)
+    return EFI_SUCCESS;
+  else
+    return EFI_DEVICE_ERROR;
+}
 /**
    Initializes the PHY for a given DPAA1 MEMAC
 
@@ -402,8 +472,14 @@ Dpaa1PhyInit (
   DPAA1_DEBUG_MSG("Initializing PHY (PHY type: %d, address: 0x%x) ...\n",
                     Dpaa1Phy->PhyInterfaceType, Dpaa1Phy->PhyAddress);
                     
-  if (Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI) {
+  if (Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI ||
+      Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII) {
     Dpaa1Phy->Flags = 0;
+
+    Status = Dpaa1PhyIdentify(Dpaa1Phy);
+    if (EFI_ERROR(Status)) {
+      return Status;
+    }
 
     Status = Dpaa1PhyReset(Dpaa1Phy);
     if (EFI_ERROR(Status)) {
@@ -438,14 +514,12 @@ Dpaa1PhyStartup (
   DPAA1_DEBUG_MSG("Starting up PHY (PHY address: 0x%x) ...\n",
                  Dpaa1Phy->PhyAddress);
 
-  /*
-   * Support Aquantia PHY only right now
-   */
-  if (Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI) {
-    return AquantiaPhyStartup(Dpaa1Phy);
-  } else {
-    DPAA1_INFO_MSG("SGMII/QSGMII startup is not supported yet\n");
-  }  
+  if (NULL != Dpaa1Phy->Dpaa1PhyStartup)
+    return Dpaa1Phy->Dpaa1PhyStartup(Dpaa1Phy);
+  else
+    DPAA1_INFO_MSG("PhyIdentifier 0x%08x Startup is not supported yet\n",
+                                Dpaa1Phy->PhyIdentifier);
+
   return EFI_SUCCESS;
 }
 
@@ -478,15 +552,13 @@ Dpaa1PhyStatus (
   IN  DPAA1_PHY *Dpaa1Phy
   )
 {
-  /*
-   * Support Aquantia PHY only right now
-   */
-  if (Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI) {
-    return AquantiaPhyStatus(Dpaa1Phy);
-  } else {
-    DPAA1_INFO_MSG("SGMII/QSGMII status function is not supported yet\n");
-  }  
-  return EFI_SUCCESS;
+  if (NULL != Dpaa1Phy->Dpaa1PhyStatus)
+    return Dpaa1Phy->Dpaa1PhyStatus(Dpaa1Phy);
+  else
+    DPAA1_INFO_MSG("PhyIdentifier 0x%08x Status fuction is not supported yet\n",
+                                Dpaa1Phy->PhyIdentifier);
+
+  return TRUE;
 }
 
 

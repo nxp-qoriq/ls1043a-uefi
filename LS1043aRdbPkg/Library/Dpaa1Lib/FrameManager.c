@@ -504,8 +504,8 @@ VOID PopulateEthDev (
     TxId = FMAN_TX_10G_PORT_ID_BASE;
   } else {
     FmanEthDevice->Type = FM_ETH_1G;
-    RxId = FMAN_RX_1G_PORT_ID_BASE + Id;
-    TxId = FMAN_TX_1G_PORT_ID_BASE + Id;
+    RxId = FMAN_RX_1G_PORT_ID_BASE + Id - 1;
+    TxId = FMAN_TX_1G_PORT_ID_BASE + Id - 1;
   }
 
   FmanEthDevice->Num = Id-1;

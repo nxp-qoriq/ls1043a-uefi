@@ -455,9 +455,9 @@
   #
   gLS1043aRdbTokenSpaceGuid.PcdDpaa1DebugFlags|0x00
 
-  # Enable MEMACS 1, 2, 5, 6, 9
+  # Enable MEMACS 3, 4, 9
   #
-  gLS1043aRdbTokenSpaceGuid.PcdDpaa1UsedMemacsMask|0x133
+  gLS1043aRdbTokenSpaceGuid.PcdDpaa1UsedMemacsMask|0x10c
   
   #
   # SD Specific PCDs

@@ -121,13 +121,13 @@ GetMemacIdAndPhyType(SERDES_LANE_PROTOCOL LaneProtocol,
         *MemacId = FM1_DTSEC_2;
         *PhyInterfaceType = PHY_INTERFACE_SGMII;
         break;
-      case SGMII_FM1_DTSEC3:
+      case RGMII_FM1_DTSEC3:
         *MemacId = FM1_DTSEC_3;
-        *PhyInterfaceType = PHY_INTERFACE_SGMII;
+        *PhyInterfaceType = PHY_INTERFACE_RGMII;
         break;
-      case SGMII_FM1_DTSEC4:
+      case RGMII_FM1_DTSEC4:
         *MemacId = FM1_DTSEC_4;
-        *PhyInterfaceType = PHY_INTERFACE_SGMII;
+        *PhyInterfaceType = PHY_INTERFACE_RGMII;
         break;
       case SGMII_FM1_DTSEC5:
         *MemacId = FM1_DTSEC_5;

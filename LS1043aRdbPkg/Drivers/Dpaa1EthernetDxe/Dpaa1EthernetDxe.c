@@ -1483,6 +1483,13 @@ Dpaa1EthernetInitialize (
    */
   ASSERT(IsListEmpty(&gDpaa1Driver.MemacsList));
   SerDesProbeLanes(Dpaa1DiscoverFmanMemac, &gDpaa1Driver.MemacsList);
+  /*
+   * Since we can not deduce the RGMII interface presence from
+   * SERDES protocol, we have to rely on Refrence Manual and
+   * give appropriate DTSEC ids to RGMII interfaces.
+  */
+  Dpaa1DiscoverFmanMemac(RGMII_FM1_DTSEC3, &gDpaa1Driver.MemacsList);
+  Dpaa1DiscoverFmanMemac(RGMII_FM1_DTSEC4, &gDpaa1Driver.MemacsList);
   ASSERT(!IsListEmpty(&gDpaa1Driver.MemacsList));
 
   /*

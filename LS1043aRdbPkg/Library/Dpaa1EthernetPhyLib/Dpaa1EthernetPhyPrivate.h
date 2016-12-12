@@ -20,18 +20,22 @@
 #include <Uefi.h>
 
 /*
- * MDIO control device addresses
+ * MDIO Manageable Device addresses IEEE 802.3 clause 45.2
  */
 
 /**
  * Physical Medium Attachment/Physical Medium Dependent
  */
-#define MDIO_CTL_DEV_PMAPMD             1
+# define MDIO_CTL_DEV_PMAPMD             1
 
 /**
  * Auto-Negotiation
  */
-#define MDIO_CTL_DEV_AUTO_NEGOTIATION   7
+# define MDIO_CTL_DEV_AUTO_NEGOTIATION   7
+/**
+ * For Older Devices using Clause 22 access
+ */
+# define MDIO_CTL_DEV_NONE               (-1)
 
 /*
  * PHY registers
@@ -63,10 +67,24 @@
  */
 #define PHY_AUTO_NEGOTIATION_TIMEOUT	5000
 
+/*
+ * PHY Identifier Registers
+ */
+#define PHY_IDENTIFIER_HIGH_WORD   0x0002
+#define PHY_IDENTIFIER_LOW_WORD    0x0003
+
+/**
+ * Organizationally Unique Identifier (OUI) Mask in PHY Identifier ID
+ * and Supported PHYs OUI
+ */
+#define PHY_IDENTIFIER_OUI_MASK    0x3FFFFFC0
+#define REALTEK_OUI                0x000732
+#define AQUANTIA_OUI               0x00E86D
+
 VOID
 Dpaa1PhyRegisterWrite (
   IN DPAA1_PHY *Dpaa1Phy,
-  IN UINT8 MdioCtlDevAddr,
+  IN INT8 MdioCtlDevAddr,
   IN UINT16 PhyRegNum,
   IN UINT16 Value
   );
@@ -74,7 +92,7 @@ Dpaa1PhyRegisterWrite (
 UINT16
 Dpaa1PhyRegisterRead (
   IN DPAA1_PHY *Dpaa1Phy,
-  IN UINT8 MdioCtlDevAddr,
+  IN INT8 MdioCtlDevAddr,
   IN UINT16 PhyRegNum
   );
 
@@ -86,6 +104,17 @@ AquantiaPhyStartup(DPAA1_PHY *Dpaa1Phy);
 
 BOOLEAN
 AquantiaPhyStatus (
+  IN  DPAA1_PHY *Dpaa1Phy
+  );
+
+EFI_STATUS
+RealtekPhyConfig(DPAA1_PHY *Dpaa1Phy);
+
+EFI_STATUS
+RealtekPhyStartup(DPAA1_PHY *Dpaa1Phy);
+
+BOOLEAN
+RealtekPhyStatus (
   IN  DPAA1_PHY *Dpaa1Phy
   );
 

@@ -25,6 +25,7 @@
 [Sources.common]
   Aquantia.c
   PhyCommon.c
+  Realtek.c
 
 [LibraryClasses]
   ArmLib

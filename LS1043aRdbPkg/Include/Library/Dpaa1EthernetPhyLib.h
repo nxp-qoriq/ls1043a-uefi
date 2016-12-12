@@ -86,6 +86,7 @@ typedef struct _DPAA1_PHY_MDIO_BUS {
 #define IF_MODE_XFI       0x00000000 /* 00- XFI(10) interface mode */
 #define IF_MODE_GMII        0x00000002 /* 10- GMII interface mode */
 #define IF_MODE_MASK 	0x00000003 /* mask for mode interface mode */
+#define IF_MODE_RGMII       0x00000004 /* 1- RGMII */
 
 #define IF_DEFAULT   (IF_GMII)
 
@@ -94,6 +95,7 @@ typedef enum _PHY_INTERFACE_TYPE {
   PHY_INTERFACE_SGMII,
   PHY_INTERFACE_SGMII_2500,
   PHY_INTERFACE_QSGMII,
+  PHY_INTERFACE_RGMII,
 
   /*
    * New values must added above this entry
@@ -153,6 +155,15 @@ typedef struct _DPAA1_PHY {
    */
   UINT32 Flags;
 # define PHY_BROKEN_RESET   BIT(0) /* Soft reset not supported */
+
+  UINT32 PhyIdentifier;            /*IEEE 802.3 clause 22.2.4.3.1*/
+
+  BOOLEAN (*Dpaa1PhyStatus)(struct _DPAA1_PHY *);
+
+  EFI_STATUS (*Dpaa1PhyStartup)(struct _DPAA1_PHY *);
+
+  EFI_STATUS (*Dpaa1PhyConfig)(struct _DPAA1_PHY *);
+
 } DPAA1_PHY;
 
 
