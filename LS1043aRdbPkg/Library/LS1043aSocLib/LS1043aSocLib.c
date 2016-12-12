@@ -33,6 +33,7 @@
 #include <LS1043aRdb.h>
 #include <LS1043aSocLib.h>
 #include <Uefi.h>
+#include <PciHostBridge.h>
 
 /* Global Clock Information pointer */
 STATIC SocClockInfo gClkInfo;
@@ -1584,6 +1585,174 @@ FdtFixupGic (
 	return;
 }
 
+VOID
+FdtFixupPcie (
+  VOID *Blob
+  )
+{
+  CHAR8                            *Compatible = "fsl,ls1043a-pcie";
+  CHAR8                            *Prop = "reg";
+  CHAR8                            *StatusProp = "status";
+  CONST UINT64                     *Reg;
+  INT32                            RegSize;
+  INTN                             Offset = -1;
+
+  // Initially set the pcie status disabled for all pcie
+
+  FixupByCompatibleField(Blob, Compatible, StatusProp, "disabled", AsciiStrSize ("disabled"), 1);
+
+  do {
+    Offset = fdt_node_offset_by_compatible(Blob, Offset, Compatible);
+    if(Offset == -FDT_ERR_NOTFOUND)
+      break;
+
+    Reg = fdt_getprop(Blob, Offset, Prop, &RegSize);
+    if (Reg == NULL)
+      continue;
+
+    if ((RegSize % 16) != 0) {
+      DEBUG ((EFI_D_ERROR,
+      "%a: '%a' compatible node has invalid %a property (size == 0x%x)\n",
+      __FUNCTION__, Compatible, Prop, RegSize));
+      continue;
+    }
+
+    if(IsPcieEnabled(SwapBytes64 (Reg[0])) == TRUE)
+      fdt_setprop(Blob, Offset, StatusProp, "okay", AsciiStrSize ("okay"));
+  } while (Offset != -FDT_ERR_NOTFOUND);
+}
+
+VOID FdtFixupPsci(VOID *Blob)
+{
+  CHAR8    *Compatible = "arm,cortex-a53";
+  CHAR8    *EnableProp = "enable-method";
+  INTN     node, Status = 0;
+
+  FixupByCompatibleField(Blob, Compatible, EnableProp, "psci", AsciiStrSize ("psci"), 1);
+
+  // Create the /psci node if it doesn't exist
+  node = fdt_subnode_offset (Blob, 0, "psci");
+  if (node < 0) {
+        node = fdt_add_subnode(Blob, 0, "psci");
+        if(node < 0) {
+                DEBUG((EFI_D_ERROR, "fdt_add_node: Could not add psci!!, %a\n", fdt_strerror(Status)));
+                ASSERT(0);
+        }
+
+        Status = fdt_setprop_string(Blob, node, "compatible", "arm,psci-0.2");
+        if(Status) {
+                DEBUG((EFI_D_ERROR, "fdt_setprop/psci: Could not add compatiblity, %a!!\n", fdt_strerror(Status)));
+                ASSERT(0);
+        }
+
+        Status = fdt_setprop_string(Blob, node, "method", "smc");
+        if(Status) {
+                DEBUG((EFI_D_ERROR, "fdt_setprop/psci: Could not add method, %a!!\n", fdt_strerror(Status)));
+                ASSERT(0);
+        }
+
+        if(node < 0) {
+                DEBUG((EFI_D_ERROR, "Fdt: Could not add psci node!!\n"));
+                ASSERT(0);
+        }
+  }
+
+  DEBUG((EFI_D_INFO, "PSCI fixup done!!!!\n"));
+}
+
+VOID FdtFixupPciMsi(VOID *Blob)
+{
+  CHAR8  *Compatible = "fsl,ls1043a-pcie";
+  CHAR8  *Prop = "interrupt-map";
+  INTN   Offset = -1;
+  VOID   *InterruptMap = NULL;
+  INT32  Val, Error, Size;
+  UINT32 ModifiedInterruptMap[4][8];
+
+  do {
+    Offset = fdt_node_offset_by_compatible(Blob, Offset, Compatible);
+    if(Offset == -FDT_ERR_NOTFOUND)
+      break;
+
+    InterruptMap = (CHAR8 *)fdt_getprop(Blob, Offset, Prop, &Size);
+    if (!InterruptMap || Size != sizeof(ModifiedInterruptMap)) {
+        DEBUG((EFI_D_ERROR, "can't get %s from node %s\n",
+               Prop, Compatible));
+        continue;
+    }
+
+    CopyMem((CHAR8 *)ModifiedInterruptMap, InterruptMap, Size);
+    Val = fdt32_to_cpu(ModifiedInterruptMap[0][6]);
+    ModifiedInterruptMap[1][6] = cpu_to_fdt32(Val + 1);
+    ModifiedInterruptMap[2][6] = cpu_to_fdt32(Val + 2);
+    ModifiedInterruptMap[3][6] = cpu_to_fdt32(Val + 3);
+
+    Error = fdt_setprop(Blob, Offset, Prop, ModifiedInterruptMap, sizeof(ModifiedInterruptMap));
+    if (Error < 0) {
+        DEBUG((EFI_D_ERROR, "can't set %s from node %s: %s\n",
+               Prop, Compatible, fdt_strerror(Error)));
+        continue;
+    }
+  } while (Offset != -FDT_ERR_NOTFOUND);
+
+  return;
+}
+
+VOID FdtFixupMsiSubnode(VOID *Blob, INTN ParentNodeOffset,
+                                CHAR8 *Name, INTN Irq_No)
+{
+  INT32  Offset, Error;
+  UINT32 Irq[3];
+
+  Offset = fdt_subnode_offset(Blob, ParentNodeOffset, Name);
+  if (Offset < 0) {
+        DEBUG((EFI_D_ERROR, "Can't find %s: %s\n",Name,fdt_strerror(Offset)));
+        return;
+  }
+
+  Irq[0] = cpu_to_fdt32(0x0);
+  Irq[1] = cpu_to_fdt32(Irq_No);
+  Irq[2] = cpu_to_fdt32(0x4);
+
+  Error = fdt_setprop(Blob, Offset, "interrupts", Irq, sizeof(Irq));
+  if (Error < 0) {
+        DEBUG((EFI_D_ERROR, "can't set %s from node %s: %s\n",
+               "interrupts", Name, fdt_strerror(Error)));
+        return;
+  }
+
+  return;
+}
+
+VOID
+FdtFixupMsi (
+  VOID *Blob
+  )
+{
+  struct  CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
+  UINT32  Value;
+  INT32   NodeOffset;
+
+  Value = MmioReadBe32((UINTN)&GurBase->svr) & MASK_UPPER_8;
+
+  if(REV1_1 == Value)
+          return;
+
+  NodeOffset = fdt_path_offset(Blob, "/soc/msi-controller");
+  if (NodeOffset < 0) {
+        DEBUG((EFI_D_ERROR, "WARNING: Missing /soc/msi-controller\n"));
+        return;
+  }
+
+  FdtFixupMsiSubnode(Blob, NodeOffset, "msi0@1571000", 116);
+  FdtFixupMsiSubnode(Blob, NodeOffset, "msi1@1572000", 126);
+  FdtFixupMsiSubnode(Blob, NodeOffset, "msi2@1573000", 160);
+
+  FdtFixupPciMsi(Blob);
+
+  return;
+}
+
 VOID FdtCpuSetup(VOID *Blob, UINTN BlobSize)
 {
 	struct SysInfo SocSysInfo;
@@ -1608,6 +1777,10 @@ VOID FdtCpuSetup(VOID *Blob, UINTN BlobSize)
 			       "clock-frequency", SocSysInfo.FreqSystemBus, 1);
 
 	FdtFixupSdhc(Blob, SocSysInfo.FreqSdhc);
+
+	FdtFixupPcie(Blob);
+	FdtFixupPsci(Blob);
+	FdtFixupMsi(Blob);
 
 	/* DPAA 1.x fixups */
 	FdtFixupBmanPortals(Blob);
