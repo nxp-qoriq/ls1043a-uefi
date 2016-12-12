@@ -22,6 +22,7 @@
 
 #include <PciRootBridge.h>
 #include <PciLib.h>
+#include <Ls1043aSerDes.h>
 #include "LS1043aRdb.h"
 
 #define CONFIG_SYS_SDRAM_BASE       0x80000000
@@ -125,6 +126,12 @@ SetLSPcieInfo (
 	IN struct LsPcieInfo *PcieInfo,
 	IN UINTN Num
 );
+
+BOOLEAN
+IsPcieEnabled(
+  IN UINTN PCIeBaseAddr
+);
+
 
 
 INTN

@@ -20,7 +20,7 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/BaseMemoryLib/MemLibInternals.h>
 #include <Library/BaseLib.h>
-
+UINT64 SerDes1ProtocolMap = 0x0;
 
 PCI_ROOT_BRIDGE_INSTANCE      *RootBridgeHead;
 
@@ -117,6 +117,30 @@ SetLSPcieInfo (
 	     (UINT64)PcieInfo->IoPhys,
 	     (UINT64)PcieInfo->IoSize));
      }
+}
+
+//
+// Implementation
+//
+BOOLEAN
+IsPcieEnabled(
+  IN UINTN PCIeBaseAddr
+)
+{
+	GetSerdesProtocolMaps(&SerDes1ProtocolMap);
+	switch(PCIeBaseAddr){
+	case CONFIG_SYS_PCIE1_ADDR:
+		return(IsSerDesLaneProtocolConfigured(SerDes1ProtocolMap, PCIE1));
+	case CONFIG_SYS_PCIE2_ADDR:
+		return(IsSerDesLaneProtocolConfigured(SerDes1ProtocolMap, PCIE2));
+	case CONFIG_SYS_PCIE3_ADDR:
+		return(IsSerDesLaneProtocolConfigured(SerDes1ProtocolMap, PCIE3));
+	default:
+		DEBUG((EFI_D_ERROR, "Device not supported\n"));
+		break;
+	}
+
+	return FALSE;
 }
 
 /* PEX1/2 Misc Ports Status Register */
