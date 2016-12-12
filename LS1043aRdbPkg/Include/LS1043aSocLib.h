@@ -527,8 +527,6 @@ VOID GetSysInfo(struct SysInfo *PtrSysInfo);
 
 VOID SocInit(VOID);
 
-VOID SerDesInit(VOID);
-
 VOID FdtCpuSetup(VOID *Blob, UINTN BlobSize);
 
 #endif /* __LS1043A_SOC_H__ */

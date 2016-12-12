@@ -16,10 +16,47 @@
 #ifndef __BITOPS_H__
 #define __BITOPS_H__
 
+#include <Library/DebugLib.h>
+
 /*
  * Returns the bit mask for a bit index from 0 to 31
  */
 #define BIT(_BitIndex)         (0x1u << (_BitIndex))
+
+/*
+ * Stores a value for a given bit field in 32-bit '_Container'
+ */
+#define SET_BIT_FIELD32(_Container, _BitShift, _BitWidth, _Value) \
+        __SET_BIT_FIELD32(_Container,                                   \
+                          __GEN_BIT_FIELD_MASK32(_BitShift, _BitWidth), \
+                          _BitShift,                                    \
+                          _Value)
+
+#define __SET_BIT_FIELD32(_Container, _BitMask, _BitShift, _Value) \
+  do {                                                                  \
+      (_Container) &= ~(_BitMask);                                      \
+      if ((_Value) != 0) {                                              \
+        ASSERT(((UINT32)(_Value) << (_BitShift)) <= (_BitMask));        \
+        (_Container) |=                                                 \
+            ((UINT32)(_Value) << (_BitShift)) & (_BitMask);             \
+      }                                                                 \
+  } while (0)
+
+/*
+ * Extracts the value for a given bit field in 32-bit _Container
+ */
+#define GET_BIT_FIELD32(_Container, _BitShift, _BitWidth) \
+        __GET_BIT_FIELD32(_Container,                                   \
+                          __GEN_BIT_FIELD_MASK32(_BitShift, _BitWidth), \
+                          _BitShift)
+
+#define __GET_BIT_FIELD32(_Container, _BitMask, _BitShift) \
+       (((UINT32)(_Container) & (_BitMask)) >> (_BitShift))
+
+#define __GEN_BIT_FIELD_MASK32(_BitShift, _BitWidth) \
+        ((_BitWidth) < 32 ?                                             \
+           (((UINT32)1 << (_BitWidth)) - 1) << (_BitShift) :            \
+           ~(UINT32)0)
 
 /**
   Find last (most-significant) bit set

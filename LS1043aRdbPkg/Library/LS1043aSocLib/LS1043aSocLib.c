@@ -646,7 +646,6 @@ SocInit (
 
   PrintBoardPersonality();
 
-  SerDesInit();
   return;
 }
 

@@ -26,214 +26,279 @@
 #include <Library/IoLib.h>
 #include <Library/PcdLib.h>
 #include <Ppi/ArmMpCoreInfo.h>
+#include <Common.h>
+#include <Bitops.h>
 
+/**
+ * Entry in the table of configurations for SerDes protocols
+ * for a given SerDes instance
+ */
+typedef struct _SERDES_CONFIG {
+  /**
+   * SerDes protocol selector
+   */
+  UINT16 SerDesProtocol;
 
-#ifdef CONFIG_SYS_SRDS_1
-STATIC UINT16 SerDes1PrtclMap[SERDES_PRCTL_COUNT];
-#endif
+  /**
+   * Array of SerDes lane protocols, one entry per SerDes lane.
+   * Values of entries must be from the SERDES_LANE_PROTOCOL enum.
+   */
+  UINT8 SerDesLanes[SERDES_MAX_LANES];
+} SERDES_CONFIG;
 
-STATIC CONST SerDesConfig SerDes1ConfigTbl[] = {
-       /* SerDes 1 */
-       {0x1555, {XFI_FM1_MAC9, PCIE1, PCIE2, PCIE3} },
-       {0x2555, {SGMII_2500_FM1_DTSEC9, PCIE1, PCIE2, PCIE3} },
-       {0x4555, {QSGMII_FM1_A, PCIE1, PCIE2, PCIE3} },
-       {0x4558, {QSGMII_FM1_A, PCIE1, PCIE2, SATA} },
-       {0x1355, {XFI_FM1_MAC9, SGMII_FM1_DTSEC2, PCIE2, PCIE3} },
-       {0x2355, {SGMII_2500_FM1_DTSEC9, SGMII_FM1_DTSEC2, PCIE2, PCIE3} },
-       {0x3335, {SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, SGMII_FM1_DTSEC5, PCIE3} },
-       {0x3355, {SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, PCIE2, PCIE3} },
-       {0x3358, {SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, PCIE2, SATA} },
-       {0x3555, {SGMII_FM1_DTSEC9, PCIE1, PCIE2, PCIE3} },
-       {0x3558, {SGMII_FM1_DTSEC9, PCIE1, PCIE2, SATA} },
-       {0x7000, {PCIE1, PCIE1, PCIE1, PCIE1} },
-       {0x9998, {PCIE1, PCIE2, PCIE3, SATA} },
-       {0x6058, {PCIE1, PCIE1, PCIE2, SATA} },
-       {0x1455, {XFI_FM1_MAC9, QSGMII_FM1_A, PCIE2, PCIE3} },
-       {0x2455, {SGMII_2500_FM1_DTSEC9, QSGMII_FM1_A, PCIE2, PCIE3} },
-       {0x2255, {SGMII_2500_FM1_DTSEC9, SGMII_2500_FM1_DTSEC2, PCIE2, PCIE3} },
-       {0x3333, {SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, SGMII_FM1_DTSEC5, SGMII_FM1_DTSEC6} },
-       {}
+/**
+ * SerDes1 instance configuration
+ */
+static const SERDES_CONFIG SerDes1ConfigTable[] = {
+  {
+    .SerDesProtocol = 0x1555,
+    .SerDesLanes = { XFI_FM1_MAC9, PCIE1, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x2555,
+    .SerDesLanes = { SGMII_2500_FM1_DTSEC9, PCIE1, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x4555,
+    .SerDesLanes = { QSGMII_FM1_A, PCIE1, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x4558,
+    .SerDesLanes =  { QSGMII_FM1_A, PCIE1, PCIE2, SATA }
+  },
+  {
+    .SerDesProtocol = 0x1355,
+    .SerDesLanes = { XFI_FM1_MAC9, SGMII_FM1_DTSEC2, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x2355,
+    .SerDesLanes = { SGMII_2500_FM1_DTSEC9, SGMII_FM1_DTSEC2, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x3335,
+    .SerDesLanes = { SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, SGMII_FM1_DTSEC5, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x3355,
+    .SerDesLanes = { SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x3358,
+    .SerDesLanes = { SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, PCIE2, SATA }
+  },
+  {
+    .SerDesProtocol = 0x3555,
+    .SerDesLanes = { SGMII_FM1_DTSEC9, PCIE1, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x3558,
+    .SerDesLanes = { SGMII_FM1_DTSEC9, PCIE1, PCIE2, SATA }
+  },
+  {
+    .SerDesProtocol = 0x7000,
+    .SerDesLanes = { PCIE1, PCIE1, PCIE1, PCIE1 }
+  },
+  {
+    .SerDesProtocol = 0x9998,
+    .SerDesLanes = { PCIE1, PCIE2, PCIE3, SATA }
+  },
+  {
+    .SerDesProtocol = 0x6058,
+    .SerDesLanes = { PCIE1, PCIE1, PCIE2, SATA }
+  },
+  {
+    .SerDesProtocol = 0x1455,
+    .SerDesLanes = { XFI_FM1_MAC9, QSGMII_FM1_A, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x2455,
+    .SerDesLanes = { SGMII_2500_FM1_DTSEC9, QSGMII_FM1_A, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x2255,
+    .SerDesLanes = { SGMII_2500_FM1_DTSEC9, SGMII_2500_FM1_DTSEC2, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x3333,
+    .SerDesLanes = { SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, SGMII_FM1_DTSEC5, SGMII_FM1_DTSEC6 }
+  },
+  {
+    .SerDesProtocol = 0x0,
+  }
 };
 
-STATIC CONST SerDesConfig *SerDesConfigTbl[] = {
-	SerDes1ConfigTbl
-};
 
-SERDES_LANE_PROTOCOL
-GetSerDesPrtcl
-(
- IN INTN SerDes,
- IN INTN Cfg,
- IN INTN Lane
+/**
+   Get the configuration for the given SerDes instance.
+
+   @param[in] SerDesInstance    SerDes module instance
+
+   @retval Pointer to configuration, if found
+   @retval NULL, if not found
+
+ **/
+static
+const SERDES_CONFIG *
+GetSerdesInstanceConfig(
+  IN SERDES_INSTANCE SerDesInstance
 )
 {
-  CONST SerDesConfig *Config;
+  UINT32 RegValue;
+  UINT32 SerDesProtocol;
+  const SERDES_CONFIG *ConfigTable;
+  const SERDES_CONFIG *Config;
+  struct CcsrGur *Gur = (VOID *)(GUTS_ADDR);
 
-  if (SerDes >= ARRAY_SIZE(SerDesConfigTbl))
-    return 0;
+  ASSERT(SerDesInstance < SERDES_INSTANCES_COUNT);
 
-  Config = SerDesConfigTbl[SerDes];
-  while (Config->Protocol) {
-    if (Config->Protocol == Cfg) {
-      return Config->SrdsLane[Lane];
+  /*
+   * Get the SerDes instance's SerDes protocol selector from RCW:
+   */
+  RegValue = MmioReadBe32((UINTN)&Gur->rcwsr[4]);
+  if (SerDesInstance == SERDES_INSTANCE_1) {
+    SerDesProtocol = GET_BIT_FIELD32(RegValue,
+                                     RCWSR4_SERDES1_PRTCL_SHIFT,
+                                     RCWSR4_SERDES1_PRTCL_WIDTH);
+  DEBUG((EFI_D_INFO, "Using SERDES1 Protocol: %d (0x%x)\n", SerDesProtocol, SerDesProtocol));
+
+    ConfigTable = SerDes1ConfigTable;
+  }
+
+  for (Config = ConfigTable; Config->SerDesProtocol != 0; Config ++) {
+    if (Config->SerDesProtocol == SerDesProtocol) {
+      return Config;
     }
-    Config++;
   }
 
-  return EFI_SUCCESS;
+  DEBUG((EFI_D_ERROR, "SERDES%d protocol %#x not found\n",
+         SerDesInstance + 1, SerDesProtocol));
+  return NULL;
 }
 
-EFI_STATUS
-CheckSerDesPrtclValid
-(
- IN INTN SerDes,
- IN UINT32 Prtcl
+
+/**
+   Tell if the given SerDes lane protocol has been configured.
+
+   @param[in] SerDes1ProtocolMap    Pointer to bitmap of configured SerDes lane
+                                    protocols for SerDes1 instance.
+   @param[in] Device                SerDes lane protocol representing a device
+
+   @retval TRUE, if configured
+   @retval FALSE, otherwise
+
+ **/
+BOOLEAN
+IsSerDesLaneProtocolConfigured(
+  IN UINT64 SerDes1ProtocolMap,
+  IN SERDES_LANE_PROTOCOL Device
 )
 {
-  INTN Cnt;
-  CONST SerDesConfig *Config;
+  ASSERT(Device > NONE && Device < SERDES_LANE_PROTOCOLS_COUNT);
 
-  if (SerDes >= ARRAY_SIZE(SerDesConfigTbl))
-    return 0;
-
-  Config = SerDesConfigTbl[SerDes];
-  while (Config->Protocol) {
-    if (Config->Protocol == Prtcl) {
-      DEBUG((EFI_D_INFO, "Protocol: %x Matched with the one in Table\n", Prtcl));
-      break;
-    }
-    Config++;
-  }
-
-  if (!Config->Protocol)
-    return 0;
-
-  for (Cnt = 0; Cnt < SRDS_MAX_LANES; Cnt++) {
-    if (Config->SrdsLane[Cnt] != NONE)
-      return 1;
-  }
-
-  return 0;
+  return (SerDes1ProtocolMap & BIT(Device)) != 0 ;
 }
 
 
-EFI_STATUS
-IsSerDesConfigured
-(
- IN SERDES_LANE_PROTOCOL Device
-)
-{
-  INTN Ret = 0;
+/**
+   Get SerDes protocol Map for given SerDes Instance.
 
-#ifdef CONFIG_SYS_SRDS_1
-  Ret |= SerDes1PrtclMap[Device];
-#endif
-
-  return !!Ret;
-}
-
-UINT32
-GetSerDesProtFromRCWSR (
-  IN VOID
+   @param[in] SerDesInstance        SerDes module instance
+   @param[out] SerDesProtocolMap    Pointer to bitmap of configured SerDes lane
+                                    protocols for the given SerDes instance.
+**/
+static
+VOID
+GetSerDesInstanceProtocolMap(
+  IN SERDES_INSTANCE SerDesInstance,
+  OUT UINT64 *SerDesProtocolMapPtr
   )
 {
-  struct CcsrGur *Gur = (VOID *)(GUTS_ADDR);
-  UINT32 SrdsProt = MmioReadBe32((UINTN)&Gur->rcwsr[4])
-                    & LS1043_RCWSR4_SRDS1_PRTCL_MASK;
-  SrdsProt >>= LS1043_RCWSR4_SRDS1_PRTCL_SHIFT;
-  return SrdsProt;
-}
+  UINTN Lane;
+  const SERDES_CONFIG *Config;
 
-INTN
-GetSerDesFirstLane
-(
- IN UINT32 Sd,
- IN SERDES_LANE_PROTOCOL Device
-)
-{
-  UINT32 Cfg = 0;
-  INTN Cnt;
+  *SerDesProtocolMapPtr = 0x0;
 
-  switch (Sd) {
-#ifdef CONFIG_SYS_SRDS_1
-  case FSL_SRDS_1:
-    Cfg = GetSerDesProtFromRCWSR();
-    break;
-#endif
-  default:
-    DEBUG((EFI_D_INFO, "Invalid SerDes%d, Only one SerDes is there.\n", Sd));
-    break;
+  /*
+   * Get the SerDes instance's SerDes protocol:
+   */
+  Config = GetSerdesInstanceConfig(SerDesInstance);
+  if (Config == NULL) {
+    return;
   }
 
-  /* Is serdes enabled at all? */
-  if (Cfg == 0)
-    return EFI_DEVICE_ERROR;
-
-  for (Cnt = 0; Cnt < SRDS_MAX_LANES; Cnt++) {
-    if (GetSerDesPrtcl(Sd, Cfg, Cnt) == Device)
-      return Cnt;
-  }
-
-  return EFI_DEVICE_ERROR;
-}
-
-VOID
-LSSerDesInit
-(
- UINT32 Srds,
- UINT32 SrdsAddr,
- UINT32 SERDES_LANE_PROTOCOLMask,
- UINT32 SERDES_LANE_PROTOCOLShift,
- UINT16 SerDesPrtclMap[SERDES_PRCTL_COUNT]
-)
-{
-  INTN Lane;
-  UINT32 Flag = 0;
-
-  UINT32 SrdsProt = GetSerDesProtFromRCWSR();
-  
-  DEBUG((EFI_D_INFO, "Using SERDES%d Protocol: %d (0x%x)\n", Srds + 1, SrdsProt, SrdsProt));
-
-  if (!CheckSerDesPrtclValid(Srds, SrdsProt)) {
-    DEBUG((EFI_D_ERROR, "SERDES%d[PRTCL] = 0x%x is not valid\n", Srds + 1, SrdsProt));
-    Flag++;
-  }
-
-  for (Lane = 0; Lane < SRDS_MAX_LANES; Lane++) {
-    SERDES_LANE_PROTOCOL LanePrtcl = GetSerDesPrtcl(Srds, SrdsProt, Lane);
-    if (LanePrtcl >= SERDES_PRCTL_COUNT) {
-      DEBUG((EFI_D_ERROR, "Unknown SerDes lane protocol %d\n", LanePrtcl));
-      Flag++;
-    } else {
-      SerDesPrtclMap[LanePrtcl] = 1;
+  /*
+   * Fill SerDes protocol Map:
+   */
+  for (Lane = 0; Lane < SERDES_MAX_LANES; Lane++) {
+    SERDES_LANE_PROTOCOL LaneProtocol = Config->SerDesLanes[Lane];
+    ASSERT(LaneProtocol < SERDES_LANE_PROTOCOLS_COUNT);
+    if (LaneProtocol != NONE) {
+      *SerDesProtocolMapPtr |= BIT(LaneProtocol);
     }
   }
-
-  if (Flag)
-    DEBUG((EFI_D_ERROR, "Could not configure SerDes module!!\n"));
-  else
-    DEBUG((EFI_D_INFO, "Successfully configured SerDes module!!\n"));
 }
 
-VOID 
-SerDesInit
-(
- VOID
-)
+
+/**
+   Get SerDes protocol Maps for both SerDes Instances.
+
+   @param[out] SerDes1ProtocolMapPtr    Pointer to bitmap of configured SerDes
+                                        lane protocols for SerDes1 instance.
+**/
+VOID
+GetSerdesProtocolMaps(
+  OUT UINT64 *SerDes1ProtocolMapPtr
+  )
 {
-  DEBUG((EFI_D_INFO, "Initializing SerDes....\n"));
-#ifdef CONFIG_SYS_SRDS_1
-  LSSerDesInit(FSL_SRDS_1,
-	      CONFIG_SYS_SERDES_ADDR,
-	      LS1043_RCWSR4_SRDS1_PRTCL_MASK,
-	      LS1043_RCWSR4_SRDS1_PRTCL_SHIFT,
-	      SerDes1PrtclMap);
-#endif
+  GetSerDesInstanceProtocolMap(SERDES_INSTANCE_1, SerDes1ProtocolMapPtr);
+}
+
+
+/**
+   Probes the lanes of a given SerDes instance.
+
+   @param[in] SerDesInstance          SerDes module instance
+   @param[in] SerDesLaneProbeCallback Driver-specific callback to be invoked
+                                      for every lane protocol configured in
+                                      the given SerDes instance, according to
+                                      the SerDes instance's RCW configuration.
+
+   @param[in] Arg                     Callback argument or NULL
+ **/
+static VOID
+SerDesInstanceProbeLanes(
+  IN SERDES_INSTANCE SerDesInstance,
+  IN SERDES_LANE_PROBE_CALLBACK *SerDesLaneProbeCallback,
+  IN VOID *Arg
+  )
+{
+  const SERDES_CONFIG *Config;
+  UINTN Lane;
+
+  Config = GetSerdesInstanceConfig(SerDesInstance);
+  if (Config == NULL) {
+    return;
+  }
+
+  /*
+   * Invoke callback for all lanes in the SerDes instance:
+   */
+  for (Lane = 0; Lane < SERDES_MAX_LANES; Lane++) {
+    SERDES_LANE_PROTOCOL LaneProtocol = Config->SerDesLanes[Lane];
+    ASSERT(LaneProtocol < SERDES_LANE_PROTOCOLS_COUNT);
+    if (LaneProtocol != NONE) {
+      SerDesLaneProbeCallback(LaneProtocol, Arg);
+    }
+  }
 }
 
 /**
    Probes lanes in all SerDes instances enabled and calls
    the given callback for each lane.
+
+   SerDesProbe() invokes the given callback for each
+   SerDes lane protocol configured  according to the SerDes
+   protocol configured in RCW, for SerDes instance.
 
    @param[in] SerDesLaneProbeCallback Driver-specific callback to be invoked
                                       for every lane protocol configured in
@@ -248,24 +313,7 @@ SerDesProbeLanes(
   IN VOID *Arg
   )
 {
-  CONST SerDesConfig *Config = SerDesConfigTbl[0];
-  UINT32 SrdsProt = GetSerDesProtFromRCWSR();
-  UINT16 Lane;
-
-  DEBUG((EFI_D_INFO,"SrdsProt = 0x%x \n", SrdsProt));
-  while (Config->Protocol) {
-    if (Config->Protocol == SrdsProt) {
-      for (Lane = 0; Lane < SRDS_MAX_LANES; Lane++) {
-        UINT16 LaneProtocol = Config->SrdsLane[Lane];
-        DEBUG((EFI_D_INFO, "LaneProtocol[%d] = 0x%x\n", Lane, LaneProtocol));
-        ASSERT(LaneProtocol < SERDES_PRCTL_COUNT);
-        ASSERT(LaneProtocol != NONE);
-        if(SerDesLaneProbeCallback) {
-          SerDesLaneProbeCallback(LaneProtocol, Arg);
-        }
-      }
-      break;
-    }
-    Config++;
-  }
+    SerDesInstanceProbeLanes(SERDES_INSTANCE_1,
+			     SerDesLaneProbeCallback,
+			     Arg);
 }
