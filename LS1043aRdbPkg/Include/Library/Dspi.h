@@ -591,9 +591,4 @@ DspiFlashFree (
   VOID
   );
 
-VOID
-SelectDspi (
-  IN VOID
-  );
-
 #endif

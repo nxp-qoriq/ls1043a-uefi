@@ -45,15 +45,13 @@ DspiRead (
   }
 
   //Read block
-  SelectDspi();
-
   Status = DspiFlashRead(((UINTN)Lba * gFlash->BlockSize), BufferSize, Buffer);
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR, "Read block fails: %x\n", Status));
     return Status;
   }
 
-  DEBUG((EFI_D_INFO,"SF: %d bytes read %a\n",
+  DEBUG((EFI_D_INFO,"Dspi: %d bytes read %a\n",
 		BufferSize, Status ? "ERROR" : "OK"));
   return Status;
 }
@@ -81,14 +79,12 @@ DspiErase (
   }
 
   // Erase data
-  SelectDspi();
-
   Status = DspiFlashErase(((UINTN)Lba * gFlash->BlockSize), BufferSize * NUM_OF_SUBSECTOR);
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR, "Block Erase fails: %x\n", Status));
     return Status;
   }
-  DEBUG((EFI_D_INFO,"SF: %d bytes erased %a\n",
+  DEBUG((EFI_D_INFO,"Dspi: %d bytes erased %a\n",
 		BufferSize * NUM_OF_SUBSECTOR, Status ? "ERROR" : "OK"));
 
   return Status;
@@ -123,14 +119,12 @@ DspiWrite (
   }
 
   // Program data
-  SelectDspi();
-
   Status = DspiFlashWrite(((UINTN)Lba * gFlash->BlockSize), BufferSize, Buffer);
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR, "Block write fails: %x\n", Status));
     return Status;
   }
-  DEBUG((EFI_D_INFO,"SF: %d bytes written %a\n",
+  DEBUG((EFI_D_INFO,"Dspi: %d bytes written %a\n",
 		BufferSize, Status ? "ERROR" : "OK"));
 
   return Status;
@@ -143,8 +137,6 @@ DspiInit (
 {
 
   EFI_STATUS  Status;
-
-  SelectDspi();
 
   Status = DspiDetect();
 

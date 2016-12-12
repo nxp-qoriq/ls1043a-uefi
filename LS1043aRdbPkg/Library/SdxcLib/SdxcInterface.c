@@ -161,7 +161,6 @@ DoMmcInfo (
 {
   EFI_STATUS Status;
  
-  SelectSdxc();
   Status = InitDevice(FALSE);
   if (Status)
     return EFI_NO_MAPPING;
@@ -183,8 +182,6 @@ DoMmcRead (
 
   DEBUG((EFI_D_INFO, "MMC Read: Block # %d, Count %d ...\n", StartBlk, Count));
   
-  SelectSdxc();
- 
   if (PcdGetBool(PcdSdxcDmaSupported)) {
     struct DmaData DmaData;
     VOID * Temp = NULL;
@@ -227,8 +224,6 @@ DoMmcWrite (
   EFI_STATUS Status;
 
   DEBUG((EFI_D_INFO, "MMC Write: Block # %d, Count %d ... \n", StartBlk, Count));
-
-  SelectSdxc();
 
   if (MmcGetwp(gMmc) == 1) {
     DEBUG((EFI_D_ERROR, "Error: Card Is Write Protected!\n"));
@@ -275,8 +270,6 @@ DoMmcErase (
   UINT32 BlkErsd;
 
   DEBUG((EFI_D_INFO, "MMC Erase: Block # %d, Count %d\n", StartBlk, Count));
-
-  SelectSdxc();
 
   if (MmcGetwp(gMmc) == 1) {
      DEBUG((EFI_D_ERROR, "Error: Card Is Write Protected!\n"));

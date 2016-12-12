@@ -435,9 +435,6 @@ SdxcBootInit (
   gBoot.DsrImp = 0;
   gBoot.Dsr = 0xffffffff;
 
-  if (Init)
-    SelectSdxc();
-
   while (!(MmioReadBe32((UINTN)&gBoot.SdxcBase->Prsstat) & PRSSTATE_CINS) && --Timeout)
     MicroSecondDelay(1000);
 

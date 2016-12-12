@@ -16,49 +16,51 @@
 
 #include "Library/Dspi.h"
 
-void DumpDspiRegs(struct DspiSlave *Dspi)
+VOID DumpDspiRegs(VOID)
 {
-  DEBUG((EFI_D_INFO,"Mcr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Mcr)));
-  DEBUG((EFI_D_INFO,"Tcr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tcr)));
-  DEBUG((EFI_D_INFO,"Ctar[0]:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Ctar[0])));
-  DEBUG((EFI_D_INFO,"Ctar[1]:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Ctar[1])));
-  DEBUG((EFI_D_INFO,"Ctar[2]:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Ctar[2])));
-  DEBUG((EFI_D_INFO,"Ctar[3]:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Ctar[3])));
-  DEBUG((EFI_D_INFO,"Sr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Sr)));
-  DEBUG((EFI_D_INFO,"Irsr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Irsr)));
-  DEBUG((EFI_D_INFO,"Tfr	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfr)));
-  DEBUG((EFI_D_INFO,"Tfdr[0]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[0] )));
-  DEBUG((EFI_D_INFO,"Tfdr[1]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[1] )));
-  DEBUG((EFI_D_INFO,"Tfdr[2]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[2] )));
-  DEBUG((EFI_D_INFO,"Tfdr[3]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[3] )));
-  DEBUG((EFI_D_INFO,"Tfdr[4]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[4] )));
-  DEBUG((EFI_D_INFO,"Tfdr[5]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[5] )));
-  DEBUG((EFI_D_INFO,"Tfdr[6]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[6] )));
-  DEBUG((EFI_D_INFO,"Tfdr[7]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[7] )));
-  DEBUG((EFI_D_INFO,"Tfdr[8]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[8] )));
-  DEBUG((EFI_D_INFO,"Tfdr[9]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[9] )));
-  DEBUG((EFI_D_INFO,"Tfdr[10]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[10])));
-  DEBUG((EFI_D_INFO,"Tfdr[11]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[11])));
-  DEBUG((EFI_D_INFO,"Tfdr[12]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[12])));
-  DEBUG((EFI_D_INFO,"Tfdr[13]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[13])));
-  DEBUG((EFI_D_INFO,"Tfdr[14]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[14])));
-  DEBUG((EFI_D_INFO,"Tfdr[15]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Tfdr[15])));
-  DEBUG((EFI_D_INFO,"Rfdr[0] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[0] )));
-  DEBUG((EFI_D_INFO,"Rfdr[1] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[1] )));
-  DEBUG((EFI_D_INFO,"Rfdr[2] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[2] )));
-  DEBUG((EFI_D_INFO,"Rfdr[3] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[3] )));
-  DEBUG((EFI_D_INFO,"Rfdr[4] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[4] )));
-  DEBUG((EFI_D_INFO,"Rfdr[5] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[5] )));
-  DEBUG((EFI_D_INFO,"Rfdr[6] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[6] )));
-  DEBUG((EFI_D_INFO,"Rfdr[7] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[7] )));
-  DEBUG((EFI_D_INFO,"Rfdr[8] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[8] )));
-  DEBUG((EFI_D_INFO,"Rfdr[9] 	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[9] )));
-  DEBUG((EFI_D_INFO,"Rfdr[10]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[10])));
-  DEBUG((EFI_D_INFO,"Rfdr[11]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[11])));
-  DEBUG((EFI_D_INFO,"Rfdr[12]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[12])));
-  DEBUG((EFI_D_INFO,"Rfdr[13]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[13])));
-  DEBUG((EFI_D_INFO,"Rfdr[14]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[14])));
-  DEBUG((EFI_D_INFO,"Rfdr[15]	:0x%x \n", MmioReadBe32((UINTN)&Dspi->Regs->Rfdr[15])));
+  struct Dspi *Regs = (VOID *)CONFIG_SYS_FSL_DSPI_ADDR;
+
+  DEBUG((EFI_D_INFO,"Mcr	:0x%x \n", MmioReadBe32((UINTN)&Regs->Mcr)));
+  DEBUG((EFI_D_INFO,"Tcr	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tcr)));
+  DEBUG((EFI_D_INFO,"Ctar[0]:0x%x \n", MmioReadBe32((UINTN)&Regs->Ctar[0])));
+  DEBUG((EFI_D_INFO,"Ctar[1]:0x%x \n", MmioReadBe32((UINTN)&Regs->Ctar[1])));
+  DEBUG((EFI_D_INFO,"Ctar[2]:0x%x \n", MmioReadBe32((UINTN)&Regs->Ctar[2])));
+  DEBUG((EFI_D_INFO,"Ctar[3]:0x%x \n", MmioReadBe32((UINTN)&Regs->Ctar[3])));
+  DEBUG((EFI_D_INFO,"Sr	:0x%x \n", MmioReadBe32((UINTN)&Regs->Sr)));
+  DEBUG((EFI_D_INFO,"Irsr	:0x%x \n", MmioReadBe32((UINTN)&Regs->Irsr)));
+  DEBUG((EFI_D_INFO,"Tfr	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfr)));
+  DEBUG((EFI_D_INFO,"Tfdr[0]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[0] )));
+  DEBUG((EFI_D_INFO,"Tfdr[1]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[1] )));
+  DEBUG((EFI_D_INFO,"Tfdr[2]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[2] )));
+  DEBUG((EFI_D_INFO,"Tfdr[3]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[3] )));
+  DEBUG((EFI_D_INFO,"Tfdr[4]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[4] )));
+  DEBUG((EFI_D_INFO,"Tfdr[5]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[5] )));
+  DEBUG((EFI_D_INFO,"Tfdr[6]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[6] )));
+  DEBUG((EFI_D_INFO,"Tfdr[7]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[7] )));
+  DEBUG((EFI_D_INFO,"Tfdr[8]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[8] )));
+  DEBUG((EFI_D_INFO,"Tfdr[9]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[9] )));
+  DEBUG((EFI_D_INFO,"Tfdr[10]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[10])));
+  DEBUG((EFI_D_INFO,"Tfdr[11]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[11])));
+  DEBUG((EFI_D_INFO,"Tfdr[12]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[12])));
+  DEBUG((EFI_D_INFO,"Tfdr[13]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[13])));
+  DEBUG((EFI_D_INFO,"Tfdr[14]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[14])));
+  DEBUG((EFI_D_INFO,"Tfdr[15]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Tfdr[15])));
+  DEBUG((EFI_D_INFO,"Rfdr[0] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[0] )));
+  DEBUG((EFI_D_INFO,"Rfdr[1] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[1] )));
+  DEBUG((EFI_D_INFO,"Rfdr[2] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[2] )));
+  DEBUG((EFI_D_INFO,"Rfdr[3] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[3] )));
+  DEBUG((EFI_D_INFO,"Rfdr[4] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[4] )));
+  DEBUG((EFI_D_INFO,"Rfdr[5] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[5] )));
+  DEBUG((EFI_D_INFO,"Rfdr[6] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[6] )));
+  DEBUG((EFI_D_INFO,"Rfdr[7] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[7] )));
+  DEBUG((EFI_D_INFO,"Rfdr[8] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[8] )));
+  DEBUG((EFI_D_INFO,"Rfdr[9] 	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[9] )));
+  DEBUG((EFI_D_INFO,"Rfdr[10]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[10])));
+  DEBUG((EFI_D_INFO,"Rfdr[11]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[11])));
+  DEBUG((EFI_D_INFO,"Rfdr[12]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[12])));
+  DEBUG((EFI_D_INFO,"Rfdr[13]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[13])));
+  DEBUG((EFI_D_INFO,"Rfdr[14]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[14])));
+  DEBUG((EFI_D_INFO,"Rfdr[15]	:0x%x \n", MmioReadBe32((UINTN)&Regs->Rfdr[15])));
 }
 
 #ifdef CONFIG_DSPI_FLASH_BAR

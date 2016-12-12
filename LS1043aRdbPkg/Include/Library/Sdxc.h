@@ -668,11 +668,6 @@ DestroyMmc (
   IN VOID
   );
 
-VOID
-SelectSdxc (
-  IN VOID
-  );
-
 EFI_STATUS
 SdxcBootRead (
   OUT  VOID * InAddr,

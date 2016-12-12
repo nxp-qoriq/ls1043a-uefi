@@ -76,26 +76,6 @@ DspiFlashFree (
   FreePool(gFlash);
 }
 
-VOID
-SelectDspi (
-  IN VOID
-  )
-{
-  UINT8 Data = 0;
-
-  /* Enable soft mux */
-  Data = CPLD_READ(SoftMuxOn);
-  if ((Data & (ENABLE_SDXC_SOFT_MUX | ENABLE_RCW_SOFT_MUX)) 
-	!= (ENABLE_SDXC_SOFT_MUX | ENABLE_RCW_SOFT_MUX))
-    CPLD_WRITE(SoftMuxOn, (Data | (ENABLE_SDXC_SOFT_MUX |
-					ENABLE_RCW_SOFT_MUX)));
-
-  /* Enable sdhc */
-  Data = CPLD_READ(SdhcSpiCsSel);
-  if ((Data & 0x01) != 0x01)
-    CPLD_WRITE(SdhcSpiCsSel, (Data | 0x01));
-}
-
 EFI_STATUS
 DspiDetect(
   VOID
