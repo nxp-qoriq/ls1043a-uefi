@@ -664,7 +664,7 @@ PciRbInitialize (
     /* Let the user know there's no PCIe link */
     DEBUG((EFI_D_ERROR,"no link, regs @ 0x%lx\n", Info->Regs));
 	   PrivateData->LastBusno = PrivateData->FirstBusno;
-    return Busno;
+    return EFI_ABORTED;
   }
 
   DEBUG((EFI_D_INFO, "Passed Linkup Phase\n"));
@@ -686,6 +686,7 @@ PciRbInitialize (
     }
 
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
+    PrivateData->MemTranslation = PcdGet64 (PcdPci1MemTranslation);
   } else if (HostNo == 2 ) { 
     if (PcdGet64 (PcdPci2ExpressBaseAddress) == 0) {
       DEBUG ((EFI_D_ERROR, "%a: PCI 2 host bridge not present\n", __FUNCTION__));
@@ -693,6 +694,7 @@ PciRbInitialize (
     }
 
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
+    PrivateData->MemTranslation = PcdGet64 (PcdPci2MemTranslation);
   } else if (HostNo == 3 ) { 
     if (PcdGet64 (PcdPci3ExpressBaseAddress) == 0) {
       DEBUG ((EFI_D_ERROR, "%a: PCI 3 host bridge not present\n", __FUNCTION__));
@@ -700,6 +702,7 @@ PciRbInitialize (
     }
 
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
+    PrivateData->MemTranslation = PcdGet64 (PcdPci3MemTranslation);
   }
 
   PrivateData->IoTranslation = PcdGet64 (PcdPciIoTranslation);

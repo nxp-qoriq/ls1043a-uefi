@@ -54,10 +54,16 @@
   gArmPlatformTokenSpaceGuid.PcdPciIoBase
   gArmPlatformTokenSpaceGuid.PcdPciIoSize 
   gArmPlatformTokenSpaceGuid.PcdPciIoTranslation
-  gArmPlatformTokenSpaceGuid.PcdPciMemTranslation
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Base
   gArmPlatformTokenSpaceGuid.PcdPciMmio32Size 
-  gArmPlatformTokenSpaceGuid.PcdPciMmio64Base
+  gArmPlatformTokenSpaceGuid.PcdPci1MemTranslation
+  gArmPlatformTokenSpaceGuid.PcdPci2MemTranslation
+  gArmPlatformTokenSpaceGuid.PcdPci3MemTranslation
+  gArmPlatformTokenSpaceGuid.PcdPci1Mmio32Base
+  gArmPlatformTokenSpaceGuid.PcdPci2Mmio32Base
+  gArmPlatformTokenSpaceGuid.PcdPci3Mmio32Base
+  gArmPlatformTokenSpaceGuid.PcdPci1Mmio64Base
+  gArmPlatformTokenSpaceGuid.PcdPci2Mmio64Base
+  gArmPlatformTokenSpaceGuid.PcdPci3Mmio64Base
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Size 
   gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress
   gEfiMdePkgTokenSpaceGuid.PcdPci2ExpressBaseAddress

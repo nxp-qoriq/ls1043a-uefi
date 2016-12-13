@@ -103,13 +103,17 @@ RootBridgeIoMemRW (
   UINT8                                  OutStride;
   EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_WIDTH  OperationWidth;
   UINT8                                  *Uint8Buffer;
+  PCI_ROOT_BRIDGE_INSTANCE              *PrivateData;
 
   Status = RootBridgeIoCheckParameter (This, MemOperation, Width, Address, Count, Buffer);
   if (EFI_ERROR (Status)) {
     return Status;
   }
 
-  Address = FixedPcdGet64 (PcdPciMemTranslation) + Address;
+  PrivateData = DRIVER_INSTANCE_FROM_PCI_ROOT_BRIDGE_IO_THIS(This);
+
+  Address = PrivateData -> MemTranslation + Address;
+
   InStride = mInStride[Width];
   OutStride = mOutStride[Width];
   OperationWidth = (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_WIDTH) (Width & 0x03);
