@@ -274,9 +274,6 @@ SerDesInstanceProbeLanes(
 {
   const SERDES_CONFIG *Config;
   UINTN Lane;
-  SERDES_LANE_PROTOCOL QSGMII[] = {SGMII_FM1_DTSEC1,SGMII_FM1_DTSEC2,
-                                   SGMII_FM1_DTSEC5,SGMII_FM1_DTSEC6};
-  UINT8 Index = 0;
 
   Config = GetSerdesInstanceConfig(SerDesInstance);
   if (Config == NULL) {
@@ -290,16 +287,7 @@ SerDesInstanceProbeLanes(
     SERDES_LANE_PROTOCOL LaneProtocol = Config->SerDesLanes[Lane];
     ASSERT(LaneProtocol < SERDES_LANE_PROTOCOLS_COUNT);
     if (LaneProtocol != NONE) {
-      if(QSGMII_FM1_A == LaneProtocol) {
-        for(Index=0; Index < ARRAY_SIZE(QSGMII); Index++) {
-          if(SerDesLaneProbeCallback)
-            SerDesLaneProbeCallback(QSGMII[Index], Arg);
-        }
-      }
-      else {
-        if(SerDesLaneProbeCallback)
-          SerDesLaneProbeCallback(LaneProtocol, Arg);
-      }
+      SerDesLaneProbeCallback(LaneProtocol, Arg);
     }
   }
 }
