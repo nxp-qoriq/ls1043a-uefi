@@ -1184,8 +1184,9 @@ GetPhy (
 }
 
 STATIC CHAR8 *gPhyStrings[] = {
-  [PHY_INTERFACE_XFI] = "xfi",
+  [PHY_INTERFACE_XFI] = "xgmii",
   [PHY_INTERFACE_SGMII] = "sgmii",
+  [PHY_INTERFACE_RGMII] = "rgmii",
   [PHY_INTERFACE_SGMII_2500] = "Sgmii_2500",
   [PHY_INTERFACE_QSGMII] = "qsgmii",
   [PHY_INTERFACE_NONE] = "",
@@ -1267,6 +1268,9 @@ FdtFixupFmanEthernet (
 	EFI_STATUS Status;
 
 	SerDesProbeLanes(GetPhy, NULL);
+	/* Added separately to take care of RGMIIs */
+	GetPhy(RGMII_FM1_DTSEC3, NULL);
+	GetPhy(RGMII_FM1_DTSEC4, NULL);
 
 	for (I = 0; I < ARRAY_SIZE(gFdtPort); I++) {
 		Status = FixupPort(Blob, "fsl,fman-memac", I);
