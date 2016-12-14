@@ -522,7 +522,7 @@ PrintBoardPersonality (
 	DEBUG((EFI_D_RELEASE, "Board: LS1043A-RDB\n"));
 
 	RcwSrc1 = CPLD_READ(RcwSource1);
-	RcwSrc2 = CPLD_READ(RcwSource1);
+	RcwSrc2 = CPLD_READ(RcwSource2);
 	CpldRevBit(&RcwSrc1);
 	RcwSrc = RcwSrc1;
 	RcwSrc = (RcwSrc << 1) | RcwSrc2;
