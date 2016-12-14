@@ -53,7 +53,7 @@ gArmTokenSpaceGuid.PcdFvBaseAddress|gArmTokenSpaceGuid.PcdFvSize
 FV = FVMAIN_COMPACT
 
 [FD.LS1043aRdbPi_EFI]
-BaseAddress   = 0x60400000|gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress  #The base address of the FLASH Device.
+BaseAddress   = 0x60100000|gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress  #The base address of the FLASH Device.
 Size          = 0x00008000|gLS1043aRdbTokenSpaceGuid.PcdPiFdSize         #The size in bytes of the FLASH Device
 ErasePolarity = 1
 BlockSize     = 0x1

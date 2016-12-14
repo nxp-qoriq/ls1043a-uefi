@@ -328,7 +328,7 @@
   #
   gArmTokenSpaceGuid.PcdVFPEnabled|1
   gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x060000000
-  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x063900000
+  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x60200000
 
   gEfiMdePkgTokenSpaceGuid.PcdMaximumUnicodeStringLength|1000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumAsciiStringLength|2000000

@@ -19,7 +19,7 @@
 
 [FD.LS1043aRdbNv_EFI]
 
-BaseAddress	= 0x063900000|gLS1043aRdbTokenSpaceGuid.PcdNvFdBase	#The base address of the FLASH device
+BaseAddress	= 0x60200000|gLS1043aRdbTokenSpaceGuid.PcdNvFdBase	#The base address of the FLASH device
 Size		= 0x000C0000|gLS1043aRdbTokenSpaceGuid.PcdNvFdSize		#The size in bytes of the FLASH device
 ErasePolarity = 1
 BlockSize	= 0x1

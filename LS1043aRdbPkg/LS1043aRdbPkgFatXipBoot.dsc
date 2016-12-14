@@ -29,7 +29,7 @@
   FLASH_DEFINITION               = LS1043aRdbPkg/LS1043aRdbPkgFatXipBoot.fdf
 
 [PcdsFixedAtBuild.common]
-  gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x60400000
+  gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x60100000
   gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x0
 
 [LibraryClasses.common.PEIM]
