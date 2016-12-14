@@ -522,7 +522,7 @@ PrintBoardPersonality (
 	DEBUG((EFI_D_RELEASE, "Board: LS1043A-RDB\n"));
 
 	RcwSrc1 = CPLD_READ(RcwSource1);
-	RcwSrc2 = CPLD_READ(RcwSource1);
+	RcwSrc2 = CPLD_READ(RcwSource2);
 	CpldRevBit(&RcwSrc1);
 	RcwSrc = RcwSrc1;
 	RcwSrc = (RcwSrc << 1) | RcwSrc2;
@@ -594,6 +594,73 @@ SmmuInit (
 	MmioWrite32((UINTN)SMMU_REG_NSCR0, Value);
 }
 
+#define BMAN_SWP_ISDR_REG	0x3E80
+#define BMAN_NUM_PORTALS	10
+#define BMAN_MEM_BASE	0x508000000
+#define BMAN_MEM_SIZE	0x08000000
+#define BMAN_CINH_SIZE	(BMAN_MEM_SIZE >> 1)
+#define BMAN_SP_CINH_SIZE	0x10000
+#define BMAN_CENA_SIZE	(BMAN_MEM_SIZE >> 1)
+#define BMAN_CINH_BASE	(BMAN_MEM_BASE + BMAN_CENA_SIZE)
+
+#define QMAN_SWP_ISDR_REG	0x3680
+#define QMAN_NUM_PORTALS	10
+#define QMAN_MEM_BASE	0x500000000
+#define QMAN_MEM_SIZE	0x08000000
+#define QMAN_CINH_SIZE	(QMAN_MEM_SIZE >> 1)
+#define QMAN_SP_CINH_SIZE	0x10000
+#define QMAN_CENA_SIZE	(QMAN_MEM_SIZE >> 1)
+#define QMAN_CINH_BASE	(QMAN_MEM_BASE + QMAN_CENA_SIZE)
+
+#define MAX_BMAN_PORTALS (BMAN_CINH_SIZE / BMAN_SP_CINH_SIZE)
+#define MAX_QMAN_PORTALS (QMAN_CINH_SIZE / QMAN_SP_CINH_SIZE)
+VOID
+InhibitPs (
+  IN  VOID   *PAddr,
+  IN  UINT32 MaxPortals,
+  IN  UINT32 MaxArchPortals,
+  IN  UINT32 PortalSize
+  )
+{
+	UINT32 Value;
+	UINT32 Index;;
+
+	/* MaxArchPortals is the maximum based on memory size. This includes
+	 * the reserved memory in the SoC. MaxPortals is the number of physical
+	 * portals in the SoC */
+	if (MaxPortals > MaxArchPortals) {
+		DEBUG((EFI_D_ERROR, "QBman portal config error\n"));
+		MaxPortals = MaxArchPortals;
+	}
+
+	for (Index = 0; Index < MaxPortals; Index++) {
+		MmioWriteBe32((UINTN)PAddr, -1);
+		Value = MmioReadBe32((UINTN)PAddr);
+		if (!Value) {
+			DEBUG((EFI_D_ERROR, "Stopped after %d portals\n", Index));
+			goto Done;
+		}
+		PAddr += PortalSize;
+	}
+Done:
+	return;
+}
+
+VOID
+SetQBManPortals (VOID)
+{
+	VOID *BmanPAddr = (VOID *)BMAN_CINH_BASE + BMAN_SWP_ISDR_REG;
+	VOID *QmanPAddr = (VOID *)QMAN_CINH_BASE + QMAN_SWP_ISDR_REG;
+
+	/* It will change default state of BMan
+	   ISDR portals to all 1s
+	*/
+	InhibitPs(BmanPAddr, BMAN_NUM_PORTALS, MAX_BMAN_PORTALS,
+		BMAN_SP_CINH_SIZE);
+	InhibitPs(QmanPAddr, QMAN_NUM_PORTALS, MAX_QMAN_PORTALS,
+		QMAN_SP_CINH_SIZE);
+}
+
 /**
   Function to initialize SoC specific constructs
   // CSU
@@ -615,6 +682,7 @@ SocInit (
   
   CHAR8 Buffer[100];
   UINTN CharCount;
+  struct CcsrScfg *Scfg = (VOID *)SCFG_BASE_ADDR;
   
   // LS1043A SoC has a CSU (Central Security Unit)
   if (PcdGetBool(PcdCsuInitialize))
@@ -646,6 +714,11 @@ SocInit (
   IfcInit();
 
   PrintBoardPersonality();
+
+  SetQBManPortals();
+
+  //Invert AQR105 IRQ pins interrupt polarity
+  MmioWriteBe32((UINTN)&Scfg->intpcr, 0x40000000);
 
   return;
 }
@@ -1111,8 +1184,9 @@ GetPhy (
 }
 
 STATIC CHAR8 *gPhyStrings[] = {
-  [PHY_INTERFACE_XFI] = "xfi",
+  [PHY_INTERFACE_XFI] = "xgmii",
   [PHY_INTERFACE_SGMII] = "sgmii",
+  [PHY_INTERFACE_RGMII] = "rgmii",
   [PHY_INTERFACE_SGMII_2500] = "Sgmii_2500",
   [PHY_INTERFACE_QSGMII] = "qsgmii",
   [PHY_INTERFACE_NONE] = "",
@@ -1194,6 +1268,9 @@ FdtFixupFmanEthernet (
 	EFI_STATUS Status;
 
 	SerDesProbeLanes(GetPhy, NULL);
+	/* Added separately to take care of RGMIIs */
+	GetPhy(RGMII_FM1_DTSEC3, NULL);
+	GetPhy(RGMII_FM1_DTSEC4, NULL);
 
 	for (I = 0; I < ARRAY_SIZE(gFdtPort); I++) {
 		Status = FixupPort(Blob, "fsl,fman-memac", I);
