@@ -58,6 +58,9 @@
 #define STATUS_PROT			(1 << 1)
 #define STATUS_ERASE			(1 << 5)
 
+/* Clear Staus on exit boot service event */
+#define SPI_SR_CLEAR			0xdaad0000
+
 /* ATMEL Dataflash Commands*/
 #define DSPI_CMD_ATMEL_PAGE_PROGRAM	0x82
 #define DSPI_CMD_ATMEL_READ_STATUS	0xd7

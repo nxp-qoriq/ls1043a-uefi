@@ -72,6 +72,9 @@ DspiFlashFree (
   VOID
   )
 {
+  /* Clear status register */
+  MmioWriteBe32((UINTN)&gFlash->Dspi->Regs->Sr, SPI_SR_CLEAR);
+
   FreePool(gFlash->Dspi);
   FreePool(gFlash);
 }
