@@ -26,6 +26,7 @@
 #include <Library/FslIfc.h>
 #include <Library/IfcNand.h>
 #include <LS1043aRdb.h>
+#include <LS1043aSocLib.h>
 
 extern EFI_STATUS PpaInit(UINTN *);
 extern VOID InitMmu(ARM_MEMORY_REGION_DESCRIPTOR*);
@@ -124,6 +125,22 @@ EXIT_FREE_FIT:
 	return 0;
 }
 
+VOID
+FixGicPcds (
+  VOID
+  )
+{
+	struct CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
+	UINT32 Rev = 0xFF;
+
+	Rev = MmioReadBe32((UINTN)&GurBase->svr) & MASK_UPPER_8;
+
+	if (Rev == REV1_1) {
+		PcdSet64(PcdGicDistributorBase, GICD_BASE_64K);
+		PcdSet64(PcdGicInterruptInterfaceBase, GICC_BASE_64K);
+	}
+}
+
 EFI_STATUS
 PpaInitialize (
   IN EFI_HANDLE         ImageHandle,
@@ -139,5 +156,8 @@ PpaInitialize (
 	Status = PpaInit(PpaRamAddr);
 	ArmPlatformGetVirtualMemoryMap (&MemoryTable);
 	InitMmu(MemoryTable);
+
+	FixGicPcds();
+
 	return Status;
 }

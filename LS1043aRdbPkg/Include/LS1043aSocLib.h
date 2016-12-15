@@ -57,6 +57,9 @@
 #define GICV_BASE_4K        0x01406000
 #define GICV_SIZE_4K        0x2000
 
+#define GICD_BASE_64K       0x01410000
+#define GICC_BASE_64K       0x01420000
+
 #define REV1_0                     0x10
 #define REV1_1                     0x11
 #define GIC_ADDR_BIT        31

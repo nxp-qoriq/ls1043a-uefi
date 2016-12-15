@@ -306,6 +306,11 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoHorizontalResolution|640
   gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoVerticalResolution|480
 
+  #
+  # ARM General Interrupt Controller
+  gArmTokenSpaceGuid.PcdGicDistributorBase|0x1401000
+  gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase|0x1402000
+
 [PcdsDynamicHii.common.DEFAULT]
   gEfiMdePkgTokenSpaceGuid.PcdPlatformBootTimeOut|L"Timeout"|gEfiGlobalVariableGuid|0x0|10
 
@@ -424,11 +429,6 @@
   gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate|115200
 
   gEfiMdePkgTokenSpaceGuid.PcdDefaultTerminalType|4
-
-  #
-  # ARM General Interrupt Controller
-  gArmTokenSpaceGuid.PcdGicDistributorBase|0x1401000
-  gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase|0x1402000
 
   #
   # ARM L2x0 PCDs
