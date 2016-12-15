@@ -57,7 +57,3 @@
 
 [FeaturePcd.ARM]
   gArmTokenSpaceGuid.PcdNormalMemoryNonshareableOverride
-
-[FixedPcd]
-  gArmTokenSpaceGuid.PcdGicDistributorBase
-  gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase
