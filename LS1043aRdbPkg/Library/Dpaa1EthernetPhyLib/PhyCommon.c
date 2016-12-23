@@ -175,8 +175,6 @@ Dpaa1PhyRegisterWrite (
          MdioCtlDevAddr == MDIO_CTL_DEV_PMAPMD ||
          MdioCtlDevAddr == MDIO_CTL_DEV_AUTO_NEGOTIATION);
 
-  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI ||
-         Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII);
   Dpaa1PhyMdioBusWrite(Dpaa1Phy->MdioBus,
                        Dpaa1Phy->PhyAddress,
                        MdioCtlDevAddr,
@@ -296,14 +294,88 @@ Dpaa1PhyRegisterRead (
          MdioCtlDevAddr == MDIO_CTL_DEV_PMAPMD ||
          MdioCtlDevAddr == MDIO_CTL_DEV_AUTO_NEGOTIATION);
 
-  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI ||
-         Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII);
   return Dpaa1PhyMdioBusRead(Dpaa1Phy->MdioBus,
                              Dpaa1Phy->PhyAddress,
                              MdioCtlDevAddr,
                              PhyRegNum);
 }
 
+/**
+   if Auto Negotiaition is supported by PHY;
+   restarts the PHY Auto Negotiation for a given DPAA1 MEMAC.
+
+   else sets the various PHY parametes manually.
+
+   @param[in] Memac Pointer to MEMAC
+
+   @retval EFI_SUCCESS, on success
+   @retval error code, on failure
+
+ **/
+
+EFI_STATUS
+Dpaa1PhyRestartAutoNeg (
+  IN  DPAA1_PHY *Dpaa1Phy
+  )
+{
+  UINT16       PhyRegValue;
+  UINT32       TimeoutMsCount = PHY_AUTO_NEGOTIATION_TIMEOUT;
+  INT8         DevAddr = MDIO_CTL_DEV_NONE;
+
+  DPAA1_DEBUG_MSG("****Restart PHY Auto Negotiation (PHY address: 0x%x) ...\n",
+                  Dpaa1Phy->PhyAddress);
+  // Currently Only Clause 22 Auto Negotiation Restart is common for all PHY
+  ASSERT(Dpaa1Phy->PhyInterfaceType != PHY_INTERFACE_XFI);
+
+  PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
+                        DevAddr, PHY_STATUS_REG);
+  if (PhyRegValue == (UINT16)(-1))
+    return EFI_DEVICE_ERROR;
+
+  if (PhyRegValue & PHY_STATUS_AUTONEG_ABILITY)
+    Dpaa1Phy->AutoNegotiation = TRUE;
+  else
+    Dpaa1Phy->AutoNegotiation = FALSE;
+
+  if(TRUE == Dpaa1Phy->AutoNegotiation) {
+    /*Auto Negotiaition is supported by PHY. Enable it and restart it*/
+    PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
+                        DevAddr, PHY_CONTROL_REG);
+    PhyRegValue |= (PHY_CONTROL_AUTONEG_RESTART|PHY_CONTROL_AUTONEG_ENABLE);
+    Dpaa1PhyRegisterWrite(Dpaa1Phy,
+                  DevAddr, PHY_CONTROL_REG, PhyRegValue);
+    DPAA1_DEBUG_MSG("Waiting for PHY (PHY address: 0x%x) auto negotiation to complete ",
+                    Dpaa1Phy->PhyAddress);
+    for ( ; ; ) {
+      PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
+                          DevAddr, PHY_STATUS_REG);
+      if (PhyRegValue == (UINT16)(-1))
+        return EFI_DEVICE_ERROR;
+
+      if (TimeoutMsCount % 500 == 0)
+        DPAA1_DEBUG_MSG_NO_PREFIX(".");
+
+      if (PhyRegValue & PHY_STATUS_AUTONEG_COMPLETE)
+        break;
+
+      if (TimeoutMsCount == 0) {
+        DPAA1_DEBUG_MSG_NO_PREFIX("TIMEOUT!\n");
+        DPAA1_ERROR_MSG("PHY auto-negotiation failed\n");
+        Dpaa1Phy->AutoNegotiation = FALSE;
+        return EFI_TIMEOUT;
+      }
+
+      MicroSecondDelay(1000);
+      TimeoutMsCount --;
+    }
+    DPAA1_DEBUG_MSG_NO_PREFIX("\n");
+  } else {
+    /* To Do : PHY not able to perform Auto Negotiaition *
+    * Set the PHY attributes Manully                     */
+  }
+
+  return EFI_SUCCESS;
+}
 
 /**
    Resets the PHY for a given DPAA1 MEMAC
@@ -331,9 +403,6 @@ Dpaa1PhyReset (
 
   DPAA1_DEBUG_MSG("****Resetting PHY (PHY address: 0x%x) ...\n",
                   Dpaa1Phy->PhyAddress);
-
-  ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI ||
-         Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII);
 
   if(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI)
     DevAddr = MDIO_PHY_DEV_ADDR;
@@ -433,12 +502,10 @@ Dpaa1PhyIdentify (
   switch((Dpaa1Phy->PhyIdentifier & PHY_IDENTIFIER_OUI_MASK)>>0xA) // Extract OUI
   {
     case REALTEK_OUI:
-                 Dpaa1Phy->Dpaa1PhyStatus = RealtekPhyStatus;
                  Dpaa1Phy->Dpaa1PhyStartup = RealtekPhyStartup;
                  Dpaa1Phy->Dpaa1PhyConfig = RealtekPhyConfig;
                  break;
     case AQUANTIA_OUI:
-                 Dpaa1Phy->Dpaa1PhyStatus = AquantiaPhyStatus;
                  Dpaa1Phy->Dpaa1PhyStartup = AquantiaPhyStartup;
                  Dpaa1Phy->Dpaa1PhyConfig = AquantiaPhyConfig;
                  break;
@@ -471,29 +538,21 @@ Dpaa1PhyInit (
 
   DPAA1_DEBUG_MSG("Initializing PHY (PHY type: %d, address: 0x%x) ...\n",
                     Dpaa1Phy->PhyInterfaceType, Dpaa1Phy->PhyAddress);
-                    
-  if (Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI ||
-      Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII) {
-    Dpaa1Phy->Flags = 0;
 
-    Status = Dpaa1PhyIdentify(Dpaa1Phy);
-    if (EFI_ERROR(Status)) {
-      return Status;
-    }
+  Dpaa1Phy->Flags = 0;
 
-    Status = Dpaa1PhyReset(Dpaa1Phy);
-    if (EFI_ERROR(Status)) {
-      return Status;
-    } 
+  Status = Dpaa1PhyIdentify(Dpaa1Phy);
+  if (EFI_ERROR(Status))
+    return Status;
 
-    Status = Dpaa1PhyConfig(Dpaa1Phy);
-    if (EFI_ERROR(Status)) {
-      return Status;
-    }
-  }
-  else {
-    DPAA1_INFO_MSG("SGMII/QSGMII initialization is not supported yet\n");
-  }
+  Status = Dpaa1PhyReset(Dpaa1Phy);
+  if (EFI_ERROR(Status))
+    return Status;
+
+  Status = Dpaa1PhyConfig(Dpaa1Phy);
+  if (EFI_ERROR(Status))
+    return Status;
+
   return EFI_SUCCESS;
 }
 
@@ -552,13 +611,33 @@ Dpaa1PhyStatus (
   IN  DPAA1_PHY *Dpaa1Phy
   )
 {
-  if (NULL != Dpaa1Phy->Dpaa1PhyStatus)
-    return Dpaa1Phy->Dpaa1PhyStatus(Dpaa1Phy);
-  else
-    DPAA1_INFO_MSG("PhyIdentifier 0x%08x Status fuction is not supported yet\n",
-                                Dpaa1Phy->PhyIdentifier);
+  UINT16 PhyRegValue;
+  INT8   DevAddr = MDIO_CTL_DEV_NONE;
 
-  return TRUE;
+  if(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_XFI)
+    DevAddr = MDIO_CTL_DEV_AUTO_NEGOTIATION;
+  else
+    DevAddr = MDIO_CTL_DEV_NONE;
+
+  /*
+  * Read twice because link state is latched and a
+  * read moves the current state into the register
+  */
+  (VOID)Dpaa1PhyRegisterRead(Dpaa1Phy,
+                             DevAddr,
+                             PHY_STATUS_REG);
+  PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
+                                     DevAddr,
+                                     PHY_STATUS_REG);
+
+  if (PhyRegValue == (UINT16)-1 ||
+      !(PhyRegValue & PHY_STATUS_LINK_STATUS)) {
+    Dpaa1Phy->LinkUp = FALSE;
+  } else {
+    Dpaa1Phy->LinkUp = TRUE;
+  }
+  return Dpaa1Phy->LinkUp;
+
 }
 
 

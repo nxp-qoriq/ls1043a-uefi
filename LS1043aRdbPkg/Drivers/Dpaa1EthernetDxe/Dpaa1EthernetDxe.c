@@ -264,7 +264,6 @@ Dpaa1SnpInitialize (
   if (Status == EFI_TIMEOUT) {
     DPAA1_WARN_MSG("Link not ready for %a after Timeout. Check Ethernet cable\n",
                    gFmanMemacStrings[FmanMemac->Id]);
-    return Status;
   } else if (EFI_ERROR(Status)) {
     DPAA1_ERROR_MSG("Failed to start PHY for DPAA1 Ethernet device 0x%p (%a) (error %u)\n",
                     Dpaa1EthDev, gFmanMemacStrings[FmanMemac->Id], Status);

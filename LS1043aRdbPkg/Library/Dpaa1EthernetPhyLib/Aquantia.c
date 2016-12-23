@@ -92,7 +92,7 @@ AquantiaPhyStartup(DPAA1_PHY *Dpaa1Phy)
   PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
                                      MDIO_CTL_DEV_AUTO_NEGOTIATION,
                                      PHY_STATUS_REG);
-  if (!(PhyRegValue & PHY_STATUS_AUTO_NEGOTIATION_COMPLETE)) {
+  if (!(PhyRegValue & PHY_STATUS_AUTONEG_COMPLETE)) {
     DPAA1_DEBUG_MSG("Waiting for PHY (PHY address: 0x%x) auto negotiation to complete ",
                     Dpaa1Phy->PhyAddress);
     for (I = 0; I < PHY_AUTO_NEGOTIATION_TIMEOUT; I ++) {
@@ -104,7 +104,7 @@ AquantiaPhyStartup(DPAA1_PHY *Dpaa1Phy)
         DPAA1_DEBUG_MSG_NO_PREFIX(".");
       }
 
-      if (PhyRegValue & PHY_STATUS_AUTO_NEGOTIATION_COMPLETE) {
+      if (PhyRegValue & PHY_STATUS_AUTONEG_COMPLETE) {
         break;
       }
     }
@@ -157,31 +157,4 @@ AquantiaPhyStartup(DPAA1_PHY *Dpaa1Phy)
   DPAA1_DEBUG_MSG("PHY speed is %d\n", Dpaa1Phy->Speed);
 
   return EFI_SUCCESS;
-}
-
-BOOLEAN
-AquantiaPhyStatus (
-  IN  DPAA1_PHY *Dpaa1Phy
-  )
-{
-  UINT16 PhyRegValue;
-
-  /*
-  * Read twice because link state is latched and a
-  * read moves the current state into the register
-  */
-  (VOID)Dpaa1PhyRegisterRead(Dpaa1Phy,
-                             MDIO_CTL_DEV_AUTO_NEGOTIATION,
-                             PHY_STATUS_REG);
-  PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
-                                     MDIO_CTL_DEV_AUTO_NEGOTIATION,
-                                     PHY_STATUS_REG);
-
-  if (PhyRegValue == (UINT16)-1 ||
-      !(PhyRegValue & PHY_STATUS_LINK_STATUS)) {
-    Dpaa1Phy->LinkUp = FALSE;
-  } else {
-    Dpaa1Phy->LinkUp = TRUE;
-  }
-  return Dpaa1Phy->LinkUp;
 }

@@ -158,8 +158,6 @@ typedef struct _DPAA1_PHY {
 
   UINT32 PhyIdentifier;            /*IEEE 802.3 clause 22.2.4.3.1*/
 
-  BOOLEAN (*Dpaa1PhyStatus)(struct _DPAA1_PHY *);
-
   EFI_STATUS (*Dpaa1PhyStartup)(struct _DPAA1_PHY *);
 
   EFI_STATUS (*Dpaa1PhyConfig)(struct _DPAA1_PHY *);

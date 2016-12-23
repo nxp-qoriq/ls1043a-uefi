@@ -64,11 +64,7 @@
 #define REALTEK_LED2_LINK_1000   BIT13 // LED2 Link Indication : 1000Mbps
 #define REALTEK_LED2_ACT         BIT14 // LED2 Active (Transmitting or Receiving) Indication
 #define REALTEK_LED_RSRVD        BIT15 // Reserved
-/*
-* Clasue 22 IEEE Standard Registers
-*/
-#define PHY_REG_BMCR             0x00  // Basic Mode Control Register
-#define PHY_REG_BMSR             0x01  // Basic Mode Status Register
+
 // Enabling of TXDLY is via register setting Page 0xd08, Reg 17, Bit[8]=1
 #define REALTEK_RGMII_TX_DELAY   0x100
 
@@ -90,7 +86,7 @@ RealtekPhyConfig (DPAA1_PHY *Dpaa1Phy)
   ASSERT(Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII); // 1000Base-T IEEE 802.3ab Compliant
 
   Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
-                          PHY_REG_BMCR, PHY_CONTROL_RESET);
+                          PHY_CONTROL_REG, PHY_CONTROL_RESET);
 
   if (Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_RGMII) {
       Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
@@ -102,7 +98,7 @@ RealtekPhyConfig (DPAA1_PHY *Dpaa1Phy)
       Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
                       REALTEK_REG_RGMII_TXDLY, PhyRegValue);
       Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
-                      REALTEK_REG_PAGSR, PHY_REG_BMCR);
+                      REALTEK_REG_PAGSR, PHY_CONTROL_REG);
   }
 
   /* Set green LED for Link, yellow LED for Active */
@@ -117,7 +113,7 @@ RealtekPhyConfig (DPAA1_PHY *Dpaa1Phy)
   Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
                   REALTEK_REG_LCR, PhyRegValue);
   Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
-                  REALTEK_REG_PAGSR, PHY_REG_BMCR);
+                  REALTEK_REG_PAGSR, PHY_CONTROL_REG);
   return EFI_SUCCESS;
 }
 
@@ -133,72 +129,27 @@ RealtekPhyConfig (DPAA1_PHY *Dpaa1Phy)
 EFI_STATUS
 RealtekPhyStartup (DPAA1_PHY *Dpaa1Phy)
 {
-  UINTN I;
-  UINT16 PhyRegValue;
+  UINT16       PhyRegValue;
+  EFI_STATUS   Status;
 
   DPAA1_DEBUG_MSG("***** RealtekPhyStartup *******\n");
 
   ASSERT(Dpaa1Phy->Signature == DPAA1_PHY_SIGNATURE);
 
   Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
-                        REALTEK_REG_PAGSR, REALTEK_PAGE_PHY);
+        REALTEK_REG_PAGSR, PHY_CONTROL_REG);
 
-  PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
-                                   MDIO_CTL_DEV_NONE,
-                                   REALTEK_REG_PHYSR);
-
-  if(PhyRegValue & REALTEK_AUTONEG_ENABLE)
-    Dpaa1Phy->AutoNegotiation = TRUE;
-  else
-    Dpaa1Phy->AutoNegotiation = FALSE;
-
-  if (PhyRegValue == (UINT16)-1 ||
-      !(PhyRegValue & REALTEK_PHYSTAT_LINK)) {
-    Dpaa1Phy->LinkUp = FALSE;
-  } else {
-    Dpaa1Phy->LinkUp = TRUE;
-  }
+  Status = Dpaa1PhyRestartAutoNeg(Dpaa1Phy);
+  if (EFI_ERROR(Status))
+    return Status;
 
   Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
-                        REALTEK_REG_PAGSR, PHY_REG_BMCR);
+        REALTEK_REG_PAGSR, PHY_STATUS_REG);
 
-  /*
-   * If the link is not up and
-   * the auto-negotiation is supported and still in progress, wait:
-   *
-   */
-  if ((Dpaa1Phy->AutoNegotiation == TRUE) && \
-      (FALSE == Dpaa1Phy->LinkUp)) {
-    DPAA1_DEBUG_MSG("Waiting for PHY (PHY address: 0x%x) auto negotiation to complete ",
-                    Dpaa1Phy->PhyAddress);
-    for (I = 0; I < PHY_AUTO_NEGOTIATION_TIMEOUT; I ++) {
-      MicroSecondDelay(1000);
-      PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
-                                       MDIO_CTL_DEV_NONE,
-                                       PHY_REG_BMSR);
-      if (I % 500 == 0)
-        DPAA1_DEBUG_MSG_NO_PREFIX(".");
-
-      if (PhyRegValue & PHY_STATUS_AUTO_NEGOTIATION_COMPLETE)
-        break;
-    }
-
-    if (I == PHY_AUTO_NEGOTIATION_TIMEOUT) {
-      DPAA1_DEBUG_MSG_NO_PREFIX("TIMEOUT!\n");
-      DPAA1_ERROR_MSG("PHY auto-negotiation failed\n");
-      Dpaa1Phy->AutoNegotiation = FALSE;
-      return EFI_TIMEOUT;
-    }
-
-    DPAA1_DEBUG_MSG_NO_PREFIX("\n");
-    // Read the Link status after Auto-Negotiation
-    RealtekPhyStatus(Dpaa1Phy);
-  }
+  //Check Link Status
+  Dpaa1PhyStatus(Dpaa1Phy);
 
   DPAA1_INFO_MSG("PHY link is %a\n", Dpaa1Phy->LinkUp ? "up" : "down");
-
-  if(FALSE == Dpaa1Phy->LinkUp)
-    return EFI_NOT_READY;
 
   Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
         REALTEK_REG_PAGSR, REALTEK_PAGE_PHY);
@@ -223,34 +174,7 @@ RealtekPhyStartup (DPAA1_PHY *Dpaa1Phy)
         Dpaa1Phy->Speed = 10;
   }
   Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
-                        REALTEK_REG_PAGSR, PHY_REG_BMCR);
+                        REALTEK_REG_PAGSR, PHY_CONTROL_REG);
   DPAA1_DEBUG_MSG("PHY speed is %d\n", Dpaa1Phy->Speed);
   return EFI_SUCCESS;
-}
-
-BOOLEAN
-RealtekPhyStatus (
-  IN  DPAA1_PHY *Dpaa1Phy
-  )
-{
-  UINT16 PhyRegValue;
-
-  Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
-          REALTEK_REG_PAGSR, REALTEK_PAGE_PHY);
-
-  PhyRegValue = Dpaa1PhyRegisterRead(Dpaa1Phy,
-                                   MDIO_CTL_DEV_NONE,
-                                   REALTEK_REG_PHYSR);
-
-  if (PhyRegValue == (UINT16)-1 ||
-      !(PhyRegValue & REALTEK_PHYSTAT_LINK)) {
-    Dpaa1Phy->LinkUp = FALSE;
-  } else {
-    Dpaa1Phy->LinkUp = TRUE;
-  }
-
-  Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
-          REALTEK_REG_PAGSR, PHY_REG_BMCR);
-
-  return Dpaa1Phy->LinkUp;
 }

@@ -38,18 +38,23 @@
 # define MDIO_CTL_DEV_NONE               (-1)
 
 /*
- * PHY registers
+ * PHY registers Refer IEEE 802.3 Clause 22.2.4
+ * Table 22–6—MII management register set
  */
 
 /**
  * PHY control register
  */
-#define PHY_CONTROL_REG	0x00
+#define PHY_CONTROL_REG	         0x00
 
 /*
- * Fields of the PHY control register
- */
-#define PHY_CONTROL_RESET	0x8000
+* PHY Control Register (PHY_CONTROL_REG) bits
+*/
+#define PHY_CONTROL_DUPLEX            BIT8
+#define PHY_CONTROL_AUTONEG_RESTART   BIT9
+#define PHY_CONTROL_AUTONEG_ENABLE    BIT12
+#define PHY_CONTROL_RESET             BIT15
+#define PHY_CONTROL_LOOPBACK          BIT14
 
 /**
  * PHY status register
@@ -59,9 +64,9 @@
 /*
  * Fields of the PHY status register
  */
-#define PHY_STATUS_LINK_STATUS		      0x0004
-#define PHY_STATUS_AUTO_NEGOTIATION_COMPLETE    0x0020
-
+#define PHY_STATUS_LINK_STATUS        BIT2
+#define PHY_STATUS_AUTONEG_ABILITY    BIT3
+#define PHY_STATUS_AUTONEG_COMPLETE   BIT5
 /**
  * PHY autonegotiation timeout (milliseconds)
  */
@@ -97,25 +102,25 @@ Dpaa1PhyRegisterRead (
   );
 
 EFI_STATUS
+Dpaa1PhyRestartAutoNeg (
+  IN  DPAA1_PHY *Dpaa1Phy
+  );
+
+BOOLEAN
+Dpaa1PhyStatus (
+  IN  DPAA1_PHY *Dpaa1Phy
+  );
+
+EFI_STATUS
 AquantiaPhyConfig(DPAA1_PHY *Dpaa1Phy);
 
 EFI_STATUS
 AquantiaPhyStartup(DPAA1_PHY *Dpaa1Phy);
-
-BOOLEAN
-AquantiaPhyStatus (
-  IN  DPAA1_PHY *Dpaa1Phy
-  );
 
 EFI_STATUS
 RealtekPhyConfig(DPAA1_PHY *Dpaa1Phy);
 
 EFI_STATUS
 RealtekPhyStartup(DPAA1_PHY *Dpaa1Phy);
-
-BOOLEAN
-RealtekPhyStatus (
-  IN  DPAA1_PHY *Dpaa1Phy
-  );
 
 #endif /* __DPAA1_ETHERNET_PHY_PRIVATE_H__ */
