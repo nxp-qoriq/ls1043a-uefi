@@ -57,8 +57,14 @@
 #define GICV_BASE_4K        0x01406000
 #define GICV_SIZE_4K        0x2000
 
-#define GICD_BASE_64K       0x01410000
-#define GICC_BASE_64K       0x01420000
+#define GICD_BASE_64K	0x01410000
+#define GICD_SIZE_64K	0x10000
+#define GICC_BASE_64K	0x01420000
+#define GICC_SIZE_64K	0x20000
+#define GICH_BASE_64K	0x01440000
+#define GICH_SIZE_64K	0x20000
+#define GICV_BASE_64K	0x01460000
+#define GICV_SIZE_64K	0x20000
 
 #define REV1_0                     0x10
 #define REV1_1                     0x11
