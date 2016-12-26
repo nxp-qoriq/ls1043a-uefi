@@ -18,9 +18,14 @@
 **/ 
 
 #include <PciHostBridge.h>
-#define PCI_MEM32_BASE      FixedPcdGet64 (PcdPciMmio32Base)
+
+#define PCI1_MEM32_BASE     FixedPcdGet64 (PcdPci1Mmio32Base)
+#define PCI2_MEM32_BASE     FixedPcdGet64 (PcdPci2Mmio32Base)
+#define PCI3_MEM32_BASE     FixedPcdGet64 (PcdPci3Mmio32Base)
 #define PCI_MEM32_SIZE      FixedPcdGet64 (PcdPciMmio32Size)
-#define PCI_MEM64_BASE      FixedPcdGet64 (PcdPciMmio64Base)
+#define PCI1_MEM64_BASE     FixedPcdGet64 (PcdPci1Mmio64Base)
+#define PCI2_MEM64_BASE     FixedPcdGet64 (PcdPci2Mmio64Base)
+#define PCI3_MEM64_BASE     FixedPcdGet64 (PcdPci3Mmio64Base)
 #define PCI_MEM64_SIZE      FixedPcdGet64 (PcdPciMmio64Size)
 
 //
@@ -33,7 +38,7 @@ UINTN RootBridgeNumber[3] = { 1, 1, 1 };
 
 UINT64 RootBridgeAttribute[1][1] = { {EFI_PCI_HOST_BRIDGE_MEM64_DECODE | EFI_PCI_HOST_BRIDGE_COMBINE_MEM_PMEM} };
 
-EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath1 = {
+EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath = {
   {
         { ACPI_DEVICE_PATH,
           ACPI_DP,
@@ -56,52 +61,6 @@ EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath1 = {
       }
 };
 
-EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath3 = {
-  {
-        { ACPI_DEVICE_PATH,
-          ACPI_DP,
-          {
-            (UINT8) (sizeof(ACPI_HID_DEVICE_PATH)),
-            (UINT8) ((sizeof(ACPI_HID_DEVICE_PATH)) >> 8)
-          }
-        },
-        EISA_PNP_ID(0x0A03),
-        0
-      },
-
-      {
-        END_DEVICE_PATH_TYPE,
-        END_ENTIRE_DEVICE_PATH_SUBTYPE,
-        {
-          END_DEVICE_PATH_LENGTH,
-          0
-        }
-      }
-};
-
-EFI_PCI_ROOT_BRIDGE_DEVICE_PATH mEfiPciRootBridgeDevicePath2 = {
-  {
-    {     ACPI_DEVICE_PATH,
-          ACPI_DP,
-          {
-            (UINT8) (sizeof(ACPI_HID_DEVICE_PATH)),
-            (UINT8) ((sizeof(ACPI_HID_DEVICE_PATH)) >> 8)
-          }
-        },
-        EISA_PNP_ID(0x0A03),
-        0
-      },
-
-      {
-        END_DEVICE_PATH_TYPE,
-        END_ENTIRE_DEVICE_PATH_SUBTYPE,
-        {
-          END_DEVICE_PATH_LENGTH,
-          0
-        }
-      }
-};
-  
 EFI_HANDLE mPciDriverImageHandle;
 
 PCI_HOST_BRIDGE_INSTANCE gPciHostBridgeInstanceTemplate = {
@@ -127,6 +86,53 @@ PCI_HOST_BRIDGE_INSTANCE gPciHostBridgeInstanceTemplate = {
   
 PCI_HOST_BRIDGE_INSTANCE    *HostBridge[3];
 PCI_ROOT_BRIDGE_INSTANCE    *PrivateData[3];
+
+//
+// Implementation
+//
+static
+BOOLEAN
+IsPcieNumEnabled(
+  IN UINTN PcieNum
+  )
+{
+	UINT64 SerDes1ProtocolMap = 0x0;
+
+	GetSerdesProtocolMaps(&SerDes1ProtocolMap);
+        switch(PcieNum){
+        case 0:
+		return(IsSerDesLaneProtocolConfigured(SerDes1ProtocolMap, PCIE1));
+        case 1:
+		return(IsSerDesLaneProtocolConfigured(SerDes1ProtocolMap, PCIE2));
+        case 2:
+		return(IsSerDesLaneProtocolConfigured(SerDes1ProtocolMap, PCIE3));
+	default:
+		DEBUG((EFI_D_ERROR, "Device not supported\n"));
+		break;
+        }
+
+        return FALSE;
+}
+
+
+static
+EFI_STATUS
+AddMemorySpace (
+  IN UINT64                                 BaseAddress,
+  IN UINTN                                  Size
+  )
+{
+  EFI_STATUS                  Status;
+  Status = gDS->AddMemorySpace (
+          EfiGcdMemoryTypeMemoryMappedIo,
+          BaseAddress,
+          Size,
+          0
+          );
+
+  return Status;
+}
+
 
 //
 // Implementation
@@ -158,9 +164,9 @@ PciHostBridgeEntryPoint (
   // Create Host Bridge Device Handle
   //
   for (Loop1 = 0; Loop1 < HOST_BRIDGE_NUMBER; Loop1++) {
-    if (Loop1 == 0 || Loop1 == 1) {
-      DEBUG ((EFI_D_ERROR, "PCIE%d is disabled\n", (Loop1 + 1)));
-      continue;
+    if (!IsPcieNumEnabled(Loop1)) {
+        DEBUG ((EFI_D_ERROR, "PCIE%d is disabled\n", (Loop1 + 1)));
+        continue;
     }
 
     DEBUG ((EFI_D_RELEASE, "PCIE%d is Enabled\n", (Loop1 + 1)));
@@ -185,9 +191,9 @@ PciHostBridgeEntryPoint (
       return EFI_DEVICE_ERROR;
     } else {
       DEBUG ((EFI_D_INFO, "%a: Succeed to install resource allocation protocol\n", __FUNCTION__));
-    }   
-    
-    HostBridge[Loop1]->ImageHandle = ImageHandle; 
+    }
+
+    HostBridge[Loop1]->ImageHandle = ImageHandle;
     //
     // Create Root Bridge Device Handle in this Host Bridge
     //
@@ -198,13 +204,28 @@ PciHostBridgeEntryPoint (
       }
 
       PrivateData[Loop1]->Signature = PCI_ROOT_BRIDGE_SIGNATURE;
-      CopyMem (&(PrivateData[Loop1]->DevicePath), &mEfiPciRootBridgeDevicePath3, sizeof (EFI_PCI_ROOT_BRIDGE_DEVICE_PATH));
+      CopyMem (&(PrivateData[Loop1]->DevicePath), &mEfiPciRootBridgeDevicePath, sizeof (EFI_PCI_ROOT_BRIDGE_DEVICE_PATH));
         // Set Device Path for this Root Bridge
-      PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 0;
- 
+
+      if (Loop1 == 0) {
+        PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 0;
+        PrivateData[Loop1]->BaseAddress64 = PCI1_MEM64_BASE;
+        PrivateData[Loop1]->BaseAddress32 = PCI1_MEM32_BASE;
+      }
+      if (Loop1 == 1) {
+        PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 1;
+        PrivateData[Loop1]->BaseAddress64 = PCI2_MEM64_BASE;
+        PrivateData[Loop1]->BaseAddress32 = PCI2_MEM32_BASE;
+      }
+      if (Loop1 == 2) {
+        PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 2;
+        PrivateData[Loop1]->BaseAddress64 = PCI3_MEM64_BASE;
+        PrivateData[Loop1]->BaseAddress32 = PCI3_MEM32_BASE;
+      }
+
       PrivateData[Loop1]->Info = AllocateZeroPool (sizeof(struct LsPcieInfo));
       PrivateData[Loop1]->Pcie = AllocateZeroPool (sizeof(struct LsPcie));
-      
+
       SetLSPcieInfo(PrivateData[Loop1]->Info, (Loop1+1));
 
       HostBridge[Loop1]->RootBridge = PrivateData[Loop1];
@@ -212,47 +233,79 @@ PciHostBridgeEntryPoint (
       if (FeaturePcdGet(PcdPciDebug) == TRUE)
         DEBUG ((EFI_D_INFO, "Installed Host Bridges successfully\n"));
 
-      PciRbInitialize(
-        PrivateData[Loop1], 
-        (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL *)&PrivateData[Loop1]->Io, 
-        PrivateData[Loop1]->Info, 
-        HostBridge[Loop1]->HostBridgeHandle, 
+      Status = PciRbInitialize(
+        PrivateData[Loop1],
+        (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL *)&PrivateData[Loop1]->Io,
+        PrivateData[Loop1]->Info,
+        HostBridge[Loop1]->HostBridgeHandle,
         RootBridgeAttribute[1][1],
-        (Loop1+1),	
+        (Loop1+1),
 	0
         );
-   
+
+      if (EFI_ERROR (Status)) {
+        Status = gBS->UninstallMultipleProtocolInterfaces (
+                      HostBridge[Loop1]->HostBridgeHandle,
+                      &gEfiPciHostBridgeResourceAllocationProtocolGuid, &HostBridge[Loop1]->ResAlloc,
+                      NULL
+                      );
+
+        FreePool(PrivateData[Loop1]);
+        FreePool (HostBridge[Loop1]);
+        DEBUG ((EFI_D_ERROR, "UNInstalled HostBridge ResAlloc protocol and Freed memory\n"));
+        break;
+      }
+
       Status = gBS->InstallMultipleProtocolInterfaces(
-                      &PrivateData[Loop1]->Handle,              
-                      &gEfiDevicePathProtocolGuid,      &PrivateData[Loop1]->DevicePath,
+                      &PrivateData[Loop1]->Handle,
+                      &gEfiDevicePathProtocolGuid, &PrivateData[Loop1]->DevicePath,
                       &gEfiPciRootBridgeIoProtocolGuid, &PrivateData[Loop1]->Io,
                       NULL
                       );
       if (EFI_ERROR (Status)) {
-	DEBUG ((EFI_D_ERROR, "Failed to install protocol\n"));
+	DEBUG ((EFI_D_ERROR, "Failed to install RootBridgeIo and DevicePath protocols\n"));
         FreePool(PrivateData[Loop1]);
         return EFI_DEVICE_ERROR;
       }
-      
-      DEBUG ((EFI_D_INFO, "Successfully Installed protocol\n"));
+
+      DEBUG ((EFI_D_INFO, "Successfully Installed RootBridgeIo and DevicePath protocols\n"));
       InsertTailList (&HostBridge[Loop1]->Head, &PrivateData[Loop1]->Link);
     }
   }
 
- // PCI 32bit Memory Space
-  Status = gDS->AddMemorySpace (
-          EfiGcdMemoryTypeMemoryMappedIo,
-          PCI_MEM32_BASE,
-          PCI_MEM32_SIZE,
-          0
-          );
+  // PCI 32bit Memory Space
+  Status = AddMemorySpace(PCI1_MEM32_BASE, PCI_MEM32_SIZE);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI1_MEM32\n"));
+    return EFI_DEVICE_ERROR;
+  }
+  Status = AddMemorySpace(PCI2_MEM32_BASE, PCI_MEM32_SIZE);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI2_MEM32\n"));
+    return EFI_DEVICE_ERROR;
+  }
+  Status = AddMemorySpace(PCI3_MEM32_BASE, PCI_MEM32_SIZE);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI3_MEM32\n"));
+    return EFI_DEVICE_ERROR;
+  }
 
-  Status = gDS->AddMemorySpace (
-          EfiGcdMemoryTypeMemoryMappedIo,
-          PCI_MEM64_BASE,
-          PCI_MEM64_SIZE,
-          0
-          );
+  // PCI 64bit Memory Space
+  Status = AddMemorySpace(PCI1_MEM64_BASE, PCI_MEM64_SIZE);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI1_MEM64\n"));
+    return EFI_DEVICE_ERROR;
+  }
+  Status = AddMemorySpace(PCI2_MEM64_BASE, PCI_MEM64_SIZE);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI2_MEM64\n"));
+    return EFI_DEVICE_ERROR;
+  }
+  Status = AddMemorySpace(PCI3_MEM64_BASE, PCI_MEM64_SIZE);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI3_MEM64\n"));
+    return EFI_DEVICE_ERROR;
+  }
 
   return EFI_SUCCESS;
 }
@@ -283,6 +336,7 @@ PciNotifyPhase (
   UINTN                       BitsOfAlignment;
 
   HostBridgeInstance = INSTANCE_FROM_RESOURCE_ALLOCATION_THIS (This);
+  RootBridgeInstance = HostBridgeInstance->RootBridge;
 
   // Check RootBridge Signature
   ASSERT (HostBridgeInstance->RootBridge->Signature == PCI_ROOT_BRIDGE_SIGNATURE);
@@ -343,7 +397,7 @@ PciNotifyPhase (
       AddrLen = RootBridgeInstance->ResAlloc[ResTypeMem32].Length;
 
       // Top of the 32bit PCI Memory space
-      BaseAddress = FixedPcdGet32 (PcdPciMmio32Base) + FixedPcdGet32 (PcdPciMmio32Size);
+      BaseAddress = RootBridgeInstance->BaseAddress32 + FixedPcdGet32 (PcdPciMmio32Size);
 
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,
@@ -356,7 +410,7 @@ PciNotifyPhase (
                );
 
       // Ensure the allocation is in the 32bit PCI memory space
-      if (!EFI_ERROR (Status) && (BaseAddress >= FixedPcdGet64 (PcdPciMmio32Base))) {
+      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->BaseAddress32)) {
         RootBridgeInstance->ResAlloc[ResTypeMem32].Base   = (UINTN)BaseAddress;
       }
     }
@@ -366,7 +420,7 @@ PciNotifyPhase (
       AddrLen = RootBridgeInstance->ResAlloc[ResTypePMem32].Length;
 
       // Top of the 32bit PCI Memory space
-      BaseAddress = FixedPcdGet32 (PcdPciMmio32Base) + FixedPcdGet64 (PcdPciMmio32Size);
+      BaseAddress = RootBridgeInstance->BaseAddress32 + FixedPcdGet64 (PcdPciMmio32Size);
 
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,
@@ -379,7 +433,7 @@ PciNotifyPhase (
                );
 
       // Ensure the allocation is in the 32bit PCI memory space
-      if (!EFI_ERROR (Status) && (BaseAddress >= FixedPcdGet64 (PcdPciMmio32Base))) {
+      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->BaseAddress32)) {
         RootBridgeInstance->ResAlloc[ResTypePMem32].Base = (UINTN)BaseAddress;
       }
     }
@@ -389,7 +443,7 @@ PciNotifyPhase (
       AddrLen = RootBridgeInstance->ResAlloc[ResTypeMem64].Length;
 
       // Top of the 64bit PCI Memory space
-      BaseAddress = FixedPcdGet64 (PcdPciMmio64Base) + FixedPcdGet64 (PcdPciMmio64Size);
+      BaseAddress = RootBridgeInstance->BaseAddress64 + FixedPcdGet64 (PcdPciMmio64Size);
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,
                   EfiGcdMemoryTypeMemoryMappedIo,
@@ -401,7 +455,7 @@ PciNotifyPhase (
                );
 
       // Ensure the allocation is in the 64bit PCI memory space
-      if (!EFI_ERROR (Status) && (BaseAddress >= FixedPcdGet64 (PcdPciMmio64Base))) {
+      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->BaseAddress64)) {
         RootBridgeInstance->ResAlloc[ResTypeMem64].Base   = (UINTN)BaseAddress;
       }
     }
@@ -410,7 +464,7 @@ PciNotifyPhase (
       AddrLen = RootBridgeInstance->ResAlloc[ResTypePMem64].Length;
 
       // Top of the 64bit PCI Memory space
-      BaseAddress = FixedPcdGet64 (PcdPciMmio64Base) + FixedPcdGet64 (PcdPciMmio64Size);
+      BaseAddress = RootBridgeInstance->BaseAddress64 + FixedPcdGet64 (PcdPciMmio64Size);
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,
                   EfiGcdMemoryTypeMemoryMappedIo,
@@ -422,7 +476,7 @@ PciNotifyPhase (
                );
 
       // Ensure the allocation is in the 64bit PCI memory space
-      if (!EFI_ERROR (Status) && (BaseAddress >= FixedPcdGet64 (PcdPciMmio64Base))) {
+      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->BaseAddress64)) {
         RootBridgeInstance->ResAlloc[ResTypePMem64].Base   = (UINTN)BaseAddress;
       }
     }

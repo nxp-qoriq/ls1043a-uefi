@@ -156,10 +156,17 @@
   gArmPlatformTokenSpaceGuid.PcdPciBusMax|255|UINT64|0x00000043
   gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x00010000|UINT64|0x00000044
   gArmPlatformTokenSpaceGuid.PcdPciIoSize|0x00010000|UINT64|0x00000045
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Base|0x40000000|UINT32|0x00000046
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x40000000|UINT32|0x00000047
   gArmPlatformTokenSpaceGuid.PcdPciMemTranslation|0x5000000000|UINT64|0x00000055
-  gArmPlatformTokenSpaceGuid.PcdPciMmio64Base|0x5040000000|UINT64|0x00000048
+  gArmPlatformTokenSpaceGuid.PcdPci1Mmio32Base|0x28000000|UINT32|0x00000065
+  gArmPlatformTokenSpaceGuid.PcdPci2Mmio32Base|0x38000000|UINT32|0x00000066
+  gArmPlatformTokenSpaceGuid.PcdPci3Mmio32Base|0x30000000|UINT32|0x00000046
+  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x08000000|UINT32|0x00000047
+  gArmPlatformTokenSpaceGuid.PcdPci1MemTranslation|0x4000000000|UINT64|0x00000067
+  gArmPlatformTokenSpaceGuid.PcdPci2MemTranslation|0x4800000000|UINT64|0x00000068
+  gArmPlatformTokenSpaceGuid.PcdPci3MemTranslation|0x5000000000|UINT64|0x00000069
+  gArmPlatformTokenSpaceGuid.PcdPci1Mmio64Base|0x4040000000|UINT64|0x0000006A
+  gArmPlatformTokenSpaceGuid.PcdPci2Mmio64Base|0x4840000000|UINT64|0x0000006B
+  gArmPlatformTokenSpaceGuid.PcdPci3Mmio64Base|0x5040000000|UINT64|0x0000006C
   gArmPlatformTokenSpaceGuid.PcdPciMmio64Size|0x0040000000|UINT64|0x00000049
   gArmPlatformTokenSpaceGuid.PcdPciIoTranslation|0x00010000|UINT64|0x00000050
   gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x4000000000|UINT64|0x00000051
@@ -206,3 +213,7 @@
   gLS1043aRdbTokenSpaceGuid.PcdNvFdSize|0x0|UINT32|0x00000046
   
   gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported|FALSE|BOOLEAN|0x00000047
+
+
+  #Added some new Pci Pcds with existing PCI Pcds using Token IDs
+  #0x00000065 to 0x0000006C

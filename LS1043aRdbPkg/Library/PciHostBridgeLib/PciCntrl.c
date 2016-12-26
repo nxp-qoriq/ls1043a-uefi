@@ -20,7 +20,6 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/BaseMemoryLib/MemLibInternals.h>
 #include <Library/BaseLib.h>
-UINT64 SerDes1ProtocolMap = 0x0;
 
 PCI_ROOT_BRIDGE_INSTANCE      *RootBridgeHead;
 
@@ -127,6 +126,8 @@ IsPcieEnabled(
   IN UINTN PCIeBaseAddr
 )
 {
+	UINT64 SerDes1ProtocolMap = 0x0;
+
 	GetSerdesProtocolMaps(&SerDes1ProtocolMap);
 	switch(PCIeBaseAddr){
 	case CONFIG_SYS_PCIE1_ADDR:
