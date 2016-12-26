@@ -1573,7 +1573,7 @@ FdtFixupCryptoEra (
 	Node = fdt_path_offset(Blob, "crypto");
 	if (Node < 0) {
 		DEBUG((EFI_D_INFO, "WARNING: Missing crypto node\n"));
-		return EFI_SUCCESS;
+		return Node;
 	}
 
 	Error = fdt_setprop_u32(Blob, Node, "fsl,sec-era", Era);
