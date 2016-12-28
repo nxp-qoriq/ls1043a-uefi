@@ -85,6 +85,7 @@
 #define PHY_IDENTIFIER_OUI_MASK    0x3FFFFFC0
 #define REALTEK_OUI                0x000732
 #define AQUANTIA_OUI               0x00E86D
+#define VITESSE_OUI                0x0001C1
 
 VOID
 Dpaa1PhyRegisterWrite (
@@ -122,5 +123,11 @@ RealtekPhyConfig(DPAA1_PHY *Dpaa1Phy);
 
 EFI_STATUS
 RealtekPhyStartup(DPAA1_PHY *Dpaa1Phy);
+
+EFI_STATUS
+VitessePhyConfig(DPAA1_PHY *Dpaa1Phy);
+
+EFI_STATUS
+VitessePhyStartup(DPAA1_PHY *Dpaa1Phy);
 
 #endif /* __DPAA1_ETHERNET_PHY_PRIVATE_H__ */

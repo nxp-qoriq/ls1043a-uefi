@@ -45,13 +45,18 @@ typedef struct FdtPort {
 } FDT_PORT;
 
 VOID
-Dpaa1DiscoverFmanMemac(SERDES_LANE_PROTOCOL LaneProtocol,
+Dpaa1ParseSerDes(SERDES_LANE_PROTOCOL LaneProtocol,
+                 VOID *Arg);
+VOID
+Dpaa1DiscoverFmanMemac(FMAN_MEMAC_ID MemacId,
+                       PHY_INTERFACE_TYPE PhyInterfaceType,
                        VOID *Arg);
 
 VOID
-GetMemacIdAndPhyType(SERDES_LANE_PROTOCOL LaneProtocol,
-                     FMAN_MEMAC_ID *MemacId,
-                     PHY_INTERFACE_TYPE *PhyInterfaceType);
+GetMemacIdAndPhyType(IN     SERDES_LANE_PROTOCOL LaneProtocol,
+                     OUT    FMAN_MEMAC_ID        *MemacId,
+                     IN OUT UINT8                *MemacIdCount,
+                     OUT    PHY_INTERFACE_TYPE   *PhyInterfaceType);
 
 BOOLEAN
 IsMemacEnabled (

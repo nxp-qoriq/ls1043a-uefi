@@ -123,10 +123,37 @@ static const SERDES_CONFIG SerDes1ConfigTable[] = {
     .SerDesLanes = { SGMII_FM1_DTSEC9, SGMII_FM1_DTSEC2, SGMII_FM1_DTSEC5, SGMII_FM1_DTSEC6 }
   },
   {
+    .SerDesProtocol = 0x1460,
+    .SerDesLanes = { XFI_FM1_MAC9, QSGMII_FM1_A, PCIE3, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x2460,
+    .SerDesLanes = { SGMII_2500_FM1_DTSEC9, QSGMII_FM1_A, PCIE3, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x3460,
+    .SerDesLanes = { SGMII_FM1_DTSEC9, QSGMII_FM1_A, PCIE3, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x3455,
+    .SerDesLanes = { SGMII_FM1_DTSEC9, QSGMII_FM1_A, PCIE2, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x9960,
+    .SerDesLanes = { PCIE1, PCIE2, PCIE3, PCIE3 }
+  },
+  {
+    .SerDesProtocol = 0x2233,
+    .SerDesLanes = { SGMII_2500_FM1_DTSEC9, SGMII_FM1_DTSEC2, SGMII_FM1_DTSEC5, SGMII_FM1_DTSEC6 }
+  },
+  {
+    .SerDesProtocol = 0x2533,
+    .SerDesLanes = { SGMII_2500_FM1_DTSEC9, PCIE1, SGMII_FM1_DTSEC5, SGMII_FM1_DTSEC6 }
+  },
+  {
     .SerDesProtocol = 0x0,
   }
 };
-
 
 /**
    Get the configuration for the given SerDes instance.

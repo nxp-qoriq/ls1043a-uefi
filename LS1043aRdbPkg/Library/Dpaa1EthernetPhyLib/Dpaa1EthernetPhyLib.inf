@@ -26,6 +26,7 @@
   Aquantia.c
   PhyCommon.c
   Realtek.c
+  Vitesse.c
 
 [LibraryClasses]
   ArmLib
