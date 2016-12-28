@@ -21,25 +21,6 @@
 #include <Library/IoLib.h>
 #include <LS1043aRdb.h>
 
-CONST CHAR8 *SerdesPrtclToStr[] = {
-       [NONE] = "NONE",
-       [PCIE1] = "PCIE1",
-       [PCIE2] = "PCIE2",
-       [PCIE3] = "PCIE3",
-       [SATA] = "SATA",
-       [SGMII_FM1_DTSEC1] = "SGMII_FM1_DTSEC1",
-       [SGMII_FM1_DTSEC2] = "SGMII_FM1_DTSEC2",
-       [RGMII_FM1_DTSEC3] = "RGMII_FM1_DTSEC3",
-       [RGMII_FM1_DTSEC4] = "RGMII_FM1_DTSEC4",
-       [SGMII_FM1_DTSEC5] = "SGMII_FM1_DTSEC5",
-       [SGMII_FM1_DTSEC6] = "SGMII_FM1_DTSEC6",
-       [SGMII_FM1_DTSEC9] = "SGMII_FM1_DTSEC9",
-       [QSGMII_FM1_A] = "QSGMII_FM1_A",        /* A indicates MACs 1,2,5,6 */
-       [XFI_FM1_MAC9] = "XFI_FM1_MAC9",
-       [SGMII_2500_FM1_DTSEC2] = "SGMII_2500_FM1_DTSEC2",
-       [SGMII_2500_FM1_DTSEC9] = "SGMII_2500_FM1_DTSEC9"
-};
-
 CONST CHAR8 *CONST gFmanMemacStrings[] = {
   [FM1_DTSEC_1] = "MEMAC1",
   [FM1_DTSEC_2] = "MEMAC2",
@@ -48,7 +29,6 @@ CONST CHAR8 *CONST gFmanMemacStrings[] = {
   [FM1_DTSEC_5] = "MEMAC5",
   [FM1_DTSEC_6] = "MEMAC6",
   [FM1_DTSEC_9] = "MEMAC9",
-  [FM1_DTSEC_M] = "MEMACM",
 };
 
 C_ASSERT(ARRAY_SIZE(gFmanMemacStrings) == NUM_FMAN_MEMACS);
@@ -82,7 +62,6 @@ STATIC FMAN_MEMAC gFmanMemacs[] = {
   FMAN_MEMAC_INITIALIZER(FM1_DTSEC_5),
   FMAN_MEMAC_INITIALIZER(FM1_DTSEC_6),
   FMAN_MEMAC_INITIALIZER(FM1_DTSEC_9), 
-  FMAN_MEMAC_INITIALIZER(FM1_DTSEC_M),
 };
 
 C_ASSERT(ARRAY_SIZE(gFmanMemacs) == NUM_FMAN_MEMACS);
@@ -204,7 +183,6 @@ DumpMacStats (
 VOID
 FmanMemacInit(
   IN  FMAN_MEMAC_ID MemacId,
-  IN  SERDES_LANE_PROTOCOL LaneProtocol,
   IN  PHY_INTERFACE_TYPE PhyInterfaceType,
   IN  DPAA1_PHY_MDIO_BUS *MdioBus,
   IN  UINT8 PhyAddress,
@@ -223,9 +201,8 @@ FmanMemacInit(
   Memac->Phy.PhyAddress = PhyAddress;
 
   DPAA1_INFO_MSG(
-    "%a discovered on SerDes, Lane protocol %a, PHY type %a, %a\n",
+    "Memac %a PHY type %a, %a\n",
     gFmanMemacStrings[MemacId],
-    SerdesPrtclToStr[LaneProtocol],
     gPhyInterfaceTypeStrings[PhyInterfaceType],
     Memac->Enabled ? "Enabled" : "Disabled");
 

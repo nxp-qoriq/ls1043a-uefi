@@ -94,66 +94,95 @@ STATIC CONST MEMAC_PHY_MAPPING gMemacToPhyMap[] = {
 C_ASSERT(ARRAY_SIZE(gMemacToPhyMap) <= NUM_FMAN_MEMACS);
 
 /**
-   Returns MAC ID and PHY type for given SerDes lane protocol
+   Returns MAC ID Array and PHY type for given SerDes lane protocol
 
    @param[in] LaneProtocol	SerDes lane protocol representing a device
    
    @retval MemacId, NULL if lane protocol not found
+   @param[in],@retval Size of Mac ID Array.
+   Input is the maximum size allocated for MAC ID Array.
+   Output is the actual number of MAC ids associated with a serdes protocol
    @retval PhyInterfaceType, NULL if lane protocol not found
 
  **/
 VOID
-GetMemacIdAndPhyType(SERDES_LANE_PROTOCOL LaneProtocol,
-                     FMAN_MEMAC_ID *MemacId,
-                     PHY_INTERFACE_TYPE *PhyInterfaceType)
+GetMemacIdAndPhyType(IN     SERDES_LANE_PROTOCOL LaneProtocol,
+                     OUT    FMAN_MEMAC_ID        *MemacId,
+                     IN OUT UINT8                *MemacIdCount,
+                     OUT    PHY_INTERFACE_TYPE   *PhyInterfaceType)
 {
-  if (LaneProtocol >= SGMII_FM1_DTSEC1 && LaneProtocol <= SGMII_2500_FM1_DTSEC9) {
+  ASSERT(*MemacIdCount >= 4);
+
+  if (LaneProtocol > NONE && LaneProtocol < SERDES_LANE_PROTOCOLS_COUNT) {
     switch(LaneProtocol){
       case XFI_FM1_MAC9:
         *MemacId = FM1_DTSEC_9; // XFI on lane A, MAC 9
         *PhyInterfaceType = PHY_INTERFACE_XFI;
+        *MemacIdCount = 1;
         break;
       case SGMII_FM1_DTSEC1:
         *MemacId = FM1_DTSEC_1;
         *PhyInterfaceType = PHY_INTERFACE_SGMII;
+        *MemacIdCount = 1;
         break;
       case SGMII_FM1_DTSEC2:
         *MemacId = FM1_DTSEC_2;
         *PhyInterfaceType = PHY_INTERFACE_SGMII;
-        break;
-      case RGMII_FM1_DTSEC3:
-        *MemacId = FM1_DTSEC_3;
-        *PhyInterfaceType = PHY_INTERFACE_RGMII;
-        break;
-      case RGMII_FM1_DTSEC4:
-        *MemacId = FM1_DTSEC_4;
-        *PhyInterfaceType = PHY_INTERFACE_RGMII;
+        *MemacIdCount = 1;
         break;
       case SGMII_FM1_DTSEC5:
         *MemacId = FM1_DTSEC_5;
         *PhyInterfaceType = PHY_INTERFACE_SGMII;
+        *MemacIdCount = 1;
         break;
       case SGMII_FM1_DTSEC6:
         *MemacId = FM1_DTSEC_6;
         *PhyInterfaceType = PHY_INTERFACE_SGMII;
+        *MemacIdCount = 1;
         break;
-      case QSGMII_FM1_A:
-        *MemacId = FM1_DTSEC_M;
+      case QSGMII_FM1_A: /* A indicates MACs 1,2,5,6 */
+        *MemacId = FM1_DTSEC_1;
+        *(++MemacId) = FM1_DTSEC_2;
+        *(++MemacId) = FM1_DTSEC_5;
+        *(++MemacId) = FM1_DTSEC_6;
         *PhyInterfaceType = PHY_INTERFACE_QSGMII;
+        *MemacIdCount = 4;
         break;
       case SGMII_2500_FM1_DTSEC2:
         *MemacId = FM1_DTSEC_2;
         *PhyInterfaceType = PHY_INTERFACE_SGMII_2500;
+        *MemacIdCount = 1;
         break;
       case SGMII_2500_FM1_DTSEC9:
         *MemacId = FM1_DTSEC_9;
         *PhyInterfaceType = PHY_INTERFACE_SGMII_2500;
+        *MemacIdCount = 1;
         break;
-	default:
+      default:
+        *MemacId = INVALID_FMAN_MEMAC_ID;
+        *PhyInterfaceType = PHY_INTERFACE_NONE;
+        *MemacIdCount = 0;
 	 break;
     }
   }
 }
+
+CONST CHAR8 *SerdesPrtclToStr[] = {
+  [NONE] = "NONE",
+  [PCIE1] = "PCIE1",
+  [PCIE2] = "PCIE2",
+  [PCIE3] = "PCIE3",
+  [SATA] = "SATA",
+  [SGMII_FM1_DTSEC1] = "SGMII_FM1_DTSEC1",
+  [SGMII_FM1_DTSEC2] = "SGMII_FM1_DTSEC2",
+  [SGMII_FM1_DTSEC5] = "SGMII_FM1_DTSEC5",
+  [SGMII_FM1_DTSEC6] = "SGMII_FM1_DTSEC6",
+  [SGMII_FM1_DTSEC9] = "SGMII_FM1_DTSEC9",
+  [QSGMII_FM1_A] = "QSGMII_FM1_A",        /* A indicates MACs 1,2,5,6 */
+  [XFI_FM1_MAC9] = "XFI_FM1_MAC9",
+  [SGMII_2500_FM1_DTSEC2] = "SGMII_2500_FM1_DTSEC2",
+  [SGMII_2500_FM1_DTSEC9] = "SGMII_2500_FM1_DTSEC9"
+};
 
 BOOLEAN
 IsMemacEnabled (
@@ -188,24 +217,39 @@ IsMemacEnabled (
 
  **/
 VOID
-Dpaa1DiscoverFmanMemac(SERDES_LANE_PROTOCOL LaneProtocol,
+Dpaa1DiscoverFmanMemac(FMAN_MEMAC_ID MemacId,
+                       PHY_INTERFACE_TYPE PhyInterfaceType,
                        VOID *Arg)
 {
-  FMAN_MEMAC_ID MemacId = (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID;
-  PHY_INTERFACE_TYPE PhyInterfaceType = (PHY_INTERFACE_TYPE)PHY_INTERFACE_NONE;
-
-  GetMemacIdAndPhyType(LaneProtocol, &MemacId, &PhyInterfaceType);
-  DPAA1_DEBUG_MSG("Dpaa1DiscoverFmanMemac lane protocol 0x%x" 
-			"MemacId %d PhyInterfaceType %d \n", 
-			LaneProtocol, MemacId, PhyInterfaceType);
-  
   if (MemacId != (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID && 
 	PhyInterfaceType != (PHY_INTERFACE_TYPE)PHY_INTERFACE_NONE) {
     FmanMemacInit(MemacId,
-                  LaneProtocol,
                   PhyInterfaceType,
                   gMemacToPhyMap[MemacId].MdioBus,
                   gMemacToPhyMap[MemacId].PhyAddress,
                   Arg); 
+  }
+}
+
+VOID
+Dpaa1ParseSerDes(SERDES_LANE_PROTOCOL LaneProtocol,
+                 VOID *Arg)
+{
+  // QSGMII protocol combines 4 SGMII interfaces into one
+  FMAN_MEMAC_ID MemacId[] = {(FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID,
+                             (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID,
+                             (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID,
+                             (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID};
+  PHY_INTERFACE_TYPE PhyInterfaceType = (PHY_INTERFACE_TYPE)PHY_INTERFACE_NONE;
+  UINT8              Index = 0;
+  UINT8              MemacIdCount = ARRAY_SIZE(MemacId);
+
+  GetMemacIdAndPhyType(LaneProtocol, &MemacId[0], &MemacIdCount ,&PhyInterfaceType);
+  for (Index = 0; Index < MemacIdCount; Index++)
+  {
+    DPAA1_DEBUG_MSG("MemacId %d discovered on SerDes lane protocol %a"
+                    "PhyInterfaceType %d \n",MemacId[Index],
+                    SerdesPrtclToStr[LaneProtocol],PhyInterfaceType);
+    Dpaa1DiscoverFmanMemac(MemacId[Index], PhyInterfaceType, Arg);
   }
 }

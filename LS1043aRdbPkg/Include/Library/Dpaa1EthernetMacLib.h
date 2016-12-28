@@ -86,7 +86,6 @@ typedef enum _FMAN_MEMAC_ID {
   FM1_DTSEC_5,
   FM1_DTSEC_6,
   FM1_DTSEC_9 = 0x9,
-  FM1_DTSEC_M,
   /*
    * New values must added above this entry
    */
@@ -423,7 +422,6 @@ typedef struct _Memac {
 
 VOID
 FmanMemacInit (FMAN_MEMAC_ID MemacId,
-	       SERDES_LANE_PROTOCOL LaneProtocol,
               PHY_INTERFACE_TYPE PhyInterfaceType,
               DPAA1_PHY_MDIO_BUS *MdioBus,
               UINT8 PhyAddress,

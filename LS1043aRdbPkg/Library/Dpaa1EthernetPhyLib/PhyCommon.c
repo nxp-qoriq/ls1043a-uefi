@@ -509,6 +509,10 @@ Dpaa1PhyIdentify (
                  Dpaa1Phy->Dpaa1PhyStartup = AquantiaPhyStartup;
                  Dpaa1Phy->Dpaa1PhyConfig = AquantiaPhyConfig;
                  break;
+    case VITESSE_OUI:
+                 Dpaa1Phy->Dpaa1PhyStartup = VitessePhyStartup;
+                 Dpaa1Phy->Dpaa1PhyConfig = VitessePhyConfig;
+                 break;
     default:
            DPAA1_ERROR_MSG("PhyIdentifier 0x%08x is not supported yet\n",
                                         Dpaa1Phy->PhyIdentifier);

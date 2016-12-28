@@ -1164,22 +1164,23 @@ GetPhy (
   IN VOID  *Arg
   )
 {
-  FMAN_MEMAC_ID MemacId = (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID;
+  // QSGMII protocol combines 4 SGMII interfaces into one
+  FMAN_MEMAC_ID MemacId[] = {(FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID,
+                             (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID,
+                             (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID,
+                             (FMAN_MEMAC_ID)INVALID_FMAN_MEMAC_ID};
   PHY_INTERFACE_TYPE PhyInterfaceType = (PHY_INTERFACE_TYPE)PHY_INTERFACE_NONE;
+  UINT8              Index = 0;
+  UINT8              MemacIdCount = ARRAY_SIZE(MemacId);
 
-  GetMemacIdAndPhyType(LaneProtocol, &MemacId, &PhyInterfaceType);
+  GetMemacIdAndPhyType(LaneProtocol, &MemacId[0], &MemacIdCount, &PhyInterfaceType);
 
-  if (MemacId != INVALID_FMAN_MEMAC_ID) {
-    if (MemacId <= FM1_DTSEC_6)
-      gFdtPort[MemacId-1].PhyInterfaceType = PhyInterfaceType;
-    else if (MemacId == FM1_DTSEC_9)
+  for (Index = 0; Index < MemacIdCount; Index++)
+  {
+    if (MemacId[Index] <= FM1_DTSEC_6)
+      gFdtPort[MemacId[Index]-1].PhyInterfaceType = PhyInterfaceType;
+    else if (MemacId[Index] == FM1_DTSEC_9)
       gFdtPort[FM1_DTSEC_9 - 3].PhyInterfaceType = PhyInterfaceType;
-    else if (MemacId == FM1_DTSEC_M) {
-      gFdtPort[FM1_DTSEC_1 - 1].PhyInterfaceType = PhyInterfaceType;
-      gFdtPort[FM1_DTSEC_2 - 1].PhyInterfaceType = PhyInterfaceType;
-      gFdtPort[FM1_DTSEC_5 - 1].PhyInterfaceType = PhyInterfaceType;
-      gFdtPort[FM1_DTSEC_6 - 1].PhyInterfaceType = PhyInterfaceType;
-    }
   }
 }
 
@@ -1269,8 +1270,8 @@ FdtFixupFmanEthernet (
 
 	SerDesProbeLanes(GetPhy, NULL);
 	/* Added separately to take care of RGMIIs */
-	GetPhy(RGMII_FM1_DTSEC3, NULL);
-	GetPhy(RGMII_FM1_DTSEC4, NULL);
+	gFdtPort[FM1_DTSEC_3-1].PhyInterfaceType = PHY_INTERFACE_RGMII;
+	gFdtPort[FM1_DTSEC_4-1].PhyInterfaceType = PHY_INTERFACE_RGMII;
 
 	for (I = 0; I < ARRAY_SIZE(gFdtPort); I++) {
 		Status = FixupPort(Blob, "fsl,fman-memac", I);
