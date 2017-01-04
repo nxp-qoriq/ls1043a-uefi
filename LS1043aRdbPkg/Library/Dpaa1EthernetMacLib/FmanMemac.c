@@ -235,7 +235,7 @@ VOID InitializeMac (
   MmioWriteBe32((UINTN)&Regs->Ievent, IEVENT_CLEAR_ALL);
 
   /* set the max receive length */
-  MmioWriteBe32((UINTN)&Regs->Maxfrm, Mac->MaxRxLen & MAXFRM_MASK);
+  MmioWriteBe32((UINTN)&Regs->Maxfrm, MEMAC_MAXFRM & MAXFRM_MASK);
 
   /* multicast frame reception for the hash entry disable */
   MmioWriteBe32((UINTN)&Regs->HashtableCtrl, 0);
@@ -346,7 +346,8 @@ EnableMac (
   MmioSetBitsBe32((UINTN)&Regs->CommandConfig, MEMAC_CMD_CFG_SWR);
   MmioSetBitsBe32((UINTN)&Regs->StatnConfig, MEMAC_CMD_CFG_CLR_STATS);
   MmioSetBitsBe32((UINTN)&Regs->CommandConfig,
-      MEMAC_CMD_CFG_RXTX_EN | MEMAC_CMD_CFG_NO_LEN_CHK);
+      MEMAC_CMD_CFG_RXTX_EN | MEMAC_CMD_CFG_PAD );
+  MmioClearBitsBe32((UINTN)&Regs->CommandConfig, MEMAC_CMD_CFG_NO_LEN_CHK);
 }
 
 VOID

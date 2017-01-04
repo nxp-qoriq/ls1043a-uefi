@@ -22,7 +22,6 @@
 #include <Library/UefiLib.h>
 
 #define DPAA1_ETHERNET_DRIVER_VERSION   		0x1
-#define DPAA1_ETH_RX_FRAME_BUFFER_SIZE      	2048
 
 /**
  * DPAA1 Ethernet Device Path

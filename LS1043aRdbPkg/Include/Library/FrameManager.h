@@ -53,7 +53,7 @@ C_ASSERT(FMAN_FREE_POOL_SIZE % FMAN_FREE_POOL_ALIGNMENT == 0);
 
 #define RX_RING_SIZE            		8
 #define TX_RING_SIZE            		8
-#define MAX_RXBUF_LOG2             	12
+#define MAX_RXBUF_LOG2             	11
 #define MAX_RXBUF_LEN              	BIT(MAX_RXBUF_LOG2)
 
 typedef enum _FMAN_FW_SRC {

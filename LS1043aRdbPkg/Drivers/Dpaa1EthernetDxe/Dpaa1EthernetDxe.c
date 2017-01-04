@@ -837,7 +837,7 @@ Dpaa1SnpTransmit (
   }
 
   if (BuffSize < SnpMode->MediaHeaderSize ||
-      BuffSize > DPAA1_ETH_RX_FRAME_BUFFER_SIZE) {
+      BuffSize > MEMAC_MAXFRM) {
       DPAA1_ERROR_MSG("%a() called with invalid BuffSize parameter: %lu\n",
                       __func__, BuffSize);
       return EFI_BUFFER_TOO_SMALL;
@@ -958,7 +958,8 @@ STATIC CONST DPAA1_ETHERNET_DEVICE gDpaa1EthernetDeviceInitTemplate = {
     .State = EfiSimpleNetworkStopped,
     .HwAddressSize = NET_ETHER_ADDR_LEN,
     .MediaHeaderSize = sizeof(ETHER_HEAD),
-    .MaxPacketSize = DPAA1_ETH_RX_FRAME_BUFFER_SIZE,
+    .MaxPacketSize = MEMAC_MAXFRM - sizeof(ETHER_HEAD) \
+                     - NET_VLAN_TAG_LEN - 4/*Ethernet FCS(Frame Check Sequence)*/,
     .NvRamSize = 0,                 // No NVRAM
     .NvRamAccessSize = 0,           // No NVRAM
     .ReceiveFilterMask = EFI_SIMPLE_NETWORK_RECEIVE_UNICAST |
@@ -1130,7 +1131,7 @@ Dpaa1Transmit (
   EFI_STATUS Status;
 
   ASSERT(Data != NULL);
-  ASSERT(BuffSize >= sizeof(ETHER_HEAD) && BuffSize <= DPAA1_ETH_RX_FRAME_BUFFER_SIZE);
+  ASSERT(BuffSize >= sizeof(ETHER_HEAD) && BuffSize <= MEMAC_MAXFRM);
   ASSERT(HdrSize <= BuffSize);
 
   if (HdrSize != 0) {

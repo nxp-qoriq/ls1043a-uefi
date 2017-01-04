@@ -32,6 +32,7 @@
 #define MEMAC_CMD_CFG_NO_LEN_CHK	0x20000 /* Payload length check disable */
 #define MEMAC_CMD_CFG_SWR		0x00001000 /* software rest, sel clearing bit */
 #define MEMAC_CMD_CFG_CLR_STATS	0x00000004 /* statistics clearing bit */
+#define MEMAC_CMD_CFG_PAD		BIT5 /*Frame padding removal in receive path enable*/
 
 /* FMBM_TCFG - Tx configuration */
 #define FMBM_TCFG_EN 		0x80000000 /* port is enabled to transmit data */
@@ -95,7 +96,6 @@ typedef enum _FMAN_MEMAC_ID {
 typedef struct _ENET_MAC {
   VOID *Base; /* MAC controller base address */
   VOID *PhyRegs;
-  INT32 MaxRxLen;
 } ENET_MAC;
 
 typedef enum _FMAN_ETH_TYPE {
@@ -220,7 +220,6 @@ typedef struct _ETH_DEVICE {
        BMI_RX_PORT *RxPort;
        FMAN_ETH_TYPE Type;             /* 1G or 10G ethernet */
        ENET_MAC *Mac;   /* MAC controller */
-       INT32 MaxRxLen;
        FMAN_GLOBAL_PARAM *RxPram; /* Rx parameter table */
        FMAN_GLOBAL_PARAM *TxPram; /* Tx parameter table */
        VOID *RxBdRing;           /* Rx BD ring base */
@@ -271,6 +270,7 @@ typedef struct _FMAN_MEMAC {
 
 /* MAXFRM - maximum frame length */
 #define MAXFRM_MASK			0x0000ffff
+#define MEMAC_MAXFRM			1518
 
 typedef struct _Memac {
        /* memac general control and status registers */

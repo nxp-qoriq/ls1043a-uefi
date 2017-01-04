@@ -403,7 +403,6 @@ DumpEthDev (
                                                                                 
   DPAA1_DEBUG_MSG("  Type       	: 	0x%x \n", FmanEthDevice->Type);            
   DPAA1_DEBUG_MSG("  Mac        	: 	0x%x \n", FmanEthDevice->Mac);             
-  DPAA1_DEBUG_MSG("  MaxRxLen 	: 	0x%x \n", FmanEthDevice->MaxRxLen);      
   DPAA1_DEBUG_MSG("  RxPram    	: 	0x%x \n", FmanEthDevice->RxPram);         
   DPAA1_DEBUG_MSG("  TxPram    	: 	0x%x \n", FmanEthDevice->TxPram);         
   DPAA1_DEBUG_MSG("  RxBdRing 	: 	0x%x \n", FmanEthDevice->RxBdRing);      
@@ -510,9 +509,6 @@ VOID PopulateEthDev (
 
   FmanEthDevice->Num = Id-1;
 
-  /* set ethernet max recv length */
-  FmanEthDevice->MaxRxLen = MAX_RXBUF_LEN;
-
   FmanEthDevice->RxPort = (VOID *)&FmanRegs->port[RxId -1].FmanBmi;
   FmanEthDevice->TxPort = (VOID *)&FmanRegs->port[TxId -1].FmanBmi;
   DPAA1_DEBUG_MSG("Type %d, RxId = 0x%x TxId 0x%x , "
@@ -541,7 +537,6 @@ EFI_STATUS EthDevInitMac (
 
   Mac->Base = (VOID *)Base;
   Mac->PhyRegs = (VOID *)PhyRegs;
-  Mac->MaxRxLen = MAX_RXBUF_LEN;
   FmEth->Mac = Mac;
 
   return EFI_SUCCESS;
@@ -1168,7 +1163,7 @@ ReceiveFrame(
   EfiAcquireLock(&FmanEthDevice->RxSyncLock);
   Status = MemReadMasked(&Rxbd->Status);
 
-  while (!(Status & Rx_EMPTY)) {
+  if (!(Status & Rx_EMPTY)) {
     if (!(Status & Rx_ERROR)) {
       BufHi = MemReadMasked(&Rxbd->BufPtrHi);
       BufLo = MmioReadBe32((UINTN)&Rxbd->BufPtrLo);
@@ -1179,13 +1174,14 @@ ReceiveFrame(
       EfiReleaseLock(&FmanEthDevice->RxSyncLock);
       return EFI_DEVICE_ERROR;
     }
-
     /* Update Buffersize to actual value */
-    if (*BuffSize < Len ) {
-      DPAA1_DEBUG_MSG("RX Buffersize is too small %d,required to be %d\n",
-			*BuffSize, Len);
+    if ( *BuffSize < Len ) {
+      DPAA1_ERROR_MSG("RX Buffersize is too small %d,required to be %d\n",
+                       *BuffSize, Len);
       *BuffSize = Len;
-    }
+      return EFI_BUFFER_TOO_SMALL;
+    } else
+      *BuffSize = Len;
 
     InternalMemCopyMem(Data, (VOID *)Buffer, Len);
 
@@ -1199,8 +1195,6 @@ ReceiveFrame(
     RxbdBase = (BD *)FmanEthDevice->RxBdRing;
     if (Rxbd >= (RxbdBase + RX_RING_SIZE))
       Rxbd = RxbdBase;
-    /* read next status */
-    Status = MemReadMasked(&Rxbd->Status);
 
     /* update RxQD */
     OffsetOut = MemReadMasked(&Pram->Rxqd.OffsetOut);
