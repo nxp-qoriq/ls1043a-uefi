@@ -89,7 +89,8 @@ VitessePhyConfig (DPAA1_PHY *Dpaa1Phy)
    *      1 0  Reserved          *
    *      1 1  Reserved          */
   if (Dpaa1Phy->PhyInterfaceType == PHY_INTERFACE_QSGMII) {
-    PhyRegValue = (PhyRegValue | BIT14) | (PhyRegValue & ~BIT15);
+    PhyRegValue |= BIT14;
+    PhyRegValue &= ~BIT15;
     Dpaa1PhyRegisterWrite(Dpaa1Phy, MDIO_CTL_DEV_NONE,
                           VITESSE_GENREG_MACMODE_FASTLINK, PhyRegValue);
     /* Enable 4 ports MAC QSGMII */
