@@ -53,6 +53,8 @@
 #define DS1307_CTL_BIT_SQWE	0x10	/* Square Wave Enable           */
 #define DS1307_CTL_BIT_OUT		0x80	/* Output Control               */
 
+STATIC CONST CHAR16           mTimeZoneVariableName[] = L"Ds1307RtcTimeZone";
+STATIC CONST CHAR16           mDaylightVariableName[] = L"Ds1307RtcDaylight";
 STATIC EFI_EVENT              mRtcVirtualAddrChangeEvent;
 STATIC UINTN                  mI2c0BaseAddress;
 
@@ -100,32 +102,125 @@ LibGetTime (
   OUT  EFI_TIME_CAPABILITIES  *Capabilities
   )
 {
-	EFI_STATUS Status = EFI_SUCCESS;
-	CHAR16 Second, Minute, Hour, Day, Month, Year;
+  EFI_STATUS  Status = EFI_SUCCESS;
+  INT16       TimeZone;
+  UINT8       Daylight;
+  CHAR16      Second, Minute, Hour, Day, Month, Year;
+  UINTN       Size;
 
-	Second = RtcRead (DS1307_SEC_REG_ADDR);
-	Minute = RtcRead (DS1307_MIN_REG_ADDR);
-	Hour = RtcRead (DS1307_HR_REG_ADDR);
-	Day = RtcRead (DS1307_DATE_REG_ADDR);
-	Month = RtcRead (DS1307_MON_REG_ADDR);
-	Year = RtcRead (DS1307_YR_REG_ADDR);
+  Second = RtcRead (DS1307_SEC_REG_ADDR);
+  Minute = RtcRead (DS1307_MIN_REG_ADDR);
+  Hour = RtcRead (DS1307_HR_REG_ADDR);
+  Day = RtcRead (DS1307_DATE_REG_ADDR);
+  Month = RtcRead (DS1307_MON_REG_ADDR);
+  Year = RtcRead (DS1307_YR_REG_ADDR);
 
-	if (Second & DS1307_SEC_BIT_CH) {
-		DEBUG((EFI_D_ERROR, "### Warning: RTC oscillator has stopped\n"));
-		/* clear the CH flag */
-		RtcWrite (DS1307_SEC_REG_ADDR,
-			   RtcRead (DS1307_SEC_REG_ADDR) & ~DS1307_SEC_BIT_CH);
-		Status = EFI_DEVICE_ERROR;
-	}
+  if (Second & DS1307_SEC_BIT_CH) {
+    DEBUG((EFI_D_ERROR, "### Warning: RTC oscillator has stopped\n"));
+    /* clear the CH flag */
+    RtcWrite (DS1307_SEC_REG_ADDR,
+              RtcRead (DS1307_SEC_REG_ADDR) & ~DS1307_SEC_BIT_CH);
+    Status = EFI_DEVICE_ERROR;
+    goto EXIT;
+  }
 
-	Time->Second  = Bin (Second & 0x7F);
-	Time->Minute  = Bin (Minute & 0x7F);
-	Time->Hour = Bin (Hour & 0x3F);
-	Time->Day = Bin (Day & 0x3F);
-	Time->Month  = Bin (Month & 0x1F);
-	Time->Year = Bin (Year) + ( Bin (Year) >= 70 ? 1900 : 2000);
+  Time->Second  = Bin (Second & 0x7F);
+  Time->Minute  = Bin (Minute & 0x7F);
+  Time->Hour = Bin (Hour & 0x3F);
+  Time->Day = Bin (Day & 0x3F);
+  Time->Month  = Bin (Month & 0x1F);
+  Time->Year = Bin (Year) + ( Bin (Year) >= 70 ? 1900 : 2000);
 
-	return Status;
+  // Get the current time zone information from non-volatile storage
+  Size = sizeof (TimeZone);
+  Status = EfiGetVariable (
+                  (CHAR16 *)mTimeZoneVariableName,
+                  &gEfiCallerIdGuid,
+                  NULL,
+                  &Size,
+                  (VOID *)&TimeZone
+                  );
+
+  if (EFI_ERROR (Status)) {
+    ASSERT(Status != EFI_INVALID_PARAMETER);
+    ASSERT(Status != EFI_BUFFER_TOO_SMALL);
+
+    if (Status != EFI_NOT_FOUND)
+      goto EXIT;
+
+    // The time zone variable does not exist in non-volatile storage, so create it.
+    Time->TimeZone = EFI_UNSPECIFIED_TIMEZONE;
+    // Store it
+    Status = EfiSetVariable (
+                    (CHAR16 *)mTimeZoneVariableName,
+                    &gEfiCallerIdGuid,
+                    EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+                    Size,
+                    (VOID *)&(Time->TimeZone)
+                    );
+    if (EFI_ERROR (Status)) {
+      DEBUG ((
+        EFI_D_ERROR,
+        "LibGetTime: Failed to save %s variable to non-volatile storage, Status = %r\n",
+        mTimeZoneVariableName,
+        Status
+        ));
+      goto EXIT;
+    }
+  } else {
+    // Got the time zone
+    Time->TimeZone = TimeZone;
+
+    // Check TimeZone bounds:   -1440 to 1440 or 2047
+    if (((Time->TimeZone < -1440) || (Time->TimeZone > 1440))
+        && (Time->TimeZone != EFI_UNSPECIFIED_TIMEZONE)) {
+      Time->TimeZone = EFI_UNSPECIFIED_TIMEZONE;
+    }
+  }
+
+  // Get the current daylight information from non-volatile storage
+  Size = sizeof (Daylight);
+  Status = EfiGetVariable (
+                  (CHAR16 *)mDaylightVariableName,
+                  &gEfiCallerIdGuid,
+                  NULL,
+                  &Size,
+                  (VOID *)&Daylight
+                  );
+
+  if (EFI_ERROR (Status)) {
+    ASSERT(Status != EFI_INVALID_PARAMETER);
+    ASSERT(Status != EFI_BUFFER_TOO_SMALL);
+
+    if (Status != EFI_NOT_FOUND)
+      goto EXIT;
+
+    // The daylight variable does not exist in non-volatile storage, so create it.
+    Time->Daylight = 0;
+    // Store it
+    Status = EfiSetVariable (
+                    (CHAR16 *)mDaylightVariableName,
+                    &gEfiCallerIdGuid,
+                    EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+                    Size,
+                    (VOID *)&(Time->Daylight)
+                    );
+    if (EFI_ERROR (Status)) {
+      DEBUG ((
+        EFI_D_ERROR,
+        "LibGetTime: Failed to save %s variable to non-volatile storage, Status = %r\n",
+        mDaylightVariableName,
+        Status
+        ));
+      goto EXIT;
+    }
+  } else {
+    // Got the daylight information
+    Time->Daylight = Daylight;
+  }
+
+  EXIT:
+    return Status;
 }
 
 
@@ -145,17 +240,59 @@ LibSetTime (
   IN EFI_TIME                *Time
   )
 {
-	if (Time->Year < 1970 || Time->Year > 2069)
-		DEBUG((EFI_D_ERROR, "WARNING: Year should be between 1970 and 2069!\n"));
+  EFI_STATUS  Status;
 
-	RtcWrite (DS1307_YR_REG_ADDR, Bcd (Time->Year % 100));
-	RtcWrite (DS1307_MON_REG_ADDR, Bcd (Time->Month));
-	RtcWrite (DS1307_DATE_REG_ADDR, Bcd (Time->Day));
-	RtcWrite (DS1307_HR_REG_ADDR, Bcd (Time->Hour));
-	RtcWrite (DS1307_MIN_REG_ADDR, Bcd (Time->Minute));
-	RtcWrite (DS1307_SEC_REG_ADDR, Bcd (Time->Second));
+  if (Time->Year < 1970 || Time->Year > 2069)
+    DEBUG((EFI_D_ERROR, "WARNING: Year should be between 1970 and 2069!\n"));
 
-	return EFI_SUCCESS;
+  RtcWrite (DS1307_YR_REG_ADDR, Bcd (Time->Year % 100));
+  RtcWrite (DS1307_MON_REG_ADDR, Bcd (Time->Month));
+  RtcWrite (DS1307_DATE_REG_ADDR, Bcd (Time->Day));
+  RtcWrite (DS1307_HR_REG_ADDR, Bcd (Time->Hour));
+  RtcWrite (DS1307_MIN_REG_ADDR, Bcd (Time->Minute));
+  RtcWrite (DS1307_SEC_REG_ADDR, Bcd (Time->Second));
+
+  // The accesses to Variable Services can be very slow, because we may be writing to Flash.
+  // Do this after having set the RTC.
+
+  // Save the current time zone information into non-volatile storage
+  Status = EfiSetVariable (
+                  (CHAR16 *)mTimeZoneVariableName,
+                  &gEfiCallerIdGuid,
+                  EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+                  sizeof (Time->TimeZone),
+                  (VOID *)&(Time->TimeZone)
+                  );
+  if (EFI_ERROR (Status)) {
+      DEBUG ((
+        EFI_D_ERROR,
+        "LibSetTime: Failed to save %s variable to non-volatile storage, Status = %r\n",
+        mTimeZoneVariableName,
+        Status
+        ));
+    goto EXIT;
+  }
+
+  // Save the current daylight information into non-volatile storage
+  Status = EfiSetVariable (
+                  (CHAR16 *)mDaylightVariableName,
+                  &gEfiCallerIdGuid,
+                  EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+                  sizeof(Time->Daylight),
+                  (VOID *)&(Time->Daylight)
+                  );
+  if (EFI_ERROR (Status)) {
+    DEBUG ((
+      EFI_D_ERROR,
+      "LibSetTime: Failed to save %s variable to non-volatile storage, Status = %r\n",
+      mDaylightVariableName,
+      Status
+      ));
+    goto EXIT;
+  }
+
+  EXIT:
+    return Status;
 }
 
 
@@ -293,6 +430,6 @@ LibRtcInitialize (
                   &mRtcVirtualAddrChangeEvent
                   );
   ASSERT_EFI_ERROR (Status);
-  
+
   return EFI_SUCCESS;
 }
