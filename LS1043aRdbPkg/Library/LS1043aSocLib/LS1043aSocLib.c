@@ -1620,11 +1620,18 @@ FdtFixupGic (
 {
 	INT32  Off, Error;
 	UINT64 Reg[8];
-	UINT32 Value;
+	UINT32 Value = 0, Aligng64K = 0;
 
 	struct CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
+	struct CcsrScfg *Scfg = (VOID *)SCFG_BASE_ADDR;
 
 	Value = MmioReadBe32((UINTN)&GurBase->svr) & MASK_UPPER_8;
+	if (Value != REV1_0) {
+		Value = MmioReadBe32((UINTN)&Scfg->gic_align) &
+						(0x01 << GIC_ADDR_BIT);
+		if (!Value)
+			Aligng64K = 1;
+	}
 
 	Off = fdt_subnode_offset(Blob, 0, "interrupt-controller@1400000");
 	if (Off < 0) {
@@ -1633,7 +1640,8 @@ FdtFixupGic (
 		return;
 	}
 
-	if (Value == REV1_1) {
+	if (Aligng64K) {
+		/* Fixup gic node aligned with 64K */
 		Reg[0] = cpu_to_fdt64(GICD_BASE_64K);
 		Reg[1] = cpu_to_fdt64(GICD_SIZE_64K);
 		Reg[2] = cpu_to_fdt64(GICC_BASE_64K);
@@ -1643,7 +1651,7 @@ FdtFixupGic (
 		Reg[6] = cpu_to_fdt64(GICV_BASE_64K);
 		Reg[7] = cpu_to_fdt64(GICV_SIZE_64K);
 	} else {
-
+		/* Fixup gic node aligned with 4K */
 		Reg[0] = cpu_to_fdt64(GICD_BASE_4K);
 		Reg[1] = cpu_to_fdt64(GICD_SIZE_4K);
 		Reg[2] = cpu_to_fdt64(GICC_BASE_4K);
