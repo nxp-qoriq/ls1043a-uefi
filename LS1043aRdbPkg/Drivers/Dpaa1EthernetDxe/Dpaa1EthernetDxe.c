@@ -126,7 +126,7 @@ Dpaa1SnpStart (
   /*
    * Create DPAA1 network interface:
    */
-  DPAA1_INFO_MSG("MAC address %a:%02x:%02x:%02x:%02x:%02x ...\n",
+  DPAA1_INFO_MSG("MAC address %a:%02x:%02x:%02x:%02x:%02x:%02x ...\n",
                  gFmanMemacStrings[FmanMemac->Id],
                  SnpMode->CurrentAddress.Addr[0],
                  SnpMode->CurrentAddress.Addr[1],
