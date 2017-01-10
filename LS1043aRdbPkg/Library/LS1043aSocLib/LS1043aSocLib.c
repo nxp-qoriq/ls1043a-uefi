@@ -724,7 +724,7 @@ SocInit (
 }
 
 /* fdt fixup for LS1043A */
-#define ___swab32(x) \
+#define swap32(x) \
 	((UINT32)( \
 		(((UINT32)(x) & (UINT32)0x000000ffUL) << 24) | \
 		(((UINT32)(x) & (UINT32)0x0000ff00UL) <<  8) | \
@@ -751,9 +751,9 @@ SocInit (
  * values aren't used.
  */
 #define FDT_MAX_NCELLS		4
-int fdt_address_cells(const void *fdt, int nodeoffset)
+int fdt_address_cells(CONST VOID *fdt, int nodeoffset)
 {
-	const fdt32_t *ac;
+	CONST fdt32_t *ac;
 	int val;
 	int len;
 
@@ -772,7 +772,7 @@ int fdt_address_cells(const void *fdt, int nodeoffset)
 }
 
 /* Helper to read a big number; size is in cells (not bytes) */
-static inline UINTN of_read_number(const fdt32_t *cell, int size)
+static inline UINTN of_read_number(CONST fdt32_t *cell, int size)
 {
 	UINTN r = 0;
 	while (size--)
@@ -780,101 +780,112 @@ static inline UINTN of_read_number(const fdt32_t *cell, int size)
 	return r;
 }
 
-/* Callbacks for bus specific translators */
+/* Callback for bus specific translator */
 struct of_bus {
-	const char	*name;
-	const char	*addresses;
-	void		(*count_cells)(void *blob, int parentoffset,
-				int *addrc, int *sizec);
-	UINTN		(*map)(fdt32_t *addr, const fdt32_t *range,
-				int na, int ns, int pna);
 	int		(*translate)(fdt32_t *addr, UINTN offset, int na);
+	CONST char	*addresses;
+	CONST char	*name;
+	UINTN		(*map)(fdt32_t *addr, CONST fdt32_t *range,
+				int na, int ns, int pna);
+	VOID		(*count_cells)(VOID *blob, int parentoffset,
+				int *addrc, int *sizec);
 };
 
-/* Default translator (generic bus) */
-void of_bus_default_count_cells(void *blob, int parentoffset,
-					int *addrc, int *sizec)
+/* Default translator */
+VOID of_bus_default_count_cells (
+	VOID *blob, int parentoffset,
+	int *addrc, int *sizec)
 {
-	const fdt32_t *prop;
-
-	if (addrc)
-		*addrc = fdt_address_cells(blob, parentoffset);
+	CONST fdt32_t *prop;
 
 	if (sizec) {
 		prop = fdt_getprop(blob, parentoffset, "#size-cells", NULL);
 		if (prop)
-			*sizec = ___swab32(*prop);
+			*sizec = swap32(*prop);
 		else
 			*sizec = 1;
 	}
+
+	if (addrc)
+		*addrc = fdt_address_cells(blob, parentoffset);
 }
 
-static UINTN of_bus_default_map(fdt32_t *addr, const fdt32_t *range,
-		int na, int ns, int pna)
+static UINTN of_bus_default_map (
+	fdt32_t *addr, CONST fdt32_t *range,
+	int na, int ns, int pna)
 {
 	UINTN cp, s, da;
 
-	cp = of_read_number(range, na);
-	s  = of_read_number(range + na + pna, ns);
 	da = of_read_number(addr, na);
+	s  = of_read_number(range + na + pna, ns);
+	cp = of_read_number(range, na);
 
 	if (da < cp || da >= (cp + s))
 		return OF_BAD_ADDR;
 	return da - cp;
 }
 
-static int of_bus_default_translate(fdt32_t *addr, UINTN offset, int na)
+static int of_bus_default_translate(
+	fdt32_t *addr,
+	UINTN offset,
+	int na)
 {
-	UINTN a = of_read_number(addr, na);
-	memset(addr, 0, na * 4);
+	UINTN a = 0;
+	a = of_read_number(addr, na);
 	a += offset;
+
+	memset(addr, 0, na * 4);
+
 	if (na > 1)
 		addr[na - 2] = cpu_to_fdt32(a >> 32);
+
 	addr[na - 1] = cpu_to_fdt32(a & 0xffffffffu);
 
 	return 0;
 }
 
-/* Array of bus specific translators */
-static struct of_bus of_busses[] = {
+/* Array : bus specific translators */
+static struct of_bus buses[] = {
 	/* Default */
 	{
-		.name = "default",
-		.addresses = "reg",
-		.count_cells = of_bus_default_count_cells,
-		.map = of_bus_default_map,
 		.translate = of_bus_default_translate,
-	},
+		.addresses = "reg",
+		.name = "default",
+		.map = of_bus_default_map,
+		.count_cells = of_bus_default_count_cells,
+	}
 };
 
-static int of_translate_one(void * blob, int parent, struct of_bus *bus,
-			    struct of_bus *pbus, fdt32_t *addr,
-			    int na, int ns, int pna, const char *rprop)
+static int of_translate_one (
+	VOID * blob, int parent, struct of_bus *bus,
+	struct of_bus *pbus, fdt32_t *addr,
+	int na, int ns, int pna, CONST char *rprop)
 {
-	const fdt32_t *ranges;
-	int rlen;
-	int rone;
+	CONST fdt32_t *ranges;
 	UINTN offset = OF_BAD_ADDR;
+	int rlen = 0;
+	int rone = 0;
 
-	/* Normally, an absence of a "ranges" property means we are
-	 * crossing a non-translatable boundary, and thus the addresses
-	 * below the current not cannot be converted to CPU physical ones.
-	 * Unfortunately, while this is very clear in the spec, it's not
-	 * what Apple understood, and they do have things like /uni-n or
-	 * /ht nodes with no "ranges" property and a lot of perfectly
-	 * useable mapped devices below them. Thus we treat the absence of
-	 * "ranges" as equivalent to an empty "ranges" property which means
-	 * a 1:1 translation at that level. It's up to the caller not to try
-	 * to translate addresses that aren't supposed to be translated in
-	 * the first place. --BenH.
+	/* Normally, an absence of "ranges" property 
+	 * means we are crossing a non-translatable boundary
+	 * and thus the addresses below the current cannot be
+	 * converted to CPU physical ones.
+	 *
+	 * Unfortunately, while this is very clear in the spec,
+	 * it's not what Apple understood, and they do have things
+	 * like /uni-n or /ht nodes with no "ranges" property and a
+	 * lot of perfectly useable mapped devices below them. Thus
+	 * we treat the absence of "ranges" as equivalent to an
+	 * empty "ranges" property which means a 1:1 translation. 
+	 * It's up to the caller not to try to translate addresses
+	 * that aren't supposed to be translated in the first place.
 	 */
 	ranges = fdt_getprop(blob, parent, rprop, &rlen);
-	if (ranges == NULL || rlen == 0) {
+	if (NULL == ranges || 0 == rlen) {
 		offset = of_read_number(addr, na);
 		memset(addr, 0, pna * 4);
-		goto finish;
+		goto done;
 	}
-
 
 	/* Now walk through the ranges */
 	rlen /= 4;
@@ -889,60 +900,57 @@ static int of_translate_one(void * blob, int parent, struct of_bus *bus,
 	}
 	memcpy(addr, ranges + na, 4 * pna);
 
- finish:
-
+  done:
 	/* Translate it into parent bus space */
 	return pbus->translate(addr, offset, pna);
 }
 
 /*
- * Translate an address from the device-tree into a CPU physical address,
- * this walks up the tree and applies the various bus mappings on the
- * way.
- *
- * Note: We consider that crossing any level with #size-cells == 0 to mean
- * that translation is impossible (that is we are not dealing with a value
- * that can be mapped to a cpu physical address). This is not really specified
- * that way, but this is traditionally the way IBM at least do things
+ * Translate an address from the device-tree into CPU physical address,
+ * this walks up the tree and applies the various bus mappings.
  */
-static UINT64 __of_translate_address(void *blob, int node_offset, const fdt32_t *in_addr,
-				  const char *rprop)
+static UINT64 translate_address (
+	VOID *blob, int node_offset,
+	CONST fdt32_t *in_addr,
+	CONST char *rprop)
 {
-	int parent;
-	struct of_bus *bus, *pbus;
 	fdt32_t addr[OF_MAX_ADDR_CELLS];
-	int na, ns, pna, pns;
+	struct of_bus *bus, *pbus;
+	int na = 0, ns = 0;
+	int pna = 0, pns = 0;
+	int parent = 0;
 	UINTN result = OF_BAD_ADDR;
 
-	/* Get parent & match bus type */
+	/* find parent & match bus type */
 	parent = fdt_parent_offset(blob, node_offset);
 	if (parent < 0)
-		goto bail;
-	bus = &of_busses[0];
+		goto end;
 
-	/* Cound address cells & copy address locally */
+	bus = &buses[0];
+
+	/* Cound address cell and copy address */
 	bus->count_cells(blob, parent, &na, &ns);
 	if (!OF_CHECK_COUNTS(na, ns)) {
 		DEBUG((EFI_D_ERROR,"%s: Bad cell count for %s\n", __FUNCTION__,
 		       fdt_get_name(blob, node_offset, NULL)));
-		goto bail;
+		goto end;
 	}
 	memcpy(addr, in_addr, na * 4);
 
 	/* Translate */
-	for (;;) {
+	while(1) {
 		/* Switch to parent bus */
 		node_offset = parent;
 		parent = fdt_parent_offset(blob, node_offset);
 
-		/* If root, we have finished */
+		/* finish if root */
 		if (parent < 0) {
 			result = of_read_number(addr, na);
 			break;
 		}
 
-		/* Get new parent bus and counts */
-		pbus = &of_busses[0];
+		/* Get new parent bus */
+		pbus = &buses[0];
 		pbus->count_cells(blob, parent, &pna, &pns);
 		if (!OF_CHECK_COUNTS(pna, pns)) {
 			DEBUG((EFI_D_ERROR,"%s: Bad cell count for %s\n", __FUNCTION__,
@@ -955,52 +963,29 @@ static UINT64 __of_translate_address(void *blob, int node_offset, const fdt32_t 
 					addr, na, ns, pna, rprop))
 			break;
 
-		/* Complete the move up one level */
-		na = pna;
+		/* Move up */
 		ns = pns;
 		bus = pbus;
+		na = pna;
 	}
- bail:
+  end:
 
 	return result;
 }
 
-UINTN fdt_translate_address(void *blob, int node_offset, const fdt32_t *in_addr)
+UINTN fdt_translate_address (
+	VOID *blob, int node_offset,
+	CONST fdt32_t *in_addr)
 {
-	return __of_translate_address(blob, node_offset, in_addr, "ranges");
+	return translate_address(blob, node_offset, in_addr, "ranges");
 }
 
 /**
- * fdt_node_offset_by_compat_reg: Find a node that matches compatiable and
- * who's reg property matches a physical cpu address
+ * Return next free phandle value
  *
- * @blob: ptr to device tree
- * @compat: compatiable string to match
- * @compat_off: property name
- *
+ * @blob	: ptr to device tree
  */
-int fdt_node_offset_by_compat_reg(void *blob, const char *compat,
-					UINT32 compat_off)
-{
-	int len, off = fdt_node_offset_by_compatible(blob, -1, compat);
-	while (off != -FDT_ERR_NOTFOUND) {
-		const fdt32_t *reg = fdt_getprop(blob, off, "reg", &len);
-		if (reg) {
-			if (compat_off == fdt_translate_address(blob, off, reg))
-				return off;
-		}
-		off = fdt_node_offset_by_compatible(blob, off, compat);
-	}
-
-	return -FDT_ERR_NOTFOUND;
-}
-
-/**
- * fdt_alloc_phandle: Return next free phandle value
- *
- * @blob: ptr to device tree
- */
-int fdt_alloc_phandle(void *blob)
+int fdt_alloc_phandle(VOID *blob)
 {
 	int offset;
 	uint32_t phandle = 0;
@@ -1013,24 +998,54 @@ int fdt_alloc_phandle(void *blob)
 	return phandle + 1;
 }
 
-/*
- * fdt_set_phandle: Create a phandle property for the given node
+/**
+ * Find a node who's reg property matches
+ * a physical cpu address and matches compatiable 
  *
- * @fdt: ptr to device tree
- * @nodeoffset: node to update
- * @phandle: phandle value to set (must be unique)
+ * @blob	: ptr to device tree
+ * @compat	: string to match
+ * @compat_off: compat property value
  */
-int fdt_set_phandle(void *fdt, int nodeoffset, uint32_t phandle)
+int fdt_node_offset_by_compat_reg (
+	VOID *blob, CONST char *compat,
+	UINT32 compat_off)
 {
-	int ret;
+	int len, off;
+	CONST fdt32_t *Reg;
+
+	off = fdt_node_offset_by_compatible(blob, -1, compat);
+	while (off != -FDT_ERR_NOTFOUND) {
+		Reg = fdt_getprop(blob, off, "Reg", &len);
+		if (Reg) {
+			if (compat_off == fdt_translate_address(blob, off, Reg))
+				break;
+		}
+		off = fdt_node_offset_by_compatible(blob, off, compat);
+	}
+
+	return off;
+}
+
+/*
+ * Update phandle property for the given node
+ *
+ * @fdt	: ptr to device tree
+ * @nodeoffset: offset of node to update
+ * @phandle	: phandle value to be set (it must be unique)
+ */
+int fdt_set_phandle (
+	VOID *fdt, int nodeoffset,
+	uint32_t phandle)
+{
+	int ret = 0;
 
 	ret = fdt_setprop_cell(fdt, nodeoffset, "phandle", phandle);
 	if (ret < 0)
 		return ret;
 
 	/*
-	 * For now, also set the deprecated "linux,phandle" property, so that we
-	 * don't break older kernels.
+	 * set the deprecated "linux,phandle" property,
+	 * so that we don't break older kernels.
 	 */
 	ret = fdt_setprop_cell(fdt, nodeoffset, "linux,phandle", phandle);
 
@@ -1038,17 +1053,20 @@ int fdt_set_phandle(void *fdt, int nodeoffset, uint32_t phandle)
 }
 
 /*
- * fdt_create_phandle: Create a phandle property for the given node
+ * Create phandle property for the given node
  *
- * @fdt: ptr to device tree
- * @nodeoffset: node to update
+ * @fdt	: ptr to device tree
+ * @nodeoffset: offset of node to update
  */
-unsigned int fdt_create_phandle(void *fdt, int nodeoffset)
+unsigned int fdt_create_phandle (
+	VOID *fdt, int nodeoffset)
 {
-	/* see if there is a phandle already */
-	int phandle = fdt_get_phandle(fdt, nodeoffset);
+	/* see if phandle exists */
+	int phandle = 0;
 
-	/* if we got 0, means no phandle so create one */
+	phandle = fdt_get_phandle(fdt, nodeoffset);
+
+	/* if 0, means no phandle exists, so create one */
 	if (phandle == 0) {
 		int ret;
 
@@ -1065,38 +1083,57 @@ unsigned int fdt_create_phandle(void *fdt, int nodeoffset)
 }
 
 /**
- * fdt_find_and_setprop: Find a node and set it's property
+ * Find a node and set the property
  *
- * @fdt: ptr to device tree
- * @node: path of node
- * @prop: property name
- * @val: ptr to new value
- * @len: length of new property value
- * @create: flag to create the property if it doesn't exist
+ * @fdt	: ptr to device tree
+ * @node	: node to find
+ * @prop	: name of property to be set
+ * @val	: ptr to new value to be updated
+ * @len	: length of val
+ * @create	: flag to create the property if doesn't already exist
  *
- * Convenience function to directly set a property given the path to the node.
  */
-int fdt_find_and_setprop(void *fdt, const char *node, const char *prop,
-                      const void *val, int len, int create)
+int fdt_find_and_setprop (
+	VOID *fdt, CONST char *node,
+	CONST char *prop, CONST VOID *val,
+	int len, int create)
 {
-       int nodeoff = fdt_path_offset(fdt, node);
+       int nodeoff = 0;
+
+	nodeoff = fdt_path_offset(fdt, node);
 
        if (nodeoff < 0)
               return nodeoff;
 
-       if ((!create) && (fdt_get_property(fdt, nodeoff, prop, NULL) == NULL))
-              return 0; /* create flag not set; so exit quietly */
+       if ((fdt_get_property(fdt, nodeoff, prop, NULL) == NULL) && (!create))
+              return 0;
 
        return fdt_setprop(fdt, nodeoff, prop, val, len);
 }
 
-void do_fixup_by_path(void *fdt, const char *path, const char *prop,
-                    const void *val, int len, int create)
+/**
+ * Find a node using provided path and set the property
+ *
+ * @fdt	: ptr to device tree
+ * @path	: path of node
+ * @prop	: name of property to be set
+ * @val	: ptr to new value to be updated
+ * @len	: length of val
+ * @create	: flag to create the property if doesn't already exist
+ *
+ */
+VOID do_fixup_by_path (
+	VOID *fdt, CONST char *path,
+	CONST char *prop, CONST VOID *val,
+	int len, int create)
 {
-       int rc = fdt_find_and_setprop(fdt, path, prop, val, len, create);
-       if (rc)
+	int ret = 0;
+
+	ret = fdt_find_and_setprop(fdt, path, prop, val, len, create);
+
+	if (ret)
               DEBUG((EFI_D_ERROR, "Unable to update property %s:%s, err=%s\n",
-                     path, prop, fdt_strerror(rc)));
+                     path, prop, fdt_strerror(ret)));
 }
 
 VOID
@@ -1131,9 +1168,12 @@ FixupByCompatibleField32 (
 	FixupByCompatibleField(Fdt, Compat, Prop, &Tmp, 4, Create);
 }
 
-void fdt_del_node_and_alias(void *blob, const char *alias)
+VOID fdt_del_node_and_alias (
+	VOID *blob, CONST char *alias)
 {
-       int off = fdt_path_offset(blob, alias);
+       int off = 0;
+
+	off = fdt_path_offset(blob, alias);
 
        if (off < 0)
               return;
@@ -1232,7 +1272,7 @@ FdtFixupFmanMac (
 
 	/* Cycle through all aliases */
 	for (Prop = 0; ; Prop++) {
-		const char *Name;
+		CONST char *Name;
 
 		/* FDT might have been changed, recompute the offset */
 		Offset = fdt_first_property_offset(Blob,
