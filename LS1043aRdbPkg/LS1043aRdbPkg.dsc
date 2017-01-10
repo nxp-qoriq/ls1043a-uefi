@@ -474,6 +474,11 @@
   gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported|TRUE
 
   #
+  # IP Testing specific PCDs
+  #
+  gLS1043aRdbTokenSpaceGuid.PcdDspiTest|FALSE
+
+  #
   # PPA specific PCDs
   #
   gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x60500000

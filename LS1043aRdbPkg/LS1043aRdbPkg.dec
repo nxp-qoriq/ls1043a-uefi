@@ -217,3 +217,9 @@
 
   #Added some new Pci Pcds with existing PCI Pcds using Token IDs
   #0x00000065 to 0x0000006C
+
+  #
+  # IP Testing specific PCDs
+  #
+  gLS1043aRdbTokenSpaceGuid.PcdDspiTest|FALSE|BOOLEAN|0x0000006D
+

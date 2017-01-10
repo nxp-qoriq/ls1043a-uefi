@@ -137,6 +137,41 @@ DspiExitBootServicesEvent (
   DspiFlashFree();
 }
 
+VOID
+DspiTest (
+  VOID
+  )
+{
+  EFI_STATUS Status;
+  UINTN BufferSize = 0x10000;
+  UINTN Index;
+  UINT8 SourceBuffer[BufferSize];
+  UINT8 DestinationBuffer[BufferSize];
+
+  for(Index = 0; Index < BufferSize; Index++) {
+       if (Index % 2 == 0)
+        SourceBuffer[Index] = 0x61;
+      else
+        SourceBuffer[Index] = 0x52;
+  }
+  Status = DspiErase(NULL, 0, 0, 0x10000);
+  if (Status != EFI_SUCCESS) {
+    DEBUG((EFI_D_ERROR,"Failed to Erase DSPI\n"));
+  }
+
+  DspiWrite(NULL, 0, 0, BufferSize, SourceBuffer);
+  DspiRead(NULL, 0, 0, BufferSize, DestinationBuffer);
+
+  for (Index = 0; Index < BufferSize; Index++) {
+    if (SourceBuffer[Index] != DestinationBuffer[Index]) {
+        DEBUG((EFI_D_ERROR, "Dspi Flash Test Result: FAIL\n"));
+        break;
+    }
+  }
+  if (Index == BufferSize)
+    DEBUG((EFI_D_RELEASE, "Dspi Test Result: PASS\n"));
+}
+
 EFI_STATUS
 DspiInitialize (
   IN EFI_HANDLE		ImageHandle,
@@ -150,6 +185,9 @@ DspiInitialize (
     DEBUG((EFI_D_ERROR,"Failed to init DSPI\n"));
     return Status;
   }
+
+  if (FeaturePcdGet(PcdDspiTest))
+    DspiTest();
 
   //
   // Install driver model protocol(s).
