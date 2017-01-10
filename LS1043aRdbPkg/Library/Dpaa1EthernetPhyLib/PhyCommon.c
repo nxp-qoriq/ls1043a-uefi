@@ -496,8 +496,8 @@ Dpaa1PhyIdentify (
                     __FUNCTION__, Dpaa1Phy->PhyIdentifier);
   /* The PHY Identifier shall be composed of the third through 24th bits
    * of the Organizationally Unique Identifier (OUI) assigned to the PHY
-   * manufacturer by the IEEE,1 plus a six-bit manufacturer’s model
-   * number, plus a four-bit manufacturer’s revision number.*/
+   * manufacturer by the IEEE,1 plus a six-bit manufacturer model
+   * number, plus a four-bit manufacturer revision number.*/
 
   switch((Dpaa1Phy->PhyIdentifier & PHY_IDENTIFIER_OUI_MASK)>>0xA) // Extract OUI
   {

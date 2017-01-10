@@ -39,7 +39,7 @@
 
 /*
  * PHY registers Refer IEEE 802.3 Clause 22.2.4
- * Table 22–6—MII management register set
+ * Table 22.96.97 MII management register set
  */
 
 /**
