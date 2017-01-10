@@ -126,14 +126,14 @@ ValidateParameters (
     Flash->EraseSize = Flash->SectorSize;
   }
 
-  if (Parameters->Name == (CONST INT8 *)"N25Q128")
+  if (!AsciiStrnCmp((CONST CHAR8 *)Parameters->Name, "N25Q128", AsciiStrLen("N25Q128")))
     Flash->BlockSize = Flash->SectorSize/NUM_OF_SUBSECTOR;
   else
     Flash->BlockSize = Flash->SectorSize;
 
   /* Look for The Fastest Read Cmd */
   Cmd = GenericFls(Parameters->EnumRdCmd & Flash->Dspi->Slave.OpModeRx);
-  if (Cmd) {
+  if (Cmd && (Cmd < (ARRAY_SIZE(ReadCmdsArray) + 1))) {
     Cmd = ReadCmdsArray[Cmd - 1];
     Flash->ReadCmd = Cmd;
   } else {

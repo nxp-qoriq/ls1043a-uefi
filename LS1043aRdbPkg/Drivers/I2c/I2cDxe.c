@@ -69,11 +69,6 @@ EFIAPI StartRequest (
     return EFI_INVALID_PARAMETER;
   }
 
-  if (RequestPacket->Operation == NULL) {
-    DEBUG((EFI_D_ERROR," Operation array is NULL\n"));
-    return EFI_INVALID_PARAMETER;
-  }
-
   for (Count = 0; Count < RequestPacket->OperationCount; Count++) {
     Flag = RequestPacket->Operation[Count].Flags;
     Length = RequestPacket->Operation[Count].LengthInBytes;

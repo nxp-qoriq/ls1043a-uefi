@@ -1063,7 +1063,7 @@ Dpaa1Receive(
 {
   EFI_STATUS Status;
 
-  ETHER_HEAD *EthernetHeader;
+  ETHER_HEAD *EthernetHeader = NULL;
 
   /*
    * Receive frame:
@@ -1085,19 +1085,21 @@ Dpaa1Receive(
     if (Protocol != NULL) {
       *Protocol = NTOHS(EthernetHeader->EtherType);
     }
-  }
 
-  if (gDpaa1DebugFlags & DPAA1_DEBUG_TRACE_NET_PACKETS) {
-    DPAA1_DEBUG_MSG("Rx: %x:%x:%x:%x:%x:%x|%x:%x:%x:%x:%x:%x|%x|%x|%x%x%x%x\n",
-      SrcAddr->Addr[0], SrcAddr->Addr[1], SrcAddr->Addr[2],
-      SrcAddr->Addr[3], SrcAddr->Addr[4], SrcAddr->Addr[5],
-      DstAddr->Addr[0], DstAddr->Addr[1], DstAddr->Addr[2],
-      DstAddr->Addr[3], DstAddr->Addr[4], DstAddr->Addr[5],
-      *Protocol, *BuffSize,
-      ((UINT8 *)Data)[0],
-      ((UINT8 *)Data)[1],
-      ((UINT8 *)Data)[2],
-      ((UINT8 *)Data)[3]);
+    if (gDpaa1DebugFlags & DPAA1_DEBUG_TRACE_NET_PACKETS) {
+      DPAA1_DEBUG_MSG("Rx: %x:%x:%x:%x:%x:%x|%x:%x:%x:%x:%x:%x|%x|%x|%x%x%x%x\n",
+        EthernetHeader->SrcMac[0], EthernetHeader->SrcMac[1],
+        EthernetHeader->SrcMac[2], EthernetHeader->SrcMac[3],
+        EthernetHeader->SrcMac[4], EthernetHeader->SrcMac[5],
+        EthernetHeader->DstMac[0], EthernetHeader->DstMac[1],
+        EthernetHeader->DstMac[2], EthernetHeader->DstMac[3],
+        EthernetHeader->DstMac[4], EthernetHeader->DstMac[5],
+        NTOHS(EthernetHeader->EtherType), *BuffSize,
+        ((UINT8 *)Data)[0],
+        ((UINT8 *)Data)[1],
+        ((UINT8 *)Data)[2],
+        ((UINT8 *)Data)[3]);
+    }
   }
 
   return Status;
