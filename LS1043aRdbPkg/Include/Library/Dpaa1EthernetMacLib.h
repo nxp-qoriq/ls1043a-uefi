@@ -34,36 +34,36 @@
 #define MEMAC_CMD_CFG_CLR_STATS	0x00000004 /* statistics clearing bit */
 #define MEMAC_CMD_CFG_PAD		BIT5 /*Frame padding removal in receive path enable*/
 
-/* FMBM_TCFG - Tx configuration */
-#define FMBM_TCFG_EN 		0x80000000 /* port is enabled to transmit data */
-#define FMBM_TCFG_IM 		0x01000000 /* independent mode enable */
+/* FMAN_BM_TCFG - Tx configuration */
+#define FMAN_BM_TCFG_EN 		0x80000000 /* port is enabled to transmit data */
+#define FMAN_BM_TCFG_IM 		0x01000000 /* independent mode enable */
 
-/* FMBM_TST - Tx status */
-#define FMBM_TST_BSY        0x80000000 /* Tx port is busy */
+/* FMAN_BM_TST - Tx status */
+#define FMAN_BM_TST_BSY        0x80000000 /* Tx port is busy */
 
-/* FMBM_TFCA - Tx frame command attributes */
-#define FMBM_TFCA_ORDER     0x80000000
-#define FMBM_TFCA_MR_MASK   0x003f0000
-#define FMBM_TFCA_MR(x)     ((x << 16) & FMBM_TFCA_MR_MASK)
+/* FMAN_BM_TFCA - Tx frame command attributes */
+#define FMAN_BM_TFCA_ORDER     0x80000000
+#define FMAN_BM_TFCA_MR_MASK   0x003f0000
+#define FMAN_BM_TFCA_MR(x)     ((x << 16) & FMAN_BM_TFCA_MR_MASK)
 
-/* FMBM_TSTC - Tx statistics counters */
-#define FMBM_TSTC_EN        0x80000000
+/* FMAN_BM_TSTC - Tx statistics counters */
+#define FMAN_BM_TSTC_EN        0x80000000
 
-/* FMBM_RCFG - Rx configuration */
-#define FMBM_RCFG_EN        0x80000000 /* port is enabled to receive data */
-#define FMBM_RCFG_FDOVR     0x02000000 /* frame discard override */
-#define FMBM_RCFG_IM        0x01000000 /* independent mode */
+/* FMAN_BM_RCFG - Rx configuration */
+#define FMAN_BM_RCFG_EN        0x80000000 /* port is enabled to receive data */
+#define FMAN_BM_RCFG_FDOVR     0x02000000 /* frame discard override */
+#define FMAN_BM_RCFG_IM        0x01000000 /* independent mode */
 
-/* FMBM_RST - Rx status */
-#define FMBM_RST_BSY        0x80000000 /* Rx port is busy */
+/* FMAN_BM_RST - Rx status */
+#define FMAN_BM_RST_BSY        0x80000000 /* Rx port is busy */
 
-/* FMBM_RFCA - Rx frame command attributes */
-#define FMBM_RFCA_ORDER     0x80000000
-#define FMBM_RFCA_MR_MASK   0x003f0000
-#define FMBM_RFCA_MR(x)     ((x << 16) & FMBM_RFCA_MR_MASK)
+/* FMAN_BM_RFCA - Rx frame command attributes */
+#define FMAN_BM_RFCA_ORDER     0x80000000
+#define FMAN_BM_RFCA_MR_MASK   0x003f0000
+#define FMAN_BM_RFCA_MR(x)     ((x << 16) & FMAN_BM_RFCA_MR_MASK)
 
-/* FMBM_RSTC - Rx statistics */
-#define FMBM_RSTC_EN        0x80000000 /* statistics counters enable */
+/* FMAN_BM_RSTC - Rx statistics */
+#define FMAN_BM_RSTC_EN        0x80000000 /* statistics counters enable */
 
 /* NIA - next invoked action */
 #define NIA_ENG_RISC        0x00000000

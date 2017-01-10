@@ -358,10 +358,10 @@ DisablePorts (
   UINT32 Timeout = 1000000;
 
   /* disable bmi Tx port */
-  MmioClearBitsBe32((UINTN)&FmanEthDevice->TxPort->FmanBmTcfg, FMBM_TCFG_EN);
+  MmioClearBitsBe32((UINTN)&FmanEthDevice->TxPort->FmanBmTcfg, FMAN_BM_TCFG_EN);
 
   /* wait until the tx port is not busy */
-  while ((MmioReadBe32((UINTN)&FmanEthDevice->TxPort->FmanBmTst) & FMBM_TST_BSY)
+  while ((MmioReadBe32((UINTN)&FmanEthDevice->TxPort->FmanBmTst) & FMAN_BM_TST_BSY)
 		 && Timeout--)
               ;
 
@@ -371,10 +371,10 @@ DisablePorts (
   /* disable bmi Rx port */
   Timeout = 1000000;
 
-  MmioClearBitsBe32((UINTN)&FmanEthDevice->RxPort->FmanBmRcfg, FMBM_RCFG_EN);
+  MmioClearBitsBe32((UINTN)&FmanEthDevice->RxPort->FmanBmRcfg, FMAN_BM_RCFG_EN);
 
   /* wait until the rx port is not busy */
-  while ((MmioReadBe32((UINTN)&FmanEthDevice->RxPort->FmanBmRst) & FMBM_RST_BSY)
+  while ((MmioReadBe32((UINTN)&FmanEthDevice->RxPort->FmanBmRst) & FMAN_BM_RST_BSY)
 		 && Timeout--)
          ;
 }
@@ -385,11 +385,11 @@ EnablePorts (
   )
 {
   /* enable bmi Rx port */
-  MmioSetBitsBe32((UINTN)&FmanEthDevice->RxPort->FmanBmRcfg, FMBM_RCFG_EN);
+  MmioSetBitsBe32((UINTN)&FmanEthDevice->RxPort->FmanBmRcfg, FMAN_BM_RCFG_EN);
   /* enable MAC rx/tx port */
   EnableMac(FmanEthDevice->Mac);
   /* enable bmi Tx port */
-  MmioSetBitsBe32((UINTN)&FmanEthDevice->TxPort->FmanBmTcfg, FMBM_TCFG_EN);
+  MmioSetBitsBe32((UINTN)&FmanEthDevice->TxPort->FmanBmTcfg, FMAN_BM_TCFG_EN);
 }
 
 VOID
