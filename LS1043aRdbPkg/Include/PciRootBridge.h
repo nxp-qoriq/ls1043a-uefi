@@ -17,7 +17,6 @@
 #define _PCI_LS_H_
 
 #include <Library/IoLib.h>
-#include <PciHostBridge.h>
 #include <Protocol/PciRootBridgeIo.h>
 #include <Protocol/DevicePath.h>
 

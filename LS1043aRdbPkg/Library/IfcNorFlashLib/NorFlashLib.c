@@ -501,7 +501,7 @@ NorFlashPlatformGetDevices (
 
 EFI_STATUS
 NorFlashPlatformFlashGetAttributes (
-  OUT NOR_FLASH_DESCRIPTION  **NorFlashDevices,
+  OUT NOR_FLASH_DESCRIPTION  *NorFlashDevices,
   IN UINT32                  Count
   )
 {
@@ -516,13 +516,13 @@ NorFlashPlatformFlashGetAttributes (
   Status = CfiNorFlashFlashGetAttributes (NorFlashDevices, Count);
   // Limit the Size of Nor Flash that can be programmed
   for (Index = 0; Index < Count; Index++) {
-    NorFlashDevices[Index]->RegionBaseAddress = PcdGet64(PcdFlashReservedRegionBase64);
+    NorFlashDevices[Index].RegionBaseAddress = PcdGet64(PcdFlashReservedRegionBase64);
     // Since we are in Secondary Bank the flash size available is half of total flash size
-    NorFlashDevices[Index]->Size >>= 1;
-    NorFlashDevices[Index]->Size -= (NorFlashDevices[Index]->RegionBaseAddress - NorFlashDevices[Index]->DeviceBaseAddress);
-    if((NorFlashDevices[Index]->RegionBaseAddress - NorFlashDevices[Index]->DeviceBaseAddress) % NorFlashDevices[Index]->BlockSize) {
+    NorFlashDevices[Index].Size >>= 1;
+    NorFlashDevices[Index].Size -= (NorFlashDevices[Index].RegionBaseAddress - NorFlashDevices[Index].DeviceBaseAddress);
+    if((NorFlashDevices[Index].RegionBaseAddress - NorFlashDevices[Index].DeviceBaseAddress) % NorFlashDevices[Index].BlockSize) {
       DEBUG ((EFI_D_ERROR, "%a ERROR: Reserved Region(0x%p) doesn't start from block boundry(0x%08x)\n", __FUNCTION__,\
-				(UINTN)NorFlashDevices[Index]->RegionBaseAddress, (UINT32)NorFlashDevices[Index]->BlockSize));
+				(UINTN)NorFlashDevices[Index].RegionBaseAddress, (UINT32)NorFlashDevices[Index].BlockSize));
       return EFI_DEVICE_ERROR;
     }
   }

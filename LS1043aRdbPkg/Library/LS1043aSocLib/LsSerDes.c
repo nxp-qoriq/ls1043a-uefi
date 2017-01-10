@@ -171,8 +171,8 @@ GetSerdesInstanceConfig(
 )
 {
   UINT32 RegValue;
-  UINT32 SerDesProtocol;
-  const SERDES_CONFIG *ConfigTable;
+  UINT32 SerDesProtocol = 0x0;
+  const SERDES_CONFIG *ConfigTable = NULL;
   const SERDES_CONFIG *Config;
   struct CcsrGur *Gur = (VOID *)(GUTS_ADDR);
 
@@ -191,7 +191,7 @@ GetSerdesInstanceConfig(
     ConfigTable = SerDes1ConfigTable;
   }
 
-  for (Config = ConfigTable; Config->SerDesProtocol != 0; Config ++) {
+  for (Config = ConfigTable; Config && (Config->SerDesProtocol != 0); Config ++) {
     if (Config->SerDesProtocol == SerDesProtocol) {
       return Config;
     }
