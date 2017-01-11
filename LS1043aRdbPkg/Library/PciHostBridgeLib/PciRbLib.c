@@ -266,13 +266,13 @@ RootBridgeIoPciRW (
     if (Write) {
       switch (OperationWidth) {
         case EfiPciWidthUint8:
-  	  PcieWriteConfigByte(PrivateData, (UINT32)BusDev, Offset, *Uint8Buffer);
+          Status = PcieWriteConfigByte(PrivateData, (UINT32)BusDev, Offset, *Uint8Buffer);
           break;
         case EfiPciWidthUint16:
-  	  PcieWriteConfigWord(PrivateData, (UINT32)BusDev, Offset, *(UINT16 *)Uint8Buffer);
+          Status = PcieWriteConfigWord(PrivateData, (UINT32)BusDev, Offset, *(UINT16 *)Uint8Buffer);
           break;
         case EfiPciWidthUint32:
-  	  PcieWriteConfig(PrivateData, (UINT32)BusDev, Offset, *(UINT32 *)Uint8Buffer);
+          Status = PcieWriteConfig(PrivateData, (UINT32)BusDev, Offset, *(UINT32 *)Uint8Buffer);
           break;
         default:
           //
@@ -285,13 +285,13 @@ RootBridgeIoPciRW (
     } else {
       switch (OperationWidth) {
         case EfiPciWidthUint8:
-  	  PcieReadConfigByte(PrivateData, (UINT32)BusDev, Offset, Uint8Buffer);
+          Status = PcieReadConfigByte(PrivateData, (UINT32)BusDev, Offset, Uint8Buffer);
           break;
         case EfiPciWidthUint16:
-  	  PcieReadConfigWord(PrivateData, (UINT32)BusDev, Offset, (UINT16 *)Uint8Buffer);
+          Status = PcieReadConfigWord(PrivateData, (UINT32)BusDev, Offset, (UINT16 *)Uint8Buffer);
           break;
         case EfiPciWidthUint32:
-  	  PcieReadConfig(PrivateData, (UINT32)BusDev, Offset, (UINT32 *)Uint8Buffer);
+          Status = PcieReadConfig(PrivateData, (UINT32)BusDev, Offset, (UINT32 *)Uint8Buffer);
           break;
         default:
           //
@@ -304,5 +304,5 @@ RootBridgeIoPciRW (
     }
   }
 
-  return EFI_SUCCESS;
+  return Status;
 }

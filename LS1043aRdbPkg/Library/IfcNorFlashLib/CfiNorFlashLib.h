@@ -25,7 +25,7 @@
 
 EFI_STATUS
 CfiNorFlashFlashGetAttributes (
-  OUT NOR_FLASH_DESCRIPTION  **NorFlashDevices,
+  OUT NOR_FLASH_DESCRIPTION  *NorFlashDevices,
   IN UINT32                  Index
   );
 

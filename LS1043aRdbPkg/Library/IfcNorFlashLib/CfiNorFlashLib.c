@@ -107,7 +107,7 @@ NorFlashReadCfiData (
 */
 EFI_STATUS
 CfiNorFlashFlashGetAttributes (
-  OUT NOR_FLASH_DESCRIPTION  **NorFlashDevices,
+  OUT NOR_FLASH_DESCRIPTION  *NorFlashDevices,
   IN UINT32                  Index
   )
 {
@@ -124,7 +124,7 @@ CfiNorFlashFlashGetAttributes (
   
   for (Count = 0; Count < Index; Count++) {
 
-    NorFlashDevices[Count]->DeviceBaseAddress = DeviceBaseAddress = PcdGet64(PcdFlashDeviceBase64);
+    NorFlashDevices[Count].DeviceBaseAddress = DeviceBaseAddress = PcdGet64(PcdFlashDeviceBase64);
 
      // Reset flash first
     SEND_NOR_COMMAND (DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
@@ -158,22 +158,22 @@ CfiNorFlashFlashGetAttributes (
 
     NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_DEVICE_SIZE, 1, &Size);
     // Refer CFI Specification
-    NorFlashDevices[Count]->Size = 1 << Size;
+    NorFlashDevices[Count].Size = 1 << Size;
 	 
     NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_BLOCK_SIZE, 2, &BlockSize);
     // Refer CFI Specification
-    NorFlashDevices[Count]->BlockSize = 256*((FLASH_DATA)((BlockSize[1] << HighByteShift) | (BlockSize[0] & HighByteMask)));
+    NorFlashDevices[Count].BlockSize = 256*((FLASH_DATA)((BlockSize[1] << HighByteShift) | (BlockSize[0] & HighByteMask)));
 
     NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_MAX_NUM_BYTES_WRITE, 2, &MaxNumBytes);
     // Refer CFI Specification
     /* from CFI query we get the Max. number of BYTE in multi-byte write = 2^N. */
     /* But our Flash Library is able to read/write in WORD size (2 bytes in our case). */
     /* which is why we need to CONVERT MAX BYTES TO MAX WORDS by diving it by width of word size */
-    NorFlashDevices[Count]->MultiByteWordCount =\
+    NorFlashDevices[Count].MultiByteWordCount =\
     (1 << ((FLASH_DATA)((MaxNumBytes[1] << HighByteShift) | (MaxNumBytes[0] & HighByteMask))))/sizeof(FLASH_DATA);
     
     // Put device back into Read Array mode (via Reset)
-    SEND_NOR_COMMAND (NorFlashDevices[Count]->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
+    SEND_NOR_COMMAND (NorFlashDevices[Count].DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
   }
   
   return EFI_SUCCESS;

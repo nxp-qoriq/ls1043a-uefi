@@ -107,7 +107,7 @@ NorFlashPlatformGetDevices (
 
 EFI_STATUS
 NorFlashPlatformFlashGetAttributes (
-  OUT NOR_FLASH_DESCRIPTION  **NorFlashDevices,
+  OUT NOR_FLASH_DESCRIPTION  *NorFlashDevices,
   IN UINT32                  Count
   );
 

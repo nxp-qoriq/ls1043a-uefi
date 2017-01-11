@@ -238,7 +238,7 @@ PciHostBridgeEntryPoint (
         (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL *)&PrivateData[Loop1]->Io,
         PrivateData[Loop1]->Info,
         HostBridge[Loop1]->HostBridgeHandle,
-        RootBridgeAttribute[1][1],
+        RootBridgeAttribute[0][0],
         (Loop1+1),
 	0
         );
@@ -331,7 +331,7 @@ PciNotifyPhase (
   PCI_HOST_BRIDGE_INSTANCE    *HostBridgeInstance;
   PCI_ROOT_BRIDGE_INSTANCE    *RootBridgeInstance;
   EFI_STATUS                  Status;
-  EFI_PHYSICAL_ADDRESS        BaseAddress;
+  EFI_PHYSICAL_ADDRESS        BaseAddress = 0x0;
   UINT64                      AddrLen;
   UINTN                       BitsOfAlignment;
 

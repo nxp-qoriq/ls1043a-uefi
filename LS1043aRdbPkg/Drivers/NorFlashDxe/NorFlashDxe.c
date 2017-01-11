@@ -226,7 +226,7 @@ NorFlashInitialise (
     return Status;
   }
 
-  Status = NorFlashPlatformFlashGetAttributes (&NorFlashDevices, mNorFlashDeviceCount);
+  Status = NorFlashPlatformFlashGetAttributes (NorFlashDevices, mNorFlashDeviceCount);
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR,"NorFlashInitialise: Fail to get Nor Flash device attributes\n"));
     ASSERT_EFI_ERROR (Status); /* System becomes unusable if NOR flash is not detected */

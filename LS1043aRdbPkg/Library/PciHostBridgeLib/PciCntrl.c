@@ -324,7 +324,7 @@ PcieReadConfigByte (
 {
   UINT32 Val32;
 
-  if (PcieReadConfig(PrivateData, Dev, Offset & 0xfc, &Val32) < 0) {
+  if (EFI_ERROR(PcieReadConfig(PrivateData, Dev, Offset & 0xfc, &Val32))) {
     *Val = -1;
     return -1;
   }
@@ -344,7 +344,7 @@ PcieReadConfigWord (
 {
   UINT32 Val32;
 
-  if (PcieReadConfig(PrivateData, Dev, Offset & 0xfc, &Val32) < 0) {
+  if (EFI_ERROR(PcieReadConfig(PrivateData, Dev, Offset & 0xfc, &Val32))) {
     *Val = -1;
     return -1;
   }
@@ -364,7 +364,7 @@ PcieWriteConfigByte (
 {
   UINT32 Val32, Mask, Ldata, Shift;
   
-  if (PcieReadConfig(PrivateData, Dev, Offset & 0xfc, &Val32) < 0)
+  if (EFI_ERROR(PcieReadConfig(PrivateData, Dev, Offset & 0xfc, &Val32)))
     return -1;
 
   Shift = ((Offset & (INT32)0x03) * 8);
@@ -372,7 +372,7 @@ PcieWriteConfigByte (
   Mask = 0x000000ff << Shift;
   Val32 = (Val32 & ~Mask) | Ldata;
 
-  if (PcieWriteConfig(PrivateData, Dev, Offset & 0xfc, Val32) < 0)
+  if (EFI_ERROR(PcieWriteConfig(PrivateData, Dev, Offset & 0xfc, Val32)))
     return -1;
 
   return EFI_SUCCESS;
@@ -388,7 +388,7 @@ PcieWriteConfigWord (
 {
   UINT32 Val32, Mask, Ldata, Shift;
   
-  if (PcieReadConfig(PrivateData, Dev, Offset & 0xfc, &Val32) < 0)
+  if (EFI_ERROR(PcieReadConfig(PrivateData, Dev, Offset & 0xfc, &Val32)))
     return -1;
 
   Shift = ((Offset & (INT32)0x02) * 8);
@@ -396,7 +396,7 @@ PcieWriteConfigWord (
   Mask = 0x0000ffff << Shift;
   Val32 = (Val32 & ~Mask) | Ldata;
 
-  if (PcieWriteConfig(PrivateData, Dev, Offset & 0xfc, Val32) < 0)
+  if (EFI_ERROR(PcieWriteConfig(PrivateData, Dev, Offset & 0xfc, Val32)))
     return -1;
 
   return EFI_SUCCESS;
@@ -441,32 +441,28 @@ PcieSetupAtuInbound (
 	IN struct LsPcieInfo *Info
 )
 {
-	 UINT32 *ValIn = NULL;
-	 UINT32  ValOut;
-	 UINT32 *Addr;
-	*ValIn = 0x00000000;
+	UINT32 ValIn = 0x00000000;
+	UINT32 ValOut = 0x28282828;
+	UINT32 *Addr = (UINT32 *)0x80080000;
 
-
-	ValOut = 0x28282828;
-        Addr = (UINT32 *)0x80080000;	
 	MmioWrite32((UINTN)Addr, (UINT32)ValOut);
 	DEBUG((EFI_D_INFO,"\nValue: %08lx written on Addr: %08lx\n", ValOut, Addr));
-	*ValIn = MmioRead32((UINTN)Addr);
-	DEBUG((EFI_D_INFO, "Value Read: %08lx from Address: %llx\n", *ValIn, Addr));
+	ValIn = MmioRead32((UINTN)Addr);
+	DEBUG((EFI_D_INFO, "Value Read: %08lx from Address: %llx\n", ValIn, Addr));
 	/* ATU 2 : OUTBOUND : MEM */
 	PcieIatuInboundSet(Pcie, LS_PCIE_ATU_REGION_INDEX2,
 				  1,
 				  0x80080000);
 
 	Addr = (VOID *)Pcie->VaCfg0 + 0x40000000;
-	*ValIn = MmioRead32((UINTN)Addr);
-	DEBUG((EFI_D_INFO, "Inbound: Value Read: %08lx from Address: %llx\n", *ValIn, Addr));
+	ValIn = MmioRead32((UINTN)Addr);
+	DEBUG((EFI_D_INFO, "Inbound: Value Read: %08lx from Address: %llx\n", ValIn, Addr));
 	Addr = (VOID *)Pcie->VaCfg0 + 0x00000000;
-	*ValIn = MmioRead32((UINTN)Addr);
-	DEBUG((EFI_D_INFO, "Inbound: Value Read: %08lx from Address: %llx\n", *ValIn, Addr));
+	ValIn = MmioRead32((UINTN)Addr);
+	DEBUG((EFI_D_INFO, "Inbound: Value Read: %08lx from Address: %llx\n", ValIn, Addr));
         Addr = (UINT32 *)0x80080000;	
-	*ValIn = MmioRead32((UINTN)Addr);
-	DEBUG((EFI_D_INFO, "Inbound: Value Read: %08lx from Address: %llx\n", *ValIn, Addr));
+	ValIn = MmioRead32((UINTN)Addr);
+	DEBUG((EFI_D_INFO, "Inbound: Value Read: %08lx from Address: %llx\n", ValIn, Addr));
 
 }
 
