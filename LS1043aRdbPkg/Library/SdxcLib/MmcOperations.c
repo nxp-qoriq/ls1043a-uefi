@@ -1264,10 +1264,10 @@ SdxcStartup (
 
     /* ExtCsd'S Capacity Is Valid if More Than 2GB */
     if (!Status && (ExtCsd[EXT_CSD_REV] >= 2)) {
-      Capacity = ExtCsd[EXT_CSD_SEC_CNT] << 0
-                 | ExtCsd[EXT_CSD_SEC_CNT + 1] << 8
-                 | ExtCsd[EXT_CSD_SEC_CNT + 2] << 16
-                 | ExtCsd[EXT_CSD_SEC_CNT + 3] << 24;
+      Capacity = (UINT64)ExtCsd[EXT_CSD_SEC_CNT] << 0
+                 | (UINT64)ExtCsd[EXT_CSD_SEC_CNT + 1] << 8
+                 | (UINT64)ExtCsd[EXT_CSD_SEC_CNT + 2] << 16
+                 | (UINT64)ExtCsd[EXT_CSD_SEC_CNT + 3] << 24;
 
       Capacity *= MMC_MAX_BLOCK_LEN;
 

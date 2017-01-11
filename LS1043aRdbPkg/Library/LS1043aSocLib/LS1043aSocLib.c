@@ -119,18 +119,20 @@ STATIC struct CsuNsDev NonSecureDevices[] =
 
 CHAR8 *StringToMHz (
   CHAR8 *Buf,
-  unsigned long Hz
+  UINT32 Size,
+  UINT64 Hz
   )
 {
 	long l, m, n;
 
 	n = DIV_ROUND_CLOSEST(Hz, 1000) / 1000L;
-	l = AsciiSPrint (Buf, sizeof(Buf), "%ld", n);
+	l = AsciiSPrint (Buf, Size, "%ld", n);
 
 	Hz -= n * 1000000L;
 	m = DIV_ROUND_CLOSEST(Hz, 1000L);
 	if (m != 0)
-		AsciiSPrint (Buf + l, sizeof(Buf), ".%03ld", m);
+		AsciiSPrint (Buf + l, Size, ".%03ld", m);
+
 	return (Buf);
 }
 
@@ -434,7 +436,7 @@ PrintCpuInfo (
 	struct SysInfo SysInfo;
 	UINTN CoreIndex, Core;
 	UINT32 Type;
-	CHAR8 Buf[32];
+	CHAR8 Buf[32] = {0};
 	CHAR8 Buffer[100];
 	UINTN CharCount;
 
@@ -448,17 +450,17 @@ PrintCpuInfo (
 		Type = TP_ITYP_VER(QoriqCoreToType(Core));
 		CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "CPU%d(%a):%-4a MHz  ", Core,
 		       Type == TY_ITYP_VER_A53 ? "A53" : "Unknown Core",
-		       StringToMHz(Buf, SysInfo.FreqProcessor[Core]));
+		       StringToMHz(Buf, sizeof(Buf), SysInfo.FreqProcessor[Core]));
 		SerialPortWrite ((UINT8 *) Buffer, CharCount);
 	}
 
 	CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "\n       Bus:      %-4a MHz  ",
-	 		StringToMHz(Buf, SysInfo.FreqSystemBus));
+	 		StringToMHz(Buf, sizeof(Buf), SysInfo.FreqSystemBus));
 	SerialPortWrite ((UINT8 *) Buffer, CharCount);
-	CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "DDR:      %-4a MHz", StringToMHz(Buf, SysInfo.FreqDdrBus));
+	CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "DDR:      %-4a MHz", StringToMHz(Buf, sizeof(Buf), SysInfo.FreqDdrBus));
 	SerialPortWrite ((UINT8 *) Buffer, CharCount);
 	CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "\n       FMAN:      %-4a MHz  ",
-				StringToMHz(Buf, SysInfo.FreqFman[0]));
+				StringToMHz(Buf, sizeof(Buf), SysInfo.FreqFman[0]));
 	SerialPortWrite ((UINT8 *) Buffer, CharCount);
 	CharCount = AsciiSPrint (Buffer, sizeof (Buffer), "\n");
 	SerialPortWrite ((UINT8 *) Buffer, CharCount);
@@ -1436,7 +1438,8 @@ FdtFixupBmanPortals (
   VOID *Blob
   )
 {
-	UINTN Offset, Error, CompatibleLength;
+	UINTN CompatibleLength;
+	INTN Offset, Error;
 	UINTN Maj, Min, IpCfg;
 	CHAR8 Compatible[64];
 

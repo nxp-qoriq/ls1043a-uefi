@@ -140,8 +140,10 @@ NorFlashBlockIoWriteBlocks (
 
   DEBUG ((DEBUG_BLKIO, "%a(MediaId=0x%x, Lba=%ld, BufferSize=0x%x bytes (%d kB), BufferPtr @ 0x%08x)\n", __FUNCTION__,MediaId, Lba, BufferSizeInBytes, Buffer));
 
-  if (!Media)
-    Status = EFI_INVALID_PARAMETER;
+  if (!Media) {
+    DEBUG ((EFI_D_RELEASE, "Nor Flash Media pointer is NULL\n"));
+    return EFI_INVALID_PARAMETER;
+  }
   
   if( !Media->MediaPresent )
     Status = EFI_NO_MEDIA;

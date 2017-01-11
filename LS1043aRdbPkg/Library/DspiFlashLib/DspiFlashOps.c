@@ -328,20 +328,17 @@ DspiRx (
   IN  struct DspiSlave *Dspislave
   )
 {
-  UINT32 Ret = 0;
   INT32 Timeout = 10000;
 
   while (((MmioReadBe32((UINTN)&Dspislave->Regs->Sr) & 0x000000F0) == 0) && Timeout--)
 			;
 
   if (Timeout <= 0) {
-    DEBUG((EFI_D_ERROR, "DspiRx : Failed to get status register\n"));
+    DEBUG((EFI_D_ERROR, "DspiRx : Timeout in reading status register\n"));
     return -1;
   }
-  Ret = 0;
-  Ret = (UINT16)(MmioReadBe32((UINTN)&Dspislave->Regs->Rfr) & 0xFFFF);
 
-  return Ret;
+  return ((UINT16)(MmioReadBe32((UINTN)&Dspislave->Regs->Rfr) & 0xFFFF));
 }
 
 EFI_STATUS
@@ -354,6 +351,7 @@ DspiXfer (
   )
 {
   EFI_STATUS Status = EFI_SUCCESS;
+  INT32 Data = 0;
   UINT16 *DspiRead16 = NULL, *DspiWrite16 = NULL;
   UINT8 *DspiRead = NULL, *DspiWrite = NULL;
   static UINT32 Ctrl = 0;
@@ -387,8 +385,8 @@ DspiXfer (
         if (Status != EFI_SUCCESS)
 	   return Status;
 
-	 Status = DspiRx(DspiSlave);
-        if (Status < 0)
+	 Data = DspiRx(DspiSlave);
+        if (Data < 0)
 	   return EFI_TIMEOUT;
       }
 
@@ -397,14 +395,14 @@ DspiXfer (
         if (Status != EFI_SUCCESS)
 	   return Status;
 
-	 Status = DspiRx(DspiSlave);
-        if (Status < 0)
+	 Data = DspiRx(DspiSlave);
+        if (Data < 0)
 	   return EFI_TIMEOUT;
 
 	 if (DspiSlave->Charbit == 16)
-	   *DspiRead16++ = Status;
+	   *DspiRead16++ = Data;
 	 else
-	   *DspiRead++ = Status;
+	   *DspiRead++ = Data;
       }
     }
     Len = 1;	/* Remaining Byte */
@@ -423,8 +421,8 @@ DspiXfer (
       if (Status != EFI_SUCCESS)
 	 return Status;
 
-      Status = DspiRx(DspiSlave);
-      if (Status < 0)
+      Data = DspiRx(DspiSlave);
+      if (Data < 0)
         return EFI_TIMEOUT;
     }
 
@@ -434,14 +432,14 @@ DspiXfer (
       if (Status != EFI_SUCCESS)
 	 return Status;
 
-      Status = DspiRx(DspiSlave);
-      if (Status < 0)
+      Data = DspiRx(DspiSlave);
+      if (Data < 0)
 	 return EFI_TIMEOUT;
 
       if (DspiSlave->Charbit == 16)
-        *DspiRead16 = Status;
+        *DspiRead16 = Data;
       else
-	*DspiRead = Status;
+	*DspiRead = Data;
     }
   } else {
     /* Dummy Read */
@@ -449,8 +447,8 @@ DspiXfer (
     if (Status != EFI_SUCCESS)
       return Status;
 
-    Status = DspiRx(DspiSlave);
-    if (Status < 0)
+    Data = DspiRx(DspiSlave);
+    if (Data < 0)
       return EFI_TIMEOUT;
   }
 

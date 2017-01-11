@@ -106,7 +106,14 @@ I2cSetBusSpeed (
 {
   struct I2cRegs *I2cRegs = BaseAddress;
   UINT8 ClkId = GetClk(Speed);
-  UINT8 SpeedId = ClkDiv[ClkId][1];
+  UINT8 SpeedId = 0;
+
+  if (ClkId >= ARRAY_SIZE(ClkDiv)) {
+    DEBUG((EFI_D_ERROR,"ClkId %d\n", ClkId));
+    return EFI_INVALID_PARAMETER;
+  }
+
+  SpeedId = ClkDiv[ClkId][1];
 
   /** Store divider value */
   MmioWrite8((UINTN)&I2cRegs->I2cFdr, SpeedId);

@@ -40,6 +40,9 @@
 
 [Guids]
 
+[FixedPcd]
+  gLS1043aRdbTokenSpaceGuid.PcdDspiTest
+
 [Protocols]
   gEfiBlockIoProtocolGuid
   gEfiDiskIoProtocolGuid

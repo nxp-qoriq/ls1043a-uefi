@@ -617,8 +617,8 @@ SdxcInitialize (
   if (Cfg->MaxBusWidth > 0) {
     if (Cfg->MaxBusWidth < 8)
       Cfg->Cfg.HostCaps &= ~MMC_MODE_8_BIT;
-      if (Cfg->MaxBusWidth < 4)
-        Cfg->Cfg.HostCaps &= ~MMC_MODE_4_BIT;
+    if (Cfg->MaxBusWidth < 4)
+      Cfg->Cfg.HostCaps &= ~MMC_MODE_4_BIT;
   }
 
   if (Caps & SDXC_HOSTCAPBLT_HSS)

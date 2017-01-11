@@ -259,6 +259,11 @@ MmcDriverBindingStart (
 {
   EFI_MMC_HOST_PROTOCOL   *MmcHost = NULL;
 
+  MmcHost = AllocateZeroPool (sizeof (EFI_MMC_HOST_PROTOCOL));
+  if (MmcHost == NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+
   //
   // Check RemainingDevicePath validation
   //
