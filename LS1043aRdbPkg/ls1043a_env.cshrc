@@ -1,2 +1,2 @@
-export GCC49_AARCH64_PREFIX='aarch64-linux-gnu-'
+export GCC49_AARCH64_PREFIX=$CROSS_COMPILE
 unset ARCH
