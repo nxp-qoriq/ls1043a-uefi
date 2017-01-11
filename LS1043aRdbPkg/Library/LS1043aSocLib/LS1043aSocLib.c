@@ -1792,7 +1792,7 @@ VOID FdtFixupPsci(VOID *Blob)
   DEBUG((EFI_D_INFO, "PSCI fixup done!!!!\n"));
 }
 
-VOID FdtFixupPciMsi(VOID *Blob)
+VOID FdtFixupPciMsi(VOID *Blob, INT32 Rev)
 {
   CHAR8  *Compatible = "fsl,ls1043a-pcie";
   CHAR8  *Prop = "interrupt-map";
@@ -1815,9 +1815,16 @@ VOID FdtFixupPciMsi(VOID *Blob)
 
     CopyMem((CHAR8 *)ModifiedInterruptMap, InterruptMap, Size);
     Val = fdt32_to_cpu(ModifiedInterruptMap[0][6]);
-    ModifiedInterruptMap[1][6] = cpu_to_fdt32(Val + 1);
-    ModifiedInterruptMap[2][6] = cpu_to_fdt32(Val + 2);
-    ModifiedInterruptMap[3][6] = cpu_to_fdt32(Val + 3);
+
+    if (Rev == REV1_1) {
+      ModifiedInterruptMap[1][6] = cpu_to_fdt32(Val + 1);
+      ModifiedInterruptMap[2][6] = cpu_to_fdt32(Val + 2);
+      ModifiedInterruptMap[3][6] = cpu_to_fdt32(Val + 3);
+    } else {
+      ModifiedInterruptMap[1][6] = cpu_to_fdt32(Val);
+      ModifiedInterruptMap[2][6] = cpu_to_fdt32(Val);
+      ModifiedInterruptMap[3][6] = cpu_to_fdt32(Val);
+   }
 
     Error = fdt_setprop(Blob, Offset, Prop, ModifiedInterruptMap, sizeof(ModifiedInterruptMap));
     if (Error < 0) {
@@ -1830,27 +1837,80 @@ VOID FdtFixupPciMsi(VOID *Blob)
   return;
 }
 
-VOID FdtFixupMsiSubnode(VOID *Blob, INTN ParentNodeOffset,
-                                CHAR8 *Name, INTN Irq_No)
+VOID FdtFixupMsiSubnode(VOID *Blob, CHAR8 *Name, INTN Irq_No_1,
+				INTN Irq_No_2, INT32 Rev)
 {
-  INT32  Offset, Error;
-  UINT32 Irq[3];
+  INT32  Offset, Error, Len;
+  UINT32 Temp[4][3];
+  VOID * Parent = NULL;
 
-  Offset = fdt_subnode_offset(Blob, ParentNodeOffset, Name);
+  Offset = fdt_path_offset(Blob, Name);
   if (Offset < 0) {
         DEBUG((EFI_D_ERROR, "Can't find %s: %s\n",Name,fdt_strerror(Offset)));
         return;
   }
 
-  Irq[0] = cpu_to_fdt32(0x0);
-  Irq[1] = cpu_to_fdt32(Irq_No);
-  Irq[2] = cpu_to_fdt32(0x4);
+  /*fixup property of msi interrupts*/
 
-  Error = fdt_setprop(Blob, Offset, "interrupts", Irq, sizeof(Irq));
+  Temp[0][0] = cpu_to_fdt32(0x0);
+  Temp[0][1] = cpu_to_fdt32(Irq_No_1);
+  Temp[0][2] = cpu_to_fdt32(0x4);
+
+  if (Rev == REV1_1) {
+    Temp[1][0] = cpu_to_fdt32(0x0);
+    Temp[1][1] = cpu_to_fdt32(Irq_No_2);
+    Temp[1][2] = cpu_to_fdt32(0x4);
+    Temp[2][0] = cpu_to_fdt32(0x0);
+    Temp[2][1] = cpu_to_fdt32(Irq_No_2 + 1);
+    Temp[2][2] = cpu_to_fdt32(0x4);
+    Temp[3][0] = cpu_to_fdt32(0x0);
+    Temp[3][1] = cpu_to_fdt32(Irq_No_2 + 2);
+    Temp[3][2] = cpu_to_fdt32(0x4);
+    Len = sizeof(Temp);
+  } else {
+    Len = sizeof(Temp[0]);
+  }
+
+  Error = fdt_setprop(Blob, Offset, "interrupts", Temp, Len);
   if (Error < 0) {
-        DEBUG((EFI_D_ERROR, "can't set %s from node %s: %s\n",
+    DEBUG((EFI_D_ERROR, "can't set %s from node %s: %s\n",
                "interrupts", Name, fdt_strerror(Error)));
-        return;
+    return;
+  }
+
+  /* fixup reg property of msi node */
+  Parent = (char *)fdt_getprop(Blob, Offset, "reg", &Len);
+  if (!Parent) {
+    DEBUG((EFI_D_ERROR, "fdt_getprop can't get %s from node %s\n",
+			"reg", Name));
+    return;
+  }
+
+  InternalMemCopyMem((char *)Temp, Parent, Len);
+
+  if (Rev == REV1_1)
+    *((UINT32 *)Temp + 3) = cpu_to_fdt32(0x1000);
+  else
+    *((UINT32 *)Temp + 3) = cpu_to_fdt32(0x8);
+
+  Error = fdt_setprop(Blob, Offset, "reg", Temp, Len);
+  if (Error < 0) {
+    DEBUG((EFI_D_ERROR, "fdt_setprop can't set %s from node %s: %s\n",
+			"reg", Name, fdt_strerror(Error)));
+    return;
+  }
+
+  /* fixup compatible property */
+  if (Rev == REV1_1)
+    Error = fdt_setprop_string(Blob, Offset, "compatible",
+					"fsl,ls1043a-v1.1-msi");
+  else
+    Error = fdt_setprop_string(Blob, Offset, "compatible",
+					"fsl,ls1043a-msi");
+  if (Error < 0) {
+    DEBUG((EFI_D_ERROR, "fdt_setprop can't set %s from node %s: %s\n",
+			"compatible", Name, fdt_strerror(Error)));
+    return;
   }
 
   return;
@@ -1863,24 +1923,14 @@ FdtFixupMsi (
 {
   struct  CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
   UINT32  Value;
-  INT32   NodeOffset;
 
   Value = MmioReadBe32((UINTN)&GurBase->svr) & MASK_UPPER_8;
 
-  if(REV1_1 == Value)
-          return;
+  FdtFixupMsiSubnode(Blob, "/soc/msi-controller1@1571000", 116, 111, Value);
+  FdtFixupMsiSubnode(Blob, "/soc/msi-controller2@1572000", 126, 121, Value);
+  FdtFixupMsiSubnode(Blob, "/soc/msi-controller3@1573000", 160, 155, Value);
 
-  NodeOffset = fdt_path_offset(Blob, "/soc/msi-controller");
-  if (NodeOffset < 0) {
-        DEBUG((EFI_D_ERROR, "WARNING: Missing /soc/msi-controller\n"));
-        return;
-  }
-
-  FdtFixupMsiSubnode(Blob, NodeOffset, "msi0@1571000", 116);
-  FdtFixupMsiSubnode(Blob, NodeOffset, "msi1@1572000", 126);
-  FdtFixupMsiSubnode(Blob, NodeOffset, "msi2@1573000", 160);
-
-  FdtFixupPciMsi(Blob);
+  FdtFixupPciMsi(Blob, Value);
 
   return;
 }
