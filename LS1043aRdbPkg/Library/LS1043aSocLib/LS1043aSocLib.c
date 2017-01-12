@@ -1017,7 +1017,7 @@ int fdt_node_offset_by_compat_reg (
 
 	off = fdt_node_offset_by_compatible(blob, -1, compat);
 	while (off != -FDT_ERR_NOTFOUND) {
-		Reg = fdt_getprop(blob, off, "Reg", &len);
+		Reg = fdt_getprop(blob, off, "reg", &len);
 		if (Reg) {
 			if (compat_off == fdt_translate_address(blob, off, Reg))
 				break;
