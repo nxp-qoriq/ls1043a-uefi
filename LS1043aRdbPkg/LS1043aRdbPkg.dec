@@ -137,7 +137,7 @@
   #
   # PPA specific PCDs
   #
-  gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x0|UINT64|0x00000032
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNorBaseAddr|0x0|UINT64|0x00000032
   gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize|0x0|UINT64|0x00000033
   gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration|""|VOID*|0x00000034
 
@@ -195,6 +195,7 @@
   gLS1043aRdbTokenSpaceGuid.PcdDpaa1DebugFlags|0x0|UINT32|0x00000061
   gLS1043aRdbTokenSpaceGuid.PcdFManFwSrc|0x1|UINT8|0x00000062
   gLS1043aRdbTokenSpaceGuid.PcdFManFwNorAddr|0x60300000|UINT32|0x00000063
+  gLS1043aRdbTokenSpaceGuid.PcdFManFwQspiAddr|0x40200000|UINT32|0x00000070
 
   #
   # Bit mask to indicate the DPAA1 MEMACs to be used.
@@ -222,4 +223,11 @@
   # IP Testing specific PCDs
   #
   gLS1043aRdbTokenSpaceGuid.PcdDspiTest|FALSE|BOOLEAN|0x0000006D
+  gLS1043aRdbTokenSpaceGuid.PcdQspiTest|FALSE|BOOLEAN|0x0000006E
 
+  #
+  # PPA specific PCDs
+  #
+  gLS1043aRdbTokenSpaceGuid.PcdPpaQspiBaseAddr|0x0|UINT64|0x0000006F
+
+  # Pcd 0x00000070 has been used by FMan

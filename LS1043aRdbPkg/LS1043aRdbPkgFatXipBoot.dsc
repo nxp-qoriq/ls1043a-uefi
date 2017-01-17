@@ -29,8 +29,13 @@
   FLASH_DEFINITION               = LS1043aRdbPkg/LS1043aRdbPkgFatXipBoot.fdf
 
 [PcdsFixedAtBuild.common]
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x40400000
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x3
+!else
   gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x60100000
   gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x0
+!endif
 
 [LibraryClasses.common.PEIM]
   PcdLib|MdePkg/Library/PeiPcdLib/PeiPcdLib.inf
