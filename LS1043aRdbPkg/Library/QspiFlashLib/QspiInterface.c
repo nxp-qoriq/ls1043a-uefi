@@ -16,6 +16,18 @@
 
 struct QspiFlash *GFlash;
 
+#define QSPI_FLASH_DEVICE_COUNT 1
+
+QSPI_FLASH_DESCRIPTION mQspiDevices[QSPI_FLASH_DEVICE_COUNT] = {
+  // FIXME: Add RCW, PBI, FMAN images here when available
+  { // UEFI
+    0, //DeviceBaseAddress
+    0, //RegionBaseAddress
+    0,   //Size
+    0,        //BlockSize
+  },
+};
+
 EFI_STATUS
 QspiFlashErase (
   IN  UINT64 Offset,
@@ -185,10 +197,10 @@ QspiFlashFree (
   FreePool(GFlash);
 }
 
-EFI_STATUS
+  EFI_STATUS
 QspiDetect(
-  VOID
-  )
+    VOID
+    )
 {
   struct QspiSlave *Qspi;
 
@@ -197,6 +209,7 @@ QspiDetect(
   UINT32 Speed = DEFAULT_SPEED;
   UINT32 Mode = DEFAULT_MODE;
   struct QspiFlash *New = NULL;
+
 
   Qspi = QspiSetupSlave(Bus, Cs, Speed, Mode);
   if (!Qspi) {
@@ -217,3 +230,71 @@ QspiDetect(
   return EFI_SUCCESS;
 }
 
+  EFI_STATUS
+QspiPlatformInitialization (
+    VOID
+    )
+{
+  EFI_STATUS  Status;
+
+  Status = QspiDetect();
+
+  if (EFI_ERROR(Status)) {
+    DEBUG((EFI_D_ERROR, "Qspi Initialization Failure: Status: %x\n", Status));
+    return Status;
+  }
+
+  return Status;
+}
+
+  EFI_STATUS
+QspiPlatformGetDevices (
+    OUT QSPI_FLASH_DESCRIPTION   **QspiDevices,
+    OUT UINT32                  *Count
+    )
+{
+  if ((QspiDevices == NULL) || (Count == NULL)) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  // Get the number of Qspi flash devices supported
+  *QspiDevices = mQspiDevices;
+  *Count = QSPI_FLASH_DEVICE_COUNT;
+
+  return EFI_SUCCESS;
+}
+
+  EFI_STATUS
+QspiPlatformFlashGetAttributes (
+    OUT QSPI_FLASH_DESCRIPTION  *QspiDevices,
+    IN UINT32                  Count
+    )
+{
+  UINT32                  Index;
+
+  if ((QspiDevices == NULL) || (Count == 0)) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  for (Index = 0; Index < Count; Index++) {
+    QspiDevices[Index].BlockSize = GFlash->BlockSize;
+    QspiDevices[Index].Size = GFlash->Size;
+    QspiDevices[Index].DeviceBaseAddress = PcdGet64(PcdFlashDeviceBase64);
+    QspiDevices[Index].RegionBaseAddress = 
+      PcdGet64(PcdFlashReservedRegionBase64);
+    // Limit the Size of QSPI Flash that can be programmed
+    QspiDevices[Index].Size -= (QspiDevices[Index].RegionBaseAddress - 
+        QspiDevices[Index].DeviceBaseAddress);
+    if((QspiDevices[Index].RegionBaseAddress - 
+          QspiDevices[Index].DeviceBaseAddress) % QspiDevices[Index].BlockSize) 
+    {
+      DEBUG ((EFI_D_ERROR, "%a ERROR: Reserved Region(0x%p) doesn't start from"
+            "block boundry(0x%08x)\n", __FUNCTION__,\
+            (UINTN)QspiDevices[Index].RegionBaseAddress,
+            (UINT32)QspiDevices[Index].BlockSize));
+      return EFI_DEVICE_ERROR;
+    }
+  }
+
+  return EFI_SUCCESS;
+}

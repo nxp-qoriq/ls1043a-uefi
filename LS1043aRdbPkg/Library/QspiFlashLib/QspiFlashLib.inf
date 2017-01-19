@@ -24,7 +24,6 @@
 
 [Sources.common]
   QspiInterface.c
-  QspiBlockIoApi.c
   QspiFlashOps.c
   QspiFlashProbe.c
 
@@ -44,3 +43,7 @@
   MdeModulePkg/MdeModulePkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec
   LS1043aRdbPkg/LS1043aRdbPkg.dec
+
+[Pcd.common]
+  gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64
+  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64
