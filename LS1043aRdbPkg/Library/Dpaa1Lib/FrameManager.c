@@ -1327,6 +1327,10 @@ FmanInit (
     FwAddr = (VOID*)(UINTN)PcdGet32(PcdFManFwNorAddr);
     break;
 
+  case FMAN_FW_QSPI:
+    FwAddr = (VOID*)(UINTN)PcdGet32(PcdFManFwQspiAddr);
+    break;
+
   default:
     return EFI_UNSUPPORTED;
   }

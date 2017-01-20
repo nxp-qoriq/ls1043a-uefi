@@ -52,10 +52,10 @@
 #define SPI_COMMON_DBLRATE			0x00100000
 
 /* Flash Timeout Values */
-#define CONFIG_SYS_HZ 			1000
-#define SPI_COMMON_FLASH_PROG_TIMEOUT		(2 * CONFIG_SYS_HZ)
-#define SPI_COMMON_FLASH_PAGE_ERASE_TIMEOUT 	(5 * CONFIG_SYS_HZ)
-#define SPI_COMMON_FLASH_SECTOR_ERASE_TIMEOUT	(10 * CONFIG_SYS_HZ)
+#define SYS_HZ 			1000
+#define SPI_COMMON_FLASH_PROG_TIMEOUT		(2 * SYS_HZ)
+#define SPI_COMMON_FLASH_PAGE_ERASE_TIMEOUT 	(5 * SYS_HZ)
+#define SPI_COMMON_FLASH_SECTOR_ERASE_TIMEOUT	(10 * SYS_HZ)
 
 /* CFI Manufacture ID'S */
 #define SPI_COMMON_FLASH_CFI_MFR_SPANSION 	0x01
@@ -65,6 +65,43 @@
 
 /* SPI TX Operation Modes */
 #define SPI_COMMON_OPM_TX_QPP 			(1 << 0)
+
+/* Common Status */
+#define STATUS_WIP			(1 << 0)
+#define STATUS_QEB_WINSPAN		(1 << 1)
+#define STATUS_QEB_MXIC		(1 << 6)
+#define STATUS_PEC			(1 << 7)
+#define STATUS_PROT			(1 << 1)
+#define STATUS_ERASE			(1 << 5)
+
+/* Write Commands */
+#define CMD_WRITE_STATUS		0x01
+#define CMD_BYTE_PROGRAM		0x02
+#define CMD_AAI_PROGRAM		0xad
+#define CMD_WRITE_DISABLE		0x04
+#define CMD_READ_STATUS		0x05
+#define CMD_QUAD_PAGE_PROGRAM	0x32
+#define CMD_READ_STATUS1		0x35
+#define CMD_WRITE_ENABLE		0x06
+#define CMD_READ_CONFIG		0x35
+#define CMD_FLAG_STATUS		0x70
+#define CMD_CLEAR_FLAG_STATUS	0x50
+
+/* Read Commands */
+#define CMD_READ_ARRAY_SLOW		0x03
+#define CMD_READ_ARRAY_FAST		0x0b
+#define CMD_READ_DUAL_OUTPUT_FAST	0x3b
+#define CMD_READ_DUAL_IO_FAST	0xbb
+#define CMD_READ_QUAD_OUTPUT_FAST	0x6b
+#define CMD_READ_QUAD_IO_FAST	0xeb
+#define CMD_READ_JEDEC_ID		0x9f
+
+/* Erase Commands */
+#define CMD_ERASE_STATUS		0x50
+#define CMD_ERASE_4K			0x20
+#define CMD_ERASE_32K		0x52
+#define CMD_ERASE_CHIP		0xc7
+#define CMD_ERASE_64K		0xd8
 
 /* Enum list - Full read commands */
 enum SpiReadCmds {
@@ -83,13 +120,13 @@ enum SpiReadCmds {
 
 /* Dual SPI Flash Memories */
 enum SpiDualFlash {
-  SF_SINGLE_FLASH = 0,
-  SF_DUAL_STACKED_FLASH = 1 << 0,
-  SF_DUAL_PARALLEL_FLASH = 1 << 1,
+  SINGLE_FLASH = 0,
+  DUAL_STACKED_FLASH = 1 << 0,
+  DUAL_PARALLEL_FLASH = 1 << 1,
 };
 
 /**
- * struct DspiFlashParameters - Flash Device Parameter Structure
+ * struct SpiFlashParameters - Flash Device Parameter Structure
  *
  * @Name:            Device Name ([MANUFLETTER][DEVTYPE][DENSITY][EXTRAINFO])
  * @Jedec:           Device Jedec ID (0x[1byteManufId][2byteDevId])
@@ -99,10 +136,10 @@ enum SpiDualFlash {
  * @EnumRdCmd:          enum List for Read Commands
  * @Flags:           Important Param, for Flash Specific Behaviour
  */
-struct DspiFlashParameters {
+struct SpiFlashParameters {
   CONST INT8 *Name;
   UINT32 Jedec;
-  UINT16 ExtJedec;
+  UINT32 ExtJedec;
   UINT32 SectorSize;
   UINT32 NoOfSectors;
   UINT8  EnumRdCmd;
@@ -124,10 +161,13 @@ struct DspiFlashParameters {
  * @MemoryMap:     Address Of Read-Only SPI Flash Access.
  * @Option:        Varies SPI Bus Options - Separate, Shared Bus.
  * @Flags:         Indication Of SPI Flags.
+ * @HasInit:       Flag for SPI Controller Init completed.
  */
 struct SpiSlave {
   UINT32 Bus;
   UINT32 Cs;
+  UINT32 Speed;
+  UINT32 Mode;
   UINT8  OpModeRx;
   UINT8  OpModeTx;
   UINT32 Wordlen;
@@ -135,6 +175,7 @@ struct SpiSlave {
   VOID   *MemoryMap;
   UINT8  Option;
   UINT8  Flags;
+  UINT8  HasInit;
 };
 
 #endif

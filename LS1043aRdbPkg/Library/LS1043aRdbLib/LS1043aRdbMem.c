@@ -121,6 +121,12 @@ ArmPlatformGetVirtualMemoryMap (
   VirtualMemoryTable[Index].Length       = CONFIG_IFC_REGION2_BASE_SIZE;
   VirtualMemoryTable[Index].Attributes   = CacheAttributes;
 
+  // QSPI region
+  VirtualMemoryTable[++Index].PhysicalBase = QSPI_REGION_BASE_ADDR;
+  VirtualMemoryTable[Index].VirtualBase  = QSPI_REGION_BASE_ADDR;
+  VirtualMemoryTable[Index].Length       = QSPI_REGION_BASE_SIZE;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED;
+
   // DRAM2
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_DRAM2_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_DRAM2_BASE_ADDR;

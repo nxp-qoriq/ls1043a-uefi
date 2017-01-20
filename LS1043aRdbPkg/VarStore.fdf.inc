@@ -19,7 +19,11 @@
 
 [FD.LS1043aRdbNv_EFI]
 
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+BaseAddress	= 0x040700000|gLS1043aRdbTokenSpaceGuid.PcdNvFdBase	#The base address of the FLASH device
+!else
 BaseAddress	= 0x60200000|gLS1043aRdbTokenSpaceGuid.PcdNvFdBase	#The base address of the FLASH device
+!endif
 Size		= 0x000C0000|gLS1043aRdbTokenSpaceGuid.PcdNvFdSize		#The size in bytes of the FLASH device
 ErasePolarity = 1
 BlockSize	= 0x1

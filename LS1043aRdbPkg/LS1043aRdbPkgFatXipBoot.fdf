@@ -53,7 +53,11 @@ gArmTokenSpaceGuid.PcdFvBaseAddress|gArmTokenSpaceGuid.PcdFvSize
 FV = FVMAIN_COMPACT
 
 [FD.LS1043aRdbPi_EFI]
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+BaseAddress	= 0x40400000|gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress	#The base address of the FLASH device
+!else
 BaseAddress   = 0x60100000|gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress  #The base address of the FLASH Device.
+!endif
 Size          = 0x00008000|gLS1043aRdbTokenSpaceGuid.PcdPiFdSize         #The size in bytes of the FLASH Device
 ErasePolarity = 1
 BlockSize     = 0x1
@@ -115,7 +119,11 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
   INF MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
   INF EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  INF MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
+!else
   INF MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf
+!endif
   INF MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
   INF EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
   INF EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
@@ -138,6 +146,7 @@ READ_LOCK_STATUS   = TRUE
   #INF ArmPkg/Filesystem/SemihostFs/SemihostFs.inf
 !endif
 
+!if $(BOOT_VIA_QSPI_FLASH) != TRUE
   #
   # Nor Flash
   INF LS1043aRdbPkg/Drivers/NorFlashDxe/NorFlashDxe.inf
@@ -145,6 +154,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # Nand Flash
   INF LS1043aRdbPkg/Drivers/NandFlashDxe/NandFlashDxe.inf
+!endif
   
   #
   # Dspi Flash
@@ -202,6 +212,12 @@ READ_LOCK_STATUS   = TRUE
   # SoC Drivers
   #
   # To be added later
+
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  #
+  # Qspi Flash
+  INF LS1043aRdbPkg/Drivers/QspiDxe/QspiDxe.inf
+!endif
 
   #
   # DPAA1 Ethernet driver

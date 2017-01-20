@@ -52,6 +52,13 @@
 	__Rem;						\
  })
 
+#define Uswap32(X) \
+       ((((X) & 0xff000000) >> 24) | \
+        (((X) & 0x00ff0000) >>  8) | \
+        (((X) & 0x0000ff00) <<  8) | \
+        (((X) & 0x000000ff) << 24))
+
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 
 #define RoundUp(X, Y)       ((((X) + ((Y) - 1)) / (Y)) * (Y))
 
