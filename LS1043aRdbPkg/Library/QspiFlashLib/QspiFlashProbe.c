@@ -20,12 +20,12 @@
 
 /* Read Commands Array */
 static UINT8 ReadCmdsArray[] = {
-  CMD_READ_ARRAY_SLOW,
-  CMD_READ_ARRAY_FAST,
-  CMD_READ_DUAL_OUTPUT_FAST,
-  CMD_READ_DUAL_IO_FAST,
-  CMD_READ_QUAD_OUTPUT_FAST,
-  CMD_READ_QUAD_IO_FAST,
+  READ_ARRAY_SLOW,
+  READ_ARRAY_FAST,
+  READ_DUAL_OUTPUT_FAST,
+  READ_DUAL_IO_FAST,
+  READ_QUAD_OUTPUT_FAST,
+  READ_QUAD_IO_FAST,
 };
 
 struct SpiFlashParameters QspiFlashTable[] = {
@@ -163,13 +163,13 @@ ValidateParameters (
 
   /* Compute Erase Sector And Command */
   if (Parameters->Flags & SECT_4K) {
-    Flash->EraseCmd = CMD_ERASE_4K;
+    Flash->EraseCmd = ERASE_4K;
     Flash->EraseSize = 4096 << Flash->Shift;
   } else if (Parameters->Flags & SECT_32K) {
-    Flash->EraseCmd = CMD_ERASE_32K;
+    Flash->EraseCmd = ERASE_32K;
     Flash->EraseSize = 32768 << Flash->Shift;
   } else {
-    Flash->EraseCmd = CMD_ERASE_64K;
+    Flash->EraseCmd = ERASE_64K;
     Flash->EraseSize = Flash->SectorSize;
   }
 
@@ -182,15 +182,15 @@ ValidateParameters (
     Flash->ReadCmd = Cmd;
   } else {
     /* Go for default Supported Read Cmd */
-    Flash->ReadCmd = CMD_READ_ARRAY_FAST;
+    Flash->ReadCmd = READ_ARRAY_FAST;
   }
 
   /* Not Require To Look for Fastest Only Two Write Cmds Yet */
   if (Parameters->Flags & WR_QPP && Flash->Qspi->Slave.OpModeTx & SPI_COMMON_OPM_TX_QPP)
-    Flash->WriteCmd = CMD_QUAD_PAGE_PROGRAM;
+    Flash->WriteCmd = QUAD_PAGE_PROGRAM;
   else
     /* Go for default Supported Write Cmd */
-    Flash->WriteCmd = CMD_BYTE_PROGRAM;
+    Flash->WriteCmd = BYTE_PROGRAM;
 
   /* Read DummyByte: Dummy Byte Is Determined Based On The
    * Dummy Cycles Of a Particular Command.
@@ -201,10 +201,10 @@ ValidateParameters (
    * Data All Go On Single Line Irrespective Of Command.
    */
   switch (Flash->ReadCmd) {
-  case CMD_READ_QUAD_IO_FAST:
+  case READ_QUAD_IO_FAST:
     Flash->DummyByte = 2;
     break;
-  case CMD_READ_ARRAY_SLOW:
+  case READ_ARRAY_SLOW:
     Flash->DummyByte = 0;
     break;
   default:
@@ -212,11 +212,11 @@ ValidateParameters (
   }
 
   /* Poll Cmd Selection */
-  Flash->PollCmd = CMD_READ_STATUS;
+  Flash->PollCmd = READ_STATUS;
 
 
   if (Parameters->Flags & E_FSR)
-    Flash->PollCmd = CMD_FLAG_STATUS;
+    Flash->PollCmd = FLAG_STATUS;
 
   return Flash;
 }
@@ -244,7 +244,7 @@ QspiProbeDevice (
   }
 
   /* Read The ID Codes */
-  Cmd = CMD_READ_JEDEC_ID;
+  Cmd = READ_JEDEC_ID;
   Ret = QspiReadWrite(Qspi, &Cmd, 1, NULL, Id, sizeof(Id));
   if (Ret != EFI_SUCCESS) {
     DEBUG((EFI_D_ERROR, "Failed To Get IdCodes\n"));
@@ -257,9 +257,9 @@ QspiProbeDevice (
     goto ErrClaimBus;
 
   /* Set The Quad Enable Bit - Only for Quad Commands */
-  if ((Flash->ReadCmd == CMD_READ_QUAD_OUTPUT_FAST) ||
-      (Flash->ReadCmd == CMD_READ_QUAD_IO_FAST) ||
-      (Flash->WriteCmd == CMD_QUAD_PAGE_PROGRAM)) {
+  if ((Flash->ReadCmd == READ_QUAD_OUTPUT_FAST) ||
+      (Flash->ReadCmd == READ_QUAD_IO_FAST) ||
+      (Flash->WriteCmd == QUAD_PAGE_PROGRAM)) {
     if (QspiSetQeb(Flash, Id[0]) != EFI_SUCCESS) {
       DEBUG((EFI_D_ERROR, "Fail To Set QEB for %02x\n", Id[0]));
       return NULL;
