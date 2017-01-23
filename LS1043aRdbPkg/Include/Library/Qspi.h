@@ -2,10 +2,11 @@
   Header Defining The Qspi Flash Controller Constants (Base Addresses, Sizes,
   Flags), Function Prototype, Structures etc
 
-  Based on BlockIo Protocol available in MdePkg/Include/Protocol/BlockIo.h
+  Based on NOR flash access APIs used in ArmPlatformPkg/Drivers/NorFlashDxe/NorFlashDxe.h
 
-  Copyright (c) 2006 - 2011, Intel Corporation. All rights reserved.
-  Copyright (c) 2016, Freescale Semiconductor, Inc. All rights reserved.
+  Copyright (c) 2011 - 2014, ARM Ltd. All rights reserved.<BR>
+  Copyright (c) 2016 - 2017 NXP.
+  All rights reserved.
 
   This Program And The Accompanying Materials
   Are Licensed And Made Available Under The Terms And Conditions Of The BSD
@@ -34,6 +35,9 @@
 #include <Library/IoLib.h>
 #include <Library/PcdLib.h>
 #include <Protocol/BlockIo.h>
+#include <Protocol/DiskIo.h>
+#include <Protocol/FirmwareVolumeBlock.h>
+#include <Library/UefiRuntimeLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/TimerLib.h>
 
@@ -166,6 +170,50 @@
 
 #define SR_BUSY_SHIFT        0
 #define SR_BUSY_MASK         (1 << SR_BUSY_SHIFT)
+
+#define GET_BLOCK_OFFSET(Lba) ((Instance->RegionBaseAddress)-(Instance->DeviceBaseAddress)+((UINTN)((Lba) * Instance->Media.BlockSize)))
+#define QSPI_FLASH_SIGNATURE                       SIGNATURE_32('q', 's', 'p', 'i')
+#define INSTANCE_FROM_FVB_THIS(a)                 CR(a, QSPI_FLASH_INSTANCE, FvbProtocol, QSPI_FLASH_SIGNATURE)
+#define INSTANCE_FROM_BLKIO_THIS(a)               CR(a, QSPI_FLASH_INSTANCE, BlockIoProtocol, QSPI_FLASH_SIGNATURE)
+#define INSTANCE_FROM_DISKIO_THIS(a)              CR(a, QSPI_FLASH_INSTANCE, DiskIoProtocol, QSPI_FLASH_SIGNATURE)
+
+typedef struct _QSPI_FLASH_INSTANCE                QSPI_FLASH_INSTANCE;
+
+typedef EFI_STATUS (*QSPI_FLASH_INITIALIZE)        (QSPI_FLASH_INSTANCE* Instance);
+
+typedef struct {
+  VENDOR_DEVICE_PATH                  Vendor;
+  EFI_DEVICE_PATH_PROTOCOL            End;
+} QSPI_FLASH_DEVICE_PATH;
+
+struct _QSPI_FLASH_INSTANCE {
+  UINT32                              Signature;
+  EFI_HANDLE                          Handle;
+
+  BOOLEAN                             Initialized;
+  QSPI_FLASH_INITIALIZE               Initialize;
+
+  UINTN                               DeviceBaseAddress;
+  UINTN                               RegionBaseAddress;
+  UINTN                               Size;
+  EFI_LBA                             StartLba;
+
+  EFI_BLOCK_IO_PROTOCOL               BlockIoProtocol;
+  EFI_BLOCK_IO_MEDIA                  Media;
+
+  BOOLEAN                             SupportFvb;
+  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL FvbProtocol;
+  VOID*                               ShadowBuffer;
+
+  QSPI_FLASH_DEVICE_PATH               DevicePath;
+};
+
+typedef struct {
+  UINTN       DeviceBaseAddress;    // Start address of the Device Base Address (DBA)
+  UINTN       RegionBaseAddress;    // Start address of one single region
+  UINTN       Size;
+  UINTN       BlockSize;
+} QSPI_FLASH_DESCRIPTION;
 
 /* Sf Param Flags */
 enum {
@@ -308,6 +356,40 @@ struct QspiFlash {
 };
 
 /* Function Prototypes */
+/**
+  This API detect the slave device connected to qspi controller
+
+  @retval EFI_SUCCESS           Slave device is attached to QSPI Controller.
+  @retval EFI_OUT_OF_RESOURCES  Failed to allocate memory.
+**/
+
+EFI_STATUS
+QspiPlatformInitialization (
+  VOID
+  );
+
+EFI_STATUS
+QspiPlatformGetDevices (
+  OUT QSPI_FLASH_DESCRIPTION   **QspiDevices,
+  OUT UINT32                  *Count
+  );
+
+EFI_STATUS
+QspiPlatformFlashGetAttributes (
+  OUT QSPI_FLASH_DESCRIPTION  *QspiDevices,
+  IN UINT32                  Count
+  );
+
+EFI_STATUS
+QspiCreateInstance (
+  IN UINTN                  QspiDeviceBase,
+  IN UINTN                  QspiRegionBase,
+  IN UINTN                  QspiSize,
+  IN UINT32                 MediaId,
+  IN UINT32                 BlockSize,
+  IN BOOLEAN                SupportFvb,
+  OUT QSPI_FLASH_INSTANCE**  QspiInstance
+  );
 
 EFI_STATUS
 QspiCommonRead (
@@ -470,119 +552,22 @@ QspiFlashErase (
   IN  UINT64 Len
   );
 
-/**
-  This API detect the slave device connected to qspi controller
-  and initialize block IO parameter.
-
-  @param[in]  gQspiMedia	Indicates a pointer to the block IO media
-				device.
-
-  @retval EFI_SUCCESS       	Slave device is attached to QSPI Controller.
-  @retval EFI_OUT_OF_RESOURCES	Failed to allocate memory.
-**/
 EFI_STATUS
-QspiInit (
-  EFI_BLOCK_IO_MEDIA *gQspiMedia
-  );
-
-/**
-  This API Erases BufferSize bytes starting from Lba.
-
-  @param[in]  This    	Indicates a pointer to the calling context.
-  @param[in]  MediaId 	Id of the media, changes every time media is replaced.
-  @param[in]  Lba		The starting Logical Block Address to be erased
-  @param[in]  BufferSize	Size of Buffer, must be a multiple of device
-  				block size.
-
-  @retval EFI_SUCCESS       	The data was erased successfully.
-  @retval EFI_WRITE_PROTECTED	The device cannot be written to.
-  @retval EFI_DEVICE_ERROR   	The device reported an error while performing
-					the erase.
-  @retval EFI_NO_MEDIA         	There is no media in the device.
-  @retval EFI_MEDIA_CHANGED     	The MediaId does not matched the current
-  					device.
-  @retval EFI_BAD_BUFFER_SIZE   	Buffer not a multiple of the block size
-  					of the device.
-  @retval EFI_INVALID_PARAMETER 	The erase request contains LBAs that are
-  					not valid.
-**/
-EFI_STATUS
-EFIAPI
-QspiErase (
-  IN  EFI_BLOCK_IO_PROTOCOL  *This,
-  IN  UINT32                 MediaId,
-  IN  EFI_LBA                Lba,
-  IN  UINTN                  BufferSize
-);
-
-/**
-  This API Writes BufferSize bytes from Lba into Buffer.
-
-  @param[in]  This    	Indicates a pointer to the calling context.
-  @param[in]  MediaId 	Id of the media, changes every time media is replaced.
-  @param[in]  Lba		The starting Logical Block Address to be written
-				The caller is responsible for writing to only
-				legitimate locations.
-  @param[in]  BufferSize	Size of Buffer, must be a multiple of device
-  				block size.
-  @param[in]  Buffer		A pointer to the source buffer for the data.
-
-  @retval EFI_SUCCESS       	The data was written correctly to the device.
-  @retval EFI_WRITE_PROTECTED	The device cannot be written to.
-  @retval EFI_DEVICE_ERROR   	The device reported an error while performing
-					the write.
-  @retval EFI_NO_MEDIA         	There is no media in the device.
-  @retval EFI_MEDIA_CHANGED     	The MediaId does not matched the current
-  					device.
-  @retval EFI_BAD_BUFFER_SIZE   	Buffer not a multiple of the block size
-  					of the device.
-  @retval EFI_INVALID_PARAMETER 	The write request contains LBAs that are
-  					not valid, or the buffer is not on
-					proper alignment
-**/
-EFI_STATUS
-EFIAPI
 QspiWrite (
-  IN  EFI_BLOCK_IO_PROTOCOL  *This,
-  IN  UINT32                 MediaId,
-  IN  EFI_LBA                Lba,
-  IN  UINTN                  BufferSize,
-  IN  VOID                   *Buffer
+  IN        QSPI_FLASH_INSTANCE   *Instance,
+  IN        EFI_LBA               Lba,
+  IN        UINTN                 Offset,
+  IN OUT    UINTN                 NumBytes,
+  IN        UINT8                 *Buffer
 );
 
-/**
-  This API read the BuferSize bytes of from Lba into Buffer.
-
-  @param[in]  This    	Indicates a pointer to the calling context.
-  @param[in]  MediaId 	Id of the media, changes every time media is replaced.
-  @param[in]  Lba		The starting Logical Block Address to read from.
-  @param[in]  BufferSize	Size of Buffer, must be a multiple of device
-  				block size.
-  @param[out] Buffer		A pointer to the destination buffer for the
-  				data. The caller is responsible for either
-				having implicit or explicit ownership of the
-				buffer.
-
-  @retval EFI_SUCCESS       	The data was read correctly from the device.
-  @retval EFI_DEVICE_ERROR   	The device reported an error while performing
-					the read.
-  @retval EFI_NO_MEDIA         	There is no media in the device.
-  @retval EFI_MEDIA_CHANGED     	The MediaId does not matched the current
-  					device.
-  @retval EFI_BAD_BUFFER_SIZE   	Buffer not a multiple of the block size
-  					of the device.
-  @retval EFI_INVALID_PARAMETER 	The read request contains LBAs that are
-  					not valid, or the buffer is not on
-					proper alignment
-**/
 EFI_STATUS
-EFIAPI
 QspiRead (
-  IN EFI_BLOCK_IO_PROTOCOL          *This,
-  IN UINT32                         MediaId,
-  IN EFI_LBA                        Lba,
-  IN UINTN                          BufferSize,
-  OUT VOID                          *Buffer
+  IN    QSPI_FLASH_INSTANCE   *Instance,
+  IN    EFI_LBA               Lba,
+  IN    UINTN                 Offset,
+  IN    UINTN                 BufferSizeInBytes,
+  OUT   VOID                  *Buffer
   );
 
 /**
@@ -611,6 +596,107 @@ QspiXfer (
   IN  CONST VOID *OutData,
   OUT VOID *InData,
   IN  UINT64 Flags
+  );
+
+EFI_STATUS
+EFIAPI
+QspiBlockIoReset (
+  IN EFI_BLOCK_IO_PROTOCOL  *This,
+  IN BOOLEAN                ExtendedVerification
+  );
+
+EFI_STATUS
+EFIAPI
+QspiBlockIoReadBlocks (
+  IN  EFI_BLOCK_IO_PROTOCOL   *This,
+  IN  UINT32                  MediaId,
+  IN  EFI_LBA                 Lba,
+  IN  UINTN                   BufferSizeInBytes,
+  OUT VOID                    *Buffer
+  );
+
+EFI_STATUS
+EFIAPI
+QspiBlockIoWriteBlocks (
+  IN  EFI_BLOCK_IO_PROTOCOL   *This,
+  IN  UINT32                  MediaId,
+  IN  EFI_LBA                 Lba,
+  IN  UINTN                   BufferSizeInBytes,
+  IN  VOID                    *Buffer
+  );
+
+EFI_STATUS
+EFIAPI
+QspiBlockIoFlushBlocks (
+  IN EFI_BLOCK_IO_PROTOCOL  *This
+  );
+
+EFI_STATUS
+EFIAPI
+FvbGetAttributes(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL    *This,
+  OUT       EFI_FVB_ATTRIBUTES_2                   *Attributes
+  );
+
+EFI_STATUS
+EFIAPI
+FvbSetAttributes(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL  *This,
+  IN OUT    EFI_FVB_ATTRIBUTES_2                 *Attributes
+  );
+
+EFI_STATUS
+EFIAPI
+FvbGetPhysicalAddress (
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL  *This,
+  OUT       EFI_PHYSICAL_ADDRESS                 *Address
+  );
+
+EFI_STATUS
+EFIAPI
+FvbGetBlockSize (
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL  *This,
+  IN        EFI_LBA                              Lba,
+  OUT       UINTN                                *BlockSize,
+  OUT       UINTN                                *NumberOfBlocks
+  );
+
+EFI_STATUS
+EFIAPI
+FvbRead (
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL   *This,
+  IN        EFI_LBA                               Lba,
+  IN        UINTN                                 Offset,
+  IN OUT    UINTN                                 *NumBytes,
+  IN OUT    UINT8                                 *Buffer
+  );
+
+EFI_STATUS
+EFIAPI
+FvbWrite (
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL   *This,
+  IN        EFI_LBA                               Lba,
+  IN        UINTN                                 Offset,
+  IN OUT    UINTN                                 *NumBytes,
+  IN        UINT8                                 *Buffer
+  );
+
+EFI_STATUS
+EFIAPI
+FvbEraseBlocks (
+  IN CONST EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL *This,
+  ...
+  );
+
+EFI_STATUS
+EFIAPI
+QspiFvbInitialize (
+  IN QSPI_FLASH_INSTANCE* Instance
+  );
+
+EFI_STATUS
+QspiTest (
+  IN        QSPI_FLASH_INSTANCE   *Instance
   );
 
 #endif

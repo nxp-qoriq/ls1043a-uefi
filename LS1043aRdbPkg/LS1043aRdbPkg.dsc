@@ -340,10 +340,11 @@
   gArmTokenSpaceGuid.PcdVFPEnabled|1
 !if $(BOOT_VIA_QSPI_FLASH) == TRUE
   gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x040000000
+  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x040500000
 !else
   gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x060000000
-!endif
   gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x60200000
+!endif
 
   gEfiMdePkgTokenSpaceGuid.PcdMaximumUnicodeStringLength|1000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumAsciiStringLength|2000000
@@ -592,14 +593,10 @@
   MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
   MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
   MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
-!if $(BOOT_VIA_QSPI_FLASH) == TRUE
-  MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
-!else
   MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf {
     <LibraryClasses>
       NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
   }
-!endif
   MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
   EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
   EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
