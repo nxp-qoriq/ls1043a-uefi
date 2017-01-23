@@ -58,6 +58,7 @@ C_ASSERT(FMAN_FREE_POOL_SIZE % FMAN_FREE_POOL_ALIGNMENT == 0);
 
 typedef enum _FMAN_FW_SRC {
   FMAN_FW_NOR = 0x1,
+  FMAN_FW_QSPI,
 } FMAN_FW_SRC;
 
 /* Rx/Tx buffer descriptor */

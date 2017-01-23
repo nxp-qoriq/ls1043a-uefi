@@ -81,6 +81,7 @@
 	#define IFC_REG_SIZE               0x0003000
 	#define SCFG_BASE_ADDR             0x1570000
 	#define SCFG_SIZE                  0x0010000
+	#define QSPI_BASE_ADDR             0x1550000
 
 /* SMMU Defintions */
 #define SMMU_BASE_ADDR		0x09000000
@@ -103,8 +104,8 @@
 #define CONFIG_STM_SIZE				0x01000000 /* 16MB */
 #define CONFIG_DCSR_BASE_ADDR			0x20000000
 #define CONFIG_DCSR_SIZE			0x04000000 /* 64MB */
-#define CONFIG_QSPI_BASE_ADDR			0x40000000
-#define CONFIG_QSPI_SIZE			0x20000000 /* 512MB */
+#define QSPI_REGION_BASE_ADDR			0x40000000
+#define QSPI_REGION_BASE_SIZE			0x20000000 /* 512MB */
 #define CONFIG_IFC_REGION1_BASE_ADDR		0x60000000
 #define CONFIG_IFC_REGION1_BASE_SIZE		0x20000000 /* 512MB */
 #define CONFIG_DRAM1_BASE_ADDR			0x0080000000
@@ -143,6 +144,7 @@
 #define NOR_BOOT	0x0
 #define NAND_BOOT	0x1
 #define SD_BOOT	0x2
+#define QSPI_BOOT	0x3
 
 /* PCI controllers addresses */
 #define CONFIG_SYS_PCIE1_PHYS_BASE              0x4000000000ULL

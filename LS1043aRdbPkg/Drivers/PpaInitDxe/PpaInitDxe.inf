@@ -49,7 +49,8 @@
 [Pcd]
   gArmTokenSpaceGuid.PcdSystemMemoryBase
   gArmTokenSpaceGuid.PcdSystemMemorySize
-  gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNorBaseAddr
+  gLS1043aRdbTokenSpaceGuid.PcdPpaQspiBaseAddr
   gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize
   gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration
   gLS1043aRdbTokenSpaceGuid.PcdBootMode

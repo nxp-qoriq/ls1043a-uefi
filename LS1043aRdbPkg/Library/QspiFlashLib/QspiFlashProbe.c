@@ -1,20 +1,22 @@
-/** @DspiFlashProbe.c
+/** @QspiFlashProbe.c
 
-  Probing function to detect device connected to DSPI controller
+  Probing function to detect device connected to qspi controller
 
-  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+  Copyright (c) 2016, freescale semiconductor, inc. All rights reserved.
 
   This program and the accompanying materials
-  are licensed and made available under the terms and conditions of the BSD License
-  which accompanies this distribution. The full text of the license may be found at
-  http://opensource.org/licenses/bsd-license.php
+  are licensed and made available under the terms and conditions of the bsd
+  license which accompanies this distribution. the full text of the license may
+  be found at http://opensource.org/licenses/bsd-license.php
 
   THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
+  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include "Library/Dspi.h"
+#include <Library/Qspi.h>
 
 /* Read Commands Array */
 static UINT8 ReadCmdsArray[] = {
@@ -26,8 +28,7 @@ static UINT8 ReadCmdsArray[] = {
   CMD_READ_QUAD_IO_FAST,
 };
 
-CONST struct SpiFlashParameters DspiFlashTable[] = {
-#ifdef CONFIG_SIMULATOR
+struct SpiFlashParameters QspiFlashTable[] = {
   {(CONST INT8 *)"SST25WF512", 0xbf2501, 0x0,
 	64 * 1024, 1, 0, SECT_4K | SST_WP},
   {(CONST INT8 *)"SST25WF010", 0xbf2502, 0x0,
@@ -36,29 +37,78 @@ CONST struct SpiFlashParameters DspiFlashTable[] = {
 	64 * 1024, 4, 0, SECT_4K | SST_WP},
   {(CONST INT8 *)"SST25WF040", 0xbf2504, 0x0,
 	64 * 1024, 8, 0, SECT_4K | SST_WP},
-#endif
-#ifdef CONFIG_RDB
-  {(CONST INT8 *)"N25Q128",  0x20ba18, 0x0,
-	64 * 1024, 256,  RD_FULL, WR_QPP},
-  {(CONST INT8 *)"N25Q128A", 0x20bb18, 0x0,
-	64 * 1024, 256,  RD_FULL, WR_QPP},
-#endif
+  {(CONST INT8 *)"M25P10",     0x202011, 0x0,
+	32 * 1024, 4, RD_NORM,   0},
+  {(CONST INT8 *)"M25P20",     0x202012, 0x0,
+	64 * 1024, 4, RD_NORM,   0},
+  {(CONST INT8 *)"M25P40",     0x202013, 0x0,
+	64 * 1024, 8, RD_NORM,   0},
+  {(CONST INT8 *)"M25P80",     0x202014, 0x0,
+	64 * 1024, 16, RD_NORM,  0},
+  {(CONST INT8 *)"M25P16",     0x202015, 0x0,
+	64 * 1024, 32, RD_NORM,  0},
+  {(CONST INT8 *)"M25PE16",    0x208015, 0x1000,
+	64 * 1024, 32, RD_NORM,  0},
+  {(CONST INT8 *)"M25PX16",    0x207115, 0x1000,
+	64 * 1024, 32, RD_EXTN,  0},
+  {(CONST INT8 *)"M25P32",     0x202016, 0x0,
+	64 * 1024, 64, RD_NORM,  0},
+  {(CONST INT8 *)"M25P64",     0x202017, 0x0,
+	64 * 1024, 128, RD_NORM, 0},
+  {(CONST INT8 *)"M25P128",    0x202018, 0x0,
+	256 * 1024,64, RD_NORM,  0},
+  {(CONST INT8 *)"M25PX64",    0x207117, 0x0,
+	64 * 1024, 128, RD_NORM, SECT_4K},
+  {(CONST INT8 *)"N25Q32",     0x20ba16, 0x0,
+	64 * 1024, 64, RD_FULL,  WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q32A",    0x20bb16, 0x0,
+	64 * 1024, 64, RD_FULL,  WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q64",     0x20ba17, 0x0,
+	64 * 1024, 128, RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q64A",    0x20bb17, 0x0,
+	64 * 1024, 128, RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q128",    0x20ba18, 0x0,
+	64 * 1024, 256, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"N25Q128A",   0x20bb18, 0x0,
+	64 * 1024, 256, RD_FULL, WR_QPP},
+  {(CONST INT8 *)"N25Q256",    0x20ba19, 0x0,
+	64 * 1024, 512, RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q256A",   0x20bb19, 0x0,
+	64 * 1024, 512, RD_FULL, WR_QPP | SECT_4K},
+  {(CONST INT8 *)"N25Q512",    0x20ba20, 0x0,
+	64 * 1024, 1024, RD_FULL, WR_QPP | E_FSR | SECT_4K},
+  {(CONST INT8 *)"N25Q512A",   0x20bb20, 0x0,
+	64 * 1024, 1024, RD_FULL, WR_QPP | E_FSR | SECT_4K},
+  {(CONST INT8 *)"N25Q1024",   0x20ba21, 0x0,
+	64 * 1024, 2048, RD_FULL, WR_QPP | E_FSR | SECT_4K},
+  {(CONST INT8 *)"N25Q1024A",  0x20bb21, 0x0,
+	64 * 1024, 2048, RD_FULL, WR_QPP | E_FSR | SECT_4K},
+  {(CONST INT8 *)"S25FL128S_256K", 0x012018, 0x4d0000,
+	256 * 1024,64,   RD_FULL, WR_QPP},
+  {(CONST INT8 *)"S25FL128S_64K",  0x012018, 0x4d0100,
+       64 * 1024, 256,  RD_FULL, WR_QPP},
 };
 
-struct DspiFlash *
+struct QspiFlash *
 ValidateParameters (
-  IN  struct DspiSlave *Dspi,
+  IN  struct QspiSlave *Qspi,
   IN  UINT8 *Id
   )
 {
-  CONST struct SpiFlashParameters *Parameters;
-  struct DspiFlash *Flash;
+  struct SpiFlashParameters *Parameters;
+  struct QspiFlash *Flash;
   UINT8 Cmd;
   UINT16 Jedec = Id[1] << 8 | Id[2];
-  UINT16 ExtJedec = Id[3] << 8 | Id[4];
-  UINT8 CurrBank = 0;
+  UINT32 ExtJedec = Id[3] << 16 | Id[4] << 8;
 
-  Parameters = DspiFlashTable;
+  if (Id[0] == 0 && Jedec == 0 && ExtJedec == 0) {
+    DEBUG((EFI_D_ERROR, "Unsupported QSPI Flash IDs: "));
+    DEBUG((EFI_D_ERROR, "Manuf %02x, Jedec %04x, ExtJedec %04x\n",
+		Id[0], Jedec, ExtJedec));
+    return NULL;
+  }
+
+  Parameters = QspiFlashTable;
   for (; Parameters->Name != NULL; Parameters++) {
     if ((Parameters->Jedec >> 16) == Id[0]) {
       if ((Parameters->Jedec & 0xFFFF) == Jedec) {
@@ -66,33 +116,30 @@ ValidateParameters (
 	  break;
 	else if (Parameters->ExtJedec == ExtJedec)
 	  break;
+       else if (Parameters->ExtJedec == (ExtJedec | Id[5]))
+         break;
       }
     }
   }
 
   if (!Parameters->Name) {
-    DEBUG((EFI_D_ERROR, "Unsupported DSPI Flash IDs: "));
+    DEBUG((EFI_D_ERROR, "Unsupported QSPI Flash IDs: "));
     DEBUG((EFI_D_ERROR, "Manuf %02x, Jedec %04x, ExtJedec %04x\n",
 		Id[0], Jedec, ExtJedec));
     return NULL;
   }
-  Flash = (struct DspiFlash *)AllocatePool(sizeof(struct DspiFlash));
-  InternalMemZeroMem(Flash, sizeof(struct DspiFlash));
+  Flash = (struct QspiFlash *)AllocatePool(sizeof(struct QspiFlash));
+  InternalMemZeroMem(Flash, sizeof(struct QspiFlash));
   if (!Flash) {
-    DEBUG((EFI_D_ERROR, "Failed To Allocate DspiFlash\n"));
+    DEBUG((EFI_D_ERROR, "Failed To Allocate QspiFlash\n"));
     return NULL;
   }
 
   /* Assign Spi Data */
-  Flash->Dspi = Dspi;
+  Flash->Qspi = Qspi;
   Flash->Name = Parameters->Name;
-  Flash->MemoryMap = Dspi->Slave.MemoryMap;
-  Flash->DualFlash = Flash->Dspi->Slave.Option;
-
-  /* Assign DspiFlash Ops */
-  Flash->Write = DspiWriteOps;
-  Flash->Erase = DspiEraseOps;
-  Flash->Read = DspiReadOps;
+  Flash->MemoryMap = Qspi->Slave.MemoryMap;
+  Flash->DualFlash = Flash->Qspi->Slave.Option;
 
   /* Compute The Flash Size */
   Flash->Shift = (Flash->DualFlash & DUAL_PARALLEL_FLASH) ? 1 : 0;
@@ -126,14 +173,11 @@ ValidateParameters (
     Flash->EraseSize = Flash->SectorSize;
   }
 
-  if (!AsciiStrnCmp((CONST CHAR8 *)Parameters->Name, "N25Q128", AsciiStrLen("N25Q128")))
-    Flash->BlockSize = Flash->SectorSize/NUM_OF_SUBSECTOR;
-  else
-    Flash->BlockSize = Flash->SectorSize;
+  Flash->BlockSize = Flash->SectorSize;
 
   /* Look for The Fastest Read Cmd */
-  Cmd = GenericFls(Parameters->EnumRdCmd & Flash->Dspi->Slave.OpModeRx);
-  if (Cmd && (Cmd < (ARRAY_SIZE(ReadCmdsArray) + 1))) {
+  Cmd = GenericFls(Parameters->EnumRdCmd & Flash->Qspi->Slave.OpModeRx);
+  if (Cmd) {
     Cmd = ReadCmdsArray[Cmd - 1];
     Flash->ReadCmd = Cmd;
   } else {
@@ -142,14 +186,14 @@ ValidateParameters (
   }
 
   /* Not Require To Look for Fastest Only Two Write Cmds Yet */
-  if (Parameters->Flags & WR_QPP && Flash->Dspi->Slave.OpModeTx & SPI_COMMON_OPM_TX_QPP)
+  if (Parameters->Flags & WR_QPP && Flash->Qspi->Slave.OpModeTx & SPI_COMMON_OPM_TX_QPP)
     Flash->WriteCmd = CMD_QUAD_PAGE_PROGRAM;
   else
     /* Go for default Supported Write Cmd */
     Flash->WriteCmd = CMD_BYTE_PROGRAM;
 
   /* Read DummyByte: Dummy Byte Is Determined Based On The
-   * Dummy Cycles Of A Particular Command.
+   * Dummy Cycles Of a Particular Command.
    * Fast Commands - DummyByte = DummyCycles/8
    * I/O Commands- DummyByte = (DummyCycles * No.Of Lines)/8
    * for I/O Commands Except Cmd[0] Everything Goes On No.Of Lines
@@ -174,79 +218,41 @@ ValidateParameters (
   if (Parameters->Flags & E_FSR)
     Flash->PollCmd = CMD_FLAG_STATUS;
 
-
-  /* Configure the BAR - discover bank cmds and read current bank */
-  if (Flash->Size > SPI_COMMON_FLASH_16MB_BOUN) {
-    INT32 Ret;
-
-    Flash->BankReadCmd = (Id[0] == 0x01) ?
-                         DSPI_CMD_BANKADDR_BRRD : DSPI_CMD_EXTNADDR_RDEAR;
-    Flash->BankWriteCmd = (Id[0] == 0x01) ?
-                         DSPI_CMD_BANKADDR_BRWR : DSPI_CMD_EXTNADDR_WREAR;
-
-    Ret = DspiCommonRead(Flash, &Flash->BankReadCmd, 1,
-                             &CurrBank, 1);
-    if (Ret != EFI_SUCCESS) {
-      DEBUG((EFI_D_ERROR,"Fail to read bank addr register\n"));
-      return NULL;
-    }
-    Flash->BankCurr = CurrBank;
-  } else {
-    Flash->BankCurr = CurrBank;
-  }
-#if 0
-  if (IsDataflash(Dspi->Slave.Bus, Dspi->Slave.Cs)) {
-    Flash->PollCmd = DSPI_CMD_ATMEL_READ_STATUS;
-    Flash->WriteCmd = DSPI_CMD_ATMEL_PAGE_PROGRAM;
-    if (Parameters->Flags & SECT_32K)
-      Flash->EraseCmd = DSPI_CMD_ATMEL_ERASE_32K;
-  }
-#endif
   return Flash;
 }
 
-/* enable the W#/Vpp signal to disable writing to the status register */
-EFI_STATUS
-DspiEnableWritePin (
-  IN  struct DspiFlash *Flash
-  )
-{
-  return EFI_SUCCESS;
-}
-
 /**
- * DspiProbeDevice() - Probe for a SPI flash device on a bus
+ * QspiProbeDevice() - Probe for a SPI Flash Device On a Bus
  *
- * @Dspi: Bus to probe
+ * @Qspi: Bus To Probe
  */
-struct DspiFlash *
-DspiProbeDevice (
-  IN  struct DspiSlave *Dspi
+struct QspiFlash *
+QspiProbeDevice (
+  IN  struct QspiSlave *Qspi
   )
 {
-  struct DspiFlash *Flash = NULL;
+  struct QspiFlash *Flash = NULL;
   UINT8 Id[5] = {0};
   INT32 Ret;
   UINT8 Cmd;
 
-  /* Claim Dspi Bus */
-  Ret = DspiClaimBus(Dspi);
+  /* Claim Qspi Bus */
+  Ret = QspiClaimBus(Qspi);
   if (Ret) {
-    DEBUG((EFI_D_ERROR, "SF: Failed To Claim SPI Bus: %d\n", Ret));
+    DEBUG((EFI_D_ERROR, "Failed To Claim SPI Bus: %d\n", Ret));
     goto ErrClaimBus;
   }
 
   /* Read The ID Codes */
   Cmd = CMD_READ_JEDEC_ID;
-  Ret = DspiReadWrite(Dspi, &Cmd, 1, NULL, Id,
-		sizeof(Id));
+  Ret = QspiReadWrite(Qspi, &Cmd, 1, NULL, Id, sizeof(Id));
   if (Ret != EFI_SUCCESS) {
-    DEBUG((EFI_D_ERROR, "SF: Failed To Get Ids\n"));
+    DEBUG((EFI_D_ERROR, "Failed To Get IdCodes\n"));
     goto ErrClaimBus;
   }
 
   /* Validate Parameters From SpiFlashParameters Table */
-  Flash = ValidateParameters(Dspi, Id);
+  Flash = ValidateParameters(Qspi, Id);
   if (!Flash)
     goto ErrClaimBus;
 
@@ -254,38 +260,35 @@ DspiProbeDevice (
   if ((Flash->ReadCmd == CMD_READ_QUAD_OUTPUT_FAST) ||
       (Flash->ReadCmd == CMD_READ_QUAD_IO_FAST) ||
       (Flash->WriteCmd == CMD_QUAD_PAGE_PROGRAM)) {
-    if (DspiSetQeb(Flash, Id[0]) != EFI_SUCCESS) {
+    if (QspiSetQeb(Flash, Id[0]) != EFI_SUCCESS) {
       DEBUG((EFI_D_ERROR, "Fail To Set QEB for %02x\n", Id[0]));
       return NULL;
     }
   }
 
-  DEBUG((EFI_D_RELEASE, "Detected DSPI Flash %a With Page Size ", Flash->Name));
+  DEBUG((EFI_D_RELEASE, "Detected QSPI Flash %a With Page Size ", Flash->Name));
   PrintMemorySize(Flash->PageSize, (CONST INT8 *)"Erase Size ");
   PrintMemorySize(Flash->EraseSize, (CONST INT8 *)"Total ");
   PrintMemorySize(Flash->Size, (CONST INT8 *)"");
   DEBUG((EFI_D_RELEASE, "\n"));
 
   if (Flash->MemoryMap)
-    DEBUG((EFI_D_INFO, ", Mapped At %p\n", Flash->MemoryMap));
+    DEBUG((EFI_D_INFO, ", Mapped At %P\n", Flash->MemoryMap));
 
   if (((Flash->DualFlash == SINGLE_FLASH) &&
        (Flash->Size > SPI_COMMON_FLASH_16MB_BOUN)) ||
        ((Flash->DualFlash > SINGLE_FLASH) &&
        (Flash->Size > SPI_COMMON_FLASH_16MB_BOUN << 1))) {
     DEBUG((EFI_D_WARN, "Warning - Only Lower 16MiB Accessible, "\
-  		"Full Access #define CONFIG_DSPI_FLASH_BAR\n"));
+  		"Full Access #define QSPI_FLASH_BAR\n"));
   }
 
-  if (DspiEnableWritePin(Flash) != EFI_SUCCESS)
-    DEBUG((EFI_D_WARN,"Enable WP pin failed\n"));
-
-  /* Release Dspi Bus */
-  DspiReleaseBus(Dspi);
+  /* Release Qspi Bus */
+  QspiReleaseBus(Qspi);
   return Flash;
 
 ErrClaimBus:
-  DspiReleaseBus(Dspi);
-  DspiFreeSlave(Dspi);
+  QspiReleaseBus(Qspi);
+  QspiFreeSlave(Qspi);
   return NULL;
 }

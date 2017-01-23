@@ -1,11 +1,11 @@
-/** @Dspi.h
-  Header Defining The Dspi Flash Controller Constants (Base Addresses, Sizes,
+/** @Qspi.h
+  Header Defining The Qspi Flash Controller Constants (Base Addresses, Sizes,
   Flags), Function Prototype, Structures etc
 
   Based on BlockIo Protocol available in MdePkg/Include/Protocol/BlockIo.h
 
   Copyright (c) 2006 - 2011, Intel Corporation. All rights reserved.
-  Copyright (c) 2015, Freescale Semiconductor, Inc. All rights reserved.
+  Copyright (c) 2016, Freescale Semiconductor, Inc. All rights reserved.
 
   This Program And The Accompanying Materials
   Are Licensed And Made Available Under The Terms And Conditions Of The BSD
@@ -18,15 +18,14 @@
 
 **/
 
-#ifndef __DSPI_H__
-#define __DSPI_H__
+#ifndef __QSPI_H__
+#define __QSPI_H__
 
-#include "LS1043aRdb.h"
-#include "LS1043aSocLib.h"
-#include "Common.h"
-#include "Bitops.h"
-#include "Spi.h"
-#include "CpldLib.h"
+#include <LS1043aRdb.h>
+#include <LS1043aSocLib.h>
+#include <Common.h>
+#include <Bitops.h>
+#include <Spi.h>
 #include <Library/MemoryAllocationLib.h>
 #include <PiPei.h>
 #include <Uefi.h>
@@ -39,104 +38,138 @@
 #include <Library/TimerLib.h>
 
 
-#define BUS_DSPI1	 	1
-#define CONFIG_DSPI_FLASH_BAR
+#define DEFAULT_SPEED	1000000
+#define DEFAULT_MODE 	SPI_COMMON_MODE_0
+#define DEFAULT_CS 		0
+#define DEFAULT_BUS 		0
 
-#define CONFIG_SF_DEFAULT_SPEED 	10000000
-#define CONFIG_SF_DEFAULT_MODE 	SPI_COMMON_MODE_0
-#define CONFIG_SF_DEFAULT_CS 	0
-#define CONFIG_SF_DEFAULT_BUS 	1
+#define TX_BUFFER_SIZE      0x40
+#define RX_BUFFER_SIZE      0x80
 
-/* Subsectors in a sector */
-#define NUM_OF_SUBSECTOR		16
+#define OFFSET_MASK    	0x00ffffff
+#define STATUS_WEL    	0x02
 
-/* Clear Staus on exit boot service event */
-#define SPI_SR_CLEAR			0xdaad0000
+#define SPEED_HZ		0x2faf080
+//#define AMBA_BASE		0x20000000
+#define AMBA_BASE		0x40000000
+#define AMBA_TOTAL_SIZE	0x4000000
+//#define AMBA_TOTAL_SIZE	0x10000000
+#define FLASH_NUM		0x1
+#define MAX_CHIPSELECT_NUM  2
 
-/* ATMEL Dataflash Commands*/
-#define DSPI_CMD_ATMEL_PAGE_PROGRAM	0x82
-#define DSPI_CMD_ATMEL_READ_STATUS	0xd7
-#define DSPI_CMD_ATMEL_FLAG_STATUS	0xd7
-#define DSPI_CMD_ATMEL_ERASE_32K		0x7c
+#define QSPI_FLASH_SIZE     (1 << 24) /* 16MB */
 
-/* Transfer Control - 32-Bit Access */
-#define DSPI_TFR_CONT 	(0x80000000)
-#define DSPI_TFR_CTAS(X)	(((X)&0x07)<<12)
-#define DSPI_TFR_EOQ		(0x08000000)
-#define DSPI_TFR_CTCNT	(0x04000000)
-#define DSPI_TFR_CS7		(0x00800000)
-#define DSPI_TFR_CS6		(0x00400000)
-#define DSPI_TFR_CS5		(0x00200000)
-#define DSPI_TFR_CS4		(0x00100000)
-#define DSPI_TFR_CS3		(0x00080000)
-#define DSPI_TFR_CS2		(0x00040000)
-#define DSPI_TFR_CS1		(0x00020000)
-#define DSPI_TFR_CS0		(0x00010000)
+#define QSPI_LAST_BLOCK	256	   /* (16M / 64K) */
+
+#define LCKCR_LOCK                 0x1
+#define LCKCR_UNLOCK          	0x2
+#define LUT_KEY                  	0x5af05af0
+
+#define OPRND_0_SHIFT               0
+#define OPRND_0(x)                  ((x) << OPRND_0_SHIFT)
+#define PAD_0_SHIFT                 8
+#define PAD_0(x)                    ((x) << PAD_0_SHIFT)
+#define INSTR_0_SHIFT               10
+#define INSTR_0(x)                  ((x) << INSTR_0_SHIFT)
+#define OPRND_1_SHIFT               16
+#define OPRND_1(x)                  ((x) << OPRND_1_SHIFT)
+#define PAD_1_SHIFT                 24
+#define PAD_1(x)                    ((x) << PAD_1_SHIFT)
+#define INSTR_1_SHIFT               26
+#define INSTR_1(x)                  ((x) << INSTR_1_SHIFT)
+
+#define LUT_CMD                    1
+#define LUT_ADDR                   2
+#define LUT_DUMMY                  3
+#define LUT_READ                   7
+#define LUT_WRITE                  8
+
+#define LUT_PAD_1                   0
+#define LUT_PAD_2                   1
+#define LUT_PAD_4                   2
+
+#define ADDR_24BIT                  0x18
+#define ADDR_32BIT                  0x20
+
+/* SEQID */
+#define SEQ_ID_WREN          1
+#define SEQ_ID_FAST_READ     2
+#define SEQ_ID_RDSR          3
+#define SEQ_ID_SE            4
+#define SEQ_ID_CHIP_ERASE    5
+#define SEQ_ID_PP            6
+#define SEQ_ID_RDID          7
+#define SEQ_ID_BE_4K         8
+#define SEQ_ID_WRAR          13
+#define SEQ_ID_RDAR          14
+
+/* QSPI CMD */
+#define CMD_PP         	0x02   /* Page program (up to 256 bytes) */
+#define CMD_RDSR            0x05   /* Read status register */
+#define CMD_WREN            0x06   /* Write enable */
+#define CMD_FAST_READ  	0x0b   /* Read data bytes (high frequency) */
+#define CMD_BE_4K           0x20    /* 4K erase */
+#define CMD_CHIP_ERASE 	0xc7   /* Erase whole flash chip */
+#define CMD_SE         	0xd8   /* Sector erase (usually 64KiB) */
+#define CMD_RDID            0x9f   /* Read JEDEC ID */
+
+/* 4-byte address QSPI CMD - used on Spansion and some Macronix flashes */
+#define CMD_FAST_READ_4B      0x0c    /* Read data bytes (high frequency) */
+#define CMD_PP_4B             0x12    /* Page program (up to 256 bytes) */
+#define CMD_SE_4B             0xdc    /* Sector erase (usually 64KiB) */
+
+/* Used for Micron, winbond and Macronix flashes */
+#define  CMD_WREAR       	0xc5   /* EAR register write */
+#define  CMD_RDEAR       	0xc8   /* EAR reigster read */
+
+/* Used for Spansion flashes only. */
+#define  CMD_BRRD        	0x16   /* Bank register read */
+#define  CMD_BRWR        	0x17   /* Bank register write */
+
+/* Used for Spansion S25FS-S family flash only. */
+#define  CMD_RDAR        	0x65   /* Read any device register */
+#define  CMD_WRAR        	0x71   /* Write any device register */
+
+#define IPCR_SEQID_SHIFT   	24
+#define IPCR_SEQID_MASK     (0xf << IPCR_SEQID_SHIFT)
+
+#define RBSR_RDBFL_SHIFT     8
+#define RBSR_RDBFL_MASK      (0x1f << RBSR_RDBFL_SHIFT)
+
+#define BYTES_IN_RX_BUFFER   4
 
 /* Module Configuration */
-#define DSPI_MC_MSTR		(0x80000000)
-#define DSPI_MC_CSCK		(0x40000000)
-#define DSPI_MC_DCONF(X)		(((X)&0x03)<<28)
-#define DSPI_MC_FRZ 		(0x08000000)
-#define DSPI_MC_MTFE 		(0x04000000)
-#define DSPI_MC_PCSSE		(0x02000000)
-#define DSPI_MC_ROOE 		(0x01000000)
-#define DSPI_MC_CSIS7		(0x00800000)
-#define DSPI_MC_CSIS6		(0x00400000)
-#define DSPI_MC_CSIS5		(0x00200000)
-#define DSPI_MC_CSIS4		(0x00100000)
-#define DSPI_MC_CSIS3		(0x00080000)
-#define DSPI_MC_CSIS2		(0x00040000)
-#define DSPI_MC_CSIS1		(0x00020000)
-#define DSPI_MC_CSIS0		(0x00010000)
-#define DSPI_MC_MDIS 		(0x00004000)
-#define DSPI_MC_DTXF 		(0x00002000)
-#define DSPI_MC_DRXF 		(0x00001000)
-#define DSPI_MC_CTXF 		(0x00000800)
-#define DSPI_MC_CRXF 		(0x00000400)
-#define DSPI_MC_SMPL_PT(X) 	(((X)&0x03)<<8)
-#define DSPI_MC_HALT		(0x00000001)
+#define MCR_CLR_RXF_SHIFT    10
+#define MCR_CLR_RXF_MASK     (1 << MCR_CLR_RXF_SHIFT)
+#define MCR_CLR_TXF_SHIFT    11
+#define MCR_CLR_TXF_MASK     (1 << MCR_CLR_TXF_SHIFT)
+#define MCR_MDIS_SHIFT       14
+#define MCR_MDIS_MASK        (1 << MCR_MDIS_SHIFT)
+#define MCR_RESERVED_SHIFT   16
+#define MCR_RESERVED_MASK    (0xf << MCR_RESERVED_SHIFT)
+#define MCR_END_CFD_SHIFT    2
+#define MCR_END_CFD_MASK     (3 << MCR_END_CFD_SHIFT)
+#define MCR_END_CFD_LE       (1 << MCR_END_CFD_SHIFT)
 
-/* Clock And Transfer Attributes */
-#define DSPI_CTR_DBR 		(0x80000000)
-#define DSPI_CTR_TRSZ(X)		(((X)&0x0F)<<27)
-#define DSPI_CTR_CPOL		(0x04000000)
-#define DSPI_CTR_CPHA 		(0x02000000)
-#define DSPI_CTR_LSBFE		(0x01000000)
-#define DSPI_CTR_PCSSCK(X) 	(((X)&0x03)<<22)
-#define DSPI_CTR_PCSSCK_7CLK 	(0x00A00000)
-#define DSPI_CTR_PCSSCK_5CLK 	(0x00800000)
-#define DSPI_CTR_PCSSCK_3CLK 	(0x00400000)
-#define DSPI_CTR_PCSSCK_1CLK 	(0x00000000)
-#define DSPI_CTR_PASC(X) 		(((X)&0x03)<<20)
-#define DSPI_CTR_PASC_7CL		(0x00300000)
-#define DSPI_CTR_PASC_5CL		(0x00200000)
-#define DSPI_CTR_PASC_3CL		(0x00100000)
-#define DSPI_CTR_PASC_1CL		(0x00000000)
-#define DSPI_CTR_PDT(X) 		(((X)&0x03)<<18)
-#define DSPI_CTR_PDT_7CLK		(0x000A0000)
-#define DSPI_CTR_PDT_5CLK		(0x00080000)
-#define DSPI_CTR_PDT_3CLK		(0x00040000)
-#define DSPI_CTR_PDT_1CLK		(0x00000000)
-#define DSPI_CTR_PREBR(X) 		(((X)&0x03)<<16)
-#define DSPI_CTR_PREBR_7CLK		(0x00030000)
-#define DSPI_CTR_PREBR_5CLK		(0x00020000)
-#define DSPI_CTR_PREBR_3CLK		(0x00010000)
-#define DSPI_CTR_PREBR_1CLK		(0x00000000)
-#define DSPI_CTR_CSSCK(X)		(((X)&0x0F)<<12)
-#define DSPI_CTR_ASC(X)		(((X)&0x0F)<<8)
-#define DSPI_CTR_DT(X)		(((X)&0x0F)<<4)
-#define DSPI_CTR_BR(X)		(((X)&0x0F))
 
-#define DSPI_PUSHR_CTAS_MASK     (UINT32)(0x70000000)
-#define DSPI_PUSHR_PCS_MASK      (UINT32)(0x003f0000)
+#define SMPR_HSENA_SHIFT     0
+#define SMPR_HSENA_MASK      (1 << SMPR_HSENA_SHIFT)
+#define SMPR_FSPHS_SHIFT     5
+#define SMPR_FSPHS_MASK      (1 << SMPR_FSPHS_SHIFT)
+#define SMPR_FSDLY_SHIFT     6
+#define SMPR_FSDLY_MASK      (1 << SMPR_FSDLY_SHIFT)
+#define SMPR_DDRSMP_SHIFT    16
+#define SMPR_DDRSMP_MASK     (7 << SMPR_DDRSMP_SHIFT)
 
-#define CHARBIT_MASK			0x78000000
+#define RBCT_RXBRD_SHIFT     8
+#define RBCT_RXBRD_USEIPS    (1 << RBCT_RXBRD_SHIFT)
 
+#define SR_BUSY_SHIFT        0
+#define SR_BUSY_MASK         (1 << SR_BUSY_SHIFT)
 
 /* Sf Param Flags */
 enum {
-  SECT_4K    = 1 << 0,
+  SECT_4K    = 0 << 0,
   SECT_32K   = 1 << 1,
   E_FSR      = 1 << 2,
   SST_BP     = 1 << 3,
@@ -145,84 +178,95 @@ enum {
   AT45DB_CMD = 1 << 6
 };
 
-/* Bank addr access commands */
-#ifdef CONFIG_DSPI_FLASH_BAR
-# define DSPI_CMD_BANKADDR_BRWR         0x17
-# define DSPI_CMD_BANKADDR_BRRD         0x16
-# define DSPI_CMD_EXTNADDR_WREAR        0xC5
-# define DSPI_CMD_EXTNADDR_RDEAR        0xC8
-#endif
-
-#define CONFIG_SYS_DSPI_CTR0 	(DSPI_CTR_TRSZ(7) | DSPI_CTR_PCSSCK_1CLK |\
-					DSPI_CTR_PASC(0) | DSPI_CTR_PDT(0) | \
-					DSPI_CTR_CSSCK(0) | DSPI_CTR_ASC(0) | \
-					DSPI_CTR_DT(0))
-
-/* SST Specific */
-# define SST_WP			0x01 /* Supports AAI Word Program */
-# define DSPI_CMD_SST_BP			0x02 /* Byte Program */
-# define DSPI_CMD_SST_AAI_WP		0xAD /* Auto Address Incr Word Program */
-
-/* LAST BLOCK */
-#define BLOCK_COUNT             	1024	/* For SST25WF040 
-						(4MB/4K (sector erase size))*/
-#define LAST_BLOCK              	BLOCK_COUNT
-
 /**
- * struct Dspi - Dspi Controller Registers
- *
- * @Mcr:      Module Configuration Register	0x00
- * @Resv0:
- * @Tcr:      Transfer Count Register		0x08
- * @Ctar[4]:  Clock and Transfer Attributes
-	 	Register 				0x0C - 0x18
- * @Resv1[4]:
- * @Sr:       Status Register			0x2C
- * @Irsr:     DMA/Interrupt Request Select
-	 	and Enable Register			0x30
- * @Tfr:      PUSH TX FIFO Register In
-	 	Master Mode				0x34
- * @Rfr:      POP RX FIFO Register			0x38
- * @Tfdr[16]: Transmit FIFO Registers		0x3C
- * @Rfdr[16]: Receive FIFO Registers		0x7C
+ * struct QspiRegs - Qspi Controller Registers
  */
-typedef struct Dspi {
-  UINT32 Mcr;
-  UINT32 Resv0;
-  UINT32 Tcr;
-  UINT32 Ctar[4];
-  UINT32 Resv1[4];
-  UINT32 Sr;
-  UINT32 Irsr;
-  UINT32 Tfr;
-  UINT32 Rfr;
-  UINT32 Tfdr[16];
-  UINT32 Rfdr[16];
-} DspiT;
+struct QspiRegs {
+       UINT32 Mcr;
+       UINT32 Rsvd0[1];
+       UINT32 Ipcr;
+       UINT32 Flshcr;
+       UINT32 Buf0cr;
+       UINT32 Buf1cr;
+       UINT32 Buf2cr;
+       UINT32 Buf3cr;
+       UINT32 Bfgencr;
+       UINT32 Soccr;
+       UINT32 Rsvd1[2];
+       UINT32 Buf0ind;
+       UINT32 Buf1ind;
+       UINT32 Buf2ind;
+       UINT32 Rsvd2[49];
+       UINT32 Sfar;
+       UINT32 Rsvd3[1];
+       UINT32 Smpr;
+       UINT32 Rbsr;
+       UINT32 Rbct;
+       UINT32 Rsvd4[15];
+       UINT32 Tbsr;
+       UINT32 Tbdr;
+       UINT32 Rsvd5[1];
+       UINT32 Sr;
+       UINT32 Fr;
+       UINT32 Rser;
+       UINT32 Spndst;
+       UINT32 Sptrclr;
+       UINT32 Rsvd6[4];
+       UINT32 Sfa1ad;
+       UINT32 Sfa2ad;
+       UINT32 Sfb1ad;
+       UINT32 Sfb2ad;
+       UINT32 Rsvd7[28];
+       UINT32 Rbdr[32];
+       UINT32 Rsvd8[32];
+       UINT32 Lutkey;
+       UINT32 Lckcr;
+       UINT32 Rsvd9[2];
+       UINT32 Lut[64];
+};
+
 
 /**
- * struct DspiSlave - Container of all parameters required to communicate
+ * struct QspiSlave - Container of all parameters required to communicate
  * with connected slave device.
  *
  * @Slave: 	Instance of structure SpiSlave, represent slave device
 		connected to controller
- * @Regs: 	Pointer to Dspi Registers structure
+ * @Regs: 	Pointer to Qspi Registers structure
  * @Baudrate: Baudrate
+ * @BusClk: QSPI input clk frequency
  * @Charbit: 	Charbit
+ * @SpeedHz: Default SCK frequency
+ * @CurSeqid: current LUT table sequence id
+ * @SfAddr: flash access offset
+ * @AmbaBase: Base address of QSPI memory mapping of every CS
+ * @AmbaTotalSize: size of QSPI memory mapping
+ * @CurAmbaBase: Base address of QSPI memory mapping of current CS
+ * @FlashNum: Number of active slave devices
+ * @NumChipselect: Number of QSPI chipselect signals
  */
-struct DspiSlave {
+struct QspiSlave {
   struct SpiSlave Slave;
-  struct Dspi *Regs;
+  struct QspiRegs *Regs;
   UINT32 Baudrate;
-  INT32 Charbit;
+  UINT32 BusClk;
+  INT32  Charbit;
+  UINT32 SpeedHz;
+  UINT32 CurSeqid;
+  UINT32 SfAddr;
+  UINT32 AmbaBase[MAX_CHIPSELECT_NUM];
+  UINT32 AmbaTotalSize;
+  UINT32 CurAmbaBase;
+  UINT32 FlashNum;
+  UINT32 NumChipselect;
 };
 
 /**
- * struct DspiFlash - Structure to keep command ids and functions
+ * struct QspiFlash - Structure to keep command ids and functions
  *			 used for read, write and erase operations.
  *
- * @Dspi:          Pointer to structure containing information about
- *		     DSPI controller register and slave device connected
+ * @Qspi:          Pointer to structure containing information about
+ *		     QSPI controller register and slave device connected
  *		     to controller.
  * @Name:          Name Of SPI Flash
  * @DualFlash:     Indicates Dual Flash Memories - Dual Stacked, Parallel
@@ -241,12 +285,9 @@ struct DspiSlave {
  * @WriteCmd:      Write Cmd - Page And Quad Program.
  * @DummyByte:     Dummy Cycles for Read Operation.
  * @MemoryMap:     Address Of Read-Only SPI Flash Access
- * @Read:          Flash Read Ops: Read Len Bytes At Offset into Buf
- * @Write:         Flash Write Ops: Write Len Bytes From Buf into Offset
- * @Erase:         Flash Erase Ops: Erase Len Bytes From Offset
  */
-struct DspiFlash {
-  struct DspiSlave *Dspi;
+struct QspiFlash {
+  struct QspiSlave *Qspi;
   CONST INT8 *Name;
   UINT8 DualFlash;
   UINT8 Shift;
@@ -264,18 +305,13 @@ struct DspiFlash {
   UINT8 WriteCmd;
   UINT8 DummyByte;
   VOID *MemoryMap;
-  EFI_STATUS (*Read)(struct DspiFlash *Flash, UINT32 Offset, UINT64 Len,
-			VOID *Buf);
-  EFI_STATUS (*Write)(struct DspiFlash *Flash, UINT32 Offset, UINT64 Len,
-			CONST VOID *Buf);
-  EFI_STATUS (*Erase)(struct DspiFlash *Flash, UINT32 Offset, UINT64 Len);
 };
 
 /* Function Prototypes */
 
 EFI_STATUS
-DspiCommonRead (
-  IN  struct DspiFlash *Flash,
+QspiCommonRead (
+  IN  struct QspiFlash *Flash,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
   OUT VOID *Data,
@@ -283,8 +319,8 @@ DspiCommonRead (
   );
 
 EFI_STATUS
-DspiCommonWrite (
-  IN  struct DspiFlash *Flash,
+QspiCommonWrite (
+  IN  struct QspiFlash *Flash,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
   IN  CONST VOID *Buf,
@@ -292,23 +328,23 @@ DspiCommonWrite (
   );
 
 EFI_STATUS
-DspiWriteOps (
-  IN  struct DspiFlash *Flash,
+QspiWriteOps (
+  IN  struct QspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len,
   IN  CONST VOID *Buf
   );
 
 EFI_STATUS
-DspiEraseOps (
-  IN  struct DspiFlash *Flash,
+QspiEraseOps (
+  IN  struct QspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len
   );
 
 EFI_STATUS
-DspiReadOps (
-  IN  struct DspiFlash *Flash,
+QspiReadOps (
+  IN  struct QspiFlash *Flash,
   IN  UINT32 Offset,
   IN  UINT64 Len,
   OUT VOID *Data
@@ -321,13 +357,13 @@ BoardSpiIsDataflash (
   );
 
 EFI_STATUS
-DspiClaimBus (
-  IN  struct DspiSlave *Slave
+QspiClaimBus (
+  IN  struct QspiSlave *Slave
   );
 
 EFI_STATUS
-DspiReadWrite (
-  IN  struct DspiSlave *Dspi,
+QspiReadWrite (
+  IN  struct QspiSlave *Qspi,
   IN  CONST UINT8 *Cmd,
   IN  UINT32 CmdLen,
   IN  CONST UINT8 *DataOut,
@@ -336,8 +372,8 @@ DspiReadWrite (
   );
 
 EFI_STATUS
-DspiSetQeb (
-  IN  struct DspiFlash *Flash,
+QspiSetQeb (
+  IN  struct QspiFlash *Flash,
   IN  UINT8 Idcode0
   );
 
@@ -348,22 +384,22 @@ PrintMemorySize (
   );
 
 VOID
-DspiReleaseBus (
-  IN  struct DspiSlave *Slave
+QspiReleaseBus (
+  IN  struct QspiSlave *Slave
   );
 
 VOID
-DspiFreeSlave (
-  IN  struct DspiSlave *Slave
+QspiFreeSlave (
+  IN  struct QspiSlave *Slave
   );
 
-struct DspiFlash *
-DspiProbeDevice (
-  IN  struct DspiSlave *Dspi
+struct QspiFlash *
+QspiProbeDevice (
+  IN  struct QspiSlave *Qspi
   );
 
-struct DspiSlave *
-DspiSetupSlave (
+struct QspiSlave *
+QspiSetupSlave (
   IN  UINT32 Bus,
   IN  UINT32 Cs,
   IN  UINT32 MaxHz,
@@ -371,14 +407,14 @@ DspiSetupSlave (
   );
 
 /**
-  This API detect the slave device connected to dspi controller and
+  This API detect the slave device connected to qspi controller and
   initializes slave device structure.
 
-  @retval EFI_SUCCESS       	Slave device is attached to DSPI Controller.
+  @retval EFI_SUCCESS       	Slave device is attached to QSPI Controller.
   @retval EFI_OUT_OF_RESOURCES	Failed to allocate memory.
 **/
 EFI_STATUS
-DspiDetect(
+QspiDetect(
   VOID
   );
 
@@ -394,8 +430,8 @@ DspiDetect(
   @retval EFI_INVALID_PARAMETER 	Input Parameter is invalid.
 **/
 EFI_STATUS
-DspiFlashRead (
-  IN  UINT32 Offset,
+QspiFlashRead (
+  IN  UINT64 Offset,
   IN  UINT64 Len,
   OUT VOID *Buf
   );
@@ -412,8 +448,8 @@ DspiFlashRead (
   @retval EFI_INVALID_PARAMETER 	Input Parameter is invalid.
 **/
 EFI_STATUS
-DspiFlashWrite (
-  IN  UINT32 Offset,
+QspiFlashWrite (
+  IN  UINT64 Offset,
   IN  UINT64 Len,
   IN  CONST VOID *Buf
   );
@@ -429,28 +465,28 @@ DspiFlashWrite (
   @retval EFI_INVALID_PARAMETER 	Input Parameter is invalid.
 **/
 EFI_STATUS
-DspiFlashErase (
-  IN  UINT32 Offset,
+QspiFlashErase (
+  IN  UINT64 Offset,
   IN  UINT64 Len
   );
 
 /**
-  This API detect the slave device connected to dspi controller
+  This API detect the slave device connected to qspi controller
   and initialize block IO parameter.
 
-  @param[in]  gDspiMedia	Indicates a pointer to the block IO media
+  @param[in]  gQspiMedia	Indicates a pointer to the block IO media
 				device.
 
-  @retval EFI_SUCCESS       	Slave device is attached to DSPI Controller.
+  @retval EFI_SUCCESS       	Slave device is attached to QSPI Controller.
   @retval EFI_OUT_OF_RESOURCES	Failed to allocate memory.
 **/
 EFI_STATUS
-DspiInit (
-  EFI_BLOCK_IO_MEDIA *gDspiMedia
+QspiInit (
+  EFI_BLOCK_IO_MEDIA *gQspiMedia
   );
 
 /**
-  This API Erases BufferSize * NUM_OF_SUBSECTOR bytes starting from Lba.
+  This API Erases BufferSize bytes starting from Lba.
 
   @param[in]  This    	Indicates a pointer to the calling context.
   @param[in]  MediaId 	Id of the media, changes every time media is replaced.
@@ -472,7 +508,7 @@ DspiInit (
 **/
 EFI_STATUS
 EFIAPI
-DspiErase (
+QspiErase (
   IN  EFI_BLOCK_IO_PROTOCOL  *This,
   IN  UINT32                 MediaId,
   IN  EFI_LBA                Lba,
@@ -506,7 +542,7 @@ DspiErase (
 **/
 EFI_STATUS
 EFIAPI
-DspiWrite (
+QspiWrite (
   IN  EFI_BLOCK_IO_PROTOCOL  *This,
   IN  UINT32                 MediaId,
   IN  EFI_LBA                Lba,
@@ -541,7 +577,7 @@ DspiWrite (
 **/
 EFI_STATUS
 EFIAPI
-DspiRead (
+QspiRead (
   IN EFI_BLOCK_IO_PROTOCOL          *This,
   IN UINT32                         MediaId,
   IN EFI_LBA                        Lba,
@@ -550,11 +586,31 @@ DspiRead (
   );
 
 /**
-  This API free the global Dspi flash memory structure(DspiFlash).
+  This API free the global Qspi flash memory structure(QspiFlash).
 **/
 VOID
-DspiFlashFree (
+QspiFlashFree (
   VOID
+  );
+
+VOID
+SelectQspi (
+  IN VOID
+  );
+
+VOID
+QspiCreateAddr (
+  IN  UINT32 Addr,
+  OUT UINT8 *Cmd
+  );
+
+EFI_STATUS
+QspiXfer (
+  IN  struct QspiSlave *QspiSlave,
+  IN  UINT32 Bitlen,
+  IN  CONST VOID *OutData,
+  OUT VOID *InData,
+  IN  UINT64 Flags
   );
 
 #endif

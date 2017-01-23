@@ -131,6 +131,9 @@
   DspiFlashLib|LS1043aRdbPkg/Library/DspiFlashLib/DspiFlashLib.inf
   PciHostBridgeLib|LS1043aRdbPkg/Library/PciHostBridgeLib/PciHostBridgeLib.inf
   SdxcLib|LS1043aRdbPkg/Library/SdxcLib/SdxcLib.inf
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  QspiFlashLib|LS1043aRdbPkg/Library/QspiFlashLib/QspiFlashLib.inf
+!endif
 
   # DPAA1 Ethernet
   Dpaa1EthernetMacLib|LS1043aRdbPkg/Library/Dpaa1EthernetMacLib/Dpaa1EthernetMacLib.inf
@@ -335,7 +338,11 @@
   # NV Storage PCDs.
   #
   gArmTokenSpaceGuid.PcdVFPEnabled|1
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x040000000
+!else
   gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x060000000
+!endif
   gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x60200000
 
   gEfiMdePkgTokenSpaceGuid.PcdMaximumUnicodeStringLength|1000000
@@ -468,6 +475,10 @@
   #
   gLS1043aRdbTokenSpaceGuid.PcdDpaa1UsedMemacsMask|0x13F
   
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdFManFwSrc|2
+!endif
+
   #
   # SD Specific PCDs
   #
@@ -477,11 +488,15 @@
   # IP Testing specific PCDs
   #
   gLS1043aRdbTokenSpaceGuid.PcdDspiTest|FALSE
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdQspiTest|FALSE
+!endif
 
   #
   # PPA specific PCDs
   #
-  gArmPlatformTokenSpaceGuid.PcdPpaNorBaseAddr|0x60500000
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNorBaseAddr|0x60500000
+  gLS1043aRdbTokenSpaceGuid.PcdPpaQspiBaseAddr|0x40100000
   gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize|0x8000000 # (128MB)
   gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000
 
@@ -523,7 +538,11 @@
 
   gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"EFI Linux from NOR flash"
   gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"MemoryMapped(0x0,0x61100000,0x6111FFFF)"
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x40300000 ,0x403FFFFF)/fsl-ls1043a-rdb.dtb"
+!else
   gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x61B00000,0x61BFFFFF)/fsl-ls1043a-rdb.dtb"
+!endif
 
   gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|L"MemoryMapped(0x0,0x61120000,0x61AFFFFF) -f \"MemoryMapped(0x0,0x61C00000,0x638FFFFF)\" -c \"console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,0x21c0500\""
 
@@ -573,10 +592,14 @@
   MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
   MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
   MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  MdeModulePkg/Universal/Variable/EmuRuntimeDxe/EmuVariableRuntimeDxe.inf
+!else
   MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf {
     <LibraryClasses>
       NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
   }
+!endif
   MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
   EmbeddedPkg/EmbeddedMonotonicCounter/EmbeddedMonotonicCounter.inf
   EmbeddedPkg/ResetRuntimeDxe/ResetRuntimeDxe.inf
@@ -619,6 +642,7 @@
   # Dspi
   LS1043aRdbPkg/Drivers/DspiDxe/DspiDxe.inf
 
+!if $(BOOT_VIA_QSPI_FLASH) != TRUE
   #
   # Nor Flash
   LS1043aRdbPkg/Drivers/NorFlashDxe/NorFlashDxe.inf
@@ -630,6 +654,7 @@
   #
   # File System
   LS1043aRdbPkg/Drivers/LS1043aFileSystemDxe/LS1043aFileSystemDxe.inf
+!endif
 
   #
   # MMC/SD
@@ -644,6 +669,12 @@
   #
   MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
   LS1043aRdbPkg/Drivers/PciHostBridgeDxe/PciHostBridgeDxe.inf
+
+!if $(BOOT_VIA_QSPI_FLASH) == TRUE
+  #
+  # Qspi
+  LS1043aRdbPkg/Drivers/QspiDxe/QspiDxe.inf
+!endif
 
   #
   # Networking stack

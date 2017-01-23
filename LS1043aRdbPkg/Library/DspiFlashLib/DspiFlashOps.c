@@ -204,7 +204,7 @@ DspiReadStatus (
 {
   INT32 Ret;
   UINT8 Cmd;
-  Cmd = DSPI_CMD_READ_STATUS;
+  Cmd = CMD_READ_STATUS;
 
   Ret = DspiCommonRead(Flash, &Cmd, 1, Res, 1);
   if (Ret != EFI_SUCCESS) {
@@ -229,7 +229,7 @@ DspiWriteConfig (
   if (Ret != EFI_SUCCESS)
     return Ret;
 
-  Cmd = DSPI_CMD_WRITE_STATUS;
+  Cmd = CMD_WRITE_STATUS;
   Data[1] = WCmd;
   Ret = DspiCommonWrite(Flash, &Cmd, 1, &Data, 2);
   if (Ret != EFI_SUCCESS) {
@@ -249,7 +249,7 @@ DspiReadConfig (
   INT32 Ret;
   UINT8 Cmd;
 
-  Cmd = DSPI_CMD_READ_CONFIG;
+  Cmd = CMD_READ_CONFIG;
   Ret = DspiCommonRead(Flash, &Cmd, 1, RCmd, 1);
   if (Ret != EFI_SUCCESS) {
     DEBUG((EFI_D_ERROR, "Fail To Read DSPI Config Register\n"));
@@ -658,7 +658,7 @@ DspiWaitReady (
   UINT8 PollBit = STATUS_WIP;
   UINT8 Cmd = Flash->PollCmd;
 
-  if (Cmd == DSPI_CMD_FLAG_STATUS || Cmd == DSPI_CMD_ATMEL_FLAG_STATUS) {
+  if (Cmd == CMD_FLAG_STATUS || Cmd == DSPI_CMD_ATMEL_FLAG_STATUS) {
     PollBit = STATUS_PEC;
     CheckStatus = PollBit;
   }
@@ -666,7 +666,7 @@ DspiWaitReady (
   Ret = DspiXfer(Dspi, 8, &Cmd, NULL, Flags);
   if (Ret != EFI_SUCCESS) {
     DEBUG((EFI_D_ERROR, "DSPI: Fail To Read %a Status Register\n",
-          Cmd == DSPI_CMD_READ_STATUS ? "Read" : "Flag"));
+          Cmd == CMD_READ_STATUS ? "Read" : "Flag"));
     return Ret;
   }
 
@@ -720,7 +720,7 @@ DspiCommonWrite (
     return Ret;
   }
 
-  Wcmd = DSPI_CMD_WRITE_ENABLE;
+  Wcmd = CMD_WRITE_ENABLE;
 
   Ret = DspiReadWrite(Dspi, &Wcmd, 1, NULL, NULL, 0);
   if (Ret != EFI_SUCCESS) {
