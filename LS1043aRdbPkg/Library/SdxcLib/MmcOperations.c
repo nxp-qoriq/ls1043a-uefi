@@ -79,13 +79,13 @@ MmcGetwp (
   return WriteProt;
 }
 
-INT32
+EFI_STATUS
 SendCmd (
   IN  struct SdCmd *Cmd,
   IN  struct SdData *Data
   )
 {
-  INT32 Ret;
+  EFI_STATUS Ret;
   struct SdxcCfg *Cfg = gMmc->Private;
   struct SdxcRegs *Regs = (struct SdxcRegs *)Cfg->SdxcBase;
 
@@ -471,7 +471,7 @@ SdxcGoIdle (
   )
 {
   struct SdCmd Cmd;
-  INT32 Status;
+  EFI_STATUS Status;
 
   MicroSecondDelay(10);
 
@@ -495,7 +495,7 @@ SdSendIfCond (
   )
 {
   struct SdCmd Cmd;
-  INT32 Status;
+  EFI_STATUS Status;
 
   Cmd.CmdIdx = SD_CMD_SEND_IF_COND;
   /* We Set The Bit if The Host Supports Voltages Between 2.7 And 3.6 V */
@@ -592,14 +592,14 @@ SdSendOpCond (
 }
 
 /* We Pass In The Cmd Since Otherwise The Init Seems To Fail */
-static INT32
+static EFI_STATUS
 MmcSendOpCondCmdIter (
   IN  struct Mmc *Mmc,
   IN  struct SdCmd *Cmd,
   IN  INT32 UseArg
 )
 {
-  INT32 Status;
+  EFI_STATUS Status;
 
   Cmd->CmdIdx = EMMC_CMD_SEND_OP_COND;
   Cmd->RespType = MMC_RSP_R3;
@@ -687,27 +687,26 @@ SdStartInit (
 
   /* The Internal Partition Reset To User Partition(0) At Every CMD0*/
   gMmc->PartNum = 0;
+  
+  /* Test for SD version 2 */
+  Status = SdSendIfCond(gMmc);
 
-  /* Check for An MMC Card */
-  Status = MmcSendOpCondCmd(gMmc);
+  /* Now try to get the SD card's operating condition */
+  Status = SdSendOpCond();
 
-  if (Status && Status != EFI_ALREADY_STARTED) {
-    /* Not MMC Card */
+  /* if command results EFI_TIMEOUT, check for MMC card */
+  if (Status == EFI_TIMEOUT) {
+    Status = MmcSendOpCondCmd(gMmc);
+    if (Status && Status != EFI_ALREADY_STARTED)
+      DEBUG((EFI_D_ERROR, "Card did not respond to voltage select! \n"));
+    else
+      gMmc->OpCondPending = 1;
 
-    /* Test for SD Version 2 */
-    Status = SdSendIfCond(gMmc);
-    if (Status != EFI_NO_RESPONSE)
-      DEBUG((EFI_D_INFO, "Not SD version 2\n"));
+    if (Status == EFI_ALREADY_STARTED)
+      gMmc->InitInProgress = 1;
 
-    /* Now Try To Get The SD Card'S Operating Condition */
-    Status = SdSendOpCond();
-    if (Status)
-      DEBUG((EFI_D_ERROR, "Card Did Not Respond To Voltage Select!\n"));
-  } else
-    gMmc->OpCondPending = 1;
-
-  if (Status == EFI_ALREADY_STARTED)
-    gMmc->InitInProgress = 1;
+  } else if (!Status)
+      gMmc->InitInProgress = 1;
 
   return Status;
 }
@@ -756,8 +755,30 @@ SdxcCompleteOpCond (
 {
   struct SdCmd Cmd;
   EFI_STATUS Status;
+  INT32 TimeoutCount = 20;
 
   Mmc->OpCondPending = 0;
+
+  if (!(Mmc->Ocr & OCR_BUSY)) {
+    /*
+     * Reset the MMC/SD cards to idle state and Asks all MMC and SD Memory cards in
+     * idle state to send their operation conditions register contents in the 
+     * response on the CMD line.
+     * Please refer to section 'A.6.1 Bus initialization' of eMMC specification 4.5 for details
+     */
+    
+    SdxcGoIdle(gMmc);
+    while (1) {
+      Status = MmcSendOpCondCmdIter(Mmc, &Cmd, 1);
+      if (Status)
+        return Status;
+      if (Mmc->Ocr & OCR_BUSY)
+        break;
+      if (--TimeoutCount <=0 )
+        return EFI_TIMEOUT;
+      MicroSecondDelay(100);
+    }
+  }
 
   if (IsSpi(Mmc)) { /* Read OCR for Spi */
     Cmd.CmdIdx = EMMC_CMD_SPI_READ_OCR;
@@ -778,7 +799,7 @@ SdxcCompleteOpCond (
   return EFI_SUCCESS;
 }
 
-static INT32
+static EFI_STATUS
 SendExtCsd (
   IN  struct Mmc *Mmc,
   IN  UINT8 *ExtCsd
@@ -786,7 +807,7 @@ SendExtCsd (
 {
   struct SdCmd Cmd;
   struct SdData Data;
-  INT32 Status;
+  EFI_STATUS Status;
 
   /* Get The Card Status Register */
   Cmd.CmdIdx = EMMC_CMD_SEND_EXT_CSD;
@@ -803,7 +824,7 @@ SendExtCsd (
   return Status;
 }
 
-static INT32
+static EFI_STATUS
 MmcSetCapacity (
   IN  struct Mmc *Mmc,
   IN  INT32 PartNum
@@ -835,7 +856,7 @@ MmcSetCapacity (
   return 0;
 }
 
-static INT32
+static EFI_STATUS
 MmcSwitch (
   IN  struct Mmc *Mmc,
   IN  UINT8 Set,
@@ -845,7 +866,7 @@ MmcSwitch (
 {
   struct SdCmd Cmd;
   INT32 Timeout = 1000;
-  INT32 Ret;
+  EFI_STATUS Ret;
 
   Cmd.CmdIdx = EMMC_CMD_SWITCH;
   Cmd.RespType = MMC_RSP_R1b;
@@ -862,8 +883,7 @@ MmcSwitch (
   return Ret;
 }
 
-#ifdef GET_SD_REVISION
-static INT32
+static EFI_STATUS
 SdxcSwitch (
   IN  struct Mmc *Mmc,
   IN  INT32 Mode,
@@ -953,8 +973,8 @@ RetryScr:
   if (!PcdGetBool(PcdSdxcDmaSupported))
     MicroSecondDelay(1000000);
 
-  Mmc->Scr[0] = Scr[0];
-  Mmc->Scr[1] = Scr[1];
+  Mmc->Scr[0] = SwapBytes32(Scr[0]);
+  Mmc->Scr[1] = SwapBytes32(Scr[1]);
 
   switch ((Mmc->Scr[0] >> 24) & 0xf) {
     case 0:
@@ -1002,14 +1022,21 @@ RetryScr:
 
     if (Status)
       goto FreeMem;
+
+    /* Timeout value for CMD6 is upto 100ms. 
+     * Please refer to section '4.3.10 Switch Function Command' of 
+     * SD Specification 'Physical Layer Simplified Specification Version 4.10' for details 
+     */
+    MicroSecondDelay(100000);
+
     /* Try again if high-Speed Function Is Busy. */
-    if (!(SwitchStatus[7] & SD_HIGHSPEED_BUSY))
+    if (!(SwapBytes32(SwitchStatus[7]) & SD_HIGHSPEED_BUSY))
       break;
 
   }while (Timeout--);
 
   /* Return if High-Speed Isn'T Supported */
-  if (!(SwitchStatus[3] & SD_HIGHSPEED_SUPPORTED)) {
+  if (!(SwapBytes32(SwitchStatus[3]) & SD_HIGHSPEED_SUPPORTED)) {
     Status = 0;
     goto FreeMem;
   }
@@ -1029,7 +1056,7 @@ RetryScr:
   if (Status)
     goto FreeMem;
 
-  if ((SwitchStatus[4] & 0x0f000000) == 0x01000000)
+  if ((SwapBytes32(SwitchStatus[4]) & 0x0f000000) == 0x01000000)
     Mmc->CardCaps |= MMC_MODE_HS;
 
 FreeMem:
@@ -1049,15 +1076,17 @@ FreeMem:
   return Status;
 }
 
-INT32
+EFI_STATUS
 MmcChangeFreq (
   IN  struct Mmc *Mmc
   )
 {
-  ALLOC_CACHE_ALIGN_BUF(UINT8, ExtCsd, MMC_MAX_BLOCK_LEN);
   CHAR8 Cardtype;
-  INT32 Status;
+  EFI_STATUS Status;
+  UINT8 *Scr = NULL;
+  struct DmaData ExtCsd;
 
+  ExtCsd.Bytes=MMC_MAX_BLOCK_LEN;
   Mmc->CardCaps = MMC_MODE_4_BIT | MMC_MODE_8_BIT;
 
   if (IsSpi(Mmc))
@@ -1066,28 +1095,46 @@ MmcChangeFreq (
   /* Only Version 4 Supports High-Speed */
   if (Mmc->Version < MMC_VER_4)
     return 0;
-
-  Status = SendExtCsd(Mmc, ExtCsd);
+  
+  if (PcdGetBool(PcdSdxcDmaSupported)) {
+    ExtCsd.MapOperation = MapOperationBusMasterRead;
+      Scr = GetDmaBuffer(&ExtCsd);
+      if (Scr == NULL) {
+        DEBUG((EFI_D_ERROR,"Failed to get DMA buffer \n"));
+        return EFI_OUT_OF_RESOURCES;
+      }
+  } else
+      Scr = AllocatePool(ExtCsd.Bytes);	  
+  
+  Status = SendExtCsd(Mmc, Scr);
   if (Status)
-    return Status;
-
-  Cardtype = ExtCsd[EXT_CSD_CARD_TYPE] & 0xf;
+    goto FreeMem;
 
   Status = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
 
-  if (Status)
-    return Status == EFI_NO_RESPONSE ? 0 : Status;
+  if (Status) {
+    Status = (Status == EFI_NO_RESPONSE) ? 0 : Status;
+    goto FreeMem;
+  }
 
   /* Now Check To See That It Worked */
-  Status = SendExtCsd(Mmc, ExtCsd);
+  Status = SendExtCsd(Mmc, Scr);
 
   if (Status)
-    return Status;
+    goto FreeMem;
 
   /* No High-Speed Support */
-  if (!ExtCsd[EXT_CSD_HS_TIMING])
-    return 0;
+  if (!Scr[EXT_CSD_HS_TIMING]) {
+    Status=0;
+    goto FreeMem;
+  }
 
+  /* 
+   * Get the Device Type from command response register 
+   * Please refer to section 'A.6.2 Switching to high-speed mode' of eMMC specification 4.5 for details
+   */
+  Cardtype = Scr[EXT_CSD_CARD_TYPE] & 0xf;
+  
   /* High Speed Is Set, There Are Two Types: 52MHz And 26MHz */
   if (Cardtype & EXT_CSD_CARD_TYPE_52) {
     if (Cardtype & EXT_CSD_CARD_TYPE_DDR_52)
@@ -1096,16 +1143,24 @@ MmcChangeFreq (
   } else
      Mmc->CardCaps |= MMC_MODE_HS;
 
-  return 0;
-}
-#endif
+FreeMem:
+  if (Scr) {
+    if (PcdGetBool(PcdSdxcDmaSupported))
+      FreeDmaBuffer(&ExtCsd);
+    else
+      FreePool(Scr);
+  }
 
-static INT32
+  return Status;
+}
+
+static EFI_STATUS
 SdxcStartup (
   IN  struct Mmc *Mmc
   )
 {
-  INT32   Status, I;
+  EFI_STATUS   Status;
+  INT32   I;
   UINT32 Mult, Freq;
   UINT64 CsdMult, CsdSize, Capacity;
   struct SdCmd Cmd;
@@ -1361,7 +1416,6 @@ SdxcStartup (
   if (Status)
     return Status;
 
-#ifdef GET_SD_REVISION
   if (IS_SD(Mmc))
     Status = SdxcChangeFreq(Mmc);
   else
@@ -1369,7 +1423,6 @@ SdxcStartup (
 
   if (Status)
     return Status;
-#endif
 
   /* Restrict Card'S Capabilities By What The Host Can do */
   Mmc->CardCaps &= Mmc->Cfg->HostCaps;
@@ -1491,12 +1544,12 @@ SdxcStartup (
   return EFI_SUCCESS;
 }
 
-static INT32
+static EFI_STATUS
 SdxcCompleteInit (
   IN  struct Mmc *Mmc
   )
 {
-  INT32 Status = EFI_SUCCESS;
+  EFI_STATUS Status = EFI_SUCCESS;
   if (Mmc->OpCondPending)
     Status = SdxcCompleteOpCond(Mmc);
 

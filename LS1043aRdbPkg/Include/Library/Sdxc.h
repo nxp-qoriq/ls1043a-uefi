@@ -565,7 +565,7 @@ SdxcInitialize (
   IN struct SdxcCfg *Cfg
   );
 
-INT32
+EFI_STATUS
 SdxcMmcInit (
   );
 
@@ -680,7 +680,7 @@ DoMmcInfo (
   VOID
   );
 
-INT32
+EFI_STATUS
 SdxcMmcInit (
   IN VOID
   );
@@ -690,7 +690,7 @@ SdxcReset (
   IN struct SdxcRegs *Regs
   );
 
-INT32
+EFI_STATUS
 SendCmd (
   IN  struct SdCmd *Cmd,
   IN  struct SdData *Data
@@ -717,7 +717,7 @@ SdxcChangeFreq (
   );
 
 
-INT32
+EFI_STATUS
 MmcChangeFreq (
   IN  struct Mmc *Mmc
   );

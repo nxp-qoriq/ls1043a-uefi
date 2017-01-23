@@ -645,7 +645,7 @@ SdxcInitialize (
   return EFI_SUCCESS;
 }
 
-INT32
+EFI_STATUS
 SdxcMmcInit (
   IN VOID
   )
