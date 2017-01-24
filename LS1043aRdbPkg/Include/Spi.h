@@ -75,33 +75,33 @@
 #define STATUS_ERASE			(1 << 5)
 
 /* Write Commands */
-#define CMD_WRITE_STATUS		0x01
-#define CMD_BYTE_PROGRAM		0x02
-#define CMD_AAI_PROGRAM		0xad
-#define CMD_WRITE_DISABLE		0x04
-#define CMD_READ_STATUS		0x05
-#define CMD_QUAD_PAGE_PROGRAM	0x32
-#define CMD_READ_STATUS1		0x35
-#define CMD_WRITE_ENABLE		0x06
-#define CMD_READ_CONFIG		0x35
-#define CMD_FLAG_STATUS		0x70
-#define CMD_CLEAR_FLAG_STATUS	0x50
+#define WRITE_STATUS		0x01
+#define BYTE_PROGRAM		0x02
+#define AAI_PROGRAM		0xad
+#define WRITE_DISABLE		0x04
+#define READ_STATUS		0x05
+#define QUAD_PAGE_PROGRAM	0x32
+#define READ_STATUS1		0x35
+#define WRITE_ENABLE		0x06
+#define READ_CONFIG		0x35
+#define FLAG_STATUS		0x70
+#define CLEAR_FLAG_STATUS	0x50
 
 /* Read Commands */
-#define CMD_READ_ARRAY_SLOW		0x03
-#define CMD_READ_ARRAY_FAST		0x0b
-#define CMD_READ_DUAL_OUTPUT_FAST	0x3b
-#define CMD_READ_DUAL_IO_FAST	0xbb
-#define CMD_READ_QUAD_OUTPUT_FAST	0x6b
-#define CMD_READ_QUAD_IO_FAST	0xeb
-#define CMD_READ_JEDEC_ID		0x9f
+#define READ_ARRAY_SLOW		0x03
+#define READ_ARRAY_FAST		0x0b
+#define READ_DUAL_OUTPUT_FAST	0x3b
+#define READ_DUAL_IO_FAST	0xbb
+#define READ_QUAD_OUTPUT_FAST	0x6b
+#define READ_QUAD_IO_FAST	0xeb
+#define READ_JEDEC_ID		0x9f
 
 /* Erase Commands */
-#define CMD_ERASE_STATUS		0x50
-#define CMD_ERASE_4K			0x20
-#define CMD_ERASE_32K		0x52
-#define CMD_ERASE_CHIP		0xc7
-#define CMD_ERASE_64K		0xd8
+#define ERASE_STATUS		0x50
+#define ERASE_4K			0x20
+#define ERASE_32K		0x52
+#define ERASE_CHIP		0xc7
+#define ERASE_64K		0xd8
 
 /* Enum list - Full read commands */
 enum SpiReadCmds {

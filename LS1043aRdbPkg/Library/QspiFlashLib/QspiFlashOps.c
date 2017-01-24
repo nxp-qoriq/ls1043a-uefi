@@ -199,7 +199,7 @@ QspiReadStatus (
 {
   INT32 Ret;
   UINT8 Cmd;
-  Cmd = CMD_READ_STATUS;
+  Cmd = READ_STATUS;
 
   Ret = QspiCommonRead(Flash, &Cmd, 1, Res, 1);
   if (Ret != EFI_SUCCESS) {
@@ -224,7 +224,7 @@ QspiWriteConfig (
   if (Ret != EFI_SUCCESS)
     return Ret;
 
-  Cmd = CMD_WRITE_STATUS;
+  Cmd = WRITE_STATUS;
   Data[1] = WCmd;
   Ret = QspiCommonWrite(Flash, &Cmd, 1, &Data, 2);
   if (Ret != EFI_SUCCESS) {
@@ -244,7 +244,7 @@ QspiReadConfig (
   INT32 Ret;
   UINT8 Cmd;
 
-  Cmd = CMD_READ_CONFIG;
+  Cmd = READ_CONFIG;
   Ret = QspiCommonRead(Flash, &Cmd, 1, RCmd, 1);
   if (Ret != EFI_SUCCESS) {
     DEBUG((EFI_D_ERROR, "Fail To Read QSPI Config Register\n"));
@@ -910,7 +910,7 @@ QspiWaitReady (
   UINT8 PollBit = STATUS_WIP;
   UINT8 Cmd = Flash->PollCmd;
 
-  if (Cmd == CMD_FLAG_STATUS) {
+  if (Cmd == FLAG_STATUS) {
     PollBit = STATUS_PEC;
     CheckStatus = PollBit;
   }
@@ -918,7 +918,7 @@ QspiWaitReady (
   Ret = QspiXfer(Qspi, 8, &Cmd, NULL, Flags);
   if (Ret != EFI_SUCCESS) {
     DEBUG((EFI_D_ERROR, "QSPI: Fail To Read %a Status Register\n",
-          Cmd == CMD_READ_STATUS ? "Read" : "Flag"));
+          Cmd == READ_STATUS ? "Read" : "Flag"));
     return Ret;
   }
 
@@ -972,7 +972,7 @@ QspiCommonWrite (
     return Ret;
   }
 
-  Wcmd = CMD_WRITE_ENABLE;
+  Wcmd = WRITE_ENABLE;
 
   Ret = QspiReadWrite(Qspi, &Wcmd, 1, NULL, NULL, 0);
   if (Ret != EFI_SUCCESS) {
