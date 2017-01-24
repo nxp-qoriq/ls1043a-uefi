@@ -99,7 +99,7 @@ MmcInitialize (
   VOID
   )
 {
-  if (SdxcMmcInit() < 0)
+  if (EFI_ERROR(SdxcMmcInit()))
     return EFI_DEVICE_ERROR;
 
   return EFI_SUCCESS;

@@ -1375,10 +1375,10 @@ SdxcStartup (
       if (Mmc->HighCapacity &&
 	 (ExtCsd[EXT_CSD_PARTITION_SETTING] &
 	     EXT_CSD_PARTITION_SETTING_COMPLETED)) {
-	 Capacity = (ExtCsd[EXT_CSD_SEC_CNT]) |
-		     (ExtCsd[EXT_CSD_SEC_CNT + 1] << 8) |
-		     (ExtCsd[EXT_CSD_SEC_CNT + 2] << 16) |
-		     (ExtCsd[EXT_CSD_SEC_CNT + 3] << 24);
+	 Capacity = (UINT64)(ExtCsd[EXT_CSD_SEC_CNT]) |
+		     (UINT64)(ExtCsd[EXT_CSD_SEC_CNT + 1] << 8) |
+		     (UINT64)(ExtCsd[EXT_CSD_SEC_CNT + 2] << 16) |
+		     (UINT64)(ExtCsd[EXT_CSD_SEC_CNT + 3] << 24);
 
 	 Capacity *= MMC_MAX_BLOCK_LEN;
 	 Mmc->CapacityUser = Capacity;
