@@ -36,6 +36,8 @@
   BaseMemoryLib
   BaseLib
   LS1043aSocLib
+  DxeServicesTableLib
+  UefiRuntimeLib
 
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec

@@ -625,6 +625,7 @@ QspiVirtualNotifyEvent (
     if (mQspiInstances[Index]->ShadowBuffer != NULL) {
       EfiConvertPointer (0x0, (VOID**)&mQspiInstances[Index]->ShadowBuffer);
     }
+    QspiFlashRelocate();
   }
   return;
 }

@@ -17,6 +17,10 @@
 **/
 
 #include <Library/Qspi.h>
+#include <PiDxe.h>
+#include <Library/DxeServicesTableLib.h>
+#include <Library/UefiRuntimeServicesTableLib.h>
+#include <Library/UefiRuntimeLib.h>
 
 VOID DumpQspiRegs(struct QspiRegs *QspiRegs)
 {
@@ -117,8 +121,9 @@ QspiCreateSlave (
  )
 {
   struct QspiSlave *Ptr = NULL;
+  EFI_STATUS       Status = EFI_SUCCESS;
 
-  Ptr = (struct QspiSlave*)AllocatePool(Size);
+  Ptr = (struct QspiSlave*)AllocateRuntimePool(Size);
   if (!Ptr)
     return Ptr;
 
@@ -133,6 +138,24 @@ QspiCreateSlave (
   Ptr->CurAmbaBase = AMBA_BASE;
   Ptr->AmbaTotalSize = AMBA_TOTAL_SIZE;
   Ptr->Regs = (VOID *)QSPI_BASE_ADDR;
+
+  // Declare the controller as EFI_MEMORY_RUNTIME
+  Status = gDS->AddMemorySpace (
+                  EfiGcdMemoryTypeMemoryMappedIo,
+                  (UINTN)Ptr->Regs, QSPI_REG_SIZE,
+                  EFI_MEMORY_UC | EFI_MEMORY_RUNTIME
+                  );
+  if (EFI_ERROR (Status)){
+    FreePool(Ptr);
+    return NULL;
+  }
+  Status = gDS->SetMemorySpaceAttributes ((UINTN)Ptr->Regs, QSPI_REG_SIZE,
+                                          EFI_MEMORY_UC | EFI_MEMORY_RUNTIME);
+  if (EFI_ERROR (Status)){
+    FreePool(Ptr);
+    return NULL;
+  }
+
   Ptr->SpeedHz = SPEED_HZ;
   Ptr->AmbaBase[0] = AMBA_BASE;
   Ptr->FlashNum = FLASH_NUM;

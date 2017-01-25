@@ -578,6 +578,14 @@ QspiFlashFree (
   VOID
   );
 
+/**
+* Relocate the Allocated Runtime data when exiting boot services
+**/
+VOID
+QspiFlashRelocate (
+  VOID
+  );
+
 VOID
 SelectQspi (
   IN VOID

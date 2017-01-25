@@ -128,7 +128,7 @@ ValidateParameters (
 		Id[0], Jedec, ExtJedec));
     return NULL;
   }
-  Flash = (struct QspiFlash *)AllocatePool(sizeof(struct QspiFlash));
+  Flash = (struct QspiFlash *)AllocateRuntimePool(sizeof(struct QspiFlash));
   InternalMemZeroMem(Flash, sizeof(struct QspiFlash));
   if (!Flash) {
     DEBUG((EFI_D_ERROR, "Failed To Allocate QspiFlash\n"));

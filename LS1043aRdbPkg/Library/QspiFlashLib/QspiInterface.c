@@ -128,7 +128,7 @@ QspiFlashRead (
   )
 {
   UINT8 CmdSz = 0;
-  UINT8 *Cmd = NULL;
+  UINT8 Cmd[SPI_COMMON_FLASH_CMD_LEN + GFlash->DummyByte];
   UINT32 RemainLen, ReadLen, ReadAddr;
   INT32 BankSel = 0;
   INT32 Ret = -1;
@@ -155,12 +155,6 @@ QspiFlashRead (
 
   CmdSz = SPI_COMMON_FLASH_CMD_LEN + GFlash->DummyByte;
 
-  Cmd = (UINT8 *)AllocatePool(CmdSz);
-  if (!Cmd) {
-    DEBUG((EFI_D_ERROR, "QSPI: Out Of Memory\n"));
-    return EFI_OUT_OF_RESOURCES;
-  }
-
   Cmd[0] = GFlash->ReadCmd;
   while (Len) {
     ReadAddr = Offset;
@@ -184,7 +178,6 @@ QspiFlashRead (
     Buf += ReadLen;
   }
 
-  FreePool(Cmd);
   return Ret;
 }
 
@@ -195,6 +188,16 @@ QspiFlashFree (
 {
   FreePool(GFlash->Qspi);
   FreePool(GFlash);
+}
+
+VOID
+QspiFlashRelocate (
+  VOID
+  )
+{
+  EfiConvertPointer (0x0, (VOID**)&(GFlash->Qspi->Regs));
+  EfiConvertPointer (0x0, (VOID**)&(GFlash->Qspi));
+  EfiConvertPointer (0x0, (VOID**)&GFlash);
 }
 
   EFI_STATUS

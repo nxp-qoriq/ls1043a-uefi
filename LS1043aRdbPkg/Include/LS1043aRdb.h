@@ -82,6 +82,7 @@
 	#define SCFG_BASE_ADDR             0x1570000
 	#define SCFG_SIZE                  0x0010000
 	#define QSPI_BASE_ADDR             0x1550000
+	#define QSPI_REG_SIZE              0x10000
 
 /* SMMU Defintions */
 #define SMMU_BASE_ADDR		0x09000000
