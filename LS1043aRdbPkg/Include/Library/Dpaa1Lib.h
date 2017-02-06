@@ -99,6 +99,11 @@ GenerateMacAddress(
   OUT EFI_MAC_ADDRESS *MacAddrBuf
   );
 
+EFI_STATUS
+GetNVSocUniqueId (
+  OUT UINT32 *UniqueId
+  );
+
 UINT32
 GetSocUniqueId(VOID);
 

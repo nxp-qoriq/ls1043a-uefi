@@ -20,7 +20,10 @@
 #include <Library/IoLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/NetLib.h>
+#include <Library/UefiRuntimeServicesTableLib.h>
 #include <LS1043aRdb.h>
+
+STATIC CONST CHAR16           mUniqueMacVariableName[] = L"MacUniqueId";
 
 /**
    Initializes the DPAA Frame Manager (FMan)
@@ -134,3 +137,47 @@ GenerateMacAddress(
                   MacAddrBuf->Addr[4],
                   MacAddrBuf->Addr[5]));
 }
+
+EFI_STATUS
+GetNVSocUniqueId (
+    OUT UINT32 *UniqueId
+    )
+{
+  EFI_STATUS Status = EFI_SUCCESS;
+  UINT32 SocUniqueId = {0};
+  UINTN       Size;
+
+  /* Get the UniqueID required for MAC address generation */
+  Size = sizeof (UINT32);
+  Status = gRT->GetVariable ((CHAR16 *)mUniqueMacVariableName, 
+                            &gEfiCallerIdGuid, 
+                            NULL, &Size, (VOID *)UniqueId);
+
+  if (EFI_ERROR (Status)) {
+    ASSERT(Status != EFI_INVALID_PARAMETER);
+    ASSERT(Status != EFI_BUFFER_TOO_SMALL);
+    
+    if (Status != EFI_NOT_FOUND)
+      return Status;
+    
+    /* The Unique Mac variable does not exist in non-volatile storage, 
+     * so create it. 
+     */
+    SocUniqueId = GetSocUniqueId();
+    Status = gRT->SetVariable ((CHAR16 *)mUniqueMacVariableName, 
+                    &gEfiCallerIdGuid, 
+                    EFI_VARIABLE_NON_VOLATILE | 
+                    EFI_VARIABLE_BOOTSERVICE_ACCESS | 
+                    EFI_VARIABLE_RUNTIME_ACCESS, Size, 
+                    &SocUniqueId);
+
+    if (EFI_ERROR (Status)) {
+      DPAA1_ERROR_MSG("SetVariable Failed, Status=0x%lx \n",Status);
+      return Status;
+    }
+    *UniqueId = SocUniqueId;
+  }
+
+  return Status;
+}
+

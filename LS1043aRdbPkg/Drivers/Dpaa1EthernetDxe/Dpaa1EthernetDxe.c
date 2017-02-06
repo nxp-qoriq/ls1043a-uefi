@@ -1225,7 +1225,13 @@ CreateDpaa1EthernetDevice(
   EFI_STATUS Status;
   DPAA1_ETHERNET_DEVICE *Dpaa1EthDev;
   ETH_DEVICE *FmanEthDevice;
-  UINT32 SocUniqueId = GetSocUniqueId();
+  UINT32 SocUniqueId = 0;
+
+  Status = GetNVSocUniqueId (&SocUniqueId);
+  if (Status != EFI_SUCCESS) {
+    DPAA1_ERROR_MSG("Failed to get SocUniqueId \n");
+    return Status;
+  }
 
   Dpaa1EthDev = AllocateCopyPool(sizeof(DPAA1_ETHERNET_DEVICE),
                                  &gDpaa1EthernetDeviceInitTemplate);

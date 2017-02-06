@@ -18,7 +18,7 @@
   INF_VERSION                    = 0x00010005
   BASE_NAME                      = Dpaa1EthernetDxe
   FILE_GUID                      = 361f3b5c-4974-4158-9fd8-9cb70291f6e1
-  MODULE_TYPE                    = DXE_DRIVER
+  MODULE_TYPE                    = UEFI_DRIVER
   VERSION_STRING                 = 1.0
   ENTRY_POINT                    = Dpaa1EthernetInitialize
   UNLOAD_IMAGE                   = Dpaa1EthernetUnload
