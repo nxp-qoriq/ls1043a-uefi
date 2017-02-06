@@ -13,30 +13,31 @@
 **/
 
 
+#include <Ddr.h>
 #include <Library/ArmLib.h>
 #include <Library/PcdLib.h>
 #include <LS1043aRdb.h>
-#include <Ddr.h>
+#include <LS1043aSocLib.h>
 
 UINTN mGlobalVariableBase = 0;
 
 VOID CopyImage(UINT8* Dest, UINT8* Src, UINTN Size)
 {
-	UINTN Count;
-	for(Count = 0; Count < Size; Count++) {
-		Dest[Count] = Src[Count];
-	}
+  UINTN Count;
+
+  for(Count = 0; Count < Size; Count++)
+    Dest[Count] = Src[Count];
 }
 
 VOID CEntryPoint(
-		UINTN	UefiMemoryBase,
-		UINTN UefiNorBase,
-		UINTN	UefiMemorySize
-		)
+  UINTN	UefiMemoryBase,
+  UINTN 	UefiNorBase,
+  UINTN	UefiMemorySize
+  )
 { 
-	VOID	(*PrePiStart)(VOID);
+  VOID	(*PrePiStart)(VOID);
 
-	// Data Cache enabled on Primary core when MMU is enabled.
+  // Data Cache enabled on Primary core when MMU is enabled.
   ArmDisableDataCache ();
   // Invalidate Data cache
   //ArmInvalidateDataCache ();
@@ -45,10 +46,11 @@ VOID CEntryPoint(
   // Enable Instruction Caches on all cores.
   ArmEnableInstructionCache ();
 
-	DramInit();
+  TimerInit();
+  DramInit();
 
-	CopyImage((VOID*)UefiMemoryBase, (VOID*)UefiNorBase, UefiMemorySize);
-	
-	PrePiStart = (VOID (*)())((UINT64)PcdGet64(PcdFvBaseAddress));
+  CopyImage((VOID*)UefiMemoryBase, (VOID*)UefiNorBase, UefiMemorySize);
+
+  PrePiStart = (VOID (*)())((UINT64)PcdGet64(PcdFvBaseAddress));
   PrePiStart();
-}
+}        

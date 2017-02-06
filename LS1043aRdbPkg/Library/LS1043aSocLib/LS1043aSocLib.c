@@ -669,7 +669,6 @@ SetQBManPortals (VOID)
   // TZC-380
   // CCI-400
   // ClockInit
-  // TimerInit
   // CPU Info
   // SoC Personality
   // Board Personality
@@ -700,7 +699,6 @@ SocInit (
 	  ClockInit();
 
   SmmuInit();
-  TimerInit();
 
   // Initialize the Serial Port
   SerialPortInitialize ();

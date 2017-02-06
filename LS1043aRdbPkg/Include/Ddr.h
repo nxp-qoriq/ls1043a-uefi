@@ -17,40 +17,52 @@
 #ifndef __DDR_H__
 #define __DDR_H__
 
-#include "LS1043aRdb.h"
-#include "Common.h"
-#include "Bitops.h"
+#include <Library/BaseMemoryLib.h>
 #include <Library/BaseMemoryLib/MemLibInternals.h>
 #include <Library/DebugLib.h>
 #include <Library/IoLib.h>
-#include <Library/BaseMemoryLib.h>
 #include <Library/TimerLib.h>
 
-/* DDR4 fixed timing */
-#define CONFIG_CS0_BNDS		0x0000007f /* 0x000 */
-#define CONFIG_CS0_CONFIG		0x80010322 /* 0x080 */
-#define CONFIG_TIMING_CFG_3		0x020C1000 /* 0x100 */
-#define CONFIG_TIMING_CFG_0		0xD0550018 /* 0x104 */
-#define CONFIG_TIMING_CFG_1		0xC2C68C42 /* 0x108 */
-#define CONFIG_TIMING_CFG_2		0x0048C114 /* 0x10c */
-#define CONFIG_DDR_SDRAM_CFG	0x450C000C /* 0x110 */
-#define CONFIG_DDR_SDRAM_CFG_2	0x00401010 /* 0x114 */
-#define CONFIG_DDR_SDRAM_MODE	0x01010214 /* 0x118 */
-#define CONFIG_DDR_SDRAM_INTERVAL	0x18600618 /* 0x124 */
-#define CONFIG_DDR_SDRAM_CLK_CNTL	0x02000000 /* 0x130 */
-#define CONFIG_TIMING_CFG_4		0x00000002 /* 0x160 */
-#define CONFIG_TIMING_CFG_5		0x04401400 /* 0x164 */
-#define CONFIG_TIMING_CFG_7		0x13300000 /* 0x16c */
-#define CONFIG_DDR_ZQ_CNTL		0x8A090705 /* 0x170 */
-#define CONFIG_DDR_WRLVL_CNTL	0x8655F606 /* 0x174 */
-#define CONFIG_DDR_WRLVL_CNTL_2	0x05070600 /* 0x190 */
-#define CONFIG_DDR_SDRAM_MODE_9	0x00000400 /* 0x220 */
-#define CONFIG_DDR_SDRAM_MODE_10	0x04000000 /* 0x224 */
-#define CONFIG_TIMING_CFG_8		0x03115600 /* 0x250 */
-#define CONFIG_DDRCDR_1		0x80040000 /* 0xb28 */
-#define CONFIG_DDRCDR_2		0x0000A181 /* 0xb2c */
+#include "Bitops.h"
+#include "Common.h"
+#include "LS1043aRdb.h"
 
-#define CONFIG_DDR_SDRAM_CFG_MEM_EN	0x80000000
+/* DDR4 fixed timing */
+#define CONFIG_CS0_BNDS            0x0000007f /* 0x000 */
+#define CONFIG_CS0_CONFIG          0x80040322 /* 0x080 */
+#define CONFIG_TIMING_CFG_3        0x010c1000 /* 0x100 */
+#define CONFIG_TIMING_CFG_0        0x91550018 /* 0x104 */
+#define CONFIG_TIMING_CFG_1        0xbbb48c42 /* 0x108 */
+#define CONFIG_TIMING_CFG_2        0x0048C114 /* 0x10c */
+#define CONFIG_DDR_SDRAM_CFG       0x450C0008 /* 0x110 */
+#define CONFIG_DDR_SDRAM_CFG_2     0x00401100 /* 0x114 */
+#define CONFIG_DDR_SDRAM_MODE      0x03010210 /* 0x118 */
+#define CONFIG_DDR_SDRAM_MODE_3    0x00010210 /* 0x200 */
+#define CONFIG_DDR_SDRAM_MODE_5    0x00010210 /* 0x208 */
+#define CONFIG_DDR_SDRAM_MODE_7    0x00010210 /* 0x210 */
+#define CONFIG_DDR_SDRAM_MODE_9    0x00000500 /* 0x220 */
+#define CONFIG_DDR_SDRAM_MODE_10   0x04000000 /* 0x224 */
+#define CONFIG_DDR_SDRAM_MODE_11   0x00000400 /* 0x228 */
+#define CONFIG_DDR_SDRAM_MODE_12   0x04000000 /* 0x22c */
+#define CONFIG_DDR_SDRAM_MODE_13   0x00000400 /* 0x230 */
+#define CONFIG_DDR_SDRAM_MODE_14   0x04000000 /* 0x234 */
+#define CONFIG_DDR_SDRAM_MODE_15   0x00000400 /* 0x238 */
+#define CONFIG_DDR_SDRAM_MODE_16   0x04000000 /* 0x23c */
+#define CONFIG_DDR_SDRAM_INTERVAL  0x18600618 /* 0x124 */
+#define CONFIG_DDR_INIT_DATA       0xDEADBEEF /* 0x128 */
+#define CONFIG_DDR_SDRAM_CLK_CNTL  0x03000000 /* 0x130 */
+#define CONFIG_TIMING_CFG_4        0x00000002 /* 0x160 */
+#define CONFIG_TIMING_CFG_5        0x03401400 /* 0x164 */
+#define CONFIG_TIMING_CFG_7        0x13300000 /* 0x16c */
+#define CONFIG_DDR_ZQ_CNTL         0x8A090705 /* 0x170 */
+#define CONFIG_DDR_WRLVL_CNTL      0x8675F607 /* 0x174 */
+#define CONFIG_DDR_WRLVL_CNTL_2    0x07090800 /* 0x190 */
+#define CONFIG_TIMING_CFG_8        0x02115600 /* 0x250 */
+#define CONFIG_DDRCDR_1            0x80040000 /* 0xb28 */
+#define CONFIG_DDRCDR_2            0x0000A181 /* 0xb2c */
+#define CONFIG_DDR_EOR             0x07100000 /* 0xc00 */ 
+
+#define CONFIG_DDR_SDRAM_CFG_MEM_EN    0x80000000
 
 /**
   DDR memory controller registers

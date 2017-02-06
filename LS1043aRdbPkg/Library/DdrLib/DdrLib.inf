@@ -27,15 +27,15 @@
 
 [LibraryClasses]
   ArmLib
-  IoLib
   BaseMemoryLib
   BaseLib
+  IoLib
   LS1043aSocLib
 
 [Packages]
+  ArmPlatformPkg/ArmPlatformPkg.dec
   EmbeddedPkg/EmbeddedPkg.dec
+  LS1043aRdbPkg/LS1043aRdbPkg.dec
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
-  ArmPlatformPkg/ArmPlatformPkg.dec
-  LS1043aRdbPkg/LS1043aRdbPkg.dec
 

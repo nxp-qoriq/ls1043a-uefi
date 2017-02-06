@@ -538,4 +538,6 @@ VOID SocInit(VOID);
 
 VOID FdtCpuSetup(VOID *Blob, UINTN BlobSize);
 
+INTN TimerInit (VOID);
+
 #endif /* __LS1043A_SOC_H__ */
