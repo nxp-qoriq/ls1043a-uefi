@@ -492,6 +492,7 @@
 !if $(BOOT_VIA_QSPI_FLASH) == TRUE
   gLS1043aRdbTokenSpaceGuid.PcdQspiTest|FALSE
 !endif
+  gLS1043aRdbTokenSpaceGuid.PcdDdrBistTest|FALSE
 
   #
   # PPA specific PCDs

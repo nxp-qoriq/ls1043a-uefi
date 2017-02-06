@@ -224,6 +224,7 @@
   #
   gLS1043aRdbTokenSpaceGuid.PcdDspiTest|FALSE|BOOLEAN|0x0000006D
   gLS1043aRdbTokenSpaceGuid.PcdQspiTest|FALSE|BOOLEAN|0x0000006E
+  gLS1043aRdbTokenSpaceGuid.PcdDdrBistTest|FALSE|BOOLEAN|0x00000049
 
   #
   # PPA specific PCDs

@@ -39,3 +39,5 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
 
+[FixedPcd]
+  gLS1043aRdbTokenSpaceGuid.PcdDdrBistTest

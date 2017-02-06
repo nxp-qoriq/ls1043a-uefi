@@ -126,6 +126,81 @@ DdrRegDump (
   DEBUG((EFI_D_INFO,"\n"));
 }
 
+VOID
+RunBistTest (
+  IN VOID
+  )
+{
+#define BIST_PATTERN1   0xFFFFFFFF
+#define BIST_PATTERN2   0x0
+#define BIST_CR         0x80010000
+#define BIST_CR_EN      0x80000000
+#define BIST_CR_STAT    0x00000001
+#define CTLR_INTLV_MASK 0x20000000
+
+  UINT32 Mtcr = 0, ErrDetect = 0, ErrSbe = 0;
+  UINT32 Timeout = 0;
+  UINT32 Cs0Bnds = 0, Cs1Bnds = 0, Cs2Bnds = 0, Cs3Bnds = 0, Cs0Config = 0;
+
+  struct CcsrDdr *Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
+
+  DEBUG((EFI_D_RELEASE,"Running DDR BIST test..."));
+
+  Cs0Config = MmioReadBe32((UINTN)&Ddr->Cs0Config);
+  if (Cs0Config & CTLR_INTLV_MASK) {
+      Cs0Bnds = MmioReadBe32((UINTN)&Ddr->Cs0Bnds);
+      Cs1Bnds = MmioReadBe32((UINTN)&Ddr->Cs1Bnds);
+      Cs2Bnds = MmioReadBe32((UINTN)&Ddr->Cs2Bnds);
+      Cs3Bnds = MmioReadBe32((UINTN)&Ddr->Cs3Bnds);
+      /* set bnds to non-interleaving */
+      MmioWriteBe32((UINTN)&Ddr->Cs0Bnds, (Cs0Bnds & 0xfffefffe) >> 1);
+      MmioWriteBe32((UINTN)&Ddr->Cs1Bnds, (Cs1Bnds & 0xfffefffe) >> 1);
+      MmioWriteBe32((UINTN)&Ddr->Cs2Bnds, (Cs2Bnds & 0xfffefffe) >> 1);
+      MmioWriteBe32((UINTN)&Ddr->Cs3Bnds, (Cs3Bnds & 0xfffefffe) >> 1);
+  }
+  MmioWriteBe32((UINTN)&Ddr->Mtp1, BIST_PATTERN1);
+  MmioWriteBe32((UINTN)&Ddr->Mtp2, BIST_PATTERN1);
+  MmioWriteBe32((UINTN)&Ddr->Mtp3, BIST_PATTERN2);
+  MmioWriteBe32((UINTN)&Ddr->Mtp4, BIST_PATTERN2);
+  MmioWriteBe32((UINTN)&Ddr->Mtp5, BIST_PATTERN1);
+  MmioWriteBe32((UINTN)&Ddr->Mtp6, BIST_PATTERN1);
+  MmioWriteBe32((UINTN)&Ddr->Mtp7, BIST_PATTERN2);
+  MmioWriteBe32((UINTN)&Ddr->Mtp8, BIST_PATTERN2);
+  MmioWriteBe32((UINTN)&Ddr->Mtp9, BIST_PATTERN1);
+  MmioWriteBe32((UINTN)&Ddr->Mtp10, BIST_PATTERN2);
+  Mtcr = BIST_CR;
+  MmioWriteBe32((UINTN)&Ddr->Mtcr, Mtcr);
+
+  Timeout = 1000;
+
+  while (Timeout > 0 && (Mtcr & BIST_CR_EN)) {
+      MicroSecondDelay(10000);
+      Timeout--;
+      Mtcr = MmioReadBe32((UINTN)&Ddr->Mtcr);
+  }
+  if (Timeout <= 0) {
+      DEBUG((EFI_D_RELEASE,"Timeout\n"));
+  } else {
+      DEBUG((EFI_D_RELEASE,"Done\n"));
+  }
+  ErrDetect = MmioReadBe32((UINTN)&Ddr->ErrDetect);
+  ErrSbe = MmioReadBe32((UINTN)&Ddr->ErrSbe);
+  if (Mtcr & BIST_CR_STAT) {
+      DEBUG((EFI_D_RELEASE,"BIST FAILED!!! \n"));
+  }
+  if (ErrDetect || (ErrSbe & 0xffff)) {
+      DEBUG((EFI_D_RELEASE,"Detected ECC Error!!! \n"));
+  }
+
+  if (Cs0Config & CTLR_INTLV_MASK) {
+      /* restore bnds registers */
+      MmioWriteBe32((UINTN)&Ddr->Cs0Bnds, Cs0Bnds);
+      MmioWriteBe32((UINTN)&Ddr->Cs1Bnds, Cs1Bnds);
+      MmioWriteBe32((UINTN)&Ddr->Cs2Bnds, Cs2Bnds);
+      MmioWriteBe32((UINTN)&Ddr->Cs3Bnds, Cs3Bnds);
+  }
+}
+
 /**
   Function to initialize DDR
  **/
@@ -195,6 +270,9 @@ DramInit (
 
   MmioWriteBe32((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG
                      | CONFIG_DDR_SDRAM_CFG_MEM_EN);
+
+  if (PcdGetBool(PcdDdrBistTest))
+    RunBistTest();
 
   return;
 }

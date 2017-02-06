@@ -16,8 +16,10 @@
 #include <Ddr.h>
 #include <Library/ArmLib.h>
 #include <Library/PcdLib.h>
+#include <Library/PrintLib.h>
 #include <LS1043aRdb.h>
 #include <LS1043aSocLib.h>
+#include <Library/SerialPortLib.h>
 
 UINTN mGlobalVariableBase = 0;
 
@@ -45,6 +47,8 @@ VOID CEntryPoint(
   ArmInvalidateInstructionCache ();
   // Enable Instruction Caches on all cores.
   ArmEnableInstructionCache ();
+
+  SerialPortInitialize ();
 
   TimerInit();
   DramInit();
