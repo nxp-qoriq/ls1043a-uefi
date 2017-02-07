@@ -17,19 +17,19 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 #include <PiDxe.h>
 
-#include <Library/PcdLib.h>
-#include <Library/BaseLib.h>
-#include <Library/HobLib.h>
-#include <Library/UefiLib.h>
-#include <Library/BaseMemoryLib.h>
-#include <Library/MemoryAllocationLib.h>
-#include <Library/DxeServicesTableLib.h>
-#include <Library/UefiBootServicesTableLib.h>
-
-#include <Guid/VariableFormat.h>
 #include <Guid/SystemNvDataGuid.h>
+#include <Guid/VariableFormat.h>
 
-#include <Library/Qspi.h>
+#include <Library/BaseLib.h>
+#include <Library/BaseMemoryLib.h>
+#include <Library/DxeServicesTableLib.h>
+#include <Library/HobLib.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Library/PcdLib.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/UefiLib.h>
+
+#include "QspiDxe.h"
 
 STATIC EFI_EVENT mFvbVirtualAddrChangeEvent;
 STATIC UINTN     mFlashNvStorageVariableBase;

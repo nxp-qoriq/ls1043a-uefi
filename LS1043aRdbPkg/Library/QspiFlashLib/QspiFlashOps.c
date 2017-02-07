@@ -16,11 +16,12 @@
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include <Library/Qspi.h>
 #include <PiDxe.h>
 #include <Library/DxeServicesTableLib.h>
-#include <Library/UefiRuntimeServicesTableLib.h>
-#include <Library/UefiRuntimeLib.h>
+#include <Library/IoLib.h>
+#include <Library/TimerLib.h>
+
+#include "QspiFlashLib.h"
 
 VOID DumpQspiRegs(struct QspiRegs *QspiRegs)
 {

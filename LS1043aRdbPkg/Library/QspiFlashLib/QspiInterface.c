@@ -12,11 +12,13 @@
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
+#include <Uefi.h>
 #include <Library/Qspi.h>
+#include <Library/UefiRuntimeLib.h>
+
+#include "QspiFlashLib.h"
 
 struct QspiFlash *GFlash;
-
-#define QSPI_FLASH_DEVICE_COUNT 1
 
 QSPI_FLASH_DESCRIPTION mQspiDevices[QSPI_FLASH_DEVICE_COUNT] = {
   // FIXME: Add RCW, PBI, FMAN images here when available

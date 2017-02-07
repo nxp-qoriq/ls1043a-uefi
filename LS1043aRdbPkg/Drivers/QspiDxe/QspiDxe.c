@@ -19,8 +19,13 @@ THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
  **/
+#include <Library/BaseMemoryLib.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Library/PcdLib.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/UefiLib.h>
 
-#include <Library/Qspi.h>
+#include "QspiDxe.h"
 
 STATIC EFI_EVENT mQspiVirtualAddrChangeEvent;
 EFI_EVENT EfiExitBootServicesEvent      = (EFI_EVENT)NULL;

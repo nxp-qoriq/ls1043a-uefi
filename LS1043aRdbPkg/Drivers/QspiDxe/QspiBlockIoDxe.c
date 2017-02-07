@@ -15,8 +15,10 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
  **/
 
-#include <Library/Qspi.h>
+#include <Library/BaseMemoryLib.h>
+#include <Library/UefiBootServicesTableLib.h>
 
+#include "QspiDxe.h"
 //
 // BlockIO Protocol function EFI_BLOCK_IO_PROTOCOL.Reset
 //

@@ -16,7 +16,7 @@
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include <Library/Qspi.h>
+#include "QspiFlashLib.h"
 
 /* Read Commands Array */
 static UINT8 ReadCmdsArray[] = {

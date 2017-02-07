@@ -14,7 +14,11 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
  **/
 
-#include <Library/Qspi.h>
+#include <Common.h>
+#include <Library/BaseMemoryLib.h>
+#include <Library/MemoryAllocationLib.h>
+
+#include "QspiDxe.h"
 
   EFI_STATUS
 QspiTest (
