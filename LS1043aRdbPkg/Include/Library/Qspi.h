@@ -40,11 +40,6 @@ typedef struct {
 **/
 
 EFI_STATUS
-QspiPlatformInitialization (
-  VOID
-  );
-
-EFI_STATUS
 QspiPlatformGetDevices (
   OUT QSPI_FLASH_DESCRIPTION   **QspiDevices,
   OUT UINT32                  *Count
@@ -86,6 +81,14 @@ QspiFlashRead (
   OUT VOID *Buf
   );
 
+EFI_STATUS
+QspiFlashWriteNoErase (
+  IN     UINT64     Offset,
+  IN     UINT64     BufferSizeInBytes,
+  IN     CONST VOID *Buffer,
+  OUT    BOOLEAN    *DoErase
+);
+
 /**
   This API write the length bytes of data from inputted memory
   buffer to connected flash memory device starting from specified offset.
@@ -98,7 +101,7 @@ QspiFlashRead (
   @retval EFI_INVALID_PARAMETER 	Input Parameter is invalid.
 **/
 EFI_STATUS
-QspiFlashWrite (
+QspiFlashAlignedWrite (
   IN  UINT64 Offset,
   IN  UINT64 Len,
   IN  CONST VOID *Buf

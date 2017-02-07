@@ -491,6 +491,7 @@
   gLS1043aRdbTokenSpaceGuid.PcdDspiTest|FALSE
 !if $(BOOT_VIA_QSPI_FLASH) == TRUE
   gLS1043aRdbTokenSpaceGuid.PcdQspiTest|FALSE
+  gLS1043aRdbTokenSpaceGuid.PcdQspiSwap|FALSE
 !endif
   gLS1043aRdbTokenSpaceGuid.PcdDdrBistTest|FALSE
 

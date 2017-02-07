@@ -74,8 +74,45 @@ QspiFlashErase (
   return Ret;
 }
 
+INT32
+Swap( UINT8 *Buff, INTN Len)
+{
+  UINTN Index = 0;
+
+  if (0 != (Len % QSPI_FLASH_DATA_ALIGNMENT)) {
+    return -1;
+  }
+
+  switch (QSPI_FLASH_DATA_ALIGNMENT) {
+    case 8:
+      while (Len) {
+        *((UINT64*)(Buff + Index)) = SwapBytes64(*((UINT64*)(Buff + Index)));
+        Index += 8;
+        Len -= 8;
+      }
+      break;
+    case 4:
+      while (Len) {
+        *((UINT32*)(Buff + Index)) = SwapBytes32(*((UINT32*)(Buff + Index)));
+        Index += 4;
+        Len -= 4;
+      }
+      break;
+    case 2:
+      while (Len) {
+        *((UINT16*)(Buff + Index)) = SwapBytes16(*((UINT16*)(Buff + Index)));
+        Index += 2;
+        Len -= 2;
+      }
+      break;
+    default:
+      return 0;
+  }
+  return 0;
+}
+
 EFI_STATUS
-QspiFlashWrite (
+QspiFlashAlignedWrite (
   IN  UINT64 Offset,
   IN  UINT64 Len,
   IN  CONST VOID *Buf
@@ -87,6 +124,9 @@ QspiFlashWrite (
   UINT32 ChunkLen = 1;
   INT32 Ret = -1;
   UINT8 Cmd[SPI_COMMON_FLASH_CMD_LEN];
+  UINT64 BufSize = Len; // Save The input buffer size
+  UINT8  *pBuf = (UINT8*)Buf; // Save The input buffer start address
+  BOOLEAN QspiSwap = FeaturePcdGet(PcdQspiSwap);
 
   /* Consistency Checking */
   if (Offset + Len > GFlash->Size) {
@@ -94,7 +134,14 @@ QspiFlashWrite (
 		Len, GFlash->Size));
     return EFI_INVALID_PARAMETER;
   }
-
+  // Swap The data before writing to QSPI flash
+  if (TRUE == QspiSwap) {
+    Ret = Swap(pBuf, BufSize);
+    if (Ret != EFI_SUCCESS) {
+      DEBUG((EFI_D_ERROR, "%a data swap Failed\n",__FUNCTION__));
+      return Ret;
+    }
+  }
   PageSize = GFlash->PageSize;
 
   Cmd[0] = GFlash->WriteCmd;
@@ -118,12 +165,20 @@ QspiFlashWrite (
 
     Offset += ChunkLen;
   }
+  // If the Input data was swapped before writing, restore it
+  if (TRUE == QspiSwap) {
+    Ret = Swap(pBuf, BufSize);
+    if (Ret != EFI_SUCCESS) {
+      DEBUG((EFI_D_ERROR, "%a data swap Failed\n",__FUNCTION__));
+      return Ret;
+    }
+  }
 
   return Ret;
 }
 
 EFI_STATUS
-QspiFlashRead (
+QspiFlashAlignedRead (
   IN  UINT64 Offset,
   IN  UINT64 Len,
   OUT VOID *Buf
@@ -134,6 +189,9 @@ QspiFlashRead (
   UINT32 RemainLen, ReadLen, ReadAddr;
   INT32 BankSel = 0;
   INT32 Ret = -1;
+  UINT64 BufSize = Len; // Save The input buffer size
+  UINT8  *pBuf = (UINT8*)Buf; // Save The input buffer start address
+  BOOLEAN QspiSwap = FeaturePcdGet(PcdQspiSwap);
 
   /* Consistency Checking */
   if (Offset + Len > GFlash->Size) {
@@ -152,6 +210,13 @@ QspiFlashRead (
     InternalMemCopyMem(Buf, GFlash->MemoryMap + Offset, Len);
     QspiXfer(GFlash->Qspi, 0, NULL, NULL, SPI_COMMON_XFER_MMAP_END);
     QspiReleaseBus(GFlash->Qspi);
+    if (TRUE == QspiSwap) {
+      Ret = Swap(pBuf, BufSize);
+      if (Ret != EFI_SUCCESS) {
+        DEBUG((EFI_D_ERROR, "%a data swap Failed\n",__FUNCTION__));
+        return Ret;
+      }
+    }
     return EFI_SUCCESS;
   }
 
@@ -179,8 +244,276 @@ QspiFlashRead (
     Len -= ReadLen;
     Buf += ReadLen;
   }
-
+  if (TRUE == QspiSwap) {
+    Ret = Swap(pBuf, BufSize);
+    if (Ret != EFI_SUCCESS) {
+      DEBUG((EFI_D_ERROR, "%a data swap Failed\n",__FUNCTION__));
+      return Ret;
+    }
+  }
   return Ret;
+}
+
+EFI_STATUS
+QspiFlashRead (
+  IN     UINTN Offset,
+  IN     UINTN BufferSizeInBytes,
+  OUT VOID  *Buffer
+)
+{
+  EFI_STATUS   Status;
+  // Intermediate Bytes needed to copy for Alignment
+  UINTN        IntBytes = BufferSizeInBytes;
+  UINTN        Alignment = QSPI_FLASH_DATA_ALIGNMENT;
+  UINTN        mask = Alignment - 1;
+  UINT8        TempRead[QSPI_FLASH_DATA_ALIGNMENT] = {0x00,};
+  UINT8        *CopyFrom;
+  UINT8        *CopyTo;
+  UINT8        *pReadData;
+  UINTN        Counter = 0;
+
+  // First Read bytes to make buffer aligned to Byte Ordering defined in MCR
+  if (Offset & mask) {
+    // Read only as much as necessary, so pick the lower of the two numbers
+    IntBytes = Min(BufferSizeInBytes, Alignment - (Offset & mask));
+    // Read the first few to get Read buffer aligned
+    Status = QspiFlashAlignedRead(
+               (Offset & ~mask),
+               ARRAY_SIZE(TempRead),
+               TempRead
+             );
+    if (EFI_ERROR (Status)) {
+      return EFI_DEVICE_ERROR;
+    }
+
+    CopyFrom = (UINT8*)TempRead;
+    CopyFrom += (Offset & mask);
+    CopyTo = (UINT8*)Buffer;
+
+    for (Counter = IntBytes; (0 != Counter); Counter--) {
+      *(CopyTo++) = *(CopyFrom++);
+    }
+
+    Offset += IntBytes; // adjust pointers and counter
+    BufferSizeInBytes -= IntBytes;
+    Buffer += IntBytes;
+
+    if (BufferSizeInBytes == 0) {
+      return EFI_SUCCESS;
+    }
+  }
+
+  pReadData = (UINT8*)Buffer;
+  IntBytes = (BufferSizeInBytes / Alignment) * Alignment;
+
+  if (IntBytes) {
+    // Readout the bytes from Byte Ordered aligned address.
+    // Note we can read number of bytes=Byte Ordering defined
+    // in MCR in one operation
+    Status = QspiFlashAlignedRead(
+               Offset,
+               IntBytes,
+               pReadData
+             );
+    if (EFI_ERROR (Status)) {
+      return EFI_DEVICE_ERROR;
+    }
+  }
+
+  Offset            += IntBytes;
+  BufferSizeInBytes -= IntBytes;
+  pReadData         += IntBytes;
+
+  if (BufferSizeInBytes == 0) {
+    return EFI_SUCCESS;
+  }
+
+  // Now read bytes that are remaining and are less than Byte Ordering.
+  Status = QspiFlashAlignedRead(
+             Offset,
+             ARRAY_SIZE(TempRead),
+             TempRead
+           );
+  if (EFI_ERROR (Status)) {
+    return EFI_DEVICE_ERROR;
+  }
+
+  CopyTo = (UINT8*)pReadData;
+  CopyFrom = (UINT8*)TempRead;
+
+  while (BufferSizeInBytes--) {
+    *(CopyTo++) = *(CopyFrom++);
+  }
+
+  return Status;
+}
+
+/*
+ * The write operation on QSPI flash is changing 1s to 0s
+ * Therefore before each QSPI Write we need to erase (make all 1s) QSPI Block
+ * However if the data we are trying to write is only clearing (making 1 -> 0)
+ * some bits of alrady written data, then we can write that data without erasing
+ * entire Block.
+ *
+ * *DoErase : Boolean, weather we need to erase the block or Not ?
+ */
+EFI_STATUS
+QspiFlashWriteNoErase (
+  IN     UINT64     Offset,
+  IN     UINT64     BufferSizeInBytes,
+  IN     CONST VOID *Buffer,
+  OUT    BOOLEAN    *DoErase
+)
+{
+  EFI_STATUS   Status;
+  // Intermediate Bytes needed to copy for alignment
+  UINTN        IntBytes = BufferSizeInBytes;
+  UINTN        Alignment = QSPI_FLASH_DATA_ALIGNMENT;
+  UINTN        mask = Alignment - 1;
+  UINT8        TempRead[QSPI_FLASH_DATA_ALIGNMENT] = {0x00};
+  UINT8        TempWrite[QSPI_FLASH_DATA_ALIGNMENT] = {0x00};
+  UINT8        *CopyFrom;
+  UINT8        *CopyTo;
+  UINTN        Counter = 0;
+
+  // First Read bytes to make buffer aligned to Byte Ordering
+  if (Offset & mask) {
+    // Read only as much as necessary, so pick the lower of the two numbers
+    IntBytes = Min(BufferSizeInBytes, Alignment - (Offset & mask));
+    // Read the first few to get Read buffer aligned
+    Status = QspiFlashRead(
+               (Offset & ~mask),
+               ARRAY_SIZE(TempRead),
+               TempRead
+             );
+    if (EFI_ERROR (Status)) {
+      DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to Read from Offset 0x%x Status=%d\n",
+             __FUNCTION__, (Offset & ~mask), Status));
+      return Status;
+    }
+
+    CopyTo = (UINT8*)TempRead;
+    CopyTo += (Offset & mask);
+    CopyFrom = (UINT8*)Buffer;
+
+    for (Counter = IntBytes; (0 != Counter); Counter--) {
+      // Check to see if we are only changing bits to zero.
+      if ((*CopyTo ^ *CopyFrom) & *CopyFrom) {
+        *DoErase = TRUE;
+        return EFI_SUCCESS;
+      }
+
+      *(CopyTo++) = *(CopyFrom++);
+    }
+
+    Status = QspiFlashAlignedWrite (
+               (Offset & ~mask),
+               ARRAY_SIZE(TempRead),
+               TempRead
+             );
+    if (EFI_ERROR(Status)) {
+      DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to Write @ Offset 0x%x Status=%d\n",
+             __FUNCTION__, (Offset & ~mask), Status));
+      return Status;
+    }
+
+    Offset            += IntBytes; // adjust pointers and counter
+    BufferSizeInBytes -= IntBytes;
+    Buffer            += IntBytes;
+
+    if (BufferSizeInBytes == 0) {
+      *DoErase = FALSE;
+      return EFI_SUCCESS;
+    }
+  }
+
+  IntBytes = (BufferSizeInBytes / Alignment) * Alignment;
+
+  while (IntBytes) {
+    CopyMem(TempWrite, Buffer, ARRAY_SIZE(TempWrite));
+    // Readout the bytes from Byte Ordered aligned address.
+    // Note we can read number of bytes=Byte Ordering defined
+    // in MCR in one operation
+    Status = QspiFlashRead(
+               Offset,
+               ARRAY_SIZE(TempRead),
+               TempRead
+             );
+
+    if (EFI_ERROR (Status)) {
+      DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to Read from Offset 0x%x Status=%d\n",
+             __FUNCTION__, Offset, Status));
+      return Status;
+    }
+
+    // Check to see if we are only changing bits to zero.
+    for (Counter = 0; Counter < ARRAY_SIZE(TempWrite); Counter++) {
+      if ((TempRead[Counter] ^ TempWrite[Counter]) & TempWrite[Counter]) {
+        *DoErase = TRUE;
+        return EFI_SUCCESS;
+      }
+    }
+
+    Status = QspiFlashAlignedWrite (
+               Offset,
+               ARRAY_SIZE(TempWrite),
+               TempWrite
+             );
+    if (EFI_ERROR(Status)) {
+      DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to Write @ Offset 0x%x Status=%d\n",
+             __FUNCTION__, Offset, Status));
+      return Status;
+    }
+
+    // Adjust Pointers and counters
+    Offset            += ARRAY_SIZE(TempWrite);
+    BufferSizeInBytes -= ARRAY_SIZE(TempWrite);
+    Buffer            += ARRAY_SIZE(TempWrite);
+    IntBytes          -= ARRAY_SIZE(TempWrite);
+  }
+
+  if (BufferSizeInBytes == 0) {
+    *DoErase = FALSE;
+    return EFI_SUCCESS;
+  }
+
+  // Now read bytes that are remaining and are less than Byte Ordering.
+  Status = QspiFlashRead(
+             Offset,
+             ARRAY_SIZE(TempRead),
+             TempRead
+           );
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to Read from Offset 0x%x Status=%d\n",
+           __FUNCTION__, Offset, Status));
+    return Status;
+  }
+
+  CopyFrom = (UINT8*)Buffer;
+  CopyTo = (UINT8*)TempRead;
+
+  while (BufferSizeInBytes--) {
+    // Check to see if we are only changing bits to zero.
+    if ((*CopyTo ^ *CopyFrom) & *CopyFrom) {
+      *DoErase = TRUE;
+      return EFI_SUCCESS;
+    }
+
+    *(CopyTo++) = *(CopyFrom++);
+  }
+
+  Status = QspiFlashAlignedWrite (
+             Offset,
+             ARRAY_SIZE(TempRead),
+             TempRead
+           );
+  if (EFI_ERROR(Status)) {
+    DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to Write @ Offset 0x%x Status=%d\n",
+           __FUNCTION__, Offset, Status));
+    return EFI_SUCCESS;
+  }
+
+  return EFI_SUCCESS;
 }
 
 VOID
@@ -233,23 +566,6 @@ QspiDetect(
   GFlash = New;
 
   return EFI_SUCCESS;
-}
-
-  EFI_STATUS
-QspiPlatformInitialization (
-    VOID
-    )
-{
-  EFI_STATUS  Status;
-
-  Status = QspiDetect();
-
-  if (EFI_ERROR(Status)) {
-    DEBUG((EFI_D_ERROR, "Qspi Initialization Failure: Status: %x\n", Status));
-    return Status;
-  }
-
-  return Status;
 }
 
   EFI_STATUS

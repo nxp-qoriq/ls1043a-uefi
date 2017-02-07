@@ -47,5 +47,6 @@
   LS1043aRdbPkg/LS1043aRdbPkg.dec
 
 [Pcd.common]
+  gLS1043aRdbTokenSpaceGuid.PcdQspiSwap
   gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64
   gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64
