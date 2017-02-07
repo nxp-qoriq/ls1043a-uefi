@@ -563,6 +563,12 @@
 
   gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x10010000
 
+  # Soc Specific Erratum Pcds
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA008550|TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009660|TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009663|TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009442|TRUE
+
 ################################################################################
 #
 # Components Section - list of all EDK II Modules needed by this Platform

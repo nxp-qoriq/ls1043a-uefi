@@ -41,3 +41,7 @@
 
 [FixedPcd]
   gLS1043aRdbTokenSpaceGuid.PcdDdrBistTest
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA008550
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009660
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009663
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009442

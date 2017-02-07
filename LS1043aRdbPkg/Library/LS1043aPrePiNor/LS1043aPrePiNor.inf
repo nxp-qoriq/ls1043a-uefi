@@ -42,9 +42,10 @@
 	gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase
 	gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress
 	gLS1043aRdbTokenSpaceGuid.PcdPiFdSize
-  gArmTokenSpaceGuid.PcdFdBaseAddress
-  gArmTokenSpaceGuid.PcdFdSize
-  gArmTokenSpaceGuid.PcdSystemMemoryBase
-  gArmTokenSpaceGuid.PcdSystemMemorySize
+	gArmTokenSpaceGuid.PcdFdBaseAddress
+	gArmTokenSpaceGuid.PcdFdSize
+	gArmTokenSpaceGuid.PcdSystemMemoryBase
+	gArmTokenSpaceGuid.PcdSystemMemorySize
 	gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize
-  gArmTokenSpaceGuid.PcdFvBaseAddress
+	gArmTokenSpaceGuid.PcdFvBaseAddress
+	gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA008550

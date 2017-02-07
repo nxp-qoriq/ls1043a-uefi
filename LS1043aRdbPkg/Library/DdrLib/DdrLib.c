@@ -201,6 +201,104 @@ RunBistTest (
   }
 }
 
+UINT64
+GetDdrFreq (
+  IN  VOID
+  )
+{
+  UINT64 DdrClk = 0;
+
+  DdrClk = CONFIG_DDR_CLK_FREQ;
+
+  return DdrClk * 16;
+}
+
+VOID
+FixCpoValue (
+  IN  VOID
+  )
+{
+
+  struct CcsrDdr *Ddr;
+  Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
+
+  UINT32 Value, Lane0, Lane1, Debug29, DesiredValue;
+  UINT32 Cfg, I, Temp, Lanes, DdrType;
+  BOOLEAN NeedUpdate = FALSE, EccUsed = FALSE;
+
+  UINT32 Min = MmioReadBe32((UINTN)&Ddr->Debug[9]) >> 24;
+  UINT32 Max = Min;
+
+  Cfg = MmioReadBe32((UINTN)&Ddr->SdramCfg);
+  if (Cfg & SDRAM_16_BE)
+    Lanes = 2;
+  else if (Cfg & SDRAM_32_BE)
+    Lanes = 4;
+  else
+    Lanes = 8;
+
+  if (Cfg & SDRAM_ECC_EN)
+    EccUsed = TRUE;
+
+  DdrType = (Cfg & SDRAM_TYPE_MASK) >> SDRAM_TYPE_SHIFT;
+
+  DEBUG((EFI_D_INFO, "EccUsed %d DdrType %d \n", EccUsed, DdrType));
+
+  /* determine max and min CPO values */
+  for (I = 9; I < 9 + Lanes / 2; I++) {
+    Value = MmioReadBe32((UINTN)&Ddr->Debug[I]);
+    Lane0 = Value >> 24;
+    Lane1 = (Value >> 8) & 0xff;
+
+    Temp = Max(Lane0, Lane1);
+    if (Temp > Max)
+      Max = Temp;
+
+    Temp = Min(Lane0, Lane1);
+    if (Temp < Min)
+      Min = Temp;
+  }
+
+  if (EccUsed) {
+    Value = MmioReadBe32((UINTN)&Ddr->Debug[13]);
+    Value = Value >> 24;
+
+    if (Value > Max)
+      Max = Value;
+
+    if (Value < Min)
+      Min = Value;
+  }
+
+  DEBUG((EFI_D_INFO, "Max = 0x%x, Min = 0x%x\n", Max, Min));
+
+  Debug29 = MmioReadBe32((UINTN)&Ddr->Debug[28]) & 0xff;
+  DesiredValue = ((Max + Min) >> 1) + 0x27;
+
+  if (DdrType == DDR4)
+         NeedUpdate = (Min + 0x3b) < Debug29 ? TRUE : FALSE;
+  else if (DdrType == DDR3)
+         NeedUpdate = (Min + 0x3f) < Debug29 ? TRUE : FALSE;
+
+  DEBUG((EFI_D_INFO, "DesiredValue = 0x%x, Debug29 = 0x%x, NeedUpdate %d\n",
+					DesiredValue, Debug29, NeedUpdate));
+
+  if (NeedUpdate) {
+    MmioWriteBe32((UINTN)&Ddr->Debug[28], DesiredValue);
+    DEBUG((EFI_D_INFO, "Debug29 = 0x%x\n", MmioReadBe32((UINTN)&Ddr->Debug[28]) & 0xff));
+  }
+}
+
+VOID
+ErratumA009660 (
+  IN  VOID
+  )
+{
+  UINTN ScfgReg = 0x0157020C;
+
+  MmioWriteBe32(ScfgReg, 0x63B20042);
+}
+
 /**
   Function to initialize DDR
  **/
@@ -211,6 +309,10 @@ DramInit (
   struct CcsrDdr *Ddr;
   Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
 
+  if (PcdGetBool(PcdDdrErratumA009660))
+     ErratumA009660();
+
+  MmioWriteBe32((UINTN)&Ddr->Eor, CONFIG_DDR_EOR);
 
   MmioWriteBe32((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG);
 
@@ -246,7 +348,11 @@ DramInit (
   MmioWriteBe32((UINTN)&Ddr->SdramMode15, CONFIG_DDR_SDRAM_MODE_15);
   MmioWriteBe32((UINTN)&Ddr->SdramMode16, CONFIG_DDR_SDRAM_MODE_16);
 
-  MmioWriteBe32((UINTN)&Ddr->SdramInterval, CONFIG_DDR_SDRAM_INTERVAL);
+  if (PcdGetBool(PcdDdrErratumA009663))
+    MmioWriteBe32((UINTN)&Ddr->SdramInterval, CONFIG_DDR_SDRAM_INTERVAL & ~SDRAM_INTERVAL_BSTOPRE);
+  else
+    MmioWriteBe32((UINTN)&Ddr->SdramInterval, CONFIG_DDR_SDRAM_INTERVAL);
+
   MmioWriteBe32((UINTN)&Ddr->SdramDataInit, CONFIG_DDR_INIT_DATA);
 
   MmioWriteBe32((UINTN)&Ddr->DdrWrlvlCntl, CONFIG_DDR_WRLVL_CNTL);
@@ -265,11 +371,32 @@ DramInit (
 
   MmioWriteBe32((UINTN)&Ddr->Cs0Config2, 0);
 
+  if (PcdGetBool(PcdDdrErratumA009442)) {
+    UINT64 DdrFreq = GetDdrFreq() / 1000000;
+    UINT32 Temp = 0;
+
+    Temp = MmioReadBe32((UINTN)&Ddr->Debug[28]);
+
+    if (DdrFreq <= 1333)
+      MmioWriteBe32((UINTN)&Ddr->Debug[28], Temp | 0x0080006a);
+    else if (DdrFreq <= 1600)
+      MmioWriteBe32((UINTN)&Ddr->Debug[28], Temp | 0x0070006f);
+    else if (DdrFreq <= 1867)
+      MmioWriteBe32((UINTN)&Ddr->Debug[28], Temp | 0x00700076);
+    else if (DdrFreq <= 2133)
+      MmioWriteBe32((UINTN)&Ddr->Debug[28], Temp | 0x0060007b);
+  }
 
   MicroSecondDelay(1000);
 
   MmioWriteBe32((UINTN)&Ddr->SdramCfg, CONFIG_DDR_SDRAM_CFG
                      | CONFIG_DDR_SDRAM_CFG_MEM_EN);
+
+  if (PcdGetBool(PcdDdrErratumA009663))
+    MmioWriteBe32((UINTN)&Ddr->SdramInterval, CONFIG_DDR_SDRAM_INTERVAL);
+
+  if (PcdGetBool(PcdDdrErratumA009442))
+    FixCpoValue();
 
   if (PcdGetBool(PcdDdrBistTest))
     RunBistTest();

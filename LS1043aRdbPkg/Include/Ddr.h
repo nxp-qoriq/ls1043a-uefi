@@ -64,6 +64,25 @@
 
 #define CONFIG_DDR_SDRAM_CFG_MEM_EN    0x80000000
 
+#define SDRAM_INTERVAL_BSTOPRE         0x3FFF
+
+/* DDR_EOR register */
+#define DDR_EOR_READ_REOD_DIS          0x07000000
+#define DDR_EOR_WRITE_REOD_DIS         0x00100000
+
+/* DDR_SDRAM_CFG - DDR SDRAM Control Configuration */
+#define SDRAM_DBW_MASK                 0x00180000
+#define SDRAM_DBW_SHIFT                19
+#define SDRAM_32_BE                    0x00080000
+#define SDRAM_16_BE                    0x00100000
+#define SDRAM_8_BE                     0x00040000
+#define SDRAM_ECC_EN                   0x20000000
+#define SDRAM_TYPE_MASK                0x07000000
+#define SDRAM_TYPE_SHIFT               24
+
+#define DDR3                           7
+#define DDR4                           5
+
 /**
   DDR memory controller registers
 **/

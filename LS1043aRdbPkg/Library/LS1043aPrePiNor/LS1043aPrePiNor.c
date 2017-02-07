@@ -31,6 +31,34 @@ VOID CopyImage(UINT8* Dest, UINT8* Src, UINTN Size)
     Dest[Count] = Src[Count];
 }
 
+STATIC VOID ErratumA008550Pre (VOID)
+{
+  struct CcsrCci400 *Base = (struct CcsrCci400 *)CONFIG_SYS_CCI400_ADDR;
+  struct CcsrDdr *Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
+
+  /* disables barrier transactions to DDRC from CCI400 */
+  MmioWrite32((UINTN)&Base->ctrl_ord, CCI400_CTRLORD_TERM_BARRIER);
+
+  /* disable re-ordering in DDR Controller */
+  MmioWriteBe32((UINTN)&Ddr->Eor,
+	DDR_EOR_READ_REOD_DIS | DDR_EOR_WRITE_REOD_DIS);
+}
+
+STATIC VOID ErratumA008550Post(VOID)
+{
+  struct CcsrCci400 *Base = (struct CcsrCci400 *)CONFIG_SYS_CCI400_ADDR;
+  struct CcsrDdr *Ddr = (VOID *)CONFIG_SYS_FSL_DDR_ADDR;
+  UINT32 Temp = 0;
+
+  /* enable barrier transactions to DDRC from CCI400 */
+  MmioWrite32((UINTN)&Base->ctrl_ord, CCI400_CTRLORD_EN_BARRIER);
+
+  /* enable re-ordering in DDR Controller */
+  Temp = MmioReadBe32((UINTN)&Ddr->Eor);
+  Temp &= ~(DDR_EOR_READ_REOD_DIS | DDR_EOR_WRITE_REOD_DIS);
+  MmioWriteBe32((UINTN)&Ddr->Eor, Temp);
+}
+
 VOID CEntryPoint(
   UINTN	UefiMemoryBase,
   UINTN 	UefiNorBase,
@@ -38,6 +66,9 @@ VOID CEntryPoint(
   )
 { 
   VOID	(*PrePiStart)(VOID);
+
+  if (PcdGetBool(PcdDdrErratumA008550))
+    ErratumA008550Pre();
 
   // Data Cache enabled on Primary core when MMU is enabled.
   ArmDisableDataCache ();
@@ -53,8 +84,11 @@ VOID CEntryPoint(
   TimerInit();
   DramInit();
 
+  if (PcdGetBool(PcdDdrErratumA008550))
+    ErratumA008550Post();
+
   CopyImage((VOID*)UefiMemoryBase, (VOID*)UefiNorBase, UefiMemorySize);
 
   PrePiStart = (VOID (*)())((UINT64)PcdGet64(PcdFvBaseAddress));
   PrePiStart();
-}        
+}

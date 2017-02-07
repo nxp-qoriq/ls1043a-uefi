@@ -232,3 +232,9 @@
   gLS1043aRdbTokenSpaceGuid.PcdPpaQspiBaseAddr|0x0|UINT64|0x0000006F
 
   # Pcd 0x00000070 has been used by FMan
+
+  # Errata Pcds
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA008550|FALSE|BOOLEAN|0x00000071
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009660|FALSE|BOOLEAN|0x00000072
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009663|FALSE|BOOLEAN|0x00000073
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009442|FALSE|BOOLEAN|0x00000074
