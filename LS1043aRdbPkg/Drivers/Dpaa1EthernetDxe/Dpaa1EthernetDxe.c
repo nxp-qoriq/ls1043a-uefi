@@ -1392,14 +1392,21 @@ Dpaa1NotifyExitBootServices (
   VOID      *Context
   )
 {
+  EFI_HANDLE ImageHandle = NULL;
+  EFI_STATUS Status = EFI_SUCCESS;
+
   ASSERT(Event == gDpaa1Driver.ExitBootServicesEvent);
   ASSERT(gDpaa1Driver.ExitBootServicesEvent != NULL);
 
   DPAA1_DEBUG_MSG("************ %a() called (Event: 0x%x, Context: 0x%p)\n",
                   __func__, Event, Context);
 
-  if (gDpaa1Driver.FmanStatus == EFI_SUCCESS)
+  if (gDpaa1Driver.FmanStatus == EFI_SUCCESS) {
     DestroyAllDpaa1NetworkInterfaces();
+    Status = Dpaa1EthernetUnload(ImageHandle);
+    if (EFI_ERROR(Status))
+      DPAA1_ERROR_MSG("Dpaa1EthernetUnload Failed \n");
+  }
 }
 
 
