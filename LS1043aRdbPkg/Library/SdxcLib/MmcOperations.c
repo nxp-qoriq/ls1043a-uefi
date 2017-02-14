@@ -600,26 +600,50 @@ MmcSendOpCondCmdIter (
 )
 {
   EFI_STATUS Status;
+  INT32 RetryCount;
 
   Cmd->CmdIdx = EMMC_CMD_SEND_OP_COND;
   Cmd->RespType = MMC_RSP_R3;
   Cmd->CmdArg = 0;
-  if (UseArg && !IsSpi(Mmc)) {
-    Cmd->CmdArg =
-           (Mmc->Cfg->Voltages &
-           (Mmc->Ocr & OCR_VOLTAGE_MASK)) |
-           (Mmc->Ocr & OCR_ACCESS_MODE);
 
-    if (Mmc->Cfg->HostCaps & MMC_MODE_HC)
-      Cmd->CmdArg |= OCR_HCS;
+  /* As per the section 'A.6.1 Bus initialization' of eMMC specification 4.5,
+   * send CMD1 till Ocr comes out of busy state. Setting a upper limit of 100 
+   * retries to avoid system hangup for faulty cards. If Ocr is still busy 
+   * after 100 retries, it indicates hardware detection failure.
+   */
+
+  for (RetryCount = 100; RetryCount; RetryCount--) {
+    if (UseArg && !IsSpi(Mmc)) {
+      Cmd->CmdArg =
+             (Mmc->Cfg->Voltages &
+             (Mmc->Ocr & OCR_VOLTAGE_MASK)) |
+             (Mmc->Ocr & OCR_ACCESS_MODE);
+
+      if (Mmc->Cfg->HostCaps & MMC_MODE_HC)
+        Cmd->CmdArg |= OCR_HCS;
+    }
+
+    Status = SendCmd(Cmd, NULL);
+    if (Status)
+      break;
+
+    /* For probe case (UseArg == 0), we just need to read the Ocr value. We 
+     * use the value of Ocr for successive calls to this function. 
+     */
+    if (UseArg == 0)
+      break;
+ 
+    /* Exit if Not Busy (Ocr busy bit is set to LOW if the Device has not 
+     * finished the power up routine) 
+     */
+    if (Cmd->Response[0] & OCR_BUSY)
+      break;
+
+    MicroSecondDelay (10000);
   }
-  Status = SendCmd(Cmd, NULL);
-
-  if (Status)
-    return Status;
 
   Mmc->Ocr = Cmd->Response[0];
-  return EFI_SUCCESS;
+  return RetryCount ? Status : EFI_TIMEOUT;
 }
 
 EFI_STATUS
@@ -631,7 +655,14 @@ MmcSendOpCondCmd (
   EFI_STATUS Status;
   INT32 I;
 
-  /* Some Cards Seem To Need This */
+  /*
+   * Reset the MMC/SD cards to idle state and Asks all MMC and SD Memory cards
+   * in idle state to send their operation conditions register contents in the
+   * response on the CMD line.
+   * Please refer to section 'A.6.1 Bus initialization' of eMMC specification 
+   * 4.5 for details
+   */
+   
   SdxcGoIdle(Mmc);
 
   /* Asking To The Card Its Capabilities */
@@ -640,11 +671,16 @@ MmcSendOpCondCmd (
     if (Status)
       return Status;
 
-    /* Exit if Not Busy (Flag Seems To Be Inverted) */
+    /* Exit if Not Busy (Ocr busy bit is set to LOW if the Device has not 
+     * finished the power up routine) 
+     */
+
     if (Mmc->Ocr & OCR_BUSY)
-      return EFI_SUCCESS;
+      break;
   }
-  return EFI_ALREADY_STARTED;
+
+  gMmc->OpCondPending = 1;
+  return EFI_SUCCESS;
 }
 
 EFI_STATUS
@@ -682,8 +718,11 @@ SdStartInit (
   /* Reset The Card */
   Status = SdxcGoIdle(gMmc);
 
-  if (Status)
+  if (Status) {
+    DEBUG((EFI_D_ERROR, "SdStartInit: Unable to Reset the Card. Status:0x%lx\n",
+          Status));
     return Status;
+  }
 
   /* The Internal Partition Reset To User Partition(0) At Every CMD0*/
   gMmc->PartNum = 0;
@@ -697,15 +736,14 @@ SdStartInit (
   /* if command results EFI_TIMEOUT, check for MMC card */
   if (Status == EFI_TIMEOUT) {
     Status = MmcSendOpCondCmd(gMmc);
-    if (Status && Status != EFI_ALREADY_STARTED)
-      DEBUG((EFI_D_ERROR, "Card did not respond to voltage select! \n"));
-    else
-      gMmc->OpCondPending = 1;
+    if (EFI_ERROR(Status)) {
+      DEBUG((EFI_D_ERROR, "Card did not respond to voltage select! "
+            "Status:0x%lx\n",Status));
+      return EFI_UNSUPPORTED;
+    }
+  }
 
-    if (Status == EFI_ALREADY_STARTED)
-      gMmc->InitInProgress = 1;
-
-  } else if (!Status)
+  if (!Status)
       gMmc->InitInProgress = 1;
 
   return Status;
@@ -755,29 +793,26 @@ SdxcCompleteOpCond (
 {
   struct SdCmd Cmd;
   EFI_STATUS Status;
-  INT32 TimeoutCount = 20;
 
   Mmc->OpCondPending = 0;
 
+  /* OpCondPending is set for eMMC cards. If the Ocr is busy , reset the 
+   * card (CMD0) and ask for their operation conditions (CMD1). 
+   */
+
   if (!(Mmc->Ocr & OCR_BUSY)) {
     /*
-     * Reset the MMC/SD cards to idle state and Asks all MMC and SD Memory cards in
-     * idle state to send their operation conditions register contents in the 
+     * Reset the MMC/SD cards to idle state and Asks all MMC and SD Memory cards
+     * in idle state to send their operation conditions register contents in the
      * response on the CMD line.
-     * Please refer to section 'A.6.1 Bus initialization' of eMMC specification 4.5 for details
+     * Please refer to section 'A.6.1 Bus initialization' of eMMC specification 
+     * 4.5 for details
      */
-    
+     
     SdxcGoIdle(gMmc);
-    while (1) {
-      Status = MmcSendOpCondCmdIter(Mmc, &Cmd, 1);
-      if (Status)
-        return Status;
-      if (Mmc->Ocr & OCR_BUSY)
-        break;
-      if (--TimeoutCount <=0 )
-        return EFI_TIMEOUT;
-      MicroSecondDelay(100);
-    }
+    Status = MmcSendOpCondCmdIter(Mmc, &Cmd, 1);
+    if (Status)
+      return Status;
   }
 
   if (IsSpi(Mmc)) { /* Read OCR for Spi */
@@ -1085,6 +1120,7 @@ MmcChangeFreq (
   EFI_STATUS Status;
   UINT8 *Scr = NULL;
   struct DmaData ExtCsd;
+  UINT32 SwitchCmdTimeOut;
 
   ExtCsd.Bytes=MMC_MAX_BLOCK_LEN;
   Mmc->CardCaps = MMC_MODE_4_BIT | MMC_MODE_8_BIT;
@@ -1110,12 +1146,17 @@ MmcChangeFreq (
   if (Status)
     goto FreeMem;
 
+  SwitchCmdTimeOut = Scr[GENERIC_CMD6_TIME]; 
+
   Status = MmcSwitch(Mmc, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
 
   if (Status) {
     Status = (Status == EFI_NO_RESPONSE) ? 0 : Status;
     goto FreeMem;
   }
+
+  /* Time is expressed in units of 10-milliseconds */
+  MicroSecondDelay (10*1000*SwitchCmdTimeOut);
 
   /* Now Check To See That It Worked */
   Status = SendExtCsd(Mmc, Scr);
@@ -1550,11 +1591,18 @@ SdxcCompleteInit (
   )
 {
   EFI_STATUS Status = EFI_SUCCESS;
-  if (Mmc->OpCondPending)
+  
+  if (Mmc->OpCondPending) {
     Status = SdxcCompleteOpCond(Mmc);
+    if (EFI_ERROR(Status))
+      DEBUG((EFI_D_ERROR, "SdxcCompleteOpCond Failed.\n"));
+  }
 
-  if (Status == EFI_SUCCESS)
+  if (Status == EFI_SUCCESS) {
     Status = SdxcStartup(Mmc);
+    if (EFI_ERROR(Status))
+      DEBUG((EFI_D_ERROR, "SdxcStartup Failed. \n"));
+  }
 
   if (Status)
     Mmc->HasInit = 0;
@@ -1575,11 +1623,17 @@ MmcInit (
   if (Mmc->HasInit)
     return EFI_SUCCESS;
 
-  if (!Mmc->InitInProgress)
+  if (!Mmc->InitInProgress) {
     Status = SdStartInit();
+    if (EFI_ERROR(Status))
+      DEBUG((EFI_D_ERROR, "SdStartInit Failed. Status:0x%lx \n",Status));
+  }
 
-  if (!Status || Status == EFI_ALREADY_STARTED)
+  if (!Status) {
     Status = SdxcCompleteInit(Mmc);
+    if (EFI_ERROR(Status))
+      DEBUG((EFI_D_ERROR, "SdxcCompleteInit Failed. Status:0x%lx \n",Status));
+  }
 
   return Status;
 }

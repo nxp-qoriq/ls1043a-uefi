@@ -417,11 +417,13 @@ SdxcSendCmd (
 
   if (Irqstat & CMD_ERR) {
     Status = EFI_DEVICE_ERROR;
+    DEBUG((EFI_D_ERROR, "SdxcSendCmd: Device Error for Cmd(%d)\n",Cmd->CmdIdx));
     goto Out;
   }
 
   if (Irqstat & IRQSTATE_CTOE) {
     Status = EFI_TIMEOUT;
+    DEBUG((EFI_D_ERROR, "SdxcSendCmd: Timeout for Cmd(%d)\n",Cmd->CmdIdx));
     goto Out;
   }
 
