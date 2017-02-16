@@ -745,7 +745,7 @@ PciRbInitialize (
 
   Protocol->Configuration  = RootBridgeIoConfiguration;
 
-  Protocol->SegmentNumber  = 0;
+  Protocol->SegmentNumber  = HostNo;
 
   Status = gBS->LocateProtocol (&gEfiMetronomeArchProtocolGuid, NULL, (VOID **)&mMetronome);
   DEBUG ((EFI_D_INFO, "PCI : Locate MetronomeArch protocol\n"));
