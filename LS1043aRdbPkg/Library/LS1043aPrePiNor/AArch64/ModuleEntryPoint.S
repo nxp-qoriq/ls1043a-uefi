@@ -14,7 +14,6 @@
 #include <AutoGen.h>
 #include <AsmMacroIoLibV8.h>
 #include <Library/PcdLib.h>
-#inculde <Ddr.h>
 
 #define CONFIG_OCRAM1_BASE_ADDR           0x10000000
 #define CONFIG_OCRAM_END                  0x10020000
@@ -28,8 +27,6 @@
 GCC_ASM_EXPORT(_ModuleEntryPoint)
 
 StartupAddr:        .8byte ASM_PFX(CEntryPoint)
-DramInitAddr:				.8byte ASM_PFX(DramInit)
-RelocAddr:          .8byte FixedPcdGet64(PcdFdBaseAddress)
 
 ClearOcramEccErr:
        /* OCRAM1/2 ECC status bit */

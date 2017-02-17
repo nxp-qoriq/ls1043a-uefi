@@ -503,10 +503,6 @@
   gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize|0x8000000 # (128MB)
   gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000
 
-!if $(TARGET) == DEBUG
-  gArmTokenSpaceGuid.PcdDdrInitialize|FALSE
-!endif
-
   # Size of the region used by UEFI in permanent memory (Reserved 16MB)
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x02000000
 

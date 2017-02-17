@@ -32,7 +32,6 @@ GCC_ASM_IMPORT(_gPcd_FixedAtBuild_PcdArmPrimaryCoreMask)
 GCC_ASM_IMPORT(_gPcd_FixedAtBuild_PcdCoreCount)
 
 
-DramInitAddr:	.8byte ASM_PFX(DramInit)
 //UINTN
 //ArmPlatformIsPrimaryCore (
 //  IN UINTN MpId

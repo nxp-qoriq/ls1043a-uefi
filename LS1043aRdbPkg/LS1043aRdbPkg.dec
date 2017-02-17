@@ -114,9 +114,6 @@
   gArmPlatformTokenSpaceGuid.DUartClkInHz|0x0|UINT32|0x00000024
   gArmPlatformTokenSpaceGuid.DUartInteger|0x0|UINT32|0x00000025
 
-  ## Ddr
-  gArmTokenSpaceGuid.PcdDdrInitialize|FALSE|BOOLEAN|0x00000026
-  
   #
   # LS1043a Soc Specific PCDs
   #
@@ -240,3 +237,5 @@
   gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009442|FALSE|BOOLEAN|0x00000074
 
   gLS1043aRdbTokenSpaceGuid.PcdQspiSwap|FALSE|BOOLEAN|0x00000075
+
+  # Pcd 0x00000026 is available for use
