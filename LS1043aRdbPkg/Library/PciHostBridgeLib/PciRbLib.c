@@ -115,7 +115,8 @@ RootBridgeIoMemRW (
   }
 
   if ((Address < CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF) ||
-      (Address >= (CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF + CONFIG_SYS_LS_PCIE_MEM_SIZE)) {
+      (Address >= ((UINT32)CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF +
+                   CONFIG_SYS_LS_PCIE_MEM_SIZE))) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -254,7 +255,8 @@ RootBridgeIoPciRW (
   }
 
   if ((Address < CONFIG_SYS_LS_PCIE_IO_PHYS_OFF) ||
-      (Address >= (CONFIG_SYS_LS_PCIE_IO_PHYS_OFF + CONFIG_SYS_LS_PCIE_IO_SIZE)) {
+      (Address >= ((UINT32)CONFIG_SYS_LS_PCIE_IO_PHYS_OFF +
+                   CONFIG_SYS_LS_PCIE_IO_SIZE))) {
     return EFI_INVALID_PARAMETER;
   }
 
