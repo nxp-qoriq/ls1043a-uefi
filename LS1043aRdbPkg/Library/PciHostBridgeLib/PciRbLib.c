@@ -110,9 +110,14 @@ RootBridgeIoMemRW (
     return Status;
   }
 
+  if ((Address < CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF) ||
+      (Address >= (CONFIG_SYS_LS_PCIE_MEM_PHYS_OFF + CONFIG_SYS_LS_PCIE_MEM_SIZE)) {
+    return EFI_INVALID_PARAMETER;
+  }
+
   PrivateData = DRIVER_INSTANCE_FROM_PCI_ROOT_BRIDGE_IO_THIS(This);
 
-  Address = PrivateData -> MemTranslation + Address;
+  Address += PrivateData->PciBaseAddress64;
 
   InStride = mInStride[Width];
   OutStride = mOutStride[Width];
@@ -243,6 +248,11 @@ RootBridgeIoPciRW (
   Status = RootBridgeIoCheckParameter (This, PciOperation, Width, Address, Count, Buffer);
   if (EFI_ERROR (Status)) {
     return Status;
+  }
+
+  if ((Address < CONFIG_SYS_LS_PCIE_IO_PHYS_OFF) ||
+      (Address >= (CONFIG_SYS_LS_PCIE_IO_PHYS_OFF + CONFIG_SYS_LS_PCIE_IO_SIZE)) {
+    return EFI_INVALID_PARAMETER;
   }
 
   PciRbAddr = (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_PCI_ADDRESS*) &Address;

@@ -680,32 +680,30 @@ PciRbInitialize (
   }
 
   if (HostNo == 1) {
-    if (PcdGet64 (PcdPci1ExpressBaseAddress) == 0) {
+    PrivateData->PciBaseAddress64 = PcdGet64 (PcdPci1ExpressBaseAddress); 
+    if (!PrivateData->PciBaseAddress64) {
       DEBUG ((EFI_D_ERROR, "%a: PCI 1 host bridge not present\n", __FUNCTION__));
       return EFI_ABORTED;
     }
 
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
-    PrivateData->MemTranslation = PcdGet64 (PcdPci1MemTranslation);
   } else if (HostNo == 2 ) { 
-    if (PcdGet64 (PcdPci2ExpressBaseAddress) == 0) {
+    PrivateData->PciBaseAddress64 = PcdGet64 (PcdPci2ExpressBaseAddress); 
+    if (!PrivateData->PciBaseAddress64) {
       DEBUG ((EFI_D_ERROR, "%a: PCI 2 host bridge not present\n", __FUNCTION__));
       return EFI_ABORTED;
     }
 
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
-    PrivateData->MemTranslation = PcdGet64 (PcdPci2MemTranslation);
   } else if (HostNo == 3 ) { 
-    if (PcdGet64 (PcdPci3ExpressBaseAddress) == 0) {
+    PrivateData->PciBaseAddress64 = PcdGet64 (PcdPci3ExpressBaseAddress); 
+    if (!PrivateData->PciBaseAddress64) {
       DEBUG ((EFI_D_ERROR, "%a: PCI 3 host bridge not present\n", __FUNCTION__));
       return EFI_ABORTED;
     }
 
     PcieSetupCntrl(PrivateData, PrivateData->Pcie, PrivateData->Info);
-    PrivateData->MemTranslation = PcdGet64 (PcdPci3MemTranslation);
   }
-
-  PrivateData->IoTranslation = PcdGet64 (PcdPciIoTranslation);
 
   PrivateData->BusStart  = FixedPcdGet32 (PcdPciBusMin);
   PrivateData->BusLength = FixedPcdGet32 (PcdPciBusMax) - FixedPcdGet32 (PcdPciBusMin) + 1;

@@ -420,14 +420,6 @@
   gArmPlatformTokenSpaceGuid.PcdPciBusMax|255
   gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x00010000
   gArmPlatformTokenSpaceGuid.PcdPciIoSize|0x00010000      # 64k
-  gArmPlatformTokenSpaceGuid.PcdPciIoTranslation|0x00010000
-  gArmPlatformTokenSpaceGuid.PcdPci1Mmio32Base|0x28000000
-  gArmPlatformTokenSpaceGuid.PcdPci2Mmio32Base|0x38000000
-  gArmPlatformTokenSpaceGuid.PcdPci3Mmio32Base|0x30000000
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x08000000
-  gArmPlatformTokenSpaceGuid.PcdPci1MemTranslation|0x4000000000
-  gArmPlatformTokenSpaceGuid.PcdPci2MemTranslation|0x4800000000
-  gArmPlatformTokenSpaceGuid.PcdPci3MemTranslation|0x5000000000
   gArmPlatformTokenSpaceGuid.PcdPci1Mmio64Base|0x4040000000
   gArmPlatformTokenSpaceGuid.PcdPci2Mmio64Base|0x4840000000
   gArmPlatformTokenSpaceGuid.PcdPci3Mmio64Base|0x5040000000

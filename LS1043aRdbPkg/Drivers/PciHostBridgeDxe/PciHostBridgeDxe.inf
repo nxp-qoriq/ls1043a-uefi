@@ -53,14 +53,6 @@
   gArmPlatformTokenSpaceGuid.PcdPciBusMax
   gArmPlatformTokenSpaceGuid.PcdPciIoBase
   gArmPlatformTokenSpaceGuid.PcdPciIoSize 
-  gArmPlatformTokenSpaceGuid.PcdPciIoTranslation
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size 
-  gArmPlatformTokenSpaceGuid.PcdPci1MemTranslation
-  gArmPlatformTokenSpaceGuid.PcdPci2MemTranslation
-  gArmPlatformTokenSpaceGuid.PcdPci3MemTranslation
-  gArmPlatformTokenSpaceGuid.PcdPci1Mmio32Base
-  gArmPlatformTokenSpaceGuid.PcdPci2Mmio32Base
-  gArmPlatformTokenSpaceGuid.PcdPci3Mmio32Base
   gArmPlatformTokenSpaceGuid.PcdPci1Mmio64Base
   gArmPlatformTokenSpaceGuid.PcdPci2Mmio64Base
   gArmPlatformTokenSpaceGuid.PcdPci3Mmio64Base

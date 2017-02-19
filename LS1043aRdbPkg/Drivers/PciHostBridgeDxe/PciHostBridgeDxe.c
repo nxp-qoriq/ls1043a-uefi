@@ -19,10 +19,6 @@
 
 #include <PciHostBridge.h>
 
-#define PCI1_MEM32_BASE     FixedPcdGet64 (PcdPci1Mmio32Base)
-#define PCI2_MEM32_BASE     FixedPcdGet64 (PcdPci2Mmio32Base)
-#define PCI3_MEM32_BASE     FixedPcdGet64 (PcdPci3Mmio32Base)
-#define PCI_MEM32_SIZE      FixedPcdGet64 (PcdPciMmio32Size)
 #define PCI1_MEM64_BASE     FixedPcdGet64 (PcdPci1Mmio64Base)
 #define PCI2_MEM64_BASE     FixedPcdGet64 (PcdPci2Mmio64Base)
 #define PCI3_MEM64_BASE     FixedPcdGet64 (PcdPci3Mmio64Base)
@@ -209,18 +205,15 @@ PciHostBridgeEntryPoint (
 
       if (Loop1 == 0) {
         PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 0;
-        PrivateData[Loop1]->BaseAddress64 = PCI1_MEM64_BASE;
-        PrivateData[Loop1]->BaseAddress32 = PCI1_MEM32_BASE;
+        PrivateData[Loop1]->PciMemBase64 = PCI1_MEM64_BASE;
       }
       if (Loop1 == 1) {
         PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 1;
-        PrivateData[Loop1]->BaseAddress64 = PCI2_MEM64_BASE;
-        PrivateData[Loop1]->BaseAddress32 = PCI2_MEM32_BASE;
+        PrivateData[Loop1]->PciMemBase64 = PCI2_MEM64_BASE;
       }
       if (Loop1 == 2) {
         PrivateData[Loop1]->DevicePath.AcpiDevicePath.UID = 2;
-        PrivateData[Loop1]->BaseAddress64 = PCI3_MEM64_BASE;
-        PrivateData[Loop1]->BaseAddress32 = PCI3_MEM32_BASE;
+        PrivateData[Loop1]->PciMemBase64 = PCI3_MEM64_BASE;
       }
 
       PrivateData[Loop1]->Info = AllocateZeroPool (sizeof(struct LsPcieInfo));
@@ -271,23 +264,6 @@ PciHostBridgeEntryPoint (
       DEBUG ((EFI_D_INFO, "Successfully Installed RootBridgeIo and DevicePath protocols\n"));
       InsertTailList (&HostBridge[Loop1]->Head, &PrivateData[Loop1]->Link);
     }
-  }
-
-  // PCI 32bit Memory Space
-  Status = AddMemorySpace(PCI1_MEM32_BASE, PCI_MEM32_SIZE);
-  if (EFI_ERROR (Status)) {
-    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI1_MEM32\n"));
-    return EFI_DEVICE_ERROR;
-  }
-  Status = AddMemorySpace(PCI2_MEM32_BASE, PCI_MEM32_SIZE);
-  if (EFI_ERROR (Status)) {
-    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI2_MEM32\n"));
-    return EFI_DEVICE_ERROR;
-  }
-  Status = AddMemorySpace(PCI3_MEM32_BASE, PCI_MEM32_SIZE);
-  if (EFI_ERROR (Status)) {
-    DEBUG ((EFI_D_ERROR, "Memory Resource couldn't be added for PCI3_MEM32\n"));
-    return EFI_DEVICE_ERROR;
   }
 
   // PCI 64bit Memory Space
@@ -396,8 +372,8 @@ PciNotifyPhase (
       BitsOfAlignment = HighBitSet64 (RootBridgeInstance->ResAlloc[ResTypeMem32].Alignment) + 1;  // Get the number of '1' in Alignment
       AddrLen = RootBridgeInstance->ResAlloc[ResTypeMem32].Length;
 
-      // Top of the 32bit PCI Memory space
-      BaseAddress = RootBridgeInstance->BaseAddress32 + FixedPcdGet32 (PcdPciMmio32Size);
+      // Top of the 64bit PCI Memory space
+      BaseAddress = RootBridgeInstance->PciMemBase64 + PCI_MEM64_SIZE;
 
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,
@@ -409,9 +385,9 @@ PciNotifyPhase (
                   NULL
                );
 
-      // Ensure the allocation is in the 32bit PCI memory space
-      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->BaseAddress32)) {
-        RootBridgeInstance->ResAlloc[ResTypeMem32].Base   = (UINTN)BaseAddress;
+      // Ensure the allocation is in the 64bit PCI memory space
+      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->PciMemBase64)) {
+        RootBridgeInstance->ResAlloc[ResTypeMem32].Base   = (UINTN)(BaseAddress - RootBridgeInstance->PciBaseAddress64);
       }
     }
 
@@ -419,8 +395,8 @@ PciNotifyPhase (
       BitsOfAlignment = HighBitSet64 (RootBridgeInstance->ResAlloc[ResTypePMem32].Alignment) + 1;  // Get the number of '1' in Alignment
       AddrLen = RootBridgeInstance->ResAlloc[ResTypePMem32].Length;
 
-      // Top of the 32bit PCI Memory space
-      BaseAddress = RootBridgeInstance->BaseAddress32 + FixedPcdGet64 (PcdPciMmio32Size);
+      // Top of the 64bit PCI Memory space
+      BaseAddress = RootBridgeInstance->PciMemBase64 + PCI_MEM64_SIZE;
 
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,
@@ -432,18 +408,18 @@ PciNotifyPhase (
                   NULL
                );
 
-      // Ensure the allocation is in the 32bit PCI memory space
-      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->BaseAddress32)) {
-        RootBridgeInstance->ResAlloc[ResTypePMem32].Base = (UINTN)BaseAddress;
+      // Ensure the allocation is in the 64bit PCI memory space
+      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->PciMemBase64)) {
+        RootBridgeInstance->ResAlloc[ResTypePMem32].Base = (UINTN)(BaseAddress - RootBridgeInstance->PciBaseAddress64);
       }
     }
 
     if (RootBridgeInstance->ResAlloc[ResTypeMem64].Length != 0) {
       BitsOfAlignment = HighBitSet64 (RootBridgeInstance->ResAlloc[ResTypeMem64].Alignment) + 1;  // Get the number of '1' in Alignment
       AddrLen = RootBridgeInstance->ResAlloc[ResTypeMem64].Length;
-
       // Top of the 64bit PCI Memory space
-      BaseAddress = RootBridgeInstance->BaseAddress64 + FixedPcdGet64 (PcdPciMmio64Size);
+      BaseAddress = RootBridgeInstance->PciMemBase64 + PCI_MEM64_SIZE;
+
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,
                   EfiGcdMemoryTypeMemoryMappedIo,
@@ -455,16 +431,16 @@ PciNotifyPhase (
                );
 
       // Ensure the allocation is in the 64bit PCI memory space
-      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->BaseAddress64)) {
-        RootBridgeInstance->ResAlloc[ResTypeMem64].Base   = (UINTN)BaseAddress;
+      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->PciMemBase64)) {
+        RootBridgeInstance->ResAlloc[ResTypeMem64].Base   = (UINTN)(BaseAddress - RootBridgeInstance->PciBaseAddress64);
       }
     }
     if (RootBridgeInstance->ResAlloc[ResTypePMem64].Length != 0) {
       BitsOfAlignment = HighBitSet64 (RootBridgeInstance->ResAlloc[ResTypePMem64].Alignment) + 1;  //Get the number of '1' in Alignment
       AddrLen = RootBridgeInstance->ResAlloc[ResTypePMem64].Length;
-
       // Top of the 64bit PCI Memory space
-      BaseAddress = RootBridgeInstance->BaseAddress64 + FixedPcdGet64 (PcdPciMmio64Size);
+      BaseAddress = RootBridgeInstance->PciMemBase64 + PCI_MEM64_SIZE;
+
       Status = gDS->AllocateMemorySpace (
                   EfiGcdAllocateMaxAddressSearchTopDown,
                   EfiGcdMemoryTypeMemoryMappedIo,
@@ -476,8 +452,8 @@ PciNotifyPhase (
                );
 
       // Ensure the allocation is in the 64bit PCI memory space
-      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->BaseAddress64)) {
-        RootBridgeInstance->ResAlloc[ResTypePMem64].Base   = (UINTN)BaseAddress;
+      if (!EFI_ERROR (Status) && (BaseAddress >= RootBridgeInstance->PciMemBase64)) {
+        RootBridgeInstance->ResAlloc[ResTypePMem64].Base   = (UINTN)(BaseAddress - RootBridgeInstance->PciBaseAddress64);
       }
     }
 
