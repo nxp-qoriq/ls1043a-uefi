@@ -66,6 +66,11 @@ RootBridgeIoCheckParameter (
   IN VOID                                   *Buffer
   )
 {
+  if ((Width >= EfiPciWidthMaximum) || (Width < EfiPciWidthUint8))
+    return EFI_INVALID_PARAMETER;
+  if (NULL == Buffer)
+    return EFI_INVALID_PARAMETER;
+
   return EFI_SUCCESS;
 }
 
@@ -101,7 +106,6 @@ RootBridgeIoMemRW (
   EFI_STATUS                             Status;
   UINT8                                  InStride;
   UINT8                                  OutStride;
-  EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_WIDTH  OperationWidth;
   UINT8                                  *Uint8Buffer;
   PCI_ROOT_BRIDGE_INSTANCE              *PrivateData;
 
@@ -121,10 +125,10 @@ RootBridgeIoMemRW (
 
   InStride = mInStride[Width];
   OutStride = mOutStride[Width];
-  OperationWidth = (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_WIDTH) (Width & 0x03);
+
   for (Uint8Buffer = Buffer; Count > 0; Address += InStride, Uint8Buffer += OutStride, Count--) {
     if (Write) {
-      switch (OperationWidth) {
+      switch (Width) {
         case EfiPciWidthUint8:
           MmioWrite8 ((UINTN)Address, *Uint8Buffer);
           break;
@@ -146,7 +150,7 @@ RootBridgeIoMemRW (
           break;
       }
     } else {
-      switch (OperationWidth) {
+      switch (Width) {
         case EfiPciWidthUint8:
           *Uint8Buffer = MmioRead8 ((UINTN)Address);
           break;
@@ -239,7 +243,6 @@ RootBridgeIoPciRW (
   UINT32					BusDev;
   UINT8                                        InStride;
   UINT8                                        OutStride;
-  EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_WIDTH        OperationWidth;
   UINT8                                        *Uint8Buffer;
   EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_PCI_ADDRESS  *PciRbAddr;
   PCI_ROOT_BRIDGE_INSTANCE          		*PrivateData;
@@ -271,10 +274,9 @@ RootBridgeIoPciRW (
   InStride = mInStride[Width];
   OutStride = mOutStride[Width];
 
-  OperationWidth = (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_WIDTH) (Width & 0x03);
   for (Uint8Buffer = Buffer; Count > 0; Offset += InStride, Uint8Buffer += OutStride, Count--) {
     if (Write) {
-      switch (OperationWidth) {
+      switch (Width) {
         case EfiPciWidthUint8:
           Status = PcieWriteConfigByte(PrivateData, (UINT32)BusDev, Offset, *Uint8Buffer);
           break;
@@ -293,7 +295,7 @@ RootBridgeIoPciRW (
           break;
       }
     } else {
-      switch (OperationWidth) {
+      switch (Width) {
         case EfiPciWidthUint8:
           Status = PcieReadConfigByte(PrivateData, (UINT32)BusDev, Offset, Uint8Buffer);
           break;
