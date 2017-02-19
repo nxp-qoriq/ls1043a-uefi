@@ -49,20 +49,20 @@
   PciRootBridgeIo.c
 
 [FixedPcd]
-  gArmPlatformTokenSpaceGuid.PcdPciBusMin
-  gArmPlatformTokenSpaceGuid.PcdPciBusMax
-  gArmPlatformTokenSpaceGuid.PcdPciIoBase
-  gArmPlatformTokenSpaceGuid.PcdPciIoSize 
-  gArmPlatformTokenSpaceGuid.PcdPci1Mmio64Base
-  gArmPlatformTokenSpaceGuid.PcdPci2Mmio64Base
-  gArmPlatformTokenSpaceGuid.PcdPci3Mmio64Base
-  gArmPlatformTokenSpaceGuid.PcdPciMmio64Size 
-  gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress
-  gEfiMdePkgTokenSpaceGuid.PcdPci2ExpressBaseAddress
-  gEfiMdePkgTokenSpaceGuid.PcdPci3ExpressBaseAddress
-  gArmPlatformTokenSpaceGuid.PcdKludgeMapPciMmioAsCached
-  gArmPlatformTokenSpaceGuid.PcdPciMaxPayloadFixup
-  gArmPlatformTokenSpaceGuid.PcdPciDebug
+  gLS1043aRdbTokenSpaceGuid.PcdPciBusMin
+  gLS1043aRdbTokenSpaceGuid.PcdPciBusMax
+  gLS1043aRdbTokenSpaceGuid.PcdPciIoBase
+  gLS1043aRdbTokenSpaceGuid.PcdPciIoSize
+  gLS1043aRdbTokenSpaceGuid.PcdPci1Mmio64Base
+  gLS1043aRdbTokenSpaceGuid.PcdPci2Mmio64Base
+  gLS1043aRdbTokenSpaceGuid.PcdPci3Mmio64Base
+  gLS1043aRdbTokenSpaceGuid.PcdPciMmio64Size
+  gLS1043aRdbTokenSpaceGuid.PcdPci1ExpressBaseAddress
+  gLS1043aRdbTokenSpaceGuid.PcdPci2ExpressBaseAddress
+  gLS1043aRdbTokenSpaceGuid.PcdPci3ExpressBaseAddress
+  gLS1043aRdbTokenSpaceGuid.PcdKludgeMapPciMmioAsCached
+  gLS1043aRdbTokenSpaceGuid.PcdPciMaxPayloadFixup
+  gLS1043aRdbTokenSpaceGuid.PcdPciDebug
 
 [Protocols]
   gEfiPciHostBridgeResourceAllocationProtocolGuid       ## PRODUCES

@@ -43,4 +43,4 @@
   PcdLib
 
 [FixedPcd]
-  gArmPlatformTokenSpaceGuid.PcdPciDebug
+  gLS1043aRdbTokenSpaceGuid.PcdPciDebug
