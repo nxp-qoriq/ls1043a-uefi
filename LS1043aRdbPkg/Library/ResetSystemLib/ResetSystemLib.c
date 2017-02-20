@@ -19,7 +19,9 @@
 #include <PiDxe.h>
 #include <Uefi.h>
 
+#include <IndustryStandard/ArmStdSmc.h>
 #include <Library/ArmLib.h>
+#include <Library/ArmSmcLib.h>
 #include <Library/CacheMaintenanceLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/IoLib.h>
@@ -123,29 +125,37 @@ LibResetSystem (
   IN CHAR16           *ResetData OPTIONAL
   )
 {
-  UINT32      ResetReg;
+  ARM_SMC_ARGS ArmSmcArgs;
   
   if (ResetData != NULL) {
     DEBUG((EFI_D_ERROR, "%s", ResetData));
   }
 
   switch (ResetType) {
+  case EfiResetPlatformSpecific:
   case EfiResetWarm:
+    // Map a warm reset into a cold reset
   case EfiResetCold:
-  case EfiResetShutdown:
-  default:
-    // Perform cold reset of the system.
-    DEBUG((EFI_D_VERBOSE, "Resetting system....\n"));
-    
-    // Raise RESET_REQ_B to perform a cold reset
-    ResetReg = SwapBytes32(MmioRead32((UINTN)(mResetBaseAddress + RST_CONTROL_REG_OFFSET)));
-    ResetReg |= RESET_REQ_MASK;
-    MmioWrite32((UINTN)(mResetBaseAddress + RST_CONTROL_REG_OFFSET), SwapBytes32(ResetReg));
-    
+    // Send a PSCI 0.2 SYSTEM_RESET command
+    ArmSmcArgs.Arg0 = ARM_SMC_ID_PSCI_SYSTEM_RESET;
     break;
+  case EfiResetShutdown:
+    // Send a PSCI 0.2 SYSTEM_OFF command
+    ArmSmcArgs.Arg0 = ARM_SMC_ID_PSCI_SYSTEM_OFF;
+    break;
+  default:
+    ASSERT (FALSE);
+    return EFI_UNSUPPORTED;
   }
 
-  return EFI_SUCCESS;
+  ArmCallSmc (&ArmSmcArgs);
+
+  // We should never be here
+  DEBUG ((EFI_D_VERBOSE, "%a: PSCI failed in performing %d\n",
+                            __FUNCTION__, ArmSmcArgs.Arg0));
+  CpuDeadLoop ();
+
+  return EFI_UNSUPPORTED;
 }
   
 /**
