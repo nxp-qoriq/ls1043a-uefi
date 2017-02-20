@@ -62,7 +62,8 @@ MmcSendReset (
   VOID
   )
 {
-  return SdxcGoIdle(gMmc);
+  gMmc->HasInit = 0;
+  return MmcInit(gMmc);
 }
 
 EFI_STATUS
