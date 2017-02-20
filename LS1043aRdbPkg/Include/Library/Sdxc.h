@@ -201,6 +201,12 @@
 #define EXT_CSD_HC_ERASE_GRP_SIZE  	224    // RO
 #define EXT_CSD_BOOT_MULT          	226    // RO
 
+/* GENERIC_CMD6_TIME indicates the default maximum timeout for a SWITCH 
+ * command (CMD6) unless a specific timeout is defined when accessing a specific
+ * field.
+ */
+#define GENERIC_CMD6_TIME           248
+
 #define EXT_CSD_CMD_SET_NORMAL            (1 << 0)
 #define EXT_CSD_CMD_SET_SECURE            (1 << 1)
 #define EXT_CSD_CMD_SET_CPSECURE   	(1 << 2)
