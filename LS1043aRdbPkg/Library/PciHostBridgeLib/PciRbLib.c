@@ -254,12 +254,6 @@ RootBridgeIoPciRW (
     return Status;
   }
 
-  if ((Address < CONFIG_SYS_LS_PCIE_IO_PHYS_OFF) ||
-      (Address >= ((UINT32)CONFIG_SYS_LS_PCIE_IO_PHYS_OFF +
-                   CONFIG_SYS_LS_PCIE_IO_SIZE))) {
-    return EFI_INVALID_PARAMETER;
-  }
-
   PciRbAddr = (EFI_PCI_ROOT_BRIDGE_IO_PROTOCOL_PCI_ADDRESS*) &Address;
 
   if (PciRbAddr->ExtendedRegister)
