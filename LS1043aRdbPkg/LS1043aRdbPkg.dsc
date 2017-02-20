@@ -415,27 +415,19 @@
 
  # PCI PCDs
  #
-  gArmPlatformTokenSpaceGuid.PcdKludgeMapPciMmioAsCached|FALSE
-  gArmPlatformTokenSpaceGuid.PcdPciBusMin|0
-  gArmPlatformTokenSpaceGuid.PcdPciBusMax|255
-  gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x00010000
-  gArmPlatformTokenSpaceGuid.PcdPciIoSize|0x00010000      # 64k
-  gArmPlatformTokenSpaceGuid.PcdPciIoTranslation|0x00010000
-  gArmPlatformTokenSpaceGuid.PcdPci1Mmio32Base|0x28000000
-  gArmPlatformTokenSpaceGuid.PcdPci2Mmio32Base|0x38000000
-  gArmPlatformTokenSpaceGuid.PcdPci3Mmio32Base|0x30000000
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x08000000
-  gArmPlatformTokenSpaceGuid.PcdPci1MemTranslation|0x4000000000
-  gArmPlatformTokenSpaceGuid.PcdPci2MemTranslation|0x4800000000
-  gArmPlatformTokenSpaceGuid.PcdPci3MemTranslation|0x5000000000
-  gArmPlatformTokenSpaceGuid.PcdPci1Mmio64Base|0x4040000000
-  gArmPlatformTokenSpaceGuid.PcdPci2Mmio64Base|0x4840000000
-  gArmPlatformTokenSpaceGuid.PcdPci3Mmio64Base|0x5040000000
-  gArmPlatformTokenSpaceGuid.PcdPciMmio64Size|0x40000000
-  gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x4000000000
-  gEfiMdePkgTokenSpaceGuid.PcdPci2ExpressBaseAddress|0x4800000000
-  gEfiMdePkgTokenSpaceGuid.PcdPci3ExpressBaseAddress|0x5000000000
-  gArmPlatformTokenSpaceGuid.PcdPciDebug|FALSE
+  gLS1043aRdbTokenSpaceGuid.PcdKludgeMapPciMmioAsCached|FALSE
+  gLS1043aRdbTokenSpaceGuid.PcdPciBusMin|0
+  gLS1043aRdbTokenSpaceGuid.PcdPciBusMax|255
+  gLS1043aRdbTokenSpaceGuid.PcdPciIoBase|0x00010000
+  gLS1043aRdbTokenSpaceGuid.PcdPciIoSize|0x00010000      # 64k
+  gLS1043aRdbTokenSpaceGuid.PcdPci1Mmio64Base|0x4040000000
+  gLS1043aRdbTokenSpaceGuid.PcdPci2Mmio64Base|0x4840000000
+  gLS1043aRdbTokenSpaceGuid.PcdPci3Mmio64Base|0x5040000000
+  gLS1043aRdbTokenSpaceGuid.PcdPciMmio64Size|0x40000000
+  gLS1043aRdbTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x4000000000
+  gLS1043aRdbTokenSpaceGuid.PcdPci2ExpressBaseAddress|0x4800000000
+  gLS1043aRdbTokenSpaceGuid.PcdPci3ExpressBaseAddress|0x5000000000
+  gLS1043aRdbTokenSpaceGuid.PcdPciDebug|FALSE
 
   #
   # ARM Primecells

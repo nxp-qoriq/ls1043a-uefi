@@ -113,10 +113,8 @@ typedef struct {
   UINTN                  BusLength;
   UINT64                 MemAllocAttributes;
   PCI_RESOURCE_ALLOC     ResAlloc[ResTypeMax];
-  UINT64	  	IoTranslation;
-  UINT64                MemTranslation;
-  UINT64                BaseAddress64;
-  UINT32                BaseAddress32;
+  UINT64                PciBaseAddress64;
+  UINT64                PciMemBase64;
   struct LsPcieInfo	*Info;
   struct LsPcie		*Pcie;
   struct PCI_ROOT_BRIDGE_INSTANCE *Next;

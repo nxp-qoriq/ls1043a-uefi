@@ -103,81 +103,72 @@
 
   ## Timer
   gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|0|UINT32|0x0000001B
-  gEmbeddedTokenSpaceGuid.PcdTimerPeriod|10000|UINT32|0x0000001D
-  gArmPlatformTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|0|UINT32|0x0000001E
-  gArmPlatformTokenSpaceGuid.PcdArmArchTimerHypIntrNum|0|UINT32|0x0000001F
-  gArmPlatformTokenSpaceGuid.PcdArmArchTimerSecIntrNum|0|UINT32|0x00000020
-  gArmPlatformTokenSpaceGuid.PcdArmArchTimerIntrNum|0|UINT32|0x00000021
-  gEmbeddedTokenSpaceGuid.PcdMetronomeTickPeriod|0|UINT32|0x00000022
+  gEmbeddedTokenSpaceGuid.PcdTimerPeriod|10000|UINT32|0x0000001C
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|0|UINT32|0x0000001D
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerHypIntrNum|0|UINT32|0x0000001E
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerSecIntrNum|0|UINT32|0x0000001F
+  gArmPlatformTokenSpaceGuid.PcdArmArchTimerIntrNum|0|UINT32|0x00000020
+  gEmbeddedTokenSpaceGuid.PcdMetronomeTickPeriod|0|UINT32|0x00000021
   
-  gArmPlatformTokenSpaceGuid.PcdLS1043aWatchDogBase|0x0|UINT32|0x00000023
-  gArmPlatformTokenSpaceGuid.DUartClkInHz|0x0|UINT32|0x00000024
-  gArmPlatformTokenSpaceGuid.DUartInteger|0x0|UINT32|0x00000025
+  gArmPlatformTokenSpaceGuid.PcdLS1043aWatchDogBase|0x0|UINT32|0x00000022
+  gArmPlatformTokenSpaceGuid.DUartClkInHz|0x0|UINT32|0x00000023
+  gArmPlatformTokenSpaceGuid.DUartInteger|0x0|UINT32|0x00000024
 
   #
   # LS1043a Soc Specific PCDs
   #
-  gArmPlatformTokenSpaceGuid.PcdCounterFrequencyReal|FALSE|BOOLEAN|0x00000027
-  gArmPlatformTokenSpaceGuid.PcdCsuInitialize|FALSE|BOOLEAN|0x00000028
-  gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|FALSE|BOOLEAN|0x00000029
-  gArmPlatformTokenSpaceGuid.PcdCci400Initialize|FALSE|BOOLEAN|0x0000002A
-  gArmPlatformTokenSpaceGuid.PcdClockInitialize|FALSE|BOOLEAN|0x0000002B
+  gArmPlatformTokenSpaceGuid.PcdCounterFrequencyReal|FALSE|BOOLEAN|0x00000025
+  gArmPlatformTokenSpaceGuid.PcdCsuInitialize|FALSE|BOOLEAN|0x00000026
+  gArmPlatformTokenSpaceGuid.PcdTzc380Initialize|FALSE|BOOLEAN|0x00000027
+  gArmPlatformTokenSpaceGuid.PcdCci400Initialize|FALSE|BOOLEAN|0x00000028
+  gArmPlatformTokenSpaceGuid.PcdClockInitialize|FALSE|BOOLEAN|0x00000029
 
-  gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress|0x0|UINT32|0x0000002C
-  gLS1043aRdbTokenSpaceGuid.PcdPiFdSize|0x0|UINT32|0x0000002D																									
-  gLS1043aRdbTokenSpaceGuid.PcdPiFvBaseAddress|0x0|UINT32|0x0000002E
-  gLS1043aRdbTokenSpaceGuid.PcdPiFvSize|0x0|UINT32|0x0000002F
-  gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x0|UINT32|0x00000030
-  gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x0|UINT32|0x00000031
+  gLS1043aRdbTokenSpaceGuid.PcdPiFdBaseAddress|0x0|UINT32|0x0000002A
+  gLS1043aRdbTokenSpaceGuid.PcdPiFdSize|0x0|UINT32|0x0000002B
+
+  gLS1043aRdbTokenSpaceGuid.PcdPiFvBaseAddress|0x0|UINT32|0x0000002C
+  gLS1043aRdbTokenSpaceGuid.PcdPiFvSize|0x0|UINT32|0x0000002D
+  gLS1043aRdbTokenSpaceGuid.PcdOcramStackBase|0x0|UINT32|0x0000002E
+  gLS1043aRdbTokenSpaceGuid.PcdFdNandLba|0x0|UINT32|0x0000002F
   
   #gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE|BOOLEAN|0x00000039
   #
   # PPA specific PCDs
   #
-  gLS1043aRdbTokenSpaceGuid.PcdPpaNorBaseAddr|0x0|UINT64|0x00000032
-  gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize|0x0|UINT64|0x00000033
-  gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration|""|VOID*|0x00000034
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNorBaseAddr|0x0|UINT64|0x00000030
+  gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize|0x0|UINT64|0x00000031
+  gLS1043aRdbTokenSpaceGuid.PcdPpaFitConfiguration|""|VOID*|0x00000032
 
-  gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x0|UINT64|0x00000035
-  gLS1043aRdbTokenSpaceGuid.PcdFvNorBaseAddress|0x0|UINT64|0x00000036
-  gLS1043aRdbTokenSpaceGuid.PcdFvNorSize|0x0|UINT64|0x00000037
+  gLS1043aRdbTokenSpaceGuid.PcdFdNorBaseAddress|0x0|UINT64|0x00000033
+  gLS1043aRdbTokenSpaceGuid.PcdFvNorBaseAddress|0x0|UINT64|0x00000034
+  gLS1043aRdbTokenSpaceGuid.PcdFvNorSize|0x0|UINT64|0x00000035
  
   ## PCI
   #  This value is used to set the base address of PCI express hierarchy.
   #  @Prompt PCI Express Base Address.
   #
-  gArmPlatformTokenSpaceGuid.PcdPciMaxPayloadFixup|FALSE|BOOLEAN|0x00000040
-  gArmPlatformTokenSpaceGuid.PcdPciBusHotPlugDeviceSupport|TRUE|BOOLEAN|0x00000041
-  gArmPlatformTokenSpaceGuid.PcdKludgeMapPciMmioAsCached|FALSE|BOOLEAN|0x00000006
-  gArmPlatformTokenSpaceGuid.PcdPciBusMin|0|UINT64|0x00000042
-  gArmPlatformTokenSpaceGuid.PcdPciBusMax|255|UINT64|0x00000043
-  gArmPlatformTokenSpaceGuid.PcdPciIoBase|0x00010000|UINT64|0x00000044
-  gArmPlatformTokenSpaceGuid.PcdPciIoSize|0x00010000|UINT64|0x00000045
-  gArmPlatformTokenSpaceGuid.PcdPciMemTranslation|0x5000000000|UINT64|0x00000055
-  gArmPlatformTokenSpaceGuid.PcdPci1Mmio32Base|0x28000000|UINT32|0x00000065
-  gArmPlatformTokenSpaceGuid.PcdPci2Mmio32Base|0x38000000|UINT32|0x00000066
-  gArmPlatformTokenSpaceGuid.PcdPci3Mmio32Base|0x30000000|UINT32|0x00000046
-  gArmPlatformTokenSpaceGuid.PcdPciMmio32Size|0x08000000|UINT32|0x00000047
-  gArmPlatformTokenSpaceGuid.PcdPci1MemTranslation|0x4000000000|UINT64|0x00000067
-  gArmPlatformTokenSpaceGuid.PcdPci2MemTranslation|0x4800000000|UINT64|0x00000068
-  gArmPlatformTokenSpaceGuid.PcdPci3MemTranslation|0x5000000000|UINT64|0x00000069
-  gArmPlatformTokenSpaceGuid.PcdPci1Mmio64Base|0x4040000000|UINT64|0x0000006A
-  gArmPlatformTokenSpaceGuid.PcdPci2Mmio64Base|0x4840000000|UINT64|0x0000006B
-  gArmPlatformTokenSpaceGuid.PcdPci3Mmio64Base|0x5040000000|UINT64|0x0000006C
-  gArmPlatformTokenSpaceGuid.PcdPciMmio64Size|0x0040000000|UINT64|0x00000049
-  gArmPlatformTokenSpaceGuid.PcdPciIoTranslation|0x00010000|UINT64|0x00000050
-  gEfiMdePkgTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x4000000000|UINT64|0x00000051
-  gEfiMdePkgTokenSpaceGuid.PcdPci2ExpressBaseAddress|0x4800000000|UINT64|0x00000052
-  gEfiMdePkgTokenSpaceGuid.PcdPci3ExpressBaseAddress|0x5000000000|UINT64|0x00000058
-  gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress|0x03600000|UINT64|0x0000004D
-  gArmPlatformTokenSpaceGuid.PcdPciDebug|FALSE|BOOLEAN|0x0000004E
+  gLS1043aRdbTokenSpaceGuid.PcdPciMaxPayloadFixup|FALSE|BOOLEAN|0x00000036
+  gLS1043aRdbTokenSpaceGuid.PcdKludgeMapPciMmioAsCached|FALSE|BOOLEAN|0x000000037
+  gLS1043aRdbTokenSpaceGuid.PcdPciBusMin|0|UINT64|0x00000038
+  gLS1043aRdbTokenSpaceGuid.PcdPciBusMax|255|UINT64|0x00000039
+  gLS1043aRdbTokenSpaceGuid.PcdPciIoBase|0x00010000|UINT64|0x0000003A
+  gLS1043aRdbTokenSpaceGuid.PcdPciIoSize|0x00010000|UINT64|0x0000003B
+  gLS1043aRdbTokenSpaceGuid.PcdPci1Mmio64Base|0x4040000000|UINT64|0x0000003C
+  gLS1043aRdbTokenSpaceGuid.PcdPci2Mmio64Base|0x4840000000|UINT64|0x0000003D
+  gLS1043aRdbTokenSpaceGuid.PcdPci3Mmio64Base|0x5040000000|UINT64|0x0000003E
+  gLS1043aRdbTokenSpaceGuid.PcdPciMmio64Size|0x0040000000|UINT64|0x0000003F
+  gLS1043aRdbTokenSpaceGuid.PcdPci1ExpressBaseAddress|0x4000000000|UINT64|0x00000040
+  gLS1043aRdbTokenSpaceGuid.PcdPci2ExpressBaseAddress|0x4800000000|UINT64|0x00000041
+  gLS1043aRdbTokenSpaceGuid.PcdPci3ExpressBaseAddress|0x5000000000|UINT64|0x00000042
+  gLS1043aRdbTokenSpaceGuid.PcdPciExpressBaseAddress|0x03600000|UINT64|0x00000043
+  gLS1043aRdbTokenSpaceGuid.PcdPciDebug|FALSE|BOOLEAN|0x00000044
 
-  gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x0|UINT32|0x00000038
-  gLS1043aRdbTokenSpaceGuid.PcdPpaNandLba|0x10|UINT32|0x00000039
+  gLS1043aRdbTokenSpaceGuid.PcdBootMode|0x0|UINT32|0x00000045
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNandLba|0x10|UINT32|0x00000046
 
-  gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000|UINT32|0x00000040
-  gLS1043aRdbTokenSpaceGuid.PcdPpaSdxcLba|0x10|UINT32|0x00000041
-  gLS1043aRdbTokenSpaceGuid.PcdFdSdxcLba|0x0|UINT32|0x00000042
+  gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000|UINT32|0x00000047
+  gLS1043aRdbTokenSpaceGuid.PcdPpaSdxcLba|0x10|UINT32|0x00000048
+  gLS1043aRdbTokenSpaceGuid.PcdFdSdxcLba|0x0|UINT32|0x00000049
 
   #
   # LS1043a SoC specific DPAA1 PCDs
@@ -188,11 +179,11 @@
   # - 0x4      Perform extra checks
   # - 0x8      Trace sent/received network packets
   #
-  gLS1043aRdbTokenSpaceGuid.PcdDpaa1Initialize|TRUE|BOOLEAN|0x00000060
-  gLS1043aRdbTokenSpaceGuid.PcdDpaa1DebugFlags|0x0|UINT32|0x00000061
-  gLS1043aRdbTokenSpaceGuid.PcdFManFwSrc|0x1|UINT8|0x00000062
-  gLS1043aRdbTokenSpaceGuid.PcdFManFwNorAddr|0x60300000|UINT32|0x00000063
-  gLS1043aRdbTokenSpaceGuid.PcdFManFwQspiAddr|0x40200000|UINT32|0x00000070
+  gLS1043aRdbTokenSpaceGuid.PcdDpaa1Initialize|TRUE|BOOLEAN|0x0000004A
+  gLS1043aRdbTokenSpaceGuid.PcdDpaa1DebugFlags|0x0|UINT32|0x0000004B
+  gLS1043aRdbTokenSpaceGuid.PcdFManFwSrc|0x1|UINT8|0x0000004C
+  gLS1043aRdbTokenSpaceGuid.PcdFManFwNorAddr|0x60300000|UINT32|0x0000004D
+  gLS1043aRdbTokenSpaceGuid.PcdFManFwQspiAddr|0x40200000|UINT32|0x0000004E
 
   #
   # Bit mask to indicate the DPAA1 MEMACs to be used.
@@ -200,42 +191,34 @@
   # where i is the range '1 .. #Memacs'. For example, if we want MEMAC5
   # to be used, the value of the mask needs to be 0x10 (bit 4 set)
   #
-  gLS1043aRdbTokenSpaceGuid.PcdDpaa1UsedMemacsMask|0x0|UINT64|0x00000064 
+  gLS1043aRdbTokenSpaceGuid.PcdDpaa1UsedMemacsMask|0x0|UINT64|0x0000004F
   #Flash Pcd
-  gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x0|UINT64|0x00000043
+  gLS1043aRdbTokenSpaceGuid.PcdFlashDeviceBase64|0x0|UINT64|0x00000050
   
   #Runtime Variable Pcds
-  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x0|UINT64|0x00000044
+  gLS1043aRdbTokenSpaceGuid.PcdFlashReservedRegionBase64|0x0|UINT64|0x00000051
   
-  gLS1043aRdbTokenSpaceGuid.PcdNvFdBase|0x0|UINT64|0x00000045
-  gLS1043aRdbTokenSpaceGuid.PcdNvFdSize|0x0|UINT32|0x00000046
+  gLS1043aRdbTokenSpaceGuid.PcdNvFdBase|0x0|UINT64|0x00000052
+  gLS1043aRdbTokenSpaceGuid.PcdNvFdSize|0x0|UINT32|0x00000053
   
-  gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported|FALSE|BOOLEAN|0x00000047
-
-
-  #Added some new Pci Pcds with existing PCI Pcds using Token IDs
-  #0x00000065 to 0x0000006C
+  gLS1043aRdbTokenSpaceGuid.PcdSdxcDmaSupported|FALSE|BOOLEAN|0x00000054
 
   #
   # IP Testing specific PCDs
   #
-  gLS1043aRdbTokenSpaceGuid.PcdDspiTest|FALSE|BOOLEAN|0x0000006D
-  gLS1043aRdbTokenSpaceGuid.PcdQspiTest|FALSE|BOOLEAN|0x0000006E
-  gLS1043aRdbTokenSpaceGuid.PcdDdrBistTest|FALSE|BOOLEAN|0x00000049
+  gLS1043aRdbTokenSpaceGuid.PcdDspiTest|FALSE|BOOLEAN|0x00000055
+  gLS1043aRdbTokenSpaceGuid.PcdQspiTest|FALSE|BOOLEAN|0x00000056
+  gLS1043aRdbTokenSpaceGuid.PcdDdrBistTest|FALSE|BOOLEAN|0x00000057
 
   #
   # PPA specific PCDs
   #
-  gLS1043aRdbTokenSpaceGuid.PcdPpaQspiBaseAddr|0x0|UINT64|0x0000006F
-
-  # Pcd 0x00000070 has been used by FMan
+  gLS1043aRdbTokenSpaceGuid.PcdPpaQspiBaseAddr|0x0|UINT64|0x00000058
 
   # Errata Pcds
-  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA008550|FALSE|BOOLEAN|0x00000071
-  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009660|FALSE|BOOLEAN|0x00000072
-  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009663|FALSE|BOOLEAN|0x00000073
-  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009442|FALSE|BOOLEAN|0x00000074
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA008550|FALSE|BOOLEAN|0x00000059
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009660|FALSE|BOOLEAN|0x0000005A
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009663|FALSE|BOOLEAN|0x0000005B
+  gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009442|FALSE|BOOLEAN|0x0000005C
 
-  gLS1043aRdbTokenSpaceGuid.PcdQspiSwap|FALSE|BOOLEAN|0x00000075
-
-  # Pcd 0x00000026 is available for use
+  gLS1043aRdbTokenSpaceGuid.PcdQspiSwap|FALSE|BOOLEAN|0x0000005D
