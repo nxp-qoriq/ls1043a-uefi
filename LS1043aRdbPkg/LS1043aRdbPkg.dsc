@@ -560,6 +560,11 @@
   gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009663|TRUE
   gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA009442|TRUE
 
+  gLS1043aRdbTokenSpaceGuid.PcdUsbErratumA009008|TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdUsbErratumA009798|TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdUsbErratumA008997|TRUE
+  gLS1043aRdbTokenSpaceGuid.PcdUsbErratumA009007|TRUE
+
 ################################################################################
 #
 # Components Section - list of all EDK II Modules needed by this Platform

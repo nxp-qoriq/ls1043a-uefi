@@ -49,3 +49,8 @@
 	gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize
 	gArmTokenSpaceGuid.PcdFvBaseAddress
 	gLS1043aRdbTokenSpaceGuid.PcdDdrErratumA008550
+	gLS1043aRdbTokenSpaceGuid.PcdUsbErratumA009008
+	gLS1043aRdbTokenSpaceGuid.PcdUsbErratumA009798
+	gLS1043aRdbTokenSpaceGuid.PcdUsbErratumA008997
+	gLS1043aRdbTokenSpaceGuid.PcdUsbErratumA009007
+

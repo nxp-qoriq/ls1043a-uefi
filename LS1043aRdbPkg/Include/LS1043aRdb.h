@@ -83,6 +83,9 @@
 	#define SCFG_SIZE                  0x0010000
 	#define QSPI_BASE_ADDR             0x1550000
 	#define QSPI_REG_SIZE              0x10000
+	#define USB_PHY1                   0x084F0000
+	#define USB_PHY2                   0x08500000
+	#define USB_PHY3                   0x08510000
 
 /* SMMU Defintions */
 #define SMMU_BASE_ADDR		0x09000000

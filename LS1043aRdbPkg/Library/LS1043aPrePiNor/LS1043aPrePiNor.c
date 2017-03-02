@@ -58,6 +58,103 @@ STATIC VOID ErratumA008550Post(VOID)
   Temp &= ~(DDR_EOR_READ_REOD_DIS | DDR_EOR_WRITE_REOD_DIS);
   MmioWriteBe32((UINTN)&Ddr->Eor, Temp);
 }
+/*
+* A-009008: USB High Speed (HS) eye height adjustment
+* Affects: USB
+* Description: USB HS eye diagram fails with the default value at many corners, particularly at a high
+* temperature (105°C).
+* Impact: USB HS eye diagram may fail using the default value.
+*/
+STATIC VOID ErratumA009008 (VOID)
+{
+  struct CcsrScfg *Scfg = (VOID *)SCFG_BASE_ADDR;
+  UINT32 Value = MmioReadBe32((UINTN)&Scfg->usb1prm1cr);
+  Value &= ~(0xF << 6);
+  MmioWriteBe32((UINTN)&Scfg->usb1prm1cr, Value|(USB_TXVREFTUNE << 6));
+  Value = MmioReadBe32((UINTN)&Scfg->usb2prm1cr);
+  Value &= ~(0xF << 6);
+  MmioWriteBe32((UINTN)&Scfg->usb2prm1cr, Value|(USB_TXVREFTUNE << 6));
+  Value = MmioReadBe32((UINTN)&Scfg->usb3prm1cr);
+  Value &= ~(0xF << 6);
+  MmioWriteBe32((UINTN)&Scfg->usb3prm1cr, Value|(USB_TXVREFTUNE << 6));
+}
+/*
+* A-009798: USB high speed squelch threshold adjustment
+* Affects: USB
+* Description: The default setting for USB high speed squelch threshold results in a threshold close to or
+* lower than 100mV. This leads to a receiver compliance test failure for a 100mV threshold.
+* Impact: If the errata is not applied, only the USB high speed receiver sensitivity compliance test fails,
+* however USB data continues to transfer.
+*/
+STATIC VOID ErratumA009798 (VOID)
+{
+  struct CcsrScfg *Scfg = (VOID *)SCFG_BASE_ADDR;
+  UINT32 Value = MmioReadBe32((UINTN)&Scfg->usb1prm1cr);
+  MmioWriteBe32((UINTN)&Scfg->usb1prm1cr, Value & USB_SQRXTUNE);
+  Value = MmioReadBe32((UINTN)&Scfg->usb2prm1cr);
+  MmioWriteBe32((UINTN)&Scfg->usb2prm1cr, Value & USB_SQRXTUNE);
+  Value = MmioReadBe32((UINTN)&Scfg->usb3prm1cr);
+  MmioWriteBe32((UINTN)&Scfg->usb3prm1cr, Value & USB_SQRXTUNE);
+}
+/*
+* A-008997: USB3 LFPS peak-to-peak differential output voltage adjustment settings
+* Affects: USB
+* Description: Low Frequency Periodic Signaling (LFPS) peak-to-peak differential output voltage test
+* compliance fails using default transmitter settings. Software is required to change the
+* transmitter signal swings to pass compliance tests.
+* Impact: LFPS peak-to-peak differential output voltage compliance test fails.
+*/
+STATIC VOID ErratumA008997 (VOID)
+{
+  struct CcsrScfg *Scfg = (VOID *)SCFG_BASE_ADDR;
+  UINT32 Value = MmioReadBe32((UINTN)&Scfg->usb1prm2cr);
+  Value &= ~(0x7F << 9);
+  MmioWriteBe32((UINTN)&Scfg->usb1prm2cr, Value | (USB_PCSTXSWINGFULL << 9));
+  Value = MmioReadBe32((UINTN)&Scfg->usb2prm2cr);
+  Value &= ~(0x7F << 9);
+  MmioWriteBe32((UINTN)&Scfg->usb2prm2cr, Value | (USB_PCSTXSWINGFULL << 9));
+  Value = MmioReadBe32((UINTN)&Scfg->usb3prm2cr);
+  Value &= ~(0x7F << 9);
+  MmioWriteBe32((UINTN)&Scfg->usb3prm2cr, Value | (USB_PCSTXSWINGFULL << 9));
+}
+/*
+* A-009007: USB3PHY observing intermittent failure in receive compliance tests at
+* higher jitter frequency using default register values
+* Affects: USB
+* Description: Receive compliance tests may fail intermittently at high jitter frequencies using default register
+* values.
+* Impact: Receive compliance test fails at default register setting.
+*/
+STATIC VOID ErratumA009007 (VOID)
+{
+  struct CcsrUsbPhySs *UsbPhy = (VOID *)USB_PHY1;
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_1);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_2);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_3);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_4);
+  UsbPhy = (VOID *)USB_PHY2;
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_1);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_2);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_3);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_4);
+  UsbPhy = (VOID *)USB_PHY3;
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_1);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_2);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_3);
+  ArmDataMemoryBarrier();
+  MmioWrite16((UINTN)&UsbPhy->Lane0RxOvrdInHi, USB_PHY_RX_EQ_VAL_4);
+}
 
 VOID CEntryPoint(
   UINTN	UefiMemoryBase,
@@ -69,6 +166,15 @@ VOID CEntryPoint(
 
   if (PcdGetBool(PcdDdrErratumA008550))
     ErratumA008550Pre();
+
+  if (PcdGetBool(PcdUsbErratumA009008))
+    ErratumA009008();
+  if (PcdGetBool(PcdUsbErratumA009798))
+    ErratumA009798();
+  if (PcdGetBool(PcdUsbErratumA008997))
+    ErratumA008997();
+  if (PcdGetBool(PcdUsbErratumA009007))
+    ErratumA009007();
 
   // Data Cache enabled on Primary core when MMU is enabled.
   ArmDisableDataCache ();

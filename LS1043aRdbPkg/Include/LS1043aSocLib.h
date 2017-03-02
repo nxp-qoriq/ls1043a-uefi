@@ -396,7 +396,17 @@ struct CcsrGur {
 
 /* Supplemental Configuration Unit */
 struct CcsrScfg {
-	UINT8 res_000[0x100-0x000];
+	UINT8 res_000[0x070-0x000];
+	UINT32 usb1prm1cr;
+	UINT32 usb1prm2cr;
+	UINT32 usb1prm3cr;
+	UINT32 usb2prm1cr;
+	UINT32 usb2prm2cr;
+	UINT32 usb2prm3cr;
+	UINT32 usb3prm1cr;
+	UINT32 usb3prm2cr;
+	UINT32 usb3prm3cr;
+	UINT8 res_094[0x100-0x094];
 	UINT32 usb2_icid;
 	UINT32 usb3_icid;
 	UINT8 res_108[0x114-0x108];
@@ -458,6 +468,52 @@ struct CcsrScfg {
 	UINT8 res_2008[0x3000-0x2008];
 	UINT32 pex3msiir;
 	UINT32 pex3msir;
+};
+
+#define USB_TXVREFTUNE        0x9
+#define USB_SQRXTUNE          0xFC7FFFFF
+#define USB_PCSTXSWINGFULL    0x47
+/* TODO : make it generic */
+#define USB_PHY_RX_EQ_VAL_1   0x0000
+#define USB_PHY_RX_EQ_VAL_2   0x8000
+#define USB_PHY_RX_EQ_VAL_3   0x8003
+#define USB_PHY_RX_EQ_VAL_4   0x800b
+
+/*USB_PHY_SS memory map*/
+struct CcsrUsbPhySs {
+  UINT16 IpIdcodeLo;
+  UINT16 SupIdcodeHi;
+  UINT8  Res4[0x0006-0x0004];
+  UINT16 RtuneDebug;
+  UINT16 RtuneStat;
+  UINT16 SupSsPhase;
+  UINT16 SsFreq;
+  UINT8  ResE[0x0020-0x000e];
+  UINT16 Ateovrd;
+  UINT16 MpllOvrdInLo;
+  UINT8  Res24[0x0026-0x0024];
+  UINT16 SscOvrdIn;
+  UINT8  Res28[0x002A-0x0028];
+  UINT16 LevelOvrdIn;
+  UINT8  Res2C[0x0044-0x002C];
+  UINT16 ScopeCount;
+  UINT8  Res46[0x0060-0x0046];
+  UINT16 MpllLoopCtl;
+  UINT8  Res62[0x006C-0x0062];
+  UINT16 SscClkCntrl;
+  UINT8  Res6E[0x2002-0x006E];
+  UINT16 Lane0TxOvrdInHi;
+  UINT16 Lane0TxOvrdDrvLo;
+  UINT8  Res2006[0x200C-0x2006];
+  UINT16 Lane0RxOvrdInHi;
+  UINT8  Res200E[0x2022-0x200E];
+  UINT16 Lane0TxCmWaitTimeOvrd;
+  UINT8  Res2024[0x202A-0x2024];
+  UINT16 Lane0TxLbertCtl;
+  UINT16 Lane0RxLbertCtl;
+  UINT16 Lane0RxLbertErr;
+  UINT8  Res2030[0x205A-0x2030];
+  UINT16 Lane0TxAltBlock;
 };
 
 /* Clocking */
