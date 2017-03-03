@@ -176,6 +176,8 @@
   # Gpio Library
   GpioLib|LS1043aRdbPkg/Library/GpioLib/GpioLib.inf
 
+  SecureMonRngLib|LS1043aRdbPkg/Library/SecureMonRngLib/SecureMonRngLib.inf
+
 [LibraryClasses.common.SEC]
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   ReportStatusCodeLib|IntelFrameworkModulePkg/Library/PeiDxeDebugLibReportStatusCode/PeiDxeDebugLibReportStatusCode.inf
@@ -668,6 +670,11 @@
   # Qspi
   LS1043aRdbPkg/Drivers/QspiDxe/QspiDxe.inf
 !endif
+
+  #
+  # RNG Driver
+  #
+  LS1043aRdbPkg/Drivers/RngDxe/RngDxe.inf
 
   #
   # Networking stack
