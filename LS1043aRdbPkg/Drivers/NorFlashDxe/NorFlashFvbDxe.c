@@ -146,18 +146,8 @@ ValidateFvHeader (
   VARIABLE_STORE_HEADER       *VariableStoreHeader;
   UINTN                       VariableStoreLength;
   UINTN                       FvLength;
-  UINTN                       HeadersLength;
-  EFI_STATUS                  Status;
 
-  HeadersLength = sizeof(EFI_FIRMWARE_VOLUME_HEADER) + sizeof(EFI_FV_BLOCK_MAP_ENTRY) + sizeof(VARIABLE_STORE_HEADER);
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)AllocateZeroPool(HeadersLength);
-  
-  Status = NorFlashPlatformRead (Instance, Instance->StartLba, 0, HeadersLength, (UINT8*)FwVolHeader);
-  if (EFI_ERROR (Status)) {
-    DEBUG ((EFI_D_ERROR, "%a: Not able to read Firmware Volume header\n",
-      __FUNCTION__));
-    goto ERROR;
-  }
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER*)Instance->RegionBaseAddress;
   
   FvLength = PcdGet32(PcdFlashNvStorageVariableSize) + PcdGet32(PcdFlashNvStorageFtwWorkingSize) +
       PcdGet32(PcdFlashNvStorageFtwSpareSize);
@@ -174,14 +164,14 @@ ValidateFvHeader (
   {
     DEBUG ((EFI_D_ERROR, "%a: No Firmware Volume header present\n",
       __FUNCTION__));
-    goto ERROR;
+    return EFI_NOT_FOUND;
   }
 
   // Check the Firmware Volume Guid
   if( CompareGuid (&FwVolHeader->FileSystemGuid, &gEfiSystemNvDataFvGuid) == FALSE ) {
     DEBUG ((EFI_D_ERROR, "%a: Firmware Volume Guid non-compatible\n",
       __FUNCTION__));
-    goto ERROR;
+    return EFI_NOT_FOUND;
   }
 
   // Verify the header checksum
@@ -189,7 +179,7 @@ ValidateFvHeader (
   if (Checksum != 0) {
     DEBUG ((EFI_D_ERROR, "%a: FV checksum is invalid (Checksum:0x%X)\n",
       __FUNCTION__, Checksum));
-    goto ERROR;
+    return EFI_NOT_FOUND;
   }
 
   VariableStoreHeader = (VARIABLE_STORE_HEADER*)((UINTN)FwVolHeader + FwVolHeader->HeaderLength);
@@ -199,20 +189,17 @@ ValidateFvHeader (
       !CompareGuid (&VariableStoreHeader->Signature, &gEfiAuthenticatedVariableGuid)) {
     DEBUG ((EFI_D_ERROR, "%a: Variable Store Guid non-compatible\n",
       __FUNCTION__));
-    goto ERROR;
+    return EFI_NOT_FOUND;
   }
 
   VariableStoreLength = PcdGet32 (PcdFlashNvStorageVariableSize) - FwVolHeader->HeaderLength;
   if (VariableStoreHeader->Size != VariableStoreLength) {
     DEBUG ((EFI_D_ERROR, "%a: Variable Store Length does not match\n",
       __FUNCTION__));
-    goto ERROR;
+    return EFI_NOT_FOUND;
   }
-  FreePool (FwVolHeader);
+
   return EFI_SUCCESS;
-ERROR:
-  FreePool (FwVolHeader);
-  return EFI_NOT_FOUND;
 }
 
 /**

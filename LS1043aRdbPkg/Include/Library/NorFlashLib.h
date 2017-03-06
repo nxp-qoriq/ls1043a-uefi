@@ -17,18 +17,17 @@ This program and the accompanying materials
 #define _NORFLASHLIB_H_
 
 typedef struct {
-  UINTN       DeviceBaseAddress;    // Start address of the Device Base Address (DBA)
-  UINTN       RegionBaseAddress;    // Start address of one single region
+  UINTN       DeviceBaseAddress;   // Start address of the Device Base Address (DBA)
+  UINTN       RegionBaseAddress;   // Start address of one single region
   UINTN       Size;
   UINTN       BlockSize;
   EFI_GUID    Guid;
-  UINTN       MultiByteWordCount;   // Maximum Word count that can be written to Nor Flash in multi byte write
+  UINTN       MultiByteWordCount;  // Maximum Word count that can be written to Nor Flash in multi byte write
+  UINTN      WordWriteTimeOut;    // single byte/word timeout usec
+  UINTN      BufferWriteTimeOut;  // buffer write timeout usec
+  UINTN      BlockEraseTimeOut;   // block erase timeout usec
+  UINTN      ChipEraseTimeOut;    // chip erase timeout usec
 } NOR_FLASH_DESCRIPTION;
-
-EFI_STATUS
-NorFlashPlatformInitialization (
-  VOID
-  );
 
 EFI_STATUS
 NorFlashPlatformGetDevices (

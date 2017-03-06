@@ -43,9 +43,34 @@ NOR_FLASH_DESCRIPTION mNorFlashDevices[NOR_FLASH_DEVICE_COUNT] = {
     0, // Size
     0, // BlockSize
     { 0x1F15DA3C, 0x37FF, 0x4070, { 0xB4, 0x71, 0xBB, 0x4A, 0xF1, 0x2A, 0x72, 0x4A } },
-    0 // MultiByteWordCount
+    0, // MultiByteWordCount
+    0, // WordWriteTimeOut
+    0, // BufferWriteTimeOut
+    0, // BlockEraseTimeOut
+    0  // ChipEraseTimeOut
   },
 };
+
+UINT64
+ConvertMicroSecondsToTicks(
+  IN UINTN MicroSeconds
+)
+{
+  UINT64 TimerTicks64 = 0;
+
+  // Calculate counter ticks that represent requested delay:
+  //  = MicroSeconds x TICKS_PER_MICRO_SEC
+  //  = MicroSeconds x Timer Frequency(in Hz) x 10^-6
+  // GetPerformanceCounterProperties = Get Arm Timer Frequency in Hz
+  TimerTicks64 = DivU64x32 (
+                   MultU64x64 (
+                     MicroSeconds,
+                     GetPerformanceCounterProperties (NULL, NULL)
+                     ),
+                   1000000U
+                   );
+  return TimerTicks64;
+}
 
 /**
  * The following function erases a NOR flash sector.
@@ -58,8 +83,10 @@ NorFlashPlatformEraseSector (
 {
   FLASH_DATA		EraseStatus1 = 0;
   FLASH_DATA		EraseStatus2 = 0;
-  UINTN           	Count;
+  UINT64		Timeout = 0;
+  UINT64		SystemCounterVal;
 
+  Timeout = ConvertMicroSecondsToTicks(mNorFlashDevices[Instance->Media.MediaId].BlockEraseTimeOut);
   // Request a sector erase by writing two unlock cycles, followed by a
   // setup command and two additional unlock cycles
   
@@ -80,18 +107,31 @@ NorFlashPlatformEraseSector (
   SEND_NOR_COMMAND(SectorAddress, 0, MT28EW01GABA_CMD_SECTOR_ERASE_SIXTH);
   
   // Wait for erase to complete
-  // Read status register to determine ERASE DONE
-  while ((EraseStatus1 = FLASH_READ(SectorAddress)) != (EraseStatus2 = FLASH_READ(SectorAddress)));
-  
-  // Wait for erase to complete
-  for(Count = 0; Count < 2048000; Count++) {
-  	// Check if we have really erased the flash
-  	EraseStatus1 = FLASH_READ(SectorAddress);
-	if (EraseStatus1 == 0xFFFF)
-		break;
+  // Read Sector start address twice to detect bit toggle and to determine ERASE DONE (all bits are 1)
+  // Get the maximum timer ticks needed to complete the operation
+  // Check if operation is complete or not in continous loop? if complete, exit from loop
+  // if not check the ticks that have been passed from the begining of loop
+  // if Maximum Ticks allocated for operation has passed exit from loop
+
+  SystemCounterVal = GetPerformanceCounter();
+  Timeout += SystemCounterVal;
+  while (SystemCounterVal < Timeout) {
+    if ((EraseStatus1 = FLASH_READ(SectorAddress)) == (EraseStatus2 = FLASH_READ(SectorAddress))) {
+      if (0xFFFF == FLASH_READ(SectorAddress)) {
+        break;
+      }
+    }
+    SystemCounterVal = GetPerformanceCounter();
   }
-  
-  return EFI_SUCCESS;
+
+  if(SystemCounterVal >= Timeout) {
+    DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to "
+        "Erase @ SectorAddress 0x%p, Timeout\n",__FUNCTION__,\
+                                SectorAddress));
+    return EFI_DEVICE_ERROR;
+  } else {
+    return EFI_SUCCESS;
+  }
 }
 
 /**
@@ -104,11 +144,13 @@ NorFlashPlatformEraseChip (
 {
   FLASH_DATA		EraseStatus1 = 0;
   FLASH_DATA		EraseStatus2 = 0;
+  UINT64		Timeout = 0;
+  UINT64		SystemCounterVal;
 
   // Request a sector erase by writing two unlock cycles, followed by a
   // setup command and two additional unlock cycles, which are then
   // followed by chip erase commands
-  
+  Timeout = ConvertMicroSecondsToTicks(mNorFlashDevices[Instance->Media.MediaId].ChipEraseTimeOut);
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_FIRST);
   
@@ -126,10 +168,92 @@ NorFlashPlatformEraseChip (
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_CHIP_ERASE_SIXTH);
 
   // Wait for erase to complete
-  // Read status register to determine ERASE DONE
-  while ((EraseStatus1 = FLASH_READ(Instance->DeviceBaseAddress)) != (EraseStatus2 = FLASH_READ(Instance->DeviceBaseAddress)));
+  // Read Base address register twice to detect bit toggle and to determine ERASE DONE (all bits are 1)
+  // Get the maximum timer ticks needed to complete the operation
+  // Check if operation is complete or not in continous loop? if complete, exit from loop
+  // if not check the ticks that have been passed from the begining of loop
+  // if Maximum Ticks allocated for operation has passed exit from loop
+
+  SystemCounterVal = GetPerformanceCounter();
+  Timeout += SystemCounterVal;
+  while (SystemCounterVal < Timeout) {
+    if ((EraseStatus1 = FLASH_READ(Instance->DeviceBaseAddress)) ==
+        (EraseStatus2 = FLASH_READ(Instance->DeviceBaseAddress))) {
+      if (0xFFFF == FLASH_READ(Instance->DeviceBaseAddress)) {
+        break;
+      }
+    }
+    SystemCounterVal = GetPerformanceCounter();
+  }
+
+  if(SystemCounterVal >= Timeout) {
+    DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to "
+        "Erase @ DeviceBaseAddress 0x%p, Timeout\n",__FUNCTION__,\
+                                Instance->DeviceBaseAddress));
+    return EFI_DEVICE_ERROR;
+  } else {
+    return EFI_SUCCESS;
+  }
     
   return EFI_SUCCESS;
+}
+
+EFI_STATUS NorFlashPlatformWriteWord
+(
+  IN NOR_FLASH_INSTANCE      *Instance,
+  IN UINTN                   WordOffset,
+  IN FLASH_DATA              Word
+)
+{
+  UINT64        Timeout = 0;
+  UINTN         TargetAddress;
+  UINT64        SystemCounterVal;
+  FLASH_DATA    Read1;
+  FLASH_DATA    Read2;
+
+  Timeout = ConvertMicroSecondsToTicks(mNorFlashDevices[Instance->Media.MediaId].WordWriteTimeOut);
+
+  TargetAddress = CREATE_NOR_ADDRESS(Instance->DeviceBaseAddress,CREATE_BYTE_OFFSET(WordOffset));
+
+  // Issue the Unlock cmds
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR,
+		   MT28EW01GABA_CMD_PROGRAM_FIRST);
+
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR,
+		   MT28EW01GABA_CMD_PROGRAM_SECOND);
+
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR,
+                   MT28EW01GABA_CMD_PROGRAM_THIRD);
+
+  FLASH_WRITE_DATA(TargetAddress, Word);
+
+  // Wait for Write to Complete
+  // Read the last written address twice to detect bit toggle and
+  // to determine if date is wriiten successfully or not ?
+  // Get the maximum timer ticks needed to complete the operation
+  // Check if operation is complete or not in continous loop? if complete, exit from loop
+  // if not check the ticks that have been passed from the begining of loop
+  // if Maximum Ticks allocated for operation has passed, then exit from loop
+
+  SystemCounterVal = GetPerformanceCounter();
+  Timeout += SystemCounterVal;
+  while (SystemCounterVal < Timeout) {
+    if ((Read1 = FLASH_READ_DATA(TargetAddress)) == (Read2 = FLASH_READ_DATA(TargetAddress))) {
+      if (Word == FLASH_READ_DATA(TargetAddress)) {
+        break;
+      }
+    }
+    SystemCounterVal = GetPerformanceCounter();
+  }
+
+  if(SystemCounterVal >= Timeout) {
+    DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to "
+        "Write @ TargetAddress 0x%p, Timeout\n",__FUNCTION__,\
+                                TargetAddress));
+    return EFI_DEVICE_ERROR;
+  } else {
+    return EFI_SUCCESS;
+  }
 }
 
 EFI_STATUS NorFlashPlatformWritePageBuffer
@@ -140,23 +264,27 @@ EFI_STATUS NorFlashPlatformWritePageBuffer
   IN FLASH_DATA              *Buffer
 )
 {
-  UINT16        Timeout = ~0;
-  UINTN         LastWrittenAddress;
+  UINT64        Timeout = 0;
+  UINTN         LastWrittenAddress = 0;
+  FLASH_DATA    LastWritenData = 0;
   UINTN         current_offset;
   UINTN         end_offset;
   UINTN         TargetAddress;
+  UINT64        SystemCounterVal;
   FLASH_DATA    Read1;
   FLASH_DATA    Read2;
 
   /* Initialize variables */
   current_offset   = PageBufferOffset;
   end_offset       = PageBufferOffset + NumWords - 1;
-  
+  Timeout   = ConvertMicroSecondsToTicks(mNorFlashDevices[Instance->Media.MediaId].BufferWriteTimeOut);
   TargetAddress = CREATE_NOR_ADDRESS(Instance->DeviceBaseAddress,CREATE_BYTE_OFFSET(current_offset));
 
   // don't try with a count of zero
   if (!NumWords)
     return EFI_SUCCESS;
+  else if(NumWords == 1)
+    return NorFlashPlatformWriteWord(Instance, PageBufferOffset, *Buffer);
 
   // Issue the Unlock cmds
   SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR,
@@ -172,29 +300,43 @@ EFI_STATUS NorFlashPlatformWritePageBuffer
   SEND_NOR_COMMAND(TargetAddress, 0, (NumWords - 1));
 
   // Load Data into Buffer
-  while(current_offset <= end_offset)
-  {
+  while(current_offset <= end_offset) {
+    LastWrittenAddress = CREATE_NOR_ADDRESS(Instance->DeviceBaseAddress,CREATE_BYTE_OFFSET(current_offset++));
+    LastWritenData = *Buffer++;
     // Write Data
-    FLASH_WRITE_DATA(CREATE_NOR_ADDRESS(Instance->DeviceBaseAddress,CREATE_BYTE_OFFSET(current_offset++)), *Buffer++);
+    FLASH_WRITE_DATA(LastWrittenAddress,LastWritenData);
   }
 
   // Issue the Buffered Program Confirm command
   SEND_NOR_COMMAND (TargetAddress, 0,
 		    MT28EW01GABA_CMD_WRITE_TO_BUFFER_CONFIRM);
-  
-  LastWrittenAddress = CREATE_NOR_ADDRESS(Instance->DeviceBaseAddress,CREATE_BYTE_OFFSET(end_offset));
- 
-  while (((Read1 = FLASH_READ_DATA(LastWrittenAddress)) != (Read2 = FLASH_READ_DATA(LastWrittenAddress))) && (--Timeout));
 
-  if(!Timeout)
-  {
+  // Wait for Write to Complete
+  // Read the last written address twice to detect bit toggle and
+  // to determine if date is wriiten successfully or not ?
+  // Get the maximum timer ticks needed to complete the operation
+  // Check if operation is complete or not in continous loop? if complete, exit from loop
+  // if not check the ticks that have been passed from the begining of loop
+  // if Maximum Ticks allocated for operation has passed, then exit from loop
+  SystemCounterVal = GetPerformanceCounter();
+  Timeout += SystemCounterVal;
+  while (SystemCounterVal < Timeout) {
+    if ((Read1 = FLASH_READ_DATA(LastWrittenAddress)) == (Read2 = FLASH_READ_DATA(LastWrittenAddress))) {
+      if (LastWritenData == FLASH_READ_DATA(LastWrittenAddress)) {
+        break;
+      }
+    }
+    SystemCounterVal = GetPerformanceCounter();
+  }
+
+  if (SystemCounterVal >= Timeout) {
     DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to "
-        "Write @ LastWrittenAddress 0x%p\n",__FUNCTION__,\
+        "Write @ LastWrittenAddress 0x%p, Timeout\n",__FUNCTION__,\
                                 LastWrittenAddress));
     return EFI_DEVICE_ERROR;
-  }
-  else
+  } else {
     return EFI_SUCCESS;
+  }
 }
 
 EFI_STATUS NorFlashPlatformWriteWordAlignedAddressBuffer
@@ -205,9 +347,9 @@ EFI_STATUS NorFlashPlatformWriteWordAlignedAddressBuffer
   IN FLASH_DATA           *Buffer
   )
 {
-  UINTN MultiByteWordCount = mNorFlashDevices[Instance->Media.MediaId].MultiByteWordCount;
-  UINTN mask = MultiByteWordCount - 1;
-  UINTN IntWords = NumWords;
+  UINTN      MultiByteWordCount = mNorFlashDevices[Instance->Media.MediaId].MultiByteWordCount;
+  UINTN      mask = MultiByteWordCount - 1;
+  UINTN      IntWords = NumWords;
   EFI_STATUS Status = EFI_SUCCESS;
 
   if (Offset & mask)
@@ -221,33 +363,30 @@ EFI_STATUS NorFlashPlatformWriteWordAlignedAddressBuffer
     // program the first few to get write buffer aligned
     Status = NorFlashPlatformWritePageBuffer(Instance, Offset, IntWords, Buffer);
     if (EFI_ERROR(Status))
-      return EFI_DEVICE_ERROR;
+      return (Status);
 
     Offset   += IntWords; // adjust pointers and counter
     NumWords -= IntWords;
     Buffer += IntWords;
     
     if (NumWords == 0)
-      return(Status);
+      return (Status);
   }
-
   while(NumWords >= MultiByteWordCount) /* while big chunks to do */
   {
     Status = NorFlashPlatformWritePageBuffer(Instance, Offset, MultiByteWordCount, Buffer);
     if (EFI_ERROR(Status))
-      return EFI_DEVICE_ERROR;
+      return (Status);
 
     Offset   += MultiByteWordCount; /* adjust pointers and counter */
     NumWords -= MultiByteWordCount;
-    Buffer += MultiByteWordCount;
+    Buffer   += MultiByteWordCount;
   }
-  
   if (NumWords == 0)
-    return(Status);
+    return (Status);
 
   Status = NorFlashPlatformWritePageBuffer(Instance, Offset, NumWords, Buffer);
-  
-  return(Status);
+  return (Status);
 }
 /*
  * Writes data to the NOR Flash using the Buffered Programming method.
@@ -330,7 +469,7 @@ NorFlashPlatformWriteBuffer (
     if (EFI_ERROR(Status)) {
       DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to "
         "Write @ TargetOffset 0x%x Status=%d\n",__FUNCTION__,TargetOffsetinBytes,Status));
-      return EFI_DEVICE_ERROR;
+      goto EXIT;
     }
     
     TargetOffsetinBytes += IntBytes; /* adjust pointers and counter */
@@ -338,7 +477,7 @@ NorFlashPlatformWriteBuffer (
     Buffer += IntBytes;
     
     if (BufferSizeInBytes == 0)
-      return EFI_SUCCESS;
+      goto EXIT;
   }
   
   // Write the bytes to CFI width aligned address. Note we can Write number of bytes=CFI width in one operation
@@ -352,7 +491,7 @@ NorFlashPlatformWriteBuffer (
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to "
             "Write @ TargetOffset 0x%x Status=%d\n",__FUNCTION__,TargetOffsetinBytes,Status));
-    return EFI_DEVICE_ERROR;
+    goto EXIT;
   }
   
   BufferSizeInBytes -= (WordsToWrite*sizeof(FLASH_DATA));
@@ -360,7 +499,7 @@ NorFlashPlatformWriteBuffer (
   TargetOffsetinBytes += (WordsToWrite*sizeof(FLASH_DATA));
   
   if (BufferSizeInBytes == 0)
-    return EFI_SUCCESS;
+    goto EXIT;
   
   // Now Write bytes that are remaining and are less than CFI width.
   // Read the first few to get Read buffer aligned
@@ -379,10 +518,13 @@ NorFlashPlatformWriteBuffer (
   if (EFI_ERROR(Status)) {
     DEBUG((EFI_D_ERROR, "%a: ERROR - Failed to "
     "Write @ TargetOffset 0x%x Status=%d\n",__FUNCTION__,TargetOffsetinBytes,Status));
-    return EFI_DEVICE_ERROR;
+    goto EXIT;
   }
-  
-  return EFI_SUCCESS;
+
+EXIT:
+  // Put device back into Read Array mode (via Reset)
+  NorFlashPlatformReset(Instance);
+  return (Status);
 }
 
 EFI_STATUS
@@ -479,6 +621,10 @@ NorFlashPlatformReset (
   IN  NOR_FLASH_INSTANCE *Instance
   )
 {
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_1_ADDR, MT28EW01GABA_CMD_RESET_FIRST);
+
+  SEND_NOR_COMMAND(Instance->DeviceBaseAddress, MT28EW01GABA_CMD_UNLOCK_2_ADDR, MT28EW01GABA_CMD_RESET_SECOND);
+
   SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
   return EFI_SUCCESS;
 }
@@ -527,17 +673,4 @@ NorFlashPlatformFlashGetAttributes (
     }
   }
   return Status;
-}
-
-EFI_STATUS
-NorFlashPlatformControllerInitialization (
-  VOID
-  )
-{
-  // IFC NOR is enabled by default on reset and available on CS0, but
-  // still re-init the IFC NOR settings
-  // nothing here
-
-  IfcNorInit ();
-  return EFI_SUCCESS;
 }

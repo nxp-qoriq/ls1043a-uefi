@@ -39,6 +39,7 @@
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec
   MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
   MdeModulePkg/MdeModulePkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec
   LS1043aRdbPkg/LS1043aRdbPkg.dec

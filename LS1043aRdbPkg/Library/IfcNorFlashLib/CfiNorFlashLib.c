@@ -13,6 +13,7 @@
  **/
 
 #include <PiDxe.h>
+#include <Library/ArmLib.h>
 #include <Library/DebugLib.h>
 #include <Library/FslIfc.h>
 #include <Library/IoLib.h>
@@ -27,9 +28,7 @@ FlashWrite_Data (
    UINTN Addr
    )
 {
-	*(volatile FLASH_DATA *)(Addr) = (Val);
-	// Wait for write to complete
-	MicroSecondDelay(1000);
+  *(volatile FLASH_DATA *)(Addr) = (Val);
 }
 
 VOID
@@ -38,20 +37,19 @@ FlashWrite (
    UINTN Addr
    )
 {
-	FLASH_DATA ShiftVal = Val;
-	
-	if(sizeof(FLASH_DATA) == sizeof(UINT16))	
-		ShiftVal = SwapBytes16(Val);
-	else if(sizeof(FLASH_DATA) == sizeof(UINT32))
-		ShiftVal = SwapBytes32(Val);
-	else if(sizeof(FLASH_DATA) == sizeof(UINT64))
-		ShiftVal = SwapBytes64(Val);
-	else
-		ASSERT("Could Not determine FLASH_DATA size\n");
-	
-	*(volatile FLASH_DATA *)(Addr) = (ShiftVal);
-	// Wait for write to complete
-	MicroSecondDelay(1000);
+  FLASH_DATA ShiftVal = Val;
+
+  if (sizeof(FLASH_DATA) == sizeof(UINT16)) {
+    ShiftVal = SwapBytes16(Val);
+  } else if (sizeof(FLASH_DATA) == sizeof(UINT32)) {
+    ShiftVal = SwapBytes32(Val);
+  } else if (sizeof(FLASH_DATA) == sizeof(UINT64)) {
+    ShiftVal = SwapBytes64(Val);
+  } else {
+    ASSERT("Could Not determine FLASH_DATA size\n");
+  }
+
+  *(volatile FLASH_DATA *)(Addr) = (ShiftVal);
 }
 
 FLASH_DATA
@@ -121,6 +119,8 @@ CfiNorFlashFlashGetAttributes (
   FLASH_DATA              Size = 0;
   FLASH_DATA              HighByteMask = 0xFF; // Masks High byte in a UIN16 word
   FLASH_DATA              HighByteShift = 8; // Bitshifts needed to make a byte High Byte in a UIN16 word
+  FLASH_DATA              Temp1 = 0;
+  FLASH_DATA              Temp2 = 0;
   
   for (Count = 0; Count < Index; Count++) {
 
@@ -172,6 +172,22 @@ CfiNorFlashFlashGetAttributes (
     NorFlashDevices[Count].MultiByteWordCount =\
     (1 << ((FLASH_DATA)((MaxNumBytes[1] << HighByteShift) | (MaxNumBytes[0] & HighByteMask))))/sizeof(FLASH_DATA);
     
+    NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_TYP_TIMEOUT_WORD_WRITE, 1, &Temp1);
+    NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_MAX_TIMEOUT_WORD_WRITE, 1, &Temp2);
+    NorFlashDevices[Count].WordWriteTimeOut = (1U << Temp1) * (1U << Temp2);
+
+    NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_TYP_TIMEOUT_MAX_BUFFER_WRITE, 1, &Temp1);
+    NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_MAX_TIMEOUT_MAX_BUFFER_WRITE, 1, &Temp2);
+    NorFlashDevices[Count].BufferWriteTimeOut = (1U << Temp1) * (1U << Temp2);
+
+    NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_TYP_TIMEOUT_BLOCK_ERASE, 1, &Temp1);
+    NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_MAX_TIMEOUT_BLOCK_ERASE, 1, &Temp2);
+    NorFlashDevices[Count].BlockEraseTimeOut = (1U << Temp1) * (1U << Temp2) * 1000;
+
+    NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_TYP_TIMEOUT_CHIP_ERASE, 1, &Temp1);
+    NorFlashReadCfiData(DeviceBaseAddress, MT28EW01GABA_CFI_QUERY_MAX_TIMEOUT_CHIP_ERASE, 1, &Temp2);
+    NorFlashDevices[Count].ChipEraseTimeOut = (1U << Temp1) * (1U << Temp2) * 1000;
+
     // Put device back into Read Array mode (via Reset)
     SEND_NOR_COMMAND (NorFlashDevices[Count].DeviceBaseAddress, 0, MT28EW01GABA_CMD_RESET);
   }

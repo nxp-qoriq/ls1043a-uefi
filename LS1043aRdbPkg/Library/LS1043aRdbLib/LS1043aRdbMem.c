@@ -98,10 +98,23 @@ ArmPlatformGetVirtualMemoryMap (
   // FIXME: To Add QSPI
 
   // IFC region 1
+  /*
+  * A-009241   : Unaligned write transactions to IFC may result in corruption of data          *
+  * Affects    : IFC                                                                           *
+  * Description: 16 byte unaligned write from system bus to IFC may result in extra unintended *
+  *              writes on external IFC interface that can corrupt data on external flash.     *
+  * Impact     : Data corruption on external flash may happen in case of unaligned writes to   *
+  *              IFC memory space.                                                             *
+  * Workaround: Following are the workarounds:                                                 *
+  *             • For write transactions from core, IFC interface memories (including IFC SRAM)*
+  *                should be configured as “device type" memory in MMU.                        *
+  *             • For write transactions from non-core masters (like system DMA), the address  *
+  *                should be 16 byte aligned and the data size should be multiple of 16 bytes. *
+  */
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_IFC_REGION1_BASE_ADDR;
   VirtualMemoryTable[Index].VirtualBase  = CONFIG_IFC_REGION1_BASE_ADDR;
   VirtualMemoryTable[Index].Length       = CONFIG_IFC_REGION1_BASE_SIZE;
-  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED/*CacheAttributes*/;
+  VirtualMemoryTable[Index].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE/*CacheAttributes*/;
 
   // QMAN SWP
   VirtualMemoryTable[++Index].PhysicalBase = CONFIG_QMAN_SWP_BASE_ADDR;
