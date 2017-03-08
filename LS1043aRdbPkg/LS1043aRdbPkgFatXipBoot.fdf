@@ -220,6 +220,12 @@ READ_LOCK_STATUS   = TRUE
   INF LS1043aRdbPkg/Drivers/Dpaa1EthernetDxe/Dpaa1EthernetDxe.inf
 
   #
+  # RNG Driver
+  #
+  INF LS1043aRdbPkg/Drivers/RngDxe/RngDxe.inf
+
+  #
+  # FAT filesystem + GPT/MBR partitioning
   # FAT filesystem + GPT/MBR partitioning
   #
   INF MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
