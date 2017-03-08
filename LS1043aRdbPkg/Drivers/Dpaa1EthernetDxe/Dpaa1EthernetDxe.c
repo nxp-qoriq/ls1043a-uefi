@@ -514,7 +514,7 @@ Dpaa1SnpReceiveFilters (
 
   DPAA1_DEBUG_MSG("%a() called for 0x%p not implemented yet\n", __func__, Snp);
 
-  return EFI_UNSUPPORTED;
+  return EFI_SUCCESS;
 }
 
 
