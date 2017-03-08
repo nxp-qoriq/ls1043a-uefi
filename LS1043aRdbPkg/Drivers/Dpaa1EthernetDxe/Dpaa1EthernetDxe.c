@@ -478,31 +478,19 @@ Dpaa1SnpReceiveFilters (
     return EFI_INVALID_PARAMETER;
   }
 
+  /*
+   * As per the UEFI Specification, If the same bits are set in the Enable and
+   * Disable parameters, then the bits in the Disable parameter takes precedence
+   */
+
   if (Enable & Disable)
-    Enable = Enable ^ Disable;
+    Enable = Enable & ~Disable;
 
-  if (ResetMCastFilter) {
-    if (!(Disable & EFI_SIMPLE_NETWORK_RECEIVE_MULTICAST)) {
-      DPAA1_ERROR_MSG(
-        "Dpaa1SnpReceiveFilter 'Disable' mask (0x%x) does not have "
-        "'Multicast' bit set\n",
-        Disable);
-
-      return EFI_INVALID_PARAMETER;
-    }
-
-    if (MCastFilterCnt != 0) {
-      DPAA1_ERROR_MSG(
-        "Dpaa1SnpReceiveFilter 'MCastFilterCnt' (%u) has to be 0\n",
-        MCastFilterCnt);
-
-      return EFI_INVALID_PARAMETER;
-    }
-  } else {
+  if (!ResetMCastFilter)  {
     if (MCastFilterCnt > SnpMode->MaxMCastFilterCount) {
       DPAA1_ERROR_MSG(
-        "Dpaa1SnpReceiveFilter 'MCastFilterCnt' (%u) is out of range\n",
-        MCastFilterCnt);
+          "Dpaa1SnpReceiveFilter 'MCastFilterCnt' (%u) is out of range\n",
+          MCastFilterCnt);
 
       return EFI_INVALID_PARAMETER;
     }
@@ -515,9 +503,9 @@ Dpaa1SnpReceiveFilters (
 
       if (!(Enable & EFI_SIMPLE_NETWORK_RECEIVE_MULTICAST)) {
         DPAA1_ERROR_MSG(
-          "Dpaa1SnpReceiveFilter 'Enable' mask (0x%x) does not have "
-          "'Multicast' bit set\n",
-          Enable);
+            "Dpaa1SnpReceiveFilter 'Enable' mask (0x%x) does not have "
+            "'Multicast' bit set\n",
+            Enable);
 
         return EFI_INVALID_PARAMETER;
       }
@@ -526,7 +514,7 @@ Dpaa1SnpReceiveFilters (
 
   DPAA1_DEBUG_MSG("%a() called for 0x%p not implemented yet\n", __func__, Snp);
 
-  return EFI_SUCCESS;
+  return EFI_UNSUPPORTED;
 }
 
 
@@ -581,7 +569,7 @@ Dpaa1SnpStationAddress (
    */
   DPAA1_DEBUG_MSG("%a() called for 0x%p not implemented yet\n", __func__, Snp);
 
-  return EFI_SUCCESS;
+  return EFI_UNSUPPORTED;
 }
 
 
