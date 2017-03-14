@@ -514,19 +514,12 @@ PlatformBootManagerAfterConsole (
   VOID
   )
 {
+  Print (L"Press ESCAPE for boot options ");
+
   //
   // Show the splash screen.
   //
   EnableQuietBoot (PcdGetPtr (PcdLogoFile));
-
-  //
-  // Register UEFI Shell
-  //
-  PlatformRegisterFvBootOption (
-    PcdGetPtr (PcdShellFile), L"UEFI Shell", LOAD_OPTION_ACTIVE
-    );
-
-  Print (L"Press ESCAPE for boot options ");
 
   //
   // Connect the rest of the devices.
@@ -538,7 +531,12 @@ PlatformBootManagerAfterConsole (
   //
   EfiBootManagerRefreshAllBootOption ();
 
-
+  //
+  // Register UEFI Shell
+  //
+  PlatformRegisterFvBootOption (
+    PcdGetPtr (PcdShellFile), L"UEFI Shell", LOAD_OPTION_ACTIVE
+    );
 }
 
 /**
