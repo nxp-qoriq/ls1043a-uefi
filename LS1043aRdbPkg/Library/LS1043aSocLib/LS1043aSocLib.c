@@ -663,6 +663,31 @@ SetQBManPortals (VOID)
 		QMAN_SP_CINH_SIZE);
 }
 
+/*
+* The extended RCW controlled pinmux register contains the bits to provide
+* bits for pin multiplexing control. This register is reset on HRESET.
+*/
+VOID
+ConfigScfgMux (VOID)
+{
+  struct CcsrScfg *Scfg = (VOID *)SCFG_BASE_ADDR;
+  UINT32 UsbPwrFault;
+
+  /*Configures functionality of the IIC3_SCL to USB2_DRVVBUS*/
+  /*Configures functionality of the IIC3_SDA to USB2_PWRFAULT*/
+  /*Configures functionality of the IIC4_SCL to USB3_DRVVBUS*/
+  /*Configures functionality of the IIC4_SDA to USB3_PWRFAULT*/
+  MmioWriteBe32((UINTN)&Scfg->rcwpmuxcr0, 0x3333);
+  MmioWriteBe32((UINTN)&Scfg->usbdrvvbus_selcr, CCSR_SCFG_USBDRVVBUS_SELCR_USB1);
+  UsbPwrFault = (CCSR_SCFG_USBPWRFAULT_DEDICATED <<
+                CCSR_SCFG_USBPWRFAULT_USB3_SHIFT) |
+                (CCSR_SCFG_USBPWRFAULT_DEDICATED <<
+                CCSR_SCFG_USBPWRFAULT_USB2_SHIFT) |
+                (CCSR_SCFG_USBPWRFAULT_SHARED <<
+                 CCSR_SCFG_USBPWRFAULT_USB1_SHIFT);
+  MmioWriteBe32((UINTN)&Scfg->usbpwrfault_selcr, UsbPwrFault);
+}
+
 /**
   Function to initialize SoC specific constructs
   // CSU
@@ -714,6 +739,16 @@ SocInit (
   IfcInit();
 
   PrintBoardPersonality();
+
+/*
+ * Due to the extensive functionality present on the chip and the limited number of external
+ * signals available, several functional blocks share signal resources through multiplexing.
+ * In this case when there is alternate functionality between multiple functional blocks,
+ * the signal's function is determined at the chip level (rather than at the block level)
+ * typically by a reset configuration word (RCW) option. Some of the signals' function are
+ * determined externel to RCW at Power-on Reset Sequence.
+ */
+  ConfigScfgMux();
 
   SetQBManPortals();
 
