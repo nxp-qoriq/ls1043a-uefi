@@ -492,7 +492,7 @@
   #
   # PPA specific PCDs
   #
-  gLS1043aRdbTokenSpaceGuid.PcdPpaNorBaseAddr|0x60500000
+  gLS1043aRdbTokenSpaceGuid.PcdPpaNorBaseAddr|0x60400000
   gLS1043aRdbTokenSpaceGuid.PcdPpaQspiBaseAddr|0x40100000
   gLS1043aRdbTokenSpaceGuid.PcdPpaFwSize|0x8000000 # (128MB)
   gLS1043aRdbTokenSpaceGuid.PcdPpaImageSize|0x100000
@@ -534,7 +534,7 @@
 !if $(BOOT_VIA_QSPI_FLASH) == TRUE
   gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x40300000 ,0x403FFFFF)/fsl-ls1043a-rdb.dtb"
 !else
-  gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x61B00000,0x61BFFFFF)/fsl-ls1043a-rdb.dtb"
+  gEmbeddedTokenSpaceGuid.PcdFdtDevicePaths|L"MemoryMapped(0x0,0x61000000,0x610FFFFF)/fsl-ls1043a-rdb.dtb"
 !endif
 
   gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|L"MemoryMapped(0x0,0x61120000,0x61AFFFFF) -f \"MemoryMapped(0x0,0x61C00000,0x638FFFFF)\" -c \"console=ttyS0,115200 root=/dev/ram0 earlycon=uart8250,0x21c0500\""
