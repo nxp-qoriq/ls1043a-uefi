@@ -68,7 +68,6 @@
 
 #define REV1_0                     0x10
 #define REV1_1                     0x11
-#define GIC_ADDR_BIT        31
 #define SCFG_GIC400_ALIGN   0x1570188
 
 typedef struct CpuType {

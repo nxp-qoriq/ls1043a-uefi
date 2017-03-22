@@ -1696,37 +1696,24 @@ FdtFixupGic (
 {
 	INT32  Off, Error;
 	UINT64 Reg[8];
-	UINT32 Value = 0, Aligng64K = 0;
+	UINT32 Align4K = 1, Rev = 0;
 
 	struct CcsrGur *GurBase = (VOID *)(GUTS_ADDR);
 	struct CcsrScfg *Scfg = (VOID *)SCFG_BASE_ADDR;
 
-	Value = MmioReadBe32((UINTN)&GurBase->svr) & MASK_UPPER_8;
-	if (Value != REV1_0) {
-		Value = MmioReadBe32((UINTN)&Scfg->gic_align) &
-						(0x01 << GIC_ADDR_BIT);
-		if (!Value)
-			Aligng64K = 1;
+	Rev = MmioReadBe32((UINTN)&GurBase->svr) & MASK_UPPER_8;
+	if (Rev != REV1_0) {
+		Align4K = MmioReadBe32((UINTN)&Scfg->gic_align) & BIT31;
 	}
 
 	Off = fdt_subnode_offset(Blob, 0, "interrupt-controller@1400000");
 	if (Off < 0) {
-		DEBUG((EFI_D_ERROR, "WARNING: Fdt can't find node %s: %s\n",
+		DEBUG((EFI_D_ERROR, "Failed to find node %s: %s\n",
 			"interrupt-controller@1400000", fdt_strerror(Off)));
 		return;
 	}
 
-	if (Aligng64K) {
-		/* Fixup gic node aligned with 64K */
-		Reg[0] = cpu_to_fdt64(GICD_BASE_64K);
-		Reg[1] = cpu_to_fdt64(GICD_SIZE_64K);
-		Reg[2] = cpu_to_fdt64(GICC_BASE_64K);
-		Reg[3] = cpu_to_fdt64(GICC_SIZE_64K);
-		Reg[4] = cpu_to_fdt64(GICH_BASE_64K);
-		Reg[5] = cpu_to_fdt64(GICH_SIZE_64K);
-		Reg[6] = cpu_to_fdt64(GICV_BASE_64K);
-		Reg[7] = cpu_to_fdt64(GICV_SIZE_64K);
-	} else {
+	if (Align4K) {
 		/* Fixup gic node aligned with 4K */
 		Reg[0] = cpu_to_fdt64(GICD_BASE_4K);
 		Reg[1] = cpu_to_fdt64(GICD_SIZE_4K);
@@ -1736,10 +1723,20 @@ FdtFixupGic (
 		Reg[5] = cpu_to_fdt64(GICH_SIZE_4K);
 		Reg[6] = cpu_to_fdt64(GICV_BASE_4K);
 		Reg[7] = cpu_to_fdt64(GICV_SIZE_4K);
+	} else {
+		/* Fixup gic node aligned with 64K */
+		Reg[0] = cpu_to_fdt64(GICD_BASE_64K);
+		Reg[1] = cpu_to_fdt64(GICD_SIZE_64K);
+		Reg[2] = cpu_to_fdt64(GICC_BASE_64K);
+		Reg[3] = cpu_to_fdt64(GICC_SIZE_64K);
+		Reg[4] = cpu_to_fdt64(GICH_BASE_64K);
+		Reg[5] = cpu_to_fdt64(GICH_SIZE_64K);
+		Reg[6] = cpu_to_fdt64(GICV_BASE_64K);
+		Reg[7] = cpu_to_fdt64(GICV_SIZE_64K);
 	}
 	Error = fdt_setprop(Blob, Off, "reg", Reg, sizeof(Reg));
 	if (Error < 0) {
-		DEBUG((EFI_D_ERROR,"WARNING: fdt_setprop can't set %s "
+		DEBUG((EFI_D_ERROR,"Failed to set property %s "
 				"from node %s: %s\n",
 				"reg", "interrupt-controller@1400000",
 				fdt_strerror(Error)));
